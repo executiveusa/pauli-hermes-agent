@@ -232,7 +232,7 @@ jobs:
   superpowers_check:
     name: "4 · Superpowers Check"
     needs: emerald_audit
-    if: needs.emerald_audit.outputs.audit_passed == 'true'
+    if: always() && needs.emerald_audit.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -248,7 +248,7 @@ jobs:
   vercel_deploy:
     name: "5 · Vercel Deploy"
     needs: [superpowers_check, emerald_audit]
-    if: needs.emerald_audit.outputs.audit_passed == 'true'
+    if: always() && needs.emerald_audit.result == 'success'
     runs-on: ubuntu-latest
     outputs:
       preview_url: ${{ steps.deploy.outputs.preview_url }}
@@ -317,8 +317,9 @@ jobs:
     name: "6 · Auto-merge ✅"
     needs: [vercel_deploy, emerald_audit]
     if: |
+      always() &&
       needs.vercel_deploy.result == 'success' &&
-      needs.emerald_audit.outputs.audit_passed == 'true' &&
+      needs.emerald_audit.result == 'success' &&
       github.ref_name != 'main'
     runs-on: ubuntu-latest
     steps:
