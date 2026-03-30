@@ -53,4 +53,7 @@ environments/benchmarks/evals/
 
 # Release script temp files
 .release_notes.md
+
+# Vercel build output
+dist/
 mini-swe-agent/

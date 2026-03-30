@@ -1,0 +1,60 @@
+# Vercel build — only deploy static frontend assets
+# Ignore everything except what the build script needs
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Heavy directories not needed for static deploy
+tests/
+environments/
+autoresearch/
+datagen-config-examples/
+context-mode-main/
+AionUi-main/
+BMAD-METHOD-main/
+ddev-diffy-agent-zero--main/
+font-kit-master/
+gastown/
+LTX-Video-main/
+mcp_agent_mail/
+OfficeCLI-main/
+open-rube-master/
+personaplex-main/
+StoryToolkitAI-main/
+supermemory-main/
+tinker-atropos/
+unity-web3-game-kit-main/
+Front-end design/
+n8n-workflows/
+
+# Agent internals (not needed for frontend)
+agent/
+tools/
+gateway/
+acp_adapter/
+acp_registry/
+cron/
+hermes_cli/
+honcho_integration/
+
+# Docs site (deployed separately via GitHub Pages)
+website/
+
+# Data files
+*.pyc
+*.egg-info
+wandb/
+logs/
+data/
+tmp/
+images/
+browser-use/
+agent-browser/
+node_modules/
+
+# Build output
+dist/

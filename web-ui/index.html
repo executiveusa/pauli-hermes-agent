@@ -393,7 +393,10 @@
 const CK = 'archonx_cfg';
 const loadCfg = () => { try { return JSON.parse(localStorage.getItem(CK) || '{}'); } catch { return {}; } };
 const saveCfg = c => localStorage.setItem(CK, JSON.stringify(c));
-let cfg = { apiUrl: 'http://localhost:8642', apiKey: '', reposUrl: '', ...loadCfg() };
+const defaultApi = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:8642'
+  : '';
+let cfg = { apiUrl: defaultApi, apiKey: '', reposUrl: '/repos.json', ...loadCfg() };
 
 // ── State ──────────────────────────────────────────────────
 let streaming = false, listening = false, recognition = null, abortCtrl = null;
@@ -432,6 +435,7 @@ function setStatus(s) {
   hStatusText.textContent = { connecting:'Connecting', ok:'Connected', err:'Offline' }[s] || s;
 }
 async function checkHealth() {
+  if (!cfg.apiUrl) { setStatus('err'); hStatusText.textContent = 'No API — set in Settings'; return false; }
   setStatus('connecting');
   try {
     const r = await apiFetch('/health', { signal: AbortSignal.timeout(5000) });
@@ -761,9 +765,9 @@ function loadSettingsUI() {
   $('cfgRepos').value = cfg.reposUrl || '';
 }
 $('cfgSave').addEventListener('click', function() {
-  cfg.apiUrl = $('cfgUrl').value.trim().replace(/\/$/, '') || 'http://localhost:8642';
+  cfg.apiUrl = $('cfgUrl').value.trim().replace(/\/$/, '') || defaultApi;
   cfg.apiKey = $('cfgKey').value.trim();
-  cfg.reposUrl = $('cfgRepos').value.trim();
+  cfg.reposUrl = $('cfgRepos').value.trim() || '/repos.json';
   saveCfg(cfg);
   repoData = null;
   checkHealth();

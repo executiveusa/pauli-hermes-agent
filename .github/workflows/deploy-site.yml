@@ -6,6 +6,7 @@ on:
     paths:
       - 'website/**'
       - 'landingpage/**'
+      - 'web-ui/**'
       - '.github/workflows/deploy-site.yml'
   workflow_dispatch:
 
@@ -42,11 +43,15 @@ jobs:
 
       - name: Stage deployment
         run: |
-          mkdir -p _site/docs
+          mkdir -p _site/docs _site/dashboard
           # Landing page at root
           cp -r landingpage/* _site/
+          # Dashboard at /dashboard
+          cp -r web-ui/* _site/dashboard/
           # Docusaurus at /docs/
           cp -r website/build/* _site/docs/
+          # Repos catalog
+          [ -f workspace/github/repos.json ] && cp workspace/github/repos.json _site/repos.json || true
           # CNAME so GitHub Pages keeps the custom domain between deploys
           echo "hermes-agent.nousresearch.com" > _site/CNAME
 

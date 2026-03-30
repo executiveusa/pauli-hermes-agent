@@ -262,10 +262,20 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel
 
-      - name: Rollback note
-        run: echo "Rollback: vercel rollback --token=\$VERCEL_TOKEN | Dashboard → Deployments → Rollback"
+      - name: Build static assets
+        run: node scripts/build-deploy.js
 
-      - name: Deploy static dashboard
+      - name: Verify build output
+        run: |
+          [ -f "dist/index.html" ] && echo "✅ Landing page: dist/index.html" || (echo "❌ Missing dist/index.html" && exit 1)
+          [ -f "dist/dashboard/index.html" ] && echo "✅ Dashboard: dist/dashboard/index.html" || (echo "❌ Missing dist/dashboard/index.html" && exit 1)
+          echo "📊 Build size: $(du -sh dist | cut -f1)"
+
+      - name: Rollback note
+        run: |
+          echo "Rollback via: vercel rollback or Vercel Dashboard under Deployments"
+
+      - name: Deploy to Vercel
         id: deploy
         run: |
           FLAGS=""
@@ -274,7 +284,9 @@ jobs:
           echo "$OUTPUT"
           URL=$(echo "$OUTPUT" | grep -E "https://.*vercel\.app" | tail -1 | tr -d '[:space:]')
           echo "preview_url=${URL}" >> $GITHUB_OUTPUT
-          echo "🌐 Dashboard: ${URL}"
+          echo "🌐 Live: ${URL}"
+          echo "🌐 Landing: ${URL}/"
+          echo "🌐 Dashboard: ${URL}/dashboard"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ env.VERCEL_ORG_ID }}
@@ -283,9 +295,19 @@ jobs:
       - name: Health check
         run: |
           URL="${{ steps.deploy.outputs.preview_url }}"
-          [ -n "$URL" ] && \
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL") && \
-            echo "🏥 ${URL} → HTTP ${STATUS}" || echo "No URL to check"
+          if [ -n "$URL" ]; then
+            # Check landing page
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+            echo "🏥 Landing page ($URL) → HTTP ${STATUS}"
+            # Check dashboard
+            DASH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL/dashboard")
+            echo "🏥 Dashboard ($URL/dashboard) → HTTP ${DASH_STATUS}"
+            # Fail if either returns non-2xx
+            [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ] || (echo "❌ Landing page health fail" && exit 1)
+            [ "$DASH_STATUS" -ge 200 ] && [ "$DASH_STATUS" -lt 400 ] || (echo "❌ Dashboard health fail" && exit 1)
+          else
+            echo "⚠️ No URL to check"
+          fi
 
   # ─────────────────────────────────────────────
   # STAGE 6: AUTO-MERGE TO MAIN
