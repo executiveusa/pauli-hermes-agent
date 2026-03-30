@@ -73,6 +73,7 @@ from hermes_constants import OPENROUTER_BASE_URL
 from agent.prompt_builder import (
     DEFAULT_AGENT_IDENTITY, PLATFORM_HINTS,
     MEMORY_GUIDANCE, SESSION_SEARCH_GUIDANCE, SKILLS_GUIDANCE,
+    EMERALD_TABLETS_GUIDANCE,
 )
 from agent.model_metadata import (
     fetch_model_metadata,
@@ -2277,6 +2278,15 @@ class AIAgent:
             tool_guidance.append(SKILLS_GUIDANCE)
         if tool_guidance:
             prompt_parts.append(" ".join(tool_guidance))
+
+        # Emerald Tablets cognitive rules — injected when HERMES.md is present
+        # (detected by checking if context files will load a HERMES.md).
+        # This is stable per session so it doesn't break prompt caching.
+        if not self.skip_context_files:
+            from agent.prompt_builder import _find_hermes_md
+            _hermes_md_path = _find_hermes_md(Path(os.getcwd()))
+            if _hermes_md_path is not None:
+                prompt_parts.append(EMERALD_TABLETS_GUIDANCE)
 
         # Honcho CLI awareness: tell Hermes about its own management commands
         # so it can refer the user to them rather than reinventing answers.

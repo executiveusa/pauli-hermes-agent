@@ -3730,6 +3730,10 @@ class HermesCLI:
             self._handle_skin_command(cmd_original)
         elif canonical == "voice":
             self._handle_voice_command(cmd_original)
+        elif canonical == "graph":
+            self._handle_graph_command(cmd_original)
+        elif canonical == "repos":
+            self._handle_repos_command(cmd_original)
         else:
             # Check for user-defined quick commands (bypass agent loop, no LLM call)
             base_cmd = cmd_lower.split()[0]
@@ -3835,6 +3839,70 @@ class HermesCLI:
         
         return True
     
+    def _handle_graph_command(self, cmd: str):
+        """Handle /graph <intent> — compile intent into a JSON task topology."""
+        parts = cmd.strip().split(maxsplit=1)
+        intent = parts[1].strip() if len(parts) > 1 else ""
+        if not intent:
+            _cprint("  Usage: /graph <intent>")
+            _cprint("  Example: /graph build a landing page for Kupuri Media")
+            return
+        msg = (
+            f"Compile the following intent into a JSON task topology (vibe graph). "
+            f"For each node include: id, role (retriever|analyst|synthesizer|critic|executor), "
+            f"description, dependencies (list of node ids), and assigned_repo if applicable. "
+            f"Output ONLY the JSON.\n\nIntent: {intent}"
+        )
+        if hasattr(self, '_pending_input'):
+            self._pending_input.put(msg)
+        else:
+            self.console.print("[bold red]Graph command unavailable: input queue not initialized[/]")
+
+    def _handle_repos_command(self, cmd: str):
+        """Handle /repos [query] — search indexed GitHub repos."""
+        parts = cmd.strip().split(maxsplit=1)
+        query = parts[1].strip().lower() if len(parts) > 1 else ""
+
+        repos_path = os.path.join(os.path.dirname(__file__), "workspace", "github", "repos.json")
+        if not os.path.isfile(repos_path):
+            _cprint("  No repos.json found at workspace/github/repos.json")
+            return
+
+        try:
+            with open(repos_path, "r", encoding="utf-8") as f:
+                repos_data = json.load(f)
+        except Exception as e:
+            _cprint(f"  Failed to load repos.json: {e}")
+            return
+
+        if not query:
+            # Show category summary
+            for category, repos in repos_data.items():
+                _cprint(f"  {category}: {len(repos)} repos")
+            _cprint(f"\n  Use /repos <query> to search by name or category.")
+            return
+
+        matches = []
+        for category, repos in repos_data.items():
+            if query in category.lower():
+                for repo in repos:
+                    name = repo if isinstance(repo, str) else repo.get("name", str(repo))
+                    matches.append((category, name))
+            else:
+                for repo in repos:
+                    name = repo if isinstance(repo, str) else repo.get("name", str(repo))
+                    if query in name.lower():
+                        matches.append((category, name))
+
+        if not matches:
+            _cprint(f"  No repos matching '{query}'")
+            return
+
+        for category, name in matches[:25]:
+            _cprint(f"  [{category}] {name}")
+        if len(matches) > 25:
+            _cprint(f"  ... and {len(matches) - 25} more")
+
     def _handle_plan_command(self, cmd: str):
         """Handle /plan [request] — load the bundled plan skill."""
         parts = cmd.strip().split(maxsplit=1)

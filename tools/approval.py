@@ -52,6 +52,17 @@ DANGEROUS_PATTERNS = [
     # Gateway protection: never start gateway outside systemd management
     (r'gateway\s+run\b.*(&\s*$|&\s*;|\bdisown\b|\bsetsid\b)', "start gateway outside systemd (use 'systemctl --user restart hermes-gateway')"),
     (r'\bnohup\b.*gateway\s+run\b', "start gateway outside systemd (use 'systemctl --user restart hermes-gateway')"),
+    # E: drive protection — write/delete operations require explicit approval
+    (r'[>\|]\s*["\']?E:\\', "write to E:\\ drive (protected — read-only)"),
+    (r'\brm\s+.*E:\\', "delete on E:\\ drive (protected — never delete)"),
+    (r'\bdel\s+.*E:\\', "delete on E:\\ drive (protected — never delete)"),
+    (r'\bRemove-Item\b.*E:\\', "delete on E:\\ drive (protected — never delete)"),
+    (r'\bmove\b.*E:\\', "move files on E:\\ drive (protected — read-only)"),
+    (r'\bMove-Item\b.*E:\\', "move files on E:\\ drive (protected — read-only)"),
+    (r'\bcopy\b.*>\s*["\']?E:\\', "write to E:\\ drive (protected — read-only)"),
+    (r'\bCopy-Item\b.*E:\\.*-Destination', "write to E:\\ drive (protected — read-only)"),
+    (r'\bNew-Item\b.*E:\\', "create on E:\\ drive (protected — read-only)"),
+    (r'\bmkdir\b.*E:\\', "create directory on E:\\ drive (protected — read-only)"),
 ]
 
 

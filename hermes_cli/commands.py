@@ -117,6 +117,10 @@ COMMAND_REGISTRY: list[CommandDef] = [
                subcommands=("connect", "disconnect", "status")),
     CommandDef("plugins", "List installed plugins and their status",
                "Tools & Skills", cli_only=True),
+    CommandDef("graph", "Compile an intent into a JSON task topology (vibe graph)",
+               "Tools & Skills", args_hint="<intent>"),
+    CommandDef("repos", "Search indexed GitHub repos by name or category",
+               "Info", args_hint="[query]"),
 
     # Info
     CommandDef("help", "Show available commands", "Info"),

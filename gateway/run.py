@@ -1753,6 +1753,12 @@ class GatewayRunner:
         if canonical == "voice":
             return await self._handle_voice_command(event)
 
+        if canonical == "graph":
+            return await self._handle_graph_command(event)
+
+        if canonical == "repos":
+            return await self._handle_repos_command(event)
+
         # User-defined quick commands (bypass agent loop, no LLM call)
         if command:
             if isinstance(self.config, dict):
@@ -3340,6 +3346,59 @@ class GatewayRunner:
         if hasattr(adapter, "_voice_input_callback"):
             adapter._voice_input_callback = None
         return "Left voice channel."
+
+    async def _handle_graph_command(self, event: MessageEvent) -> str:
+        """Handle /graph <intent> — compile intent into a JSON task topology."""
+        intent = event.get_command_args().strip()
+        if not intent:
+            return "Usage: /graph <intent>\nExample: /graph build a landing page for Kupuri Media"
+        # Inject as a user message so the agent generates the topology
+        event.text = (
+            f"Compile the following intent into a JSON task topology (vibe graph). "
+            f"For each node include: id, role (retriever|analyst|synthesizer|critic|executor), "
+            f"description, dependencies (list of node ids), and assigned_repo if applicable. "
+            f"Output ONLY the JSON.\n\nIntent: {intent}"
+        )
+        return None  # Let the event fall through to the agent loop
+
+    async def _handle_repos_command(self, event: MessageEvent) -> str:
+        """Handle /repos [query] — search indexed GitHub repos."""
+        query = event.get_command_args().strip().lower()
+        repos_path = os.path.join(os.path.dirname(__file__), "..", "workspace", "github", "repos.json")
+        if not os.path.isfile(repos_path):
+            return "No repos.json found at workspace/github/repos.json"
+
+        try:
+            with open(repos_path, "r", encoding="utf-8") as f:
+                import json as _json
+                repos_data = _json.load(f)
+        except Exception as e:
+            return f"Failed to load repos.json: {e}"
+
+        if not query:
+            lines = [f"{cat}: {len(repos)} repos" for cat, repos in repos_data.items()]
+            lines.append("\nUse /repos <query> to search by name or category.")
+            return "\n".join(lines)
+
+        matches = []
+        for category, repos in repos_data.items():
+            if query in category.lower():
+                for repo in repos:
+                    name = repo if isinstance(repo, str) else repo.get("name", str(repo))
+                    matches.append(f"[{category}] {name}")
+            else:
+                for repo in repos:
+                    name = repo if isinstance(repo, str) else repo.get("name", str(repo))
+                    if query in name.lower():
+                        matches.append(f"[{category}] {name}")
+
+        if not matches:
+            return f"No repos matching '{query}'"
+
+        result = matches[:25]
+        if len(matches) > 25:
+            result.append(f"... and {len(matches) - 25} more")
+        return "\n".join(result)
 
     def _handle_voice_timeout_cleanup(self, chat_id: str) -> None:
         """Called by the adapter when a voice channel times out.
