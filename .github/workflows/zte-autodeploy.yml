@@ -279,9 +279,14 @@ jobs:
       - name: Deploy to Vercel
         id: deploy
         run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "⚠️ VERCEL_TOKEN not configured — skipping CI deploy"
+            echo "preview_url=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           FLAGS=""
           [ "${{ github.ref_name }}" == "main" ] && FLAGS="--prod"
-          OUTPUT=$(vercel deploy $FLAGS --token=${{ secrets.VERCEL_TOKEN }} --yes --no-clipboard 2>&1)
+          OUTPUT=$(vercel deploy $FLAGS --token="$VERCEL_TOKEN" --yes --no-clipboard 2>&1)
           echo "$OUTPUT"
           URL=$(echo "$OUTPUT" | grep -E "https://.*vercel\.app" | tail -1 | tr -d '[:space:]')
           echo "preview_url=${URL}" >> $GITHUB_OUTPUT
