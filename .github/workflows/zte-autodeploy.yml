@@ -80,6 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ secrets.GH_PAT || github.token }}
 
       - name: Install Emerald Tablets
@@ -94,7 +95,7 @@ jobs:
           git config user.name "ZTE Agent"
           git add emerald-tablets/
           git commit -m "[ZTE][${{ env.BEAD_ID }}] install: Emerald Tablets — dominant law"
-          git push
+          git push || true
 
   # ─────────────────────────────────────────────
   # STAGE 1b: RALPHY BUILD + STUB IMPLEMENTATION
@@ -107,6 +108,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ secrets.GH_PAT || github.token }}
           fetch-depth: 0
 
@@ -149,7 +151,8 @@ jobs:
   # ─────────────────────────────────────────────
   e2e_test:
     name: "2 · E2E Tests"
-    needs: ralphy_build
+    needs: [memory_scan, ralphy_build]
+    if: always() && needs.memory_scan.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -185,6 +188,7 @@ jobs:
   emerald_audit:
     name: "3 · ⚖️ Emerald Tablets Audit"
     needs: [e2e_test, memory_scan]
+    if: always() && needs.e2e_test.result == 'success'
     runs-on: ubuntu-latest
     outputs:
       audit_passed: ${{ steps.audit.outputs.passed }}
@@ -320,6 +324,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ secrets.GH_PAT || github.token }}
           fetch-depth: 0
 
