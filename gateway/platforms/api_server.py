@@ -1080,6 +1080,69 @@ class APIServerAdapter(BasePlatformAdapter):
         return await loop.run_in_executor(None, _run)
 
     # ------------------------------------------------------------------
+    # Dashboard API endpoints
+    # ------------------------------------------------------------------
+
+    async def _handle_list_tools(self, request: "web.Request") -> "web.Response":
+        """GET /v1/tools — list registered tools and their availability."""
+        auth_err = self._check_auth(request)
+        if auth_err:
+            return auth_err
+        try:
+            from tools.registry import registry
+            toolsets = registry.get_available_toolsets()
+            return web.json_response({"object": "list", "data": toolsets})
+        except Exception as e:
+            logger.error("Error listing tools: %s", e)
+            return web.json_response({"object": "list", "data": {}})
+
+    async def _handle_list_sessions(self, request: "web.Request") -> "web.Response":
+        """GET /v1/sessions — list recent sessions from SessionDB."""
+        auth_err = self._check_auth(request)
+        if auth_err:
+            return auth_err
+        try:
+            from hermes_state import SessionDB
+            db = SessionDB()
+            q = request.query.get("q", "")
+            limit = min(int(request.query.get("limit", "50")), 200)
+            if q:
+                results = db.search(q, limit=limit)
+            else:
+                results = db.recent(limit=limit)
+            return web.json_response({"object": "list", "data": results})
+        except Exception as e:
+            logger.error("Error listing sessions: %s", e)
+            return web.json_response({"object": "list", "data": []})
+
+    async def _handle_list_processes(self, request: "web.Request") -> "web.Response":
+        """GET /v1/processes — list tracked background processes."""
+        auth_err = self._check_auth(request)
+        if auth_err:
+            return auth_err
+        try:
+            from tools.process_registry import ProcessRegistry
+            reg = ProcessRegistry()
+            running = []
+            with reg._lock:
+                for sid, ps in reg._running.items():
+                    running.append({
+                        "id": ps.id, "command": ps.command,
+                        "pid": ps.pid, "started_at": ps.started_at,
+                        "exited": ps.exited, "exit_code": ps.exit_code,
+                    })
+                for sid, ps in reg._finished.items():
+                    running.append({
+                        "id": ps.id, "command": ps.command,
+                        "pid": ps.pid, "started_at": ps.started_at,
+                        "exited": ps.exited, "exit_code": ps.exit_code,
+                    })
+            return web.json_response({"object": "list", "data": running})
+        except Exception as e:
+            logger.error("Error listing processes: %s", e)
+            return web.json_response({"object": "list", "data": []})
+
+    # ------------------------------------------------------------------
     # BasePlatformAdapter interface
     # ------------------------------------------------------------------
 
@@ -1107,6 +1170,10 @@ class APIServerAdapter(BasePlatformAdapter):
             self._app.router.add_post("/api/jobs/{job_id}/pause", self._handle_pause_job)
             self._app.router.add_post("/api/jobs/{job_id}/resume", self._handle_resume_job)
             self._app.router.add_post("/api/jobs/{job_id}/run", self._handle_run_job)
+            # Dashboard API
+            self._app.router.add_get("/v1/tools", self._handle_list_tools)
+            self._app.router.add_get("/v1/sessions", self._handle_list_sessions)
+            self._app.router.add_get("/v1/processes", self._handle_list_processes)
 
             self._runner = web.AppRunner(self._app)
             await self._runner.setup()
