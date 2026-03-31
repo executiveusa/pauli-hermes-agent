@@ -173,11 +173,13 @@ jobs:
             exit 1
           fi
 
-      - name: Install Playwright (if config exists)
+      - name: Install Playwright + run E2E against Vercel
         run: |
-          if [ -f "playwright.config.ts" ] || [ -f "playwright.config.js" ]; then
+          if [ -f "playwright.config.js" ] || [ -f "playwright.config.ts" ]; then
+            npm install --save-dev @playwright/test
             npx playwright install chromium --with-deps
-            npx playwright test 2>/dev/null || echo "Some tests failed — check output"
+            # Run against live Vercel site
+            TEST_URL="https://pauli-hermes-agent.vercel.app" npx playwright test --reporter=github 2>&1 || echo "⚠️ Some E2E tests failed — check output above"
           else
             echo "No Playwright config — HTML validation is the smoke test"
           fi
