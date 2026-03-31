@@ -410,16 +410,17 @@
           <div class="sf-field">
             <label class="sf-label">Hermes API URL</label>
             <input class="sf-input" type="text" id="cfgUrl" placeholder="http://localhost:8642">
-            <span class="sf-hint">Base URL of the Hermes API instance</span>
+            <span class="sf-hint">Base URL of the Hermes API server. On VPS: <code>https://yourdomain.com/api</code> — locally: <code>http://localhost:8642</code></span>
           </div>
           <div class="sf-field">
             <label class="sf-label">Agent Zero API URL</label>
             <input class="sf-input" type="text" id="cfgZeroUrl" placeholder="http://localhost:8643">
-            <span class="sf-hint">Base URL of Agent Zero instance</span>
+            <span class="sf-hint">Personal second-brain agent. Default port 8643. Run: <code>docker compose up -d agent-zero</code></span>
           </div>
           <div class="sf-field">
             <label class="sf-label">API Key</label>
             <input class="sf-input" type="password" id="cfgKey" placeholder="Leave blank if none">
+            <span class="sf-hint">From <code>API_SERVER_KEY</code> in your VPS <code>.env</code> file</span>
           </div>
           <div class="sf-field">
             <label class="sf-label">Supabase URL</label>
@@ -445,6 +446,11 @@
             </select>
           </div>
           <button class="sf-btn" id="cfgSave">Save &amp; reconnect</button>
+          <div class="sf-hint" style="margin-top:12px;padding:10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid var(--accent)">
+            <strong>Quick start:</strong> Copy <code>.env.vps.example</code> → <code>.env</code> on your VPS,
+            fill in your API keys, then run <code>bash scripts/vps-deploy.sh</code>.
+            Set <strong>Hermes API URL</strong> above to your VPS address.
+          </div>
         </div>
       </div>
     </div>
@@ -535,19 +541,19 @@ function logBead(type,msg,meta){
   try{localStorage.setItem('archonx_beads',JSON.stringify(beadsLog.slice(-200)))}catch(e){}
   renderBeads();
   // Sync to server-side beads API
-  var apiUrl=getCfg('hermes_url');
+  var apiUrl=cfg.apiUrl;
   if(apiUrl){
     try{
-      fetch(apiUrl+'/v1/beads',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+getCfg('api_key')},body:JSON.stringify({agent:activeAgent,type:type,title:msg,metadata:meta})}).catch(function(){});
+      fetch(apiUrl+'/v1/beads',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},body:JSON.stringify({agent:activeAgent,type:type,title:msg,metadata:meta})}).catch(function(){});
     }catch(e){}
   }
 }
 try{beadsLog=JSON.parse(localStorage.getItem('archonx_beads')||'[]')}catch(e){beadsLog=[]}
 
 function loadServerBeads(){
-  var apiUrl=getCfg('hermes_url');
+  var apiUrl=cfg.apiUrl;
   if(!apiUrl)return;
-  fetch(apiUrl+'/v1/beads?limit=50',{headers:{'Authorization':'Bearer '+getCfg('api_key')}})
+  fetch(apiUrl+'/v1/beads?limit=50',{headers:{'Authorization':'Bearer '+cfg.apiKey}})
     .then(function(r){return r.json()})
     .then(function(d){
       if(d&&d.data&&d.data.length){

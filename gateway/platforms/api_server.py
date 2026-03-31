@@ -216,6 +216,12 @@ class APIServerAdapter(BasePlatformAdapter):
         self._site: Optional["web.TCPSite"] = None
         self._response_store = ResponseStore()
         self._start_time: float = time.time()
+        # Supabase REST client (lazy — only if env vars are set)
+        self._supabase_url: str = os.getenv("SUPABASE_URL", "").rstrip("/")
+        self._supabase_key: str = os.getenv("SUPABASE_SERVICE_KEY", "") or os.getenv("SUPABASE_KEY", "")
+        # In-memory fallback stores (used when Supabase is unavailable)
+        self._beads_log: list = []
+        self._agent_mail: list = []
 
     @staticmethod
     def _parse_cors_origins(value: Any) -> tuple[str, ...]:
@@ -1251,7 +1257,26 @@ class APIServerAdapter(BasePlatformAdapter):
         """GET /v1/beads — List beads (action/issue log)."""
         status_filter = request.query.get("status")
         limit = int(request.query.get("limit", "50"))
-        beads = getattr(self, "_beads_log", [])
+
+        # Try Supabase first
+        if self._supabase_url and self._supabase_key:
+            try:
+                params = f"order=created_at.desc&limit={limit}"
+                if status_filter:
+                    params += f"&status=eq.{status_filter}"
+                async with web.session() if False else \
+                        __import__("aiohttp").ClientSession() as sess:
+                    async with sess.get(
+                        f"{self._supabase_url}/rest/v1/beads?{params}",
+                        headers={"apikey": self._supabase_key, "Authorization": f"Bearer {self._supabase_key}"},
+                    ) as resp:
+                        if resp.status == 200:
+                            data = await resp.json()
+                            return web.json_response({"object": "list", "data": data})
+            except Exception as exc:
+                logger.debug("Supabase beads fetch failed, using in-memory: %s", exc)
+
+        beads = self._beads_log
         if status_filter:
             beads = [b for b in beads if b.get("status") == status_filter]
         return web.json_response({"object": "list", "data": beads[-limit:]})
@@ -1259,11 +1284,10 @@ class APIServerAdapter(BasePlatformAdapter):
     async def _handle_beads_create(self, request: "web.Request") -> "web.Response":
         """POST /v1/beads — Create a new bead entry."""
         body = await request.json()
-        import uuid
         bead = {
             "id": str(uuid.uuid4()),
             "agent": body.get("agent", "hermes"),
-            "type": body.get("type", "action"),
+            "bead_type": body.get("type", "action"),
             "title": body.get("title", ""),
             "description": body.get("description", ""),
             "status": body.get("status", "open"),
@@ -1272,8 +1296,35 @@ class APIServerAdapter(BasePlatformAdapter):
         }
         if not bead["title"]:
             return web.json_response({"error": "title is required"}, status=400)
-        if not hasattr(self, "_beads_log"):
-            self._beads_log = []
+
+        # Try Supabase first
+        if self._supabase_url and self._supabase_key:
+            try:
+                import aiohttp as _aiohttp
+                async with _aiohttp.ClientSession() as sess:
+                    async with sess.post(
+                        f"{self._supabase_url}/rest/v1/beads",
+                        headers={
+                            "apikey": self._supabase_key,
+                            "Authorization": f"Bearer {self._supabase_key}",
+                            "Content-Type": "application/json",
+                            "Prefer": "return=representation",
+                        },
+                        json={
+                            "agent_id": None,
+                            "bead_type": bead["bead_type"],
+                            "title": bead["title"],
+                            "description": bead["description"] or None,
+                            "status": bead["status"],
+                            "metadata": bead["metadata"],
+                        },
+                    ) as resp:
+                        if resp.status in (200, 201):
+                            row = (await resp.json())[0]
+                            return web.json_response({"object": "bead", **row})
+            except Exception as exc:
+                logger.debug("Supabase bead insert failed, using in-memory: %s", exc)
+
         self._beads_log.append(bead)
         return web.json_response({"object": "bead", **bead})
 
@@ -1281,8 +1332,31 @@ class APIServerAdapter(BasePlatformAdapter):
         """PATCH /v1/beads/{bead_id} — Update a bead's status."""
         bead_id = request.match_info["bead_id"]
         body = await request.json()
-        beads = getattr(self, "_beads_log", [])
-        for b in beads:
+
+        # Try Supabase first
+        if self._supabase_url and self._supabase_key:
+            try:
+                import aiohttp as _aiohttp
+                patch = {k: body[k] for k in ("status", "title", "description", "metadata") if k in body}
+                async with _aiohttp.ClientSession() as sess:
+                    async with sess.patch(
+                        f"{self._supabase_url}/rest/v1/beads?id=eq.{bead_id}",
+                        headers={
+                            "apikey": self._supabase_key,
+                            "Authorization": f"Bearer {self._supabase_key}",
+                            "Content-Type": "application/json",
+                            "Prefer": "return=representation",
+                        },
+                        json=patch,
+                    ) as resp:
+                        if resp.status == 200:
+                            rows = await resp.json()
+                            if rows:
+                                return web.json_response({"object": "bead", **rows[0]})
+            except Exception as exc:
+                logger.debug("Supabase bead update failed, using in-memory: %s", exc)
+
+        for b in self._beads_log:
             if b["id"] == bead_id:
                 for key in ("status", "title", "description", "metadata"):
                     if key in body:
