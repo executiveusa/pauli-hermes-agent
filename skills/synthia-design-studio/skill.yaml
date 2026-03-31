@@ -1,0 +1,71 @@
+name: synthia-design-studio
+version: 1.0.0
+description: >
+  Dispatches design briefs to the Synthia Design Studio (Kupuri Media™).
+  The studio produces Awwwards-quality HTML/component output scored against
+  the UDEC 14-axis framework (floor: 8.5). Connects to the Sphere OS
+  Vibe Graph to track and report design work.
+
+category: design
+tags: [design, ui, frontend, brand, awwwards, udec, kupuri, synthia]
+
+author: executiveusa
+repo: https://github.com/executiveusa/synthia-superdesign
+
+# ─── ENDPOINTS ───────────────────────────────────────────────────────────────
+endpoints:
+  dispatch: https://kupuri-media-cdmx.vercel.app/api/design/dispatch
+  status:   https://kupuri-media-cdmx.vercel.app/api/design/dispatch
+  vibe:     https://kupuri-media-cdmx.vercel.app/api/vibe
+
+# ─── DESIGN TYPES ────────────────────────────────────────────────────────────
+design_types:
+  - ui-component    # Single React/HTML component
+  - landing-page    # Full landing page
+  - dashboard       # Dashboard screen
+  - brand-asset     # Logo, color, typography
+  - motion          # Animation / Remotion video
+  - audio           # Audio branding
+  - 3d-asset        # Three.js / Blender GLB
+  - full-site       # Multi-page site factory
+
+# ─── QUALITY GATE ────────────────────────────────────────────────────────────
+quality:
+  udec_floor: 8.5
+  hard_blocks:
+    - "MOT (Motion) < 7.0 → full rebuild"
+    - "ACC (Accessibility) < 7.0 → full rebuild"
+    - "Any axis < 6.0 → reject immediately"
+
+# ─── TOOLS ───────────────────────────────────────────────────────────────────
+tools:
+  - name: dispatch_design
+    description: Send a design brief to the Synthia Design Studio
+    method: POST
+    url: "{{ endpoints.dispatch }}"
+    body:
+      requestedBy: "{{ agent_id }}"
+      designType: "{{ design_type }}"
+      projectName: "{{ project_name }}"
+      brief: "{{ brief }}"
+      udecFloor: "{{ udec_floor | default(8.5) }}"
+      priority: "{{ priority | default('normal') }}"
+
+  - name: get_design_queue
+    description: Check active design tasks in the Sphere OS Vibe Graph
+    method: GET
+    url: "{{ endpoints.status }}"
+
+  - name: report_output
+    description: Report a completed approved design back to the Vibe Graph
+    method: POST
+    url: "{{ endpoints.vibe }}"
+    body:
+      agentId: synthia
+      kind: resource
+      label: "{{ project_name }} — approved design output"
+      content: "File: .superdesign/design_iterations/{{ file_path }} | UDEC: {{ udec_score }} | Approved"
+      tags: ["design-output", "{{ design_type }}", "{{ project_name }}"]
+      metadata:
+        taskId: "{{ task_id }}"
+        udecScore: "{{ udec_score }}"
