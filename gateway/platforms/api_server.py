@@ -215,6 +215,7 @@ class APIServerAdapter(BasePlatformAdapter):
         self._runner: Optional["web.AppRunner"] = None
         self._site: Optional["web.TCPSite"] = None
         self._response_store = ResponseStore()
+        self._start_time: float = time.time()
 
     @staticmethod
     def _parse_cors_origins(value: Any) -> tuple[str, ...]:
@@ -1142,6 +1143,163 @@ class APIServerAdapter(BasePlatformAdapter):
             logger.error("Error listing processes: %s", e)
             return web.json_response({"object": "list", "data": []})
 
+    async def _handle_list_skills(self, request: "web.Request") -> "web.Response":
+        """GET /v1/skills — list installed skills."""
+        auth_err = self._check_auth(request)
+        if auth_err:
+            return auth_err
+        try:
+            import pathlib
+            hermes_home = os.environ.get("HERMES_HOME", os.path.expanduser("~/.hermes"))
+            skills_dir = pathlib.Path(hermes_home) / "skills"
+            skills = []
+            if skills_dir.is_dir():
+                for p in sorted(skills_dir.iterdir()):
+                    if p.is_dir() and not p.name.startswith("."):
+                        desc = ""
+                        readme = p / "README.md"
+                        if readme.exists():
+                            desc = readme.read_text(encoding="utf-8", errors="replace").split("\n")[0][:200]
+                        skills.append({"name": p.name, "description": desc, "path": str(p)})
+            return web.json_response({"object": "list", "data": skills})
+        except Exception as e:
+            logger.error("Error listing skills: %s", e)
+            return web.json_response({"object": "list", "data": []})
+
+    async def _handle_health_metrics(self, request: "web.Request") -> "web.Response":
+        """GET /v1/health/metrics — system health metrics for dashboard."""
+        auth_err = self._check_auth(request)
+        if auth_err:
+            return auth_err
+        try:
+            import platform as plat
+            data = {
+                "uptime": {"value": round(time.time() - self._start_time, 1), "unit": "seconds"},
+                "platform": {"value": plat.system() + " " + plat.release()},
+                "python": {"value": plat.python_version()},
+                "host": {"value": self._host + ":" + str(self._port)},
+            }
+            try:
+                import psutil
+                data["cpu"] = {"value": psutil.cpu_percent(interval=0), "unit": "%"}
+                mem = psutil.virtual_memory()
+                data["memory"] = {"value": round(mem.used / 1e9, 1), "unit": "GB / " + str(round(mem.total / 1e9, 1)) + " GB"}
+            except ImportError:
+                pass
+            return web.json_response({"object": "metrics", "data": data})
+        except Exception as e:
+            logger.error("Error getting health metrics: %s", e)
+            return web.json_response({"object": "metrics", "data": {}})
+
+    # ------------------------------------------------------------------
+    # Agent-mail & Beads API
+    # ------------------------------------------------------------------
+
+    async def _handle_agent_mail_send(self, request: "web.Request") -> "web.Response":
+        """POST /v1/agent-mail — Send a message between agents."""
+        body = await request.json()
+        from_agent = body.get("from", "")
+        to_agent = body.get("to", "")
+        subject = body.get("subject", "")
+        message_body = body.get("body", "")
+        priority = body.get("priority", "normal")
+        thread_id = body.get("thread_id")
+        if not from_agent or not to_agent or not message_body:
+            return web.json_response(
+                {"error": "from, to, and body are required"}, status=400
+            )
+        import uuid
+        mail_id = str(uuid.uuid4())
+        mail_entry = {
+            "id": mail_id,
+            "from": from_agent,
+            "to": to_agent,
+            "subject": subject,
+            "body": message_body,
+            "priority": priority,
+            "thread_id": thread_id or mail_id,
+            "status": "pending",
+            "created_at": time.time(),
+        }
+        if not hasattr(self, "_agent_mail"):
+            self._agent_mail = []
+        self._agent_mail.append(mail_entry)
+        return web.json_response({"object": "agent_mail", "id": mail_id, "status": "sent"})
+
+    async def _handle_agent_mail_inbox(self, request: "web.Request") -> "web.Response":
+        """GET /v1/agent-mail/{agent} — Fetch inbox for an agent."""
+        agent_name = request.match_info["agent"]
+        status_filter = request.query.get("status", "pending")
+        inbox = getattr(self, "_agent_mail", [])
+        messages = [
+            m for m in inbox
+            if m["to"] == agent_name and m["status"] == status_filter
+        ]
+        return web.json_response({"object": "list", "data": messages})
+
+    async def _handle_agent_mail_ack(self, request: "web.Request") -> "web.Response":
+        """POST /v1/agent-mail/{mail_id}/ack — Acknowledge a message."""
+        mail_id = request.match_info["mail_id"]
+        inbox = getattr(self, "_agent_mail", [])
+        for m in inbox:
+            if m["id"] == mail_id:
+                m["status"] = "acknowledged"
+                return web.json_response({"object": "agent_mail", "id": mail_id, "status": "acknowledged"})
+        return web.json_response({"error": "message not found"}, status=404)
+
+    async def _handle_beads_list(self, request: "web.Request") -> "web.Response":
+        """GET /v1/beads — List beads (action/issue log)."""
+        status_filter = request.query.get("status")
+        limit = int(request.query.get("limit", "50"))
+        beads = getattr(self, "_beads_log", [])
+        if status_filter:
+            beads = [b for b in beads if b.get("status") == status_filter]
+        return web.json_response({"object": "list", "data": beads[-limit:]})
+
+    async def _handle_beads_create(self, request: "web.Request") -> "web.Response":
+        """POST /v1/beads — Create a new bead entry."""
+        body = await request.json()
+        import uuid
+        bead = {
+            "id": str(uuid.uuid4()),
+            "agent": body.get("agent", "hermes"),
+            "type": body.get("type", "action"),
+            "title": body.get("title", ""),
+            "description": body.get("description", ""),
+            "status": body.get("status", "open"),
+            "metadata": body.get("metadata", {}),
+            "created_at": time.time(),
+        }
+        if not bead["title"]:
+            return web.json_response({"error": "title is required"}, status=400)
+        if not hasattr(self, "_beads_log"):
+            self._beads_log = []
+        self._beads_log.append(bead)
+        return web.json_response({"object": "bead", **bead})
+
+    async def _handle_beads_update(self, request: "web.Request") -> "web.Response":
+        """PATCH /v1/beads/{bead_id} — Update a bead's status."""
+        bead_id = request.match_info["bead_id"]
+        body = await request.json()
+        beads = getattr(self, "_beads_log", [])
+        for b in beads:
+            if b["id"] == bead_id:
+                for key in ("status", "title", "description", "metadata"):
+                    if key in body:
+                        b[key] = body[key]
+                if body.get("status") == "resolved":
+                    b["resolved_at"] = time.time()
+                return web.json_response({"object": "bead", **b})
+        return web.json_response({"error": "bead not found"}, status=404)
+
+    async def _handle_list_agents(self, request: "web.Request") -> "web.Response":
+        """GET /v1/agents — List registered agents."""
+        agents = getattr(self, "_registered_agents", [
+            {"name": "hermes", "endpoint": f"http://{self._host}:{self._port}", "type": "hermes", "status": "online"},
+            {"name": "agent-zero", "endpoint": "http://localhost:8643", "type": "zero", "status": "offline"},
+        ])
+        return web.json_response({"object": "list", "data": agents})
+
     # ------------------------------------------------------------------
     # BasePlatformAdapter interface
     # ------------------------------------------------------------------
@@ -1174,6 +1332,16 @@ class APIServerAdapter(BasePlatformAdapter):
             self._app.router.add_get("/v1/tools", self._handle_list_tools)
             self._app.router.add_get("/v1/sessions", self._handle_list_sessions)
             self._app.router.add_get("/v1/processes", self._handle_list_processes)
+            self._app.router.add_get("/v1/skills", self._handle_list_skills)
+            self._app.router.add_get("/v1/health/metrics", self._handle_health_metrics)
+            # Agent-mail & Beads API
+            self._app.router.add_post("/v1/agent-mail", self._handle_agent_mail_send)
+            self._app.router.add_get("/v1/agent-mail/{agent}", self._handle_agent_mail_inbox)
+            self._app.router.add_post("/v1/agent-mail/{mail_id}/ack", self._handle_agent_mail_ack)
+            self._app.router.add_get("/v1/beads", self._handle_beads_list)
+            self._app.router.add_post("/v1/beads", self._handle_beads_create)
+            self._app.router.add_patch("/v1/beads/{bead_id}", self._handle_beads_update)
+            self._app.router.add_get("/v1/agents", self._handle_list_agents)
 
             self._runner = web.AppRunner(self._app)
             await self._runner.setup()
