@@ -1,0 +1,5 @@
+{$HERMES_BASE_URL} {
+  reverse_proxy /api/* hermes-api:8000
+  reverse_proxy /mcp* hermes-api:8000
+  reverse_proxy * hermes-dashboard:3000
+}

@@ -1,0 +1,13 @@
+{
+  "required_fields": [
+    "subagent_id",
+    "repo_scope",
+    "tool_scope",
+    "time_budget_minutes",
+    "approval_policy"
+  ],
+  "forbidden": [
+    "unrestricted_repo_scope",
+    "unrestricted_tool_scope"
+  ]
+}

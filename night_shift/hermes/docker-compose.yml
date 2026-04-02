@@ -1,0 +1,119 @@
+version: "3.9"
+
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - logs_data:/var/log/hermes
+    depends_on: [hermes-api, hermes-dashboard]
+    networks: [public, internal]
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    env_file: [.env]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+    networks: [internal]
+
+  redis:
+    image: redis:7
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redis_data:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+    networks: [internal]
+
+  hermes-api:
+    build: ./apps/hermes-api
+    env_file: [.env]
+    depends_on: [postgres, redis, provider-router]
+    ports: ["8000:8000"]
+    volumes: [artifacts_data:/data/artifacts, workspaces_data:/data/workspaces, logs_data:/data/logs]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks: [public, internal]
+
+  hermes-dashboard:
+    build: ./apps/hermes-dashboard
+    env_file: [.env]
+    depends_on: [hermes-api]
+    ports: ["3000:3000"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+    networks: [public, internal]
+
+  provider-router:
+    build: ./apps/provider-router
+    env_file: [.env]
+    ports: ["8080:8080"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks: [public, internal]
+
+  worker-coder:
+    build: ./apps/worker-coder
+    env_file: [.env]
+    depends_on: [redis, postgres, provider-router]
+    volumes: [workspaces_data:/data/workspaces, artifacts_data:/data/artifacts, logs_data:/data/logs]
+    networks: [internal]
+
+  worker-browser:
+    build: ./apps/worker-browser
+    env_file: [.env]
+    depends_on: [redis, postgres]
+    volumes: [artifacts_data:/data/artifacts, browser_profiles_data:/data/browser_profiles, logs_data:/data/logs]
+    networks: [internal]
+
+  scheduler:
+    build: ./apps/scheduler
+    env_file: [.env]
+    depends_on: [redis, hermes-api]
+    networks: [internal]
+
+  notifier:
+    build: ./apps/notifier
+    env_file: [.env]
+    depends_on: [redis, hermes-api]
+    networks: [internal]
+
+  appwrite:
+    image: appwrite/appwrite:1.6.0
+    profiles: ["optional"]
+    ports: ["8081:80"]
+    networks: [public, internal]
+
+volumes:
+  postgres_data:
+  redis_data:
+  workspaces_data:
+  artifacts_data:
+  logs_data:
+  browser_profiles_data:
+
+networks:
+  public:
+  internal:

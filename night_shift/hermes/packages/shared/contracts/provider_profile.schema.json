@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "required": [
+    "provider_profile_id",
+    "provider_type",
+    "model",
+    "secret_ref"
+  ]
+}

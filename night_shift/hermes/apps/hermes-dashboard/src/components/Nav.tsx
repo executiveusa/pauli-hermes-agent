@@ -1,0 +1,1 @@
+export function Nav(){const links=["overview","repos","prds","runs","approvals","coding-sessions","browser-runs","appwrite-projects","subagents"];return <nav>{links.map((x)=><a key={x} href={`/${x}`} style={{marginRight:12}}>{x}</a>)}</nav>;}

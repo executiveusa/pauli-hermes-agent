@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "required": [
+    "browser_run_id",
+    "workflow_id",
+    "allowed_domains",
+    "status"
+  ]
+}

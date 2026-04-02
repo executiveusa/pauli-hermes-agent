@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "service_name",
+    "deployment_id",
+    "git_sha",
+    "environment",
+    "base_url",
+    "api_base_url",
+    "mcp_url",
+    "openapi_url",
+    "health_url",
+    "ready_url",
+    "auth_mode",
+    "version",
+    "release_timestamp"
+  ]
+}

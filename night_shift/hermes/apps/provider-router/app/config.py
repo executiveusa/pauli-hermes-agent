@@ -1,0 +1,2 @@
+import os
+DEFAULT_PROVIDER_PROFILE = os.getenv("DEFAULT_PROVIDER_PROFILE", "")
