@@ -1,0 +1,14 @@
+{
+  "allowed_use_cases": [
+    "research",
+    "qa",
+    "staging_validation",
+    "onboarding_simulation"
+  ],
+  "blocked_patterns": [
+    "captcha",
+    "mfa",
+    "exam"
+  ],
+  "on_block": "pause_and_escalate"
+}

@@ -1,0 +1,1 @@
+CODING_SESSION_CONTRACT={"session_states":["queued","starting","running","awaiting_approval","blocked","completed","failed","cancelled"],"required_fields":["session_id","repo","task_type","provider_profile","workspace_path","logs","command_history","artifact_paths","final_summary"]}

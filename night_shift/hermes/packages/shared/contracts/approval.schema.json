@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "required": [
+    "approval_type",
+    "subject_type",
+    "subject_id",
+    "status"
+  ]
+}

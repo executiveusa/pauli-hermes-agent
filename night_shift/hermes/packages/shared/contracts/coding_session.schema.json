@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "required": [
+    "session_id",
+    "task_type",
+    "provider_profile",
+    "status"
+  ]
+}

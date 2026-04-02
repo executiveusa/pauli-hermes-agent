@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "required": [
+    "subagent_id",
+    "repo_scope",
+    "tool_scope",
+    "time_budget_minutes"
+  ]
+}

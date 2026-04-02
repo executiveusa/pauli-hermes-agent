@@ -1,0 +1,14 @@
+{
+  "risk_levels": [
+    "reason_only",
+    "safe_read",
+    "safe_write",
+    "sensitive_write",
+    "irreversible_action"
+  ],
+  "rules": {
+    "sensitive_write": "requires_approval",
+    "irreversible_action": "always_requires_approval",
+    "production_deploy": "requires_approval"
+  }
+}
