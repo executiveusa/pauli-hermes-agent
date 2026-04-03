@@ -1,0 +1,431 @@
+# PersonaPlex - Real-Time Voice AI Conversation
+
+## Purpose
+PersonaPlex is a full-duplex speech-to-speech conversational AI system that enables natural, real-time voice interactions with customizable personas. Built on the Moshi architecture, it allows AI agents to conduct voice conversations with users through WhatsApp, Telegram, Discord, or web interfaces with minimal latency.
+
+## Capabilities
+- **Real-Time Full-Duplex Speech**: Simultaneous speaking and listening
+- **Persona Control**: Define character voice and personality via text prompts
+- **Audio-Based Voice Conditioning**: Clone voices from reference audio samples
+- **16 Pre-Packaged Voice Embeddings**: 
+  - NATF0-3 (Natural Female voices)
+  - NATM0-3 (Natural Male voices)
+  - VARF0-4 (Varied Female voices)
+  - VARM0-4 (Varied Male voices)
+- **Natural Conversational Speech**: Human-like prosody and interruption handling
+- **Low-Latency Interactions**: <300ms response time
+- **Multi-Role Support**: Customer service, assistant, casual conversation
+- **WebUI Interface**: Browser-based live interaction
+- **Offline Evaluation**: Batch testing and quality assessment
+- **CPU Offload Support**: Reduce VRAM requirements with CPU inference
+
+## Dependencies
+- **Python 3.10+**: Core runtime
+- **PyTorch 2.0+**: Deep learning framework
+- **librosa**: Audio processing
+- **soundfile**: Audio I/O
+- **webrtc-audio-processing**: Real-time audio filtering
+- **FastAPI**: Web server for API and WebUI
+- **WebSockets**: Real-time communication
+- **CUDA 11.8+** (optional): GPU acceleration
+- **FFmpeg**: Audio encoding/decoding
+- **Speech Recognition Models**: For backup STT if needed
+
+## Usage
+**For AI Agents:**
+```python
+from personaplex import PersonaPlexClient, Persona
+
+# Initialize with custom persona
+persona = Persona(
+    voice_id="NATF0",  # Natural Female voice
+    personality="Friendly and professional customer service agent",
+    speaking_style="warm, helpful, patient"
+)
+
+client = PersonaPlexClient(persona=persona)
+
+# Start voice conversation
+async def handle_conversation():
+    async with client.connect() as session:
+        # Stream audio input
+        async for user_audio in audio_stream:
+            response_audio = await session.send_audio(user_audio)
+            await play_audio(response_audio)
+```
+
+**Voice Cloning:**
+```python
+# Clone voice from reference audio
+client = PersonaPlexClient()
+custom_voice = client.clone_voice(
+    audio_path="voice_sample.wav",
+    description="Professional male voice, deep and confident"
+)
+
+persona = Persona(voice_id=custom_voice, personality="Business consultant")
+```
+
+**WebUI Mode:**
+```bash
+# Start web interface
+python -m personaplex.webui --host 0.0.0.0 --port 8086
+
+# Access at http://localhost:8086
+```
+
+## Integration
+- **WhatsApp (OpenClaw)**: Voice message handling via PersonaPlex
+- **Telegram**: Voice chat integration with bot commands
+- **Discord**: Voice channel bot with low-latency responses
+- **Agent Zero**: Triggered by Switchblade for voice interaction tasks
+- **Byte Rover Memory**: Store conversation transcripts in `/memory/voice-conversations/`
+- **MCP Protocol**: Exposed as voice interaction tool for agent coordination
+- **StoryToolkitAI**: Transcribe and index voice conversations for analysis
+
+## API/Interface
+**REST API Endpoints:**
+```
+POST /api/conversation/start         - Start new voice session
+POST /api/conversation/audio         - Send audio chunk
+GET  /api/conversation/status/:id    - Session status
+POST /api/conversation/end/:id       - End session
+POST /api/voice/clone                - Clone voice from audio
+GET  /api/voices                     - List available voices
+PUT  /api/persona                    - Update current persona
+```
+
+**WebSocket API:**
+```javascript
+// Connect to voice session
+const ws = new WebSocket('ws://localhost:8086/ws/conversation');
+
+// Send audio chunks
+ws.send(audioBuffer);
+
+// Receive response audio
+ws.onmessage = (event) => {
+  const responseAudio = event.data;
+  playAudio(responseAudio);
+};
+```
+
+**Python SDK:**
+```python
+from personaplex import PersonaPlex
+
+# Initialize
+plex = PersonaPlex()
+
+# Configure persona
+plex.set_persona(
+    voice="NATM2",
+    personality="Casual friend offering advice",
+    speaking_rate=1.0,
+    energy_level=0.7
+)
+
+# Start conversation
+session = plex.start_conversation()
+
+# Send audio and get response
+response = session.process_audio(audio_chunk)
+
+# End conversation
+transcript = session.end()
+```
+
+## Examples
+**Example 1: Customer Support Voice Bot**
+```python
+# Deploy voice bot for customer inquiries
+persona = Persona(
+    voice_id="NATF1",
+    personality="""Professional customer service agent. 
+    Always cheerful, helpful, and patient. 
+    Speaks clearly with emphasis on key information.""",
+    knowledge_base="customer_support_kb.json"
+)
+
+client = PersonaPlexClient(persona=persona)
+
+async def handle_support_call(call_id):
+    async with client.connect() as session:
+        # Greeting
+        greeting = await session.speak("Hello! How can I help you today?")
+        
+        # Listen and respond
+        async for user_query in session.listen():
+            # Agent processes query
+            response = await lookup_solution(user_query)
+            await session.speak(response)
+            
+        # Save transcript
+        transcript = session.get_transcript()
+        save_to_memory(f"/memory/support/{call_id}.json", transcript)
+```
+
+**Example 2: Voice Command Interface (WhatsApp)**
+```python
+# Voice commands in OpenClaw/WhatsApp
+from openclaw import WhatsAppBot
+from personaplex import PersonaPlex
+
+bot = WhatsAppBot()
+plex = PersonaPlex(voice="NATF0")
+
+@bot.on_voice_message
+async def handle_voice(message):
+    # Transcribe user voice
+    audio = message.get_audio()
+    command = await plex.transcribe(audio)
+    
+    # Process command
+    result = await execute_command(command)
+    
+    # Respond with voice
+    response_audio = await plex.speak(result)
+    await message.reply_voice(response_audio)
+```
+
+**Example 3: Interview Recording & Analysis**
+```python
+# Conduct and analyze voice interviews
+persona = Persona(
+    voice_id="NATM0",
+    personality="Thoughtful interviewer asking insightful questions"
+)
+
+client = PersonaPlexClient(persona=persona)
+
+questions = [
+    "Can you tell me about your background?",
+    "What motivates you in your work?",
+    "What are your long-term goals?"
+]
+
+async def conduct_interview():
+    async with client.connect() as session:
+        responses = []
+        for question in questions:
+            await session.speak(question)
+            answer = await session.listen_until_pause(max_duration=60)
+            responses.append({
+                "question": question,
+                "answer": answer,
+                "timestamp": time.time()
+            })
+        
+        # Save and analyze
+        transcript = {
+            "interview_date": datetime.now(),
+            "qa_pairs": responses
+        }
+        
+        # Index with StoryToolkitAI
+        toolkit = StoryToolkit()
+        toolkit.transcripts.save(transcript)
+```
+
+**Example 4: Multilingual Voice Translation**
+```python
+# Real-time voice translation
+translator_persona = Persona(
+    voice_id="VARF2",
+    personality="Professional interpreter",
+    speaking_rate=0.9
+)
+
+client = PersonaPlexClient(persona=translator_persona)
+
+async def translate_call(source_lang="es", target_lang="en"):
+    async with client.connect() as session:
+        async for audio_chunk in session.listen():
+            # Transcribe source language
+            text = await session.transcribe(audio_chunk, language=source_lang)
+            
+            # Translate
+            translation = await translate_text(text, target_lang)
+            
+            # Speak translation
+            response = await session.speak(translation, language=target_lang)
+```
+
+**Common Use Cases:**
+- Customer support voice bots (24/7 availability)
+- Voice command interface for messaging apps
+- Interview conducting and analysis
+- Language learning conversation practice
+- Accessibility (voice interface for visually impaired users)
+- Podcast/audio content generation
+- Voice-based form filling and data entry
+- Virtual receptionist for business calls
+- Mental health check-in conversations
+- Voice journaling and dictation
+
+## Configuration
+**Voice Settings:**
+```yaml
+voices:
+  NATF0: {gender: female, age: young, tone: friendly}
+  NATF1: {gender: female, age: mid, tone: professional}
+  NATM0: {gender: male, age: young, tone: casual}
+  NATM2: {gender: male, age: mid, tone: authoritative}
+  # ... 12 more pre-packaged voices
+
+custom_voices:
+  clone_duration: 10  # seconds of reference audio
+  quality: high       # low, medium, high
+```
+
+**Conversation Settings:**
+```yaml
+conversation:
+  latency_target: 300ms
+  max_duration: 3600  # 1 hour
+  interruption_handling: true
+  background_noise_suppression: true
+  echo_cancellation: true
+  
+audio:
+  sample_rate: 16000
+  channels: 1
+  format: pcm
+  frame_size: 160  # 10ms frames
+```
+
+**Persona Configuration:**
+```yaml
+personas:
+  customer_support:
+    voice: NATF1
+    personality: "Friendly, professional, helpful"
+    speaking_rate: 1.0
+    pitch_shift: 0
+    energy: 0.7
+    
+  casual_friend:
+    voice: NATM0
+    personality: "Relaxed, supportive, humorous"
+    speaking_rate: 1.1
+    energy: 0.8
+```
+
+## Performance Notes
+- **Latency**: <300ms end-to-end (audio in → audio out)
+- **Real-Time Factor**: 0.3x (faster than real-time)
+- **GPU Memory**: 4-8GB VRAM for standard operation
+- **CPU Mode**: 2-4x slower but usable with offload
+- **Concurrent Sessions**: 10-20 on single GPU (depends on VRAM)
+- **Voice Cloning**: ~1 minute to process 10 seconds of reference audio
+
+## Docker Integration
+```dockerfile
+FROM pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    ffmpeg libsndfile1 portaudio19-dev
+
+# Install PersonaPlex
+RUN pip install personaplex librosa soundfile fastapi websockets
+
+WORKDIR /app
+COPY server.py .
+
+EXPOSE 8086
+
+CMD ["python", "server.py", "--host", "0.0.0.0", "--port", "8086"]
+```
+
+**Docker Compose Service:**
+```yaml
+personaplex:
+  image: personaplex:latest
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+  ports:
+    - "8086:8086"
+  volumes:
+    - ./voices:/app/voices
+    - ./conversations:/app/conversations
+  environment:
+    - DEFAULT_VOICE=NATF0
+    - MAX_SESSION_DURATION=3600
+```
+
+## File Locations
+- **Project Root**: `personaplex-main/`
+- **Models**: `models/` (voice models and embeddings)
+- **Voice Bank**: `voices/` (16 pre-packaged + custom clones)
+- **Conversations**: `conversations/` (session transcripts)
+- **Config**: `config/personaplex.yaml`
+- **Logs**: `logs/personaplex.log`
+- **WebUI**: `webui/` (browser interface files)
+
+## Agent Interaction Patterns
+```
+User sends voice message to WhatsApp bot
+↓
+OpenClaw receives voice message
+↓
+PersonaPlex transcribes audio to text
+↓
+Agent Zero routes command to appropriate agent
+↓
+Agent processes request and generates text response
+↓
+PersonaPlex converts text to speech with persona voice
+↓
+OpenClaw sends voice response back to user
+```
+
+## Advanced Features
+**Emotion Detection:**
+```python
+# Detect emotional state from voice
+client = PersonaPlexClient()
+emotion = await client.detect_emotion(audio_chunk)
+# Returns: {emotion: "happy", confidence: 0.87}
+
+# Respond with matching emotion
+response = await client.speak(
+    "I'm glad to hear that!",
+    emotion="happy"
+)
+```
+
+**Background Noise Filtering:**
+```python
+# Enable aggressive noise suppression
+client = PersonaPlexClient(
+    noise_suppression="aggressive",
+    echo_cancellation=True
+)
+```
+
+**Custom Voice Embeddings:**
+```python
+# Train custom voice from multiple samples
+voice_samples = ["sample1.wav", "sample2.wav", "sample3.wav"]
+custom_voice = client.train_voice(
+    samples=voice_samples,
+    voice_name="CEO",
+    description="Executive male voice, authoritative"
+)
+```
+
+## Security & Privacy
+- **Conversation Encryption**: End-to-end encryption for sensitive calls
+- **Transcript Storage**: Optional automatic deletion after N days
+- **Voice Cloning Authorization**: Require consent for voice samples
+- **Rate Limiting**: Prevent abuse with request limits
+- **Audio Logging**: Configurable recording retention policies
+
+---
+*Version: 1.0.0 | Component: Voice AI | Status: Production Ready*

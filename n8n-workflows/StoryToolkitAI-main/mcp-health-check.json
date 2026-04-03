@@ -1,0 +1,114 @@
+{
+  "name": "MCP Health Check Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "minutes", "minutesInterval": 15}]
+        }
+      },
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.BFF_API_URL}}/api/mcps/active",
+        "options": {}
+      },
+      "name": "Get Active MCPs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const servers = $input.first().json.servers || [];\nreturn servers.map(s => ({id: s.id, name: s.name, type: s.type, url: s.url}));"
+      },
+      "name": "Split Servers",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.url}}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "name": "Ping HTTP MCP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.type}}",
+              "value2": "http"
+            }
+          ]
+        }
+      },
+      "name": "Is HTTP?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const now = new Date().toISOString();\nconst isHealthy = $input.first().json.statusCode === 200;\n\nreturn {\n  server_id: $input.first().json.id,\n  health_status: isHealthy ? 'healthy' : 'unhealthy',\n  last_health_check: now\n};"
+      },
+      "name": "Build Update",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.BFF_API_URL}}/api/mcps/={{$json.server_id}}",
+        "method": "PATCH",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={{JSON.stringify($json)}}"
+      },
+      "name": "Update MCP Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [[{"node": "Get Active MCPs", "type": "main", "index": 0}]]
+    },
+    "Get Active MCPs": {
+      "main": [[{"node": "Split Servers", "type": "main", "index": 0}]]
+    },
+    "Split Servers": {
+      "main": [[{"node": "Is HTTP?", "type": "main", "index": 0}]]
+    },
+    "Is HTTP?": {
+      "main": [
+        [{"node": "Ping HTTP MCP", "type": "main", "index": 0}],
+        []
+      ]
+    },
+    "Ping HTTP MCP": {
+      "main": [[{"node": "Build Update", "type": "main", "index": 0}]]
+    },
+    "Build Update": {
+      "main": [[{"node": "Update MCP Status", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-01-06T00:00:00.000Z",
+  "versionId": "1"
+}

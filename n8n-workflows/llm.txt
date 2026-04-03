@@ -1,0 +1,494 @@
+# n8n Workflows - Visual Automation & Integration Platform
+
+## Purpose
+n8n is a visual workflow automation platform that enables AI agents to create, execute, and manage complex automation workflows through a node-based interface. It connects services, APIs, and databases with 400+ integrations, providing Agent Zero with powerful automation capabilities for data processing, API orchestration, and business logic implementation.
+
+## Capabilities
+- **400+ Integrations**: Connect to APIs, databases, cloud services, messaging platforms
+- **Visual Workflow Builder**: Drag-and-drop node-based interface
+- **Code Execution**: JavaScript/Python code nodes for custom logic
+- **Webhook Triggers**: HTTP endpoints for external event triggers
+- **Scheduled Executions**: Cron-based workflow scheduling
+- **Error Handling**: Try-catch blocks with retry logic
+- **Data Transformation**: Built-in data mapping and filtering
+- **Conditional Logic**: If/else routing based on data conditions
+- **Loop Iterations**: Process arrays and batch operations
+- **HTTP Requests**: Make API calls with authentication
+- **Database Operations**: Query and update PostgreSQL, MySQL, MongoDB
+- **File Processing**: Upload, download, transform files
+- **Email & Notifications**: Send emails, Slack messages, SMS
+- **Self-Hosted**: Full control over workflows and data
+
+## Dependencies
+- **Node.js 18+**: Runtime environment
+- **PostgreSQL** or **SQLite**: Workflow storage
+- **Docker** (optional): Containerized deployment
+- **Redis** (optional): Queue management for scaling
+- **n8n CLI**: Command-line interface for management
+- **Webhooks**: Public endpoint for external triggers
+
+## Usage
+**For System Administrators:**
+```bash
+# Start n8n
+npx n8n
+
+# Self-hosted with Docker
+docker run -it --rm \
+  --name n8n \
+  -p 5678:5678 \
+  -v ~/.n8n:/home/node/.n8n \
+  n8nio/n8n
+
+# With PostgreSQL
+docker run -it --rm \
+  --name n8n \
+  -p 5678:5678 \
+  -e DB_TYPE=postgresdb \
+  -e DB_POSTGRESDB_HOST=postgres \
+  -e DB_POSTGRESDB_DATABASE=n8n \
+  -e DB_POSTGRESDB_USER=n8n \
+  -e DB_POSTGRESDB_PASSWORD=password \
+  n8nio/n8n
+```
+
+**For AI Agents:**
+```typescript
+import { N8nClient } from 'n8n-client';
+
+// Connect to n8n instance
+const n8n = new N8nClient({
+  baseUrl: 'http://localhost:5678',
+  apiKey: process.env.N8N_API_KEY
+});
+
+// Create workflow programmatically
+const workflow = await n8n.workflows.create({
+  name: 'Process Customer Data',
+  nodes: [
+    {
+      type: 'n8n-nodes-base.webhook',
+      name: 'Webhook',
+      parameters: {
+        path: 'customer-data'
+      }
+    },
+    {
+      type: 'n8n-nodes-base.postgres',
+      name: 'Save to Database',
+      parameters: {
+        operation: 'insert',
+        table: 'customers'
+      }
+    },
+    {
+      type: 'n8n-nodes-base.slack',
+      name: 'Notify Team',
+      parameters: {
+        channel: '#alerts',
+        text: 'New customer: {{ $json.name }}'
+      }
+    }
+  ]
+});
+
+// Execute workflow
+const result = await n8n.workflows.execute({
+  workflowId: workflow.id,
+  data: {
+    name: 'John Doe',
+    email: 'john@example.com'
+  }
+});
+
+// Trigger webhook
+const webhookResult = await fetch('http://localhost:5678/webhook/customer-data', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ name: 'Jane Smith', email: 'jane@example.com' })
+});
+```
+
+## Integration
+- **Agent Zero**: Automate agent task pipelines
+- **OpenClaw**: Process incoming messages from multiple channels
+- **Supermemory**: Auto-save important content to memory
+- **StoryToolkitAI**: Trigger video processing workflows
+- **LTX-Video**: Queue video generation jobs
+- **PostgreSQL**: Data ETL and transformation
+- **External APIs**: Connect to third-party services
+- **Webhook Receivers**: Accept HTTP events from external systems
+
+## API/Interface
+**REST API:**
+```
+GET    /api/v1/workflows               - List workflows
+POST   /api/v1/workflows               - Create workflow
+GET    /api/v1/workflows/:id           - Get workflow
+PUT    /api/v1/workflows/:id           - Update workflow
+DELETE /api/v1/workflows/:id           - Delete workflow
+POST   /api/v1/workflows/:id/execute   - Execute workflow
+GET    /api/v1/executions              - List executions
+GET    /api/v1/executions/:id          - Get execution result
+```
+
+**Webhook Endpoints:**
+```
+POST /webhook/:path                    - Trigger workflow via webhook
+POST /webhook-test/:path               - Test webhook
+```
+
+**Node Types (Common):**
+```
+Triggers:
+- Webhook (HTTP endpoint)
+- Schedule (Cron)
+- Manual (Button)
+- Email (IMAP)
+- Webhook Call (Receive)
+
+Actions:
+- HTTP Request (API calls)
+- Postgres (Database)
+- Code (JavaScript/Python)
+- IF (Conditional)
+- Set (Data transformation)
+- Switch (Multi-condition routing)
+- Loop Over Items (Array iteration)
+
+Notifications:
+- Slack
+- Email Send
+- Discord
+- Telegram
+- SMS (Twilio)
+```
+
+## Examples
+**Example 1: Customer Onboarding Pipeline**
+```
+Webhook Trigger (New Signup)
+↓
+Postgres (Save user)
+↓
+HTTP Request (Create Stripe customer)
+↓
+Email (Send welcome email)
+↓
+Slack (Notify sales team)
+↓
+Supermemory (Save customer profile)
+```
+
+**Workflow JSON:**
+```json
+{
+  "name": "Customer Onboarding",
+  "nodes": [
+    {
+      "type": "n8n-nodes-base.webhook",
+      "name": "New Signup",
+      "parameters": {
+        "path": "signup"
+      }
+    },
+    {
+      "type": "n8n-nodes-base.postgres",
+      "name": "Save User",
+      "parameters": {
+        "operation": "insert",
+        "table": "users",
+        "columns": "email,name,created_at"
+      }
+    },
+    {
+      "type": "n8n-nodes-base.httpRequest",
+      "name": "Create Stripe Customer",
+      "parameters": {
+        "url": "https://api.stripe.com/v1/customers",
+        "method": "POST",
+        "authentication": "headerAuth",
+        "headerAuth": {
+          "name": "Authorization",
+          "value": "Bearer {{ $credentials.stripeApiKey }}"
+        }
+      }
+    }
+  ]
+}
+```
+
+**Example 2: Video Processing Automation**
+```
+Schedule Trigger (Daily 2 AM)
+↓
+Postgres (Get pending videos)
+↓
+Loop Over Videos
+  ↓
+  StoryToolkit HTTP (Transcribe)
+  ↓
+  LTX-Video HTTP (Generate thumbnail)
+  ↓
+  Postgres (Update status)
+  ↓
+  Slack (Notify completion)
+```
+
+**Example 3: Multi-Channel Message Router**
+```
+Webhook (Incoming message)
+↓
+Switch (Route by channel)
+  ├─ WhatsApp → OpenClaw API
+  ├─ Telegram → OpenClaw API
+  ├─ Discord → OpenClaw API
+  └─ Email → Email Send Node
+↓
+Supermemory (Save conversation)
+```
+
+**Example 4: Data ETL Pipeline**
+```
+Schedule (Hourly)
+↓
+HTTP Request (Fetch data from API)
+↓
+Code (Transform data structure)
+↓
+Loop Over Items
+  ↓
+  Postgres (Upsert records)
+  ↓
+  IF (Check threshold)
+    ↓
+    Slack (Send alert if threshold exceeded)
+```
+
+**Common Use Cases:**
+- Customer onboarding and CRM workflows
+- Video processing and content pipelines
+- Multi-channel message routing and notifications
+- Data ETL and transformation
+- API integration and orchestration
+- Scheduled reports and analytics
+- Form processing and data collection
+- File upload and processing workflows
+- Social media automation
+- Monitoring and alerting systems
+
+## Configuration
+**Environment Variables:**
+```bash
+# Basic config
+N8N_BASIC_AUTH_ACTIVE=true
+N8N_BASIC_AUTH_USER=admin
+N8N_BASIC_AUTH_PASSWORD=secure_password
+
+# Database
+DB_TYPE=postgresdb
+DB_POSTGRESDB_HOST=postgres
+DB_POSTGRESDB_DATABASE=n8n
+DB_POSTGRESDB_USER=n8n
+DB_POSTGRESDB_PASSWORD=password
+
+# Webhooks
+WEBHOOK_URL=https://n8n.example.com/
+
+# Execution
+EXECUTIONS_MODE=queue
+EXECUTIONS_TIMEOUT=300
+EXECUTIONS_TIMEOUT_MAX=3600
+
+# Queue (Redis)
+QUEUE_BULL_REDIS_HOST=redis
+QUEUE_BULL_REDIS_PORT=6379
+```
+
+**Workflow Configuration:**
+```yaml
+workflow:
+  settings:
+    executionOrder: "v1"  # Sequential execution
+    saveDataErrorExecution: "all"
+    saveDataSuccessExecution: "all"
+    saveManualExecutions: true
+    callerPolicy: "workflowsFromSameOwner"
+    
+  errorWorkflow:
+    useErrorWorkflow: true
+    errorWorkflowId: "error-handler-workflow"
+```
+
+## Performance Notes
+- **Execution Speed**: 100-1000 operations/second (depends on nodes)
+- **Webhook Latency**: <50ms response time
+- **Queue Processing**: 10,000+ jobs/hour with Redis queue
+- **Database**: Supports millions of executions with PostgreSQL
+- **Concurrent Executions**: 10+ workflows simultaneously (default)
+- **Memory Usage**: ~200MB base + 50-100MB per active workflow
+
+## Docker Integration
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=n8n
+      - DB_POSTGRESDB_PASSWORD=${N8N_DB_PASSWORD}
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
+      - WEBHOOK_URL=https://n8n.example.com/
+      - GENERIC_TIMEZONE=UTC
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: n8n
+      POSTGRES_USER: n8n
+      POSTGRES_PASSWORD: ${N8N_DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  n8n_data:
+  postgres_data:
+```
+
+## File Locations
+- **Workflows**: Stored in PostgreSQL (or `~/.n8n/workflows/`)
+- **Credentials**: `~/.n8n/credentials/` (encrypted)
+- **Config**: `~/.n8n/config/`
+- **Logs**: `~/.n8n/logs/`
+- **Custom Nodes**: `~/.n8n/custom/`
+- **Docker Volume**: `n8n_data:/home/node/.n8n`
+
+## Agent Interaction Patterns
+```
+Agent Zero needs to automate multi-step workflow
+↓
+Switchblade creates n8n workflow via API
+↓
+Workflow nodes configured:
+  1. Webhook trigger
+  2. OpenClaw message send
+  3. Wait for response
+  4. Process response
+  5. Update database
+↓
+Workflow executed on webhook trigger
+↓
+Results stored in PostgreSQL
+↓
+Agent reads results from database
+```
+
+## Advanced Features
+**Custom Nodes (JavaScript):**
+```javascript
+// ~/.n8n/custom/nodes/CustomNode.node.js
+module.exports = {
+  description: {
+    displayName: 'Custom Node',
+    name: 'customNode',
+    group: ['transform'],
+    version: 1,
+    description: 'Custom processing node',
+    defaults: {
+      name: 'Custom Node',
+    },
+    inputs: ['main'],
+    outputs: ['main'],
+    properties: [
+      {
+        displayName: 'Operation',
+        name: 'operation',
+        type: 'options',
+        options: [
+          { name: 'Process', value: 'process' },
+          { name: 'Transform', value: 'transform' }
+        ],
+        default: 'process'
+      }
+    ]
+  },
+  
+  async execute() {
+    const items = this.getInputData();
+    const operation = this.getNodeParameter('operation', 0);
+    
+    // Custom logic
+    const results = items.map(item => ({
+      json: processItem(item.json, operation)
+    }));
+    
+    return [results];
+  }
+};
+```
+
+**Error Handling Workflow:**
+```
+[Any Workflow]
+↓
+(On Error) → Error Trigger Workflow
+              ↓
+              Log to Database
+              ↓
+              Send Alert to Slack
+              ↓
+              Create GitHub Issue
+              ↓
+              Retry Original Workflow (if retryable)
+```
+
+**Batch Processing:**
+```
+Schedule Trigger (Every 5 min)
+↓
+Postgres (Get batch of 100 records)
+↓
+Split In Batches (10 records each)
+  ↓
+  Loop Over Batch
+    ↓
+    HTTP Request (Process item)
+    ↓
+    Set (Update status)
+  ↓
+  Postgres (Bulk update)
+↓
+IF (More batches)
+  → Loop back to Split In Batches
+```
+
+## Security & Best Practices
+- **Authentication**: Enable basic auth or OAuth
+- **Webhook Security**: Use webhook authentication tokens
+- **Credentials Encryption**: All credentials encrypted at rest
+- **Database Security**: Use strong passwords, restrict access
+- **HTTPS Only**: Always use TLS for production webhooks
+- **Rate Limiting**: Implement rate limits on webhooks
+- **Input Validation**: Validate webhook payloads
+- **Error Handling**: Always configure error workflows
+- **Logging**: Enable execution logging for debugging
+- **Backups**: Regular database backups of workflows
+
+---
+*Version: 1.0.0 | Component: Workflow Automation | Status: Production Ready*

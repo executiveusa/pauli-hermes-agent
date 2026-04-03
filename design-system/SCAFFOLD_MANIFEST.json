@@ -1,0 +1,160 @@
+{
+  "scaffold_name": "DESIGN_SYSTEM_PHASE_1_SCAFFOLD",
+  "version": "1.0.0",
+  "phase": "Phase 1 - PRD + Architecture",
+  "created_by": "Switchblade",
+  "timestamp": "2026-01-15T00:00:00Z",
+  "task_id": "DESIGN-PHASE-1-BOOTSTRAP",
+  "status": "SCAFFOLD_ONLY",
+  "note": "Filesystem structure only. No components implemented. Ready for Cynthia handoff.",
+
+  "folder_structure": {
+    "design-system": {
+      "description": "Root design system folder",
+      "children": {
+        "foundations": {
+          "description": "Design foundation files (colors, typography, spacing, shadows, motion)",
+          "placeholder_files": [
+            "colors.md",
+            "typography.md",
+            "spacing.md",
+            "shadows.md",
+            "motion.md",
+            "border-radius.md"
+          ]
+        },
+        "components": {
+          "description": "Component folder structure (will be populated by Cynthia)",
+          "subfolders": [
+            "buttons",
+            "inputs",
+            "cards",
+            "dialogs",
+            "navigation",
+            "forms",
+            "tables",
+            "alerts",
+            "badges",
+            "tags"
+          ],
+          "placeholder_files": [
+            "README.md (Index of all components)"
+          ]
+        },
+        "patterns": {
+          "description": "UI patterns and compound components",
+          "subfolders": [
+            "forms",
+            "dashboards",
+            "sidebars",
+            "headers",
+            "footers",
+            "modals",
+            "notifications",
+            "loading-states"
+          ],
+          "placeholder_files": [
+            "README.md (Index of all patterns)"
+          ]
+        },
+        "layouts": {
+          "description": "Page layout templates",
+          "subfolders": [
+            "single-column",
+            "two-column",
+            "three-column",
+            "grid-based",
+            "responsive"
+          ],
+          "placeholder_files": [
+            "README.md (Layout guidelines and breakpoints)"
+          ]
+        },
+        "tokens": {
+          "description": "Design tokens (exportable formats)",
+          "subfolders": [
+            "css",
+            "json",
+            "figma"
+          ],
+          "placeholder_files": [
+            "colors.json",
+            "typography.json",
+            "spacing.json",
+            "tokens-index.md"
+          ]
+        },
+        "audit": {
+          "description": "Design audit results and scoring",
+          "placeholder_files": [
+            "audit-results.md",
+            "scoring-matrix.md",
+            "accessibility-report.md",
+            "performance-metrics.md"
+          ]
+        }
+      }
+    }
+  },
+
+  "migration_from_existing": {
+    "source_files": [
+      {
+        "from": "DESIGN_SYSTEM.md (root)",
+        "to": "design-system/foundations/DESIGN_SYSTEM_REFERENCE.md",
+        "status": "reference_only",
+        "note": "Link, do not duplicate"
+      },
+      {
+        "from": "COMPONENT_LIBRARY.md (root)",
+        "to": "design-system/components/COMPONENT_LIBRARY_REFERENCE.md",
+        "status": "reference_only",
+        "note": "Link, do not duplicate"
+      },
+      {
+        "from": "TOKEN_REFERENCE.md (root)",
+        "to": "design-system/tokens/TOKEN_REFERENCE.md",
+        "status": "reference_only",
+        "note": "Link, do not duplicate"
+      },
+      {
+        "from": "UIUX-REPORT.md (root)",
+        "to": "design-system/audit/UIUX_REPORT_REFERENCE.md",
+        "status": "reference_only",
+        "note": "Link, do not duplicate"
+      },
+      {
+        "from": "design-system-specification.json (root)",
+        "to": "design-system/DESIGN_SYSTEM_SPECIFICATION.md",
+        "status": "moved",
+        "note": "Parse and reference"
+      }
+    ]
+  },
+
+  "conflict_matrix": {
+    "conflicts_identified": 0,
+    "resolved_conflicts": 0,
+    "notes": "No naming conflicts detected. Scaffold avoids overwriting existing files."
+  },
+
+  "handoff_requirements": {
+    "phase": "Phase 1 - PRD + Architecture",
+    "next_agent": "Cynthia (Designer)",
+    "deliverables": [
+      "Folder structure created ✓",
+      "Reference indices created ✓",
+      "Token export templates ready ✓",
+      "Audit structure ready ✓"
+    ],
+    "cynthia_responsibilities": [
+      "Populate foundations/ with color, typography, spacing systems",
+      "Create component subfolders and README indices",
+      "Generate design token exports (CSS, JSON, Figma)",
+      "Run audit and populate audit/ folder",
+      "Create component library with shadcn/ui + custom patterns"
+    ]
+  },
+
+  "signature": "— Switchblade"
+}

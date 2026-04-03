@@ -1,0 +1,463 @@
+# Supermemory - AI Second Brain & Knowledge Management
+
+## Purpose
+Supermemory is a persistent knowledge management system that functions as an AI second brain, enabling agents to save, search, and retrieve information from URLs, PDFs, plain text, and connected services (Notion, Google Drive, OneDrive). It provides MCP integration for seamless memory access across Claude, Cursor, and other AI tools.
+
+## Capabilities
+- **Universal Memory Capture**: Save content from URLs, PDFs, text files, screenshots
+- **Semantic Search**: Natural language queries across all stored memories
+- **MCP Integration**: Direct access from Claude Desktop, Cursor, Windsurf, and MCP-compatible tools
+- **Browser Extension**: One-click save from ChatGPT, Claude web, Twitter/X
+- **Raycast Extension**: Quick capture and search from macOS
+- **Service Connectors**: Sync with Notion, Google Drive, OneDrive, Dropbox
+- **Chat Interface**: Conversational queries against memory database
+- **Tagging & Organization**: Automatic and manual categorization
+- **Embeddings-Based Retrieval**: Context-aware semantic matching
+- **Self-Hosting**: Full control over data and privacy
+- **Export/Import**: Portable memory archives
+- **API Access**: Programmatic memory management
+
+## Dependencies
+- **Node.js 18+**: Runtime environment
+- **PostgreSQL 14+**: Primary database with pgvector extension
+- **Redis** (optional): Caching layer for faster searches
+- **OpenAI API** or **Local Embeddings**: Text embedding generation
+- **pgvector Extension**: Vector similarity search in PostgreSQL
+- **Docker** (recommended): Containerized deployment
+- **MCP Server**: For Claude/Cursor integration
+
+## Usage
+**For AI Agents:**
+```typescript
+import { Supermemory } from 'supermemory-sdk';
+
+// Initialize client
+const memory = new Supermemory({
+  apiKey: process.env.SUPERMEMORY_API_KEY,
+  endpoint: 'http://localhost:8087'
+});
+
+// Save memory
+await memory.save({
+  content: "Meeting notes: Discussed Q1 roadmap priorities...",
+  source: "meeting-2026-02-02",
+  tags: ["meetings", "roadmap", "q1-2026"],
+  metadata: {
+    date: "2026-02-02",
+    participants: ["Alice", "Bob"]
+  }
+});
+
+// Search memories
+const results = await memory.search(
+  "What were the Q1 priorities?",
+  { limit: 5, tags: ["roadmap"] }
+);
+
+// Get similar memories
+const related = await memory.findSimilar(memoryId, { limit: 10 });
+```
+
+**CLI Commands:**
+```bash
+# Save URL
+supermemory save https://example.com/article --tags "research,ai"
+
+# Save file
+supermemory save document.pdf --tags "contracts,legal"
+
+# Search
+supermemory search "customer feedback about pricing"
+
+# List recent
+supermemory list --limit 20 --sort recent
+
+# Export archive
+supermemory export --output backup.json --since "2026-01-01"
+```
+
+## Integration
+- **MCP Protocol**: Exposed as `supermemory` MCP server
+- **Claude Desktop**: Add to `claude_desktop_config.json`
+- **Cursor/Windsurf**: Enable MCP extension for memory access
+- **Browser Extensions**: Chrome/Firefox one-click save
+- **Raycast**: Quick capture with keyboard shortcut
+- **Zapier/Make**: Automation workflows
+- **Agent Zero**: Byte Rover integration for cross-agent memory
+- **OpenClaw**: Store conversation context and user preferences
+- **StoryToolkitAI**: Index video transcripts for future reference
+
+## API/Interface
+**REST API Endpoints:**
+```
+POST /api/memories                    - Save new memory
+GET  /api/memories                    - List memories
+GET  /api/memories/:id                - Get specific memory
+PUT  /api/memories/:id                - Update memory
+DELETE /api/memories/:id              - Delete memory
+POST /api/search                      - Semantic search
+POST /api/similar/:id                 - Find similar memories
+POST /api/chat                        - Chat with memories
+GET  /api/tags                        - List all tags
+POST /api/import                      - Import memories
+GET  /api/export                      - Export memories
+```
+
+**MCP Server Interface:**
+```typescript
+// MCP tools exposed to Claude/Cursor
+{
+  "save_memory": {
+    "description": "Save information to memory",
+    "parameters": {
+      "content": "string",
+      "tags": "string[]",
+      "source": "string"
+    }
+  },
+  "search_memory": {
+    "description": "Search memories with natural language",
+    "parameters": {
+      "query": "string",
+      "limit": "number"
+    }
+  },
+  "list_memories": {
+    "description": "List recent memories",
+    "parameters": {
+      "limit": "number",
+      "tags": "string[]"
+    }
+  }
+}
+```
+
+**Python SDK:**
+```python
+from supermemory import SupermemoryClient
+
+# Initialize
+client = SupermemoryClient(api_key="sm_xxx")
+
+# Save
+memory_id = client.save(
+    content="Important project context...",
+    tags=["project-alpha", "architecture"],
+    source="design-doc.md"
+)
+
+# Search
+results = client.search("What did we decide about the database?")
+for result in results:
+    print(f"{result.score:.2f} - {result.content[:100]}")
+
+# Chat interface
+response = client.chat("Summarize all decisions from last week")
+```
+
+## Examples
+**Example 1: Meeting Notes Repository**
+```typescript
+// ClaudeCode saves project discussions
+const memory = new Supermemory();
+
+await memory.save({
+  content: `
+    MEETING: Frontend Architecture Review
+    DATE: 2026-02-02
+    
+    Decisions:
+    - Migrating to Next.js 15 App Router
+    - Using Tailwind CSS + shadcn/ui
+    - PostgreSQL with Drizzle ORM
+    - Deploy on Vercel
+    
+    Action Items:
+    - @Alice: Set up new repo structure
+    - @Bob: Create design system tokens
+  `,
+  tags: ["meetings", "frontend", "architecture"],
+  metadata: {
+    meeting_type: "architecture_review",
+    attendees: ["Alice", "Bob", "Carol"]
+  }
+});
+
+// Later search
+const decisions = await memory.search("What database are we using?");
+// Returns: "PostgreSQL with Drizzle ORM"
+```
+
+**Example 2: Research Knowledge Base**
+```javascript
+// Save research articles with automatic summarization
+const articles = [
+  "https://arxiv.org/abs/2024.12345",
+  "https://www.nature.com/articles/nature12345",
+  "https://blog.anthropic.com/new-research"
+];
+
+for (const url of articles) {
+  const content = await fetchAndSummarize(url);
+  await memory.save({
+    content: content,
+    source: url,
+    tags: ["research", "ai", "transformers"]
+  });
+}
+
+// Query research
+const insights = await memory.search(
+  "What are recent advances in transformer efficiency?",
+  { tags: ["research", "transformers"] }
+);
+```
+
+**Example 3: Customer Context Persistence**
+```typescript
+// OpenClaw stores user preferences and history
+async function saveCustomerInteraction(userId: string, message: string) {
+  await memory.save({
+    content: `User ${userId}: ${message}`,
+    tags: ["customer", userId, "chat-history"],
+    metadata: {
+      timestamp: new Date(),
+      channel: "whatsapp",
+      sentiment: await analyzeSentiment(message)
+    }
+  });
+}
+
+// Retrieve customer context before responding
+async function getCustomerContext(userId: string) {
+  const history = await memory.search(
+    `conversations with ${userId}`,
+    { tags: [userId], limit: 10 }
+  );
+  return history.map(m => m.content).join('\n');
+}
+```
+
+**Example 4: Code Snippet Library**
+```typescript
+// Developers save reusable patterns
+await memory.save({
+  content: `
+    // React Server Action Pattern
+    "use server";
+    
+    export async function createItem(formData: FormData) {
+      const data = Object.fromEntries(formData);
+      const result = await db.insert(items).values(data);
+      revalidatePath('/items');
+      return result;
+    }
+  `,
+  tags: ["code", "react", "server-actions", "patterns"],
+  metadata: {
+    language: "typescript",
+    framework: "next.js"
+  }
+});
+
+// Query code examples
+const examples = await memory.search(
+  "How to create a server action in Next.js?",
+  { tags: ["code", "server-actions"] }
+);
+```
+
+**Common Use Cases:**
+- Project documentation and decision logs
+- Research paper library with semantic search
+- Customer interaction history and preferences
+- Code snippet and pattern library
+- Meeting notes and action item tracking
+- Content library (articles, videos, tweets)
+- Personal knowledge management (PKM)
+- Team knowledge base and onboarding materials
+- API documentation and examples
+- Compliance and audit trail storage
+
+## Configuration
+**Memory Settings:**
+```yaml
+storage:
+  database_url: "postgresql://localhost/supermemory"
+  vector_dimension: 1536  # OpenAI ada-002
+  
+embeddings:
+  provider: "openai"  # or "local", "cohere"
+  model: "text-embedding-3-large"
+  batch_size: 100
+
+search:
+  default_limit: 10
+  similarity_threshold: 0.7
+  rerank: true
+  
+import:
+  allowed_sources: ["url", "pdf", "txt", "md", "docx"]
+  max_file_size: "50MB"
+  auto_summarize: true
+```
+
+**MCP Server Configuration:**
+```json
+{
+  "mcpServers": {
+    "supermemory": {
+      "command": "npx",
+      "args": ["-y", "@supermemory/mcp-server"],
+      "env": {
+        "SUPERMEMORY_API_KEY": "<api_key>",
+        "SUPERMEMORY_URL": "http://localhost:8087"
+      }
+    }
+  }
+}
+```
+
+**Service Connectors:**
+```yaml
+integrations:
+  notion:
+    enabled: true
+    sync_interval: "1h"
+    workspace_id: "workspace_xxx"
+    
+  google_drive:
+    enabled: true
+    sync_folders: ["/Documents", "/Work"]
+    
+  onedrive:
+    enabled: false
+```
+
+## Performance Notes
+- **Search Latency**: <100ms for databases under 100K memories
+- **Indexing Speed**: ~1000 memories/minute
+- **Storage Ratio**: ~2KB per memory (text) + 6KB (embeddings)
+- **Concurrent Users**: 100+ with proper database tuning
+- **Memory Retention**: Unlimited (user-defined expiration optional)
+
+## Docker Integration
+```dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm ci --production
+
+# Copy source
+COPY . .
+
+# Build
+RUN npm run build
+
+EXPOSE 8087
+
+CMD ["npm", "start"]
+```
+
+**Docker Compose Service:**
+```yaml
+supermemory:
+  image: supermemory:latest
+  ports:
+    - "8087:8087"
+  environment:
+    - DATABASE_URL=postgresql://postgres:password@postgres:5432/supermemory
+    - OPENAI_API_KEY=${OPENAI_API_KEY}
+    - REDIS_URL=redis://redis:6379
+  depends_on:
+    - postgres
+    - redis
+  volumes:
+    - ./data:/app/data
+
+postgres:
+  image: pgvector/pgvector:pg16
+  environment:
+    POSTGRES_DB: supermemory
+    POSTGRES_PASSWORD: password
+  volumes:
+    - postgres_data:/var/lib/postgresql/data
+
+redis:
+  image: redis:7-alpine
+  volumes:
+    - redis_data:/data
+```
+
+## File Locations
+- **Project Root**: `supermemory-main/`
+- **Config**: `config/supermemory.yaml`
+- **Database**: PostgreSQL with pgvector
+- **Cache**: Redis (optional)
+- **Extensions**: `extensions/` (browser, Raycast)
+- **MCP Server**: `packages/mcp-server/`
+- **Logs**: `logs/supermemory.log`
+
+## Agent Interaction Patterns
+```
+Agent needs information about past project decision
+↓
+Queries Supermemory: "What did we decide about authentication?"
+↓
+Supermemory performs semantic search across stored memories
+↓
+Returns: "Decided to use Better Auth with GitHub OAuth"
+↓
+Agent uses context to make informed decision
+```
+
+## Advanced Features
+**Auto-Tagging:**
+```typescript
+// Automatic tag extraction
+await memory.save({
+  content: "Discussed React Server Components in Next.js 15",
+  auto_tag: true  // Extracts: ["react", "next.js", "server-components"]
+});
+```
+
+**Memory Chains:**
+```typescript
+// Link related memories
+const parent_memory = await memory.save({...});
+await memory.save({
+  content: "Follow-up discussion",
+  parent_id: parent_memory.id
+});
+
+// Get memory thread
+const thread = await memory.getThread(parent_memory.id);
+```
+
+**Scheduled Summaries:**
+```yaml
+summaries:
+  daily:
+    enabled: true
+    time: "18:00"
+    output: "daily_summary"
+  
+  weekly:
+    enabled: true
+    day: "friday"
+    output: "weekly_digest"
+```
+
+## Security & Privacy
+- **Self-Hosted**: Full data control (no external storage)
+- **Encryption**: At-rest and in-transit encryption supported
+- **Access Control**: API key authentication + optional OAuth
+- **Data Retention**: User-defined expiration policies
+- **Export**: Complete data portability (JSON, markdown)
+- **Audit Logs**: Track all memory access and modifications
+
+---
+*Version: 1.0.0 | Component: Memory Management | Status: Production Ready*

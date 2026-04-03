@@ -1,0 +1,29 @@
+# Agent MAXX — Caddy Reverse Proxy
+# Set DOMAIN env var or replace {$DOMAIN} with your domain
+
+{$DOMAIN:localhost} {
+    # Dashboard
+    handle /dashboard* {
+        reverse_proxy hermes-dashboard:3000
+    }
+
+    # API
+    handle /api/* {
+        reverse_proxy hermes-api:8000
+    }
+
+    # MCP endpoint
+    handle /mcp* {
+        reverse_proxy hermes-api:8000
+    }
+
+    # Health
+    handle /healthz {
+        reverse_proxy hermes-api:8000
+    }
+
+    # Landing page — everything else
+    handle {
+        reverse_proxy hermes-dashboard:3000
+    }
+}

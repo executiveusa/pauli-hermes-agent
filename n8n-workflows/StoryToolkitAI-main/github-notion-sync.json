@@ -1,0 +1,124 @@
+{
+  "name": "GitHub → Notion Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "cronExpression", "expression": "0 2 * * *"}]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "url": "https://api.github.com/user/repos",
+        "options": {
+          "queryParameters": {
+            "parameters": [
+              {"name": "per_page", "value": "100"},
+              {"name": "sort", "value": "updated"},
+              {"name": "type", "value": "all"}
+            ]
+          }
+        },
+        "headerParameters": {
+          "parameters": [
+            {"name": "Accept", "value": "application/vnd.github.v3+json"}
+          ]
+        }
+      },
+      "name": "Fetch GitHub Repos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "github-pat",
+          "name": "GitHub PAT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const repos = $input.first().json;\n\nreturn repos.map(repo => ({\n  name: repo.name,\n  url: repo.html_url,\n  description: repo.description || '',\n  language: repo.language || 'Unknown',\n  stars: repo.stargazers_count,\n  forks: repo.forks_count,\n  updated_at: repo.updated_at,\n  private: repo.private,\n  topics: repo.topics?.join(', ') || ''\n}));"
+      },
+      "name": "Transform Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": "{{$env.NOTION_DATABASE_ID}}",
+        "title": "={{$json.name}}",
+        "propertiesUi": {
+          "propertyValues": [
+            {"key": "URL", "type": "url", "url": "={{$json.url}}"},
+            {"key": "Description", "type": "richText", "richText": "={{$json.description}}"},
+            {"key": "Language", "type": "select", "selectValue": "={{$json.language}}"},
+            {"key": "Stars", "type": "number", "numberValue": "={{$json.stars}}"},
+            {"key": "Forks", "type": "number", "numberValue": "={{$json.forks}}"},
+            {"key": "Updated", "type": "date", "date": "={{$json.updated_at}}"},
+            {"key": "Private", "type": "checkbox", "checkboxValue": "={{$json.private}}"}
+          ]
+        }
+      },
+      "name": "Create Notion Pages",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [850, 300],
+      "credentials": {
+        "notionApi": {
+          "id": "notion-api",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableName": "github_sync_logs",
+        "columns": "repo_count,synced_count,status,created_at",
+        "additionalFields": {
+          "mode": "insert"
+        }
+      },
+      "name": "Log to Supabase",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [1050, 300],
+      "credentials": {
+        "postgres": {
+          "id": "supabase-postgres",
+          "name": "Supabase"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [[{"node": "Fetch GitHub Repos", "type": "main", "index": 0}]]
+    },
+    "Fetch GitHub Repos": {
+      "main": [[{"node": "Transform Data", "type": "main", "index": 0}]]
+    },
+    "Transform Data": {
+      "main": [[{"node": "Create Notion Pages", "type": "main", "index": 0}]]
+    },
+    "Create Notion Pages": {
+      "main": [[{"node": "Log to Supabase", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-01-06T00:00:00.000Z",
+  "versionId": "1"
+}

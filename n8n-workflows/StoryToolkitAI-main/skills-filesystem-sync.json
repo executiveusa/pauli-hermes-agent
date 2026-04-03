@@ -1,0 +1,88 @@
+{
+  "name": "Skills Filesystem Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "hours", "hoursInterval": 6}]
+        }
+      },
+      "name": "Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "command": "ls -1 /path/to/.claude/skills/"
+      },
+      "name": "List Skills Directory",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const output = $input.first().json.stdout;\nconst skills = output.trim().split('\\n');\n\nreturn skills.map(name => ({\n  name,\n  source_path: `.claude/skills/${name}`,\n  version: '1.0.0',\n  status: 'active'\n}));"
+      },
+      "name": "Parse Skills",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "command": "cat /path/to/.claude/skills/{{$json.name}}/SKILL.md | head -20"
+      },
+      "name": "Read SKILL.md",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const content = $input.first().json.stdout;\nconst descMatch = content.match(/description:(.+)/i);\n\nreturn {\n  ...$input.first().json,\n  description: descMatch ? descMatch[1].trim() : 'No description'\n};"
+      },
+      "name": "Extract Description",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.BFF_API_URL}}/api/skills",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={{JSON.stringify($json)}}"
+      },
+      "name": "Upsert to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Every 6 Hours": {
+      "main": [[{"node": "List Skills Directory", "type": "main", "index": 0}]]
+    },
+    "List Skills Directory": {
+      "main": [[{"node": "Parse Skills", "type": "main", "index": 0}]]
+    },
+    "Parse Skills": {
+      "main": [[{"node": "Read SKILL.md", "type": "main", "index": 0}]]
+    },
+    "Read SKILL.md": {
+      "main": [[{"node": "Extract Description", "type": "main", "index": 0}]]
+    },
+    "Extract Description": {
+      "main": [[{"node": "Upsert to Supabase", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-01-06T00:00:00.000Z",
+  "versionId": "1"
+}

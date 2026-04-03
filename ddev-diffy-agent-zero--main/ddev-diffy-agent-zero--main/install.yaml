@@ -1,0 +1,21 @@
+# Details about the install.yaml file are at https://ddev.readthedocs.io/en/latest/users/extend/additional-services/#sections-and-features-of-ddev-get-add-on-installyaml
+
+name: ddev-diffy
+
+project_files:
+- docker-compose.diffy.yaml
+- commands/diffy/screenshot
+- config.diffy.yaml
+
+# List of files and directories that are copied into the global .ddev directory
+# DDEV environment variables can be interpolated into these filenames
+global_files:
+
+# Download the latest version of the worker code
+post_install_actions:
+  - rm -rf diffy-worker && mkdir diffy-worker
+  - docker run -it --rm -v ./diffy-worker:/diffy-worker --user $DDEV_UID:$DDEV_GID ddev/ddev-utilities bash -c "cd /diffy-worker && wget -qO- https://github.com/DiffyWebsite/diffy-worker/archive/refs/heads/main.tar.gz | tar xz --strip-components=1"
+
+# Shell actions that can be done during removal of the add-on
+removal_actions:
+  - rm -rf diffy-worker

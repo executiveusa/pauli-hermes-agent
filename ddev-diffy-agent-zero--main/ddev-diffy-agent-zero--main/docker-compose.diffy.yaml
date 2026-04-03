@@ -1,0 +1,18 @@
+#ddev-generated
+services:
+  diffy:
+    container_name: ddev-${DDEV_SITENAME}-diffy
+    image: 'diffywebsite2/screenshot-worker:0.0.5'
+    user: '$DDEV_UID:$DDEV_GID'
+    restart: "no"
+    # These labels ensure this service is discoverable by ddev.
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: $DDEV_APPROOT
+    environment:
+      - DDEV_HOSTNAME
+      - npm_config_cache=/mnt/ddev-global-cache/npm
+    volumes:
+    - ".:/mnt/ddev_config"
+    - "ddev-global-cache:/mnt/ddev-global-cache"
+    - "./diffy-worker:/diffy-worker"

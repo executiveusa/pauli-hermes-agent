@@ -1,0 +1,7 @@
+#!/bin/bash
+#ddev-generated: If you want to edit and own this file, remove this line.
+## Description: Launch Diffy screenshot
+## Usage: screenshot
+## Example: "ddev screenshot"
+
+node --env-file=.env diffy-screenshots --url=https://web --screenshot-name=$DDEV_HOSTNAME

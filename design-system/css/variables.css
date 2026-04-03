@@ -1,0 +1,120 @@
+/**
+ * Design System CSS Variables
+ * Generated from design-system/tokens/*.json
+ * DO NOT EDIT MANUALLY - Use generate:css script
+ */
+
+:root {
+  /* Colors */
+  --color-primary: #0066FF;
+  --color-primary-light: #3D8AFF;
+  --color-primary-dark: #0047CC;
+  --color-secondary: #222222;
+  --color-secondary-light: #444444;
+  --color-accent: #00D9FF;
+  --color-accent-light: #66E6FF;
+  --color-background: #FFFFFF;
+  --color-surface: #F9FAFB;
+  --color-surface-card: #FFFFFF;
+  --color-surface-overlay: rgba(249,250,251,0.9);
+  --color-border-subtle: #E5E7EB;
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #64748B;
+  --color-text-disabled: #94A3B8;
+  --color-success-positive: #10B981;
+  --color-success-light: #34D399;
+  --color-warning-attention: #F59E0B;
+  --color-warning-light: #FBBF24;
+  --color-error-negative: #EF4444;
+  --color-error-light: #F87171;
+
+  /* Typography */
+  --font-family-primary: Inter, Geist Sans, San Serif;
+  --font-family-secondary: IBM Plex Sans, Manrope, Mona Sans;
+  --font-family-heading: Geist Serif, Poppins, Source Serif 3;
+  --font-size-display-desktop: 96px;
+  --font-size-display-tablet: 80px;
+  --font-size-display-mobile: 72px;
+  --font-size-h1-desktop: 56px;
+  --font-size-h1-tablet: 48px;
+  --font-size-h1-mobile: 42px;
+  --font-size-h2-desktop: 36px;
+  --font-size-h2-tablet: 32px;
+  --font-size-h2-mobile: 28px;
+  --font-size-h3-desktop: 28px;
+  --font-size-h3-tablet: 24px;
+  --font-size-h3-mobile: 22px;
+  --font-size-body-desktop: 18px;
+  --font-size-body-tablet: 16px;
+  --font-size-body-mobile: 15px;
+  --font-size-caption-desktop: 14px;
+  --font-size-caption-tablet: 13px;
+  --font-size-caption-mobile: 12px;
+  --font-weight-bold: 700;
+  --font-weight-semibold: 600;
+  --font-weight-medium: 500;
+  --font-weight-regular: 400;
+  --font-weight-light: 300;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
+  --line-height-spacious: 1.75;
+
+  /* Spacing */
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 24px;
+  --spacing-6: 32px;
+  --spacing-7: 40px;
+  --spacing-8: 48px;
+  --spacing-9: 64px;
+  --spacing-10: 80px;
+  --spacing-11: 96px;
+
+  /* Border Radius */
+  --border-radius-none: 0px;
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --border-radius-2xl: 24px;
+  --border-radius-3xl: 32px;
+
+  /* Shadows */
+  --shadow-soft: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-medium: 0 4px 6px rgba(0,0,0,0.12);
+  --shadow-strong: 0 10px 15px rgba(0,0,0,0.15);
+  --shadow-elevated: 0 20px 25px rgba(0,0,0,0.18);
+
+  /* Animations */
+  --animation-duration-fast: 150ms;
+  --animation-duration-normal: 200ms;
+  --animation-duration-slow: 300ms;
+  --animation-duration-page: 400ms;
+  --animation-easing-ease-in-out: ease-in-out;
+  --animation-easing-cubic-bezier: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-easing-ease-out: ease-out;
+  --animation-easing-ease-in: ease-in;
+}
+
+/* Responsive Breakpoints */
+:root {
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --animation-duration-fast: 0ms;
+    --animation-duration-normal: 0ms;
+    --animation-duration-slow: 0ms;
+    --animation-duration-page: 0ms;
+  }
+}

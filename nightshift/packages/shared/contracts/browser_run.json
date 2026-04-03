@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent MAXX — Browser Run Contract",
+  "type": "object",
+  "required": ["run_id", "start_url"],
+  "properties": {
+    "run_id": { "type": "string", "format": "uuid" },
+    "start_url": { "type": "string", "format": "uri" },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": { "type": "string", "enum": ["navigate", "click", "fill", "screenshot", "wait", "extract"] },
+          "selector": { "type": "string" },
+          "value": { "type": "string" },
+          "url": { "type": "string" }
+        }
+      }
+    }
+  }
+}

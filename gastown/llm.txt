@@ -1,0 +1,243 @@
+# Gastown Workflow Engine - LLM Context# Gastown - Multi-Agent Workflow Orchestration
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Workflow definitions are stored in `core/gastown-workflow/` directory.## Configuration```console.log(status.currentStep, status.progress);const status = await engine.getWorkflowStatus(workflowId);```typescript### Monitor Workflow```});  channel: 'whatsapp'  video_url: 'https://example.com/video.mp4',await engine.startWorkflow('video_production_workflow', {const engine = new GastownEngine();import { GastownEngine } from './gastown';```typescript### Start Workflow## Usage- Monitored by ClaudeCode orchestrator- Stores state in Beads memory- Coordinates agent actions via agent://protocol- Triggered by MCP Agent Mail messages## Integration- Audit logging- Workflow versioning- Parallel execution- Timeout handling- Error recovery and retry logic- State management across workflow steps## Features```    depends_on: [generate_script, generate_thumbnails]      message: "Video production complete!"      channel: "{{trigger.channel}}"    input:    action: send_message    agent: ClaudeCode  - id: notify_completion        parallel: true    depends_on: [transcribe]      frames: "{{steps.transcribe.output.keyframes}}"    input:    action: generate_thumbnails    agent: Cynthia  - id: generate_thumbnails        parallel: true    depends_on: [transcribe]      transcription: "{{steps.transcribe.output.text}}"    input:    action: generate_story_script    agent: ClaudeCode  - id: generate_script        depends_on: [transcribe]      data: "{{steps.transcribe.output}}"      domain: video_projects    input:    action: store    agent: Memory  - id: store_metadata        timeout: 600s      video_url: "{{trigger.video_url}}"    input:     action: transcribe_video    agent: StoryKit  - id: transcribesteps:    channel: whatsapp  type: channel_messagetrigger: version: 1.0name: video_production_workflow```yaml## Workflow DefinitionTriggered by external events (messages, webhooks, timers).### Event-Driven WorkflowsBranch execution based on conditions or results.### Conditional WorkflowsMultiple tasks execute simultaneously.### Parallel WorkflowsTasks execute one after another in order.### Sequential Workflows## Workflow TypesCoordinate sequential, parallel, conditional, and event-driven workflows across multiple agents with state management and error recovery.## PurposeGastown is a multi-agent workflow orchestration engine that enables complex, multi-step automated processes across Agent Claw agents.## Overview
+## Purpose
+Gastown is the primary orchestration framework for coordinating multiple AI agents in complex, multi-step workflows with state management and failure recovery.
+
+## Core Capabilities
+- **Task Routing:** Intelligent distribution based on agent capabilities
+- **Agent Coordination:** Synchronized execution across multiple agents
+- **Workflow Management:** DAG-based workflow definitions
+- **State Management:** Persistent workflow state with rollback
+- **Failure Recovery:** Automatic retry with exponential backoff
+- **Load Balancing:** Distribute work across agent instances
+
+## Workflow Patterns
+
+### Sequential
+```yaml
+workflow:
+  name: "Full-Stack Feature"
+  pattern: sequential
+  steps:
+    - agent: claudecode
+      task: "Design API endpoints"
+    - agent: cynthia  
+      task: "Design UI components"
+    - agent: switchblade
+      task: "Deploy to staging"
+```
+
+### Parallel
+```yaml
+workflow:
+  pattern: parallel
+  branches:
+    - agent: storykit
+      task: "Transcribe video"
+    - agent: memory
+      task: "Index content"
+  merge_strategy: wait_all
+```
+
+### Conditional
+```yaml
+workflow:
+  pattern: conditional
+  condition: "complexity > 8"
+  then:
+    agent: claudecode
+    model: "claude-opus"  # Use powerful model
+  else:
+    agent: claudecode
+    model: "glm-4"  # Use cost-efficient model
+```
+
+### Loop
+```yaml
+workflow:
+  pattern: loop
+  condition: "tests_passing == false"
+  max_iterations: 5
+  steps:
+    - agent: claudecode
+      task: "Fix failing tests"
+    - agent: switchblade  
+      task: "Run test suite"
+```
+
+## Agent Communication
+Gastown uses the Agent Mail protocol for inter-agent communication:
+
+```python
+from gastown import Workflow, AgentTask
+
+workflow = Workflow(name="feature_development")
+
+# Define tasks
+task1 = AgentTask(
+    agent="claudecode",
+    action="generate_code",
+    input={"feature": "user authentication"}
+)
+
+task2 = AgentTask(
+    agent="cynthia",
+    action="design_ui",
+    input={"feature": "login form"},
+    depends_on=[task1]  # Wait for task1
+)
+
+# Execute workflow
+result = workflow.execute([task1, task2])
+```
+
+## State Management
+```python
+# Save workflow state
+workflow.save_checkpoint("checkpoint_1")
+
+# Resume from checkpoint
+workflow = Workflow.load("workflow_id", "checkpoint_1")
+workflow.resume()
+
+# Rollback on failure
+workflow.rollback_to("checkpoint_1")
+```
+
+## Integration Points
+- **Ralphy Loop:** Autonomous execution engine
+- **Beads Memory:** Persistent state storage
+- **MCP Agent Mail:** Agent messaging protocol
+- **Docker Compose:** Agent container orchestration
+
+## Configuration
+```json
+{
+  "orchestrator": "agent-zero-docker-mcp",
+  "mcp_port": 3000,
+  "routing_strategy": "capability_based",
+  "retry_policy": {
+    "max_retries": 3,
+    "backoff_ms": 1000
+  },
+  "timeout": 300000
+}
+```
+
+## Monitoring
+- Real-time workflow visualization
+- Agent health monitoring
+- Performance metrics per agent
+- Error tracking and alerts
+
+## Files
+- `core/gastown-workflow/` - Core orchestration engine
+- `agent-router.py` - Task routing logic
+- `agent-zero-autonomous-orchestrator.py` - Main orchestrator

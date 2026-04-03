@@ -2,6 +2,48 @@
 
 Instructions for AI coding assistants and developers working on the hermes-agent codebase.
 
+---
+
+## ⚡ CRITICAL: Task Tracking with Beads
+
+**Every agent task MUST be tracked in Beads.** Beads is the authoritative source of truth for all work.
+
+### Quick Setup (Required)
+```bash
+# Install Beads globally (one-time)
+curl -fsSL https://raw.githubusercontent.com/gastownhall/beads/main/scripts/install.sh | bash
+
+# Initialize in workspace
+cd pauli-hermes-agent
+bd init --stealth
+
+# Verify
+bd ready
+```
+
+### For Every Task:
+1. **Check ready**: `bd ready` — list tasks with no blockers
+2. **Create task**: `bd create "Title" -p <priority>` — add new work
+3. **Claim task**: `bd update <id> --claim` — you become assignee
+4. **Progress**: `bd update <id> --notes "progress"` — track steps
+5. **Close**: `bd update <id> --close "Done"` — mark complete
+
+### Hermes 3.0 Epic Structure
+```
+bd-hermes        (Epic: Hermes 3.0 Production Build)
+├── bd-hermes.1  (Phase 1: Brain Sovereignty - COMPLETE)
+├── bd-hermes.2  (Phase 2: Cockpit Dashboard - COMPLETE)
+├── bd-hermes.3  (Phase 3: Token Efficiency - IN PROGRESS)
+└── bd-hermes.4  (Phase 4: Production Deploy - IN PROGRESS)
+```
+
+### Links
+- **Full Guide**: See `BEADS_SETUP.md`
+- **Agent Instructions**: See `AGENT_INSTRUCTIONS.md`
+- **Beads Repo**: https://github.com/gastownhall/beads
+
+---
+
 ## Development Environment
 
 ```bash

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent MAXX — Autonomous Night Shift</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06090f;--surface:#0d1420;--border:#162033;
+  --teal:#00ffd5;--teal-glow:rgba(0,255,213,.25);
+  --text:#e2e8f0;--dim:#5a6a7e;
+  --mono:'Fira Code','JetBrains Mono',monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden}
+a{color:var(--teal);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── Canvas BG ── */
+#bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;
+  padding:16px 40px;background:rgba(6,9,15,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+nav .brand{font-weight:800;font-size:1.2rem;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
+nav .brand span{color:var(--teal)}
+nav .links{margin-left:auto;display:flex;gap:24px;font-size:.85rem}
+nav .links a{color:var(--dim);transition:color .2s}
+nav .links a:hover{color:var(--teal);text-decoration:none}
+.btn-nav{padding:6px 18px;border:1px solid var(--teal);border-radius:4px;color:var(--teal);font-weight:600;font-size:.85rem;transition:all .2s}
+.btn-nav:hover{background:var(--teal);color:var(--bg);text-decoration:none}
+
+/* ── HERO ── */
+.hero{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:100vh;text-align:center;padding:120px 24px 80px}
+.hero h1{font-size:clamp(2.5rem,7vw,5rem);font-weight:900;letter-spacing:-2px;line-height:1.05}
+.hero h1 .teal{color:var(--teal);text-shadow:0 0 40px var(--teal-glow)}
+.hero .sub{color:var(--dim);font-size:clamp(1rem,2vw,1.3rem);max-width:640px;margin:20px auto 0;line-height:1.6}
+.hero .cta{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap;justify-content:center}
+.btn-primary{padding:12px 32px;background:var(--teal);color:var(--bg);font-weight:700;font-size:1rem;
+  border-radius:6px;border:none;cursor:pointer;transition:all .2s;box-shadow:0 0 30px var(--teal-glow)}
+.btn-primary:hover{background:#00e6bf;box-shadow:0 0 50px var(--teal-glow);transform:translateY(-1px);text-decoration:none}
+.btn-secondary{padding:12px 32px;border:1px solid var(--border);color:var(--text);font-weight:600;
+  font-size:1rem;border-radius:6px;cursor:pointer;background:transparent;transition:all .2s}
+.btn-secondary:hover{border-color:var(--teal);color:var(--teal);text-decoration:none}
+
+/* ── 3D Bulldog ── */
+.bulldog-container{position:relative;width:200px;height:200px;margin:0 auto 30px;perspective:800px}
+.bulldog{width:200px;height:200px;position:relative;transform-style:preserve-3d;animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotateY(0)}25%{transform:translateY(-12px) rotateY(5deg)}50%{transform:translateY(0) rotateY(0)}75%{transform:translateY(-8px) rotateY(-5deg)}}
+.bulldog-body{position:absolute;width:140px;height:120px;background:linear-gradient(135deg,#4a3a2a,#6b5439);
+  border-radius:30px;top:60px;left:30px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.bulldog-head{position:absolute;width:120px;height:100px;background:linear-gradient(135deg,#5c4a36,#7d6347);
+  border-radius:50% 50% 40% 40%;top:10px;left:40px;z-index:2;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.bulldog-eye{position:absolute;width:18px;height:22px;background:#fff;border-radius:50%;top:30px}
+.bulldog-eye::after{content:"";position:absolute;width:10px;height:12px;background:#1a1a2e;border-radius:50%;top:5px;left:4px}
+.bulldog-eye.left{left:24px}.bulldog-eye.right{right:24px}
+.bulldog-nose{position:absolute;width:30px;height:18px;background:#2a1f14;border-radius:0 0 50% 50%;
+  bottom:22px;left:50%;transform:translateX(-50%)}
+.bulldog-jaw{position:absolute;width:80px;height:25px;background:linear-gradient(135deg,#4a3a2a,#5c4a36);
+  border-radius:0 0 40px 40px;bottom:0;left:50%;transform:translateX(-50%)}
+.ear{position:absolute;width:30px;height:35px;background:linear-gradient(135deg,#3d2e1e,#5c4a36);
+  border-radius:50% 50% 0 0;top:2px}
+.ear.left{left:8px;transform:rotate(-15deg)}.ear.right{right:8px;transform:rotate(15deg)}
+.collar{position:absolute;width:100px;height:16px;background:var(--teal);border-radius:8px;
+  top:105px;left:50px;z-index:3;box-shadow:0 0 20px var(--teal-glow)}
+.collar-tag{position:absolute;width:14px;height:18px;background:#ffd700;border-radius:0 0 50% 50%;
+  top:12px;left:50%;transform:translateX(-50%);box-shadow:0 0 10px rgba(255,215,0,.4)}
+
+/* ── Glow ring ── */
+.glow-ring{position:absolute;width:220px;height:220px;top:50%;left:50%;transform:translate(-50%,-50%);
+  border:2px solid var(--teal);border-radius:50%;animation:pulse-ring 3s ease-in-out infinite;opacity:.3}
+@keyframes pulse-ring{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.3}50%{transform:translate(-50%,-50%) scale(1.1);opacity:.15}}
+
+/* ── Feature Grid ── */
+.features{position:relative;z-index:1;padding:100px 40px;max-width:1200px;margin:0 auto}
+.features h2{text-align:center;font-size:2.2rem;font-weight:800;letter-spacing:-1px;margin-bottom:12px}
+.features .sub{text-align:center;color:var(--dim);margin-bottom:60px;font-size:1.05rem}
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:900px){.feature-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.feature-grid{grid-template-columns:1fr}}
+.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:28px;
+  transition:all .25s;position:relative;overflow:hidden}
+.feature-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,255,213,.08)}
+.feature-card .icon{font-size:1.8rem;margin-bottom:12px}
+.feature-card h3{font-size:1.05rem;font-weight:700;margin-bottom:8px}
+.feature-card p{color:var(--dim);font-size:.88rem;line-height:1.6}
+
+/* ── Architecture ── */
+.arch{position:relative;z-index:1;padding:100px 40px;max-width:1000px;margin:0 auto}
+.arch h2{text-align:center;font-size:2.2rem;font-weight:800;letter-spacing:-1px;margin-bottom:60px}
+.arch-diagram{display:flex;flex-direction:column;gap:16px;font-family:var(--mono);font-size:.82rem}
+.arch-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.arch-box{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px 20px;
+  min-width:160px;text-align:center;transition:all .25s}
+.arch-box:hover{border-color:var(--teal);box-shadow:0 0 20px rgba(0,255,213,.08)}
+.arch-box .name{font-weight:700;color:var(--teal);margin-bottom:4px}
+.arch-box .desc{color:var(--dim);font-size:.75rem}
+.arch-sep{text-align:center;color:var(--dim);font-size:1.2rem;letter-spacing:4px}
+
+/* ── Stats ── */
+.stats-bar{position:relative;z-index:1;padding:60px 40px;display:flex;justify-content:center;
+  gap:clamp(30px,5vw,80px);flex-wrap:wrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.stat{text-align:center}
+.stat .val{font-size:2.5rem;font-weight:800;font-family:var(--mono);color:var(--teal)}
+.stat .label{color:var(--dim);font-size:.8rem;margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+
+/* ── CTA ── */
+.final-cta{position:relative;z-index:1;text-align:center;padding:100px 40px}
+.final-cta h2{font-size:2.2rem;font-weight:800;letter-spacing:-1px;margin-bottom:16px}
+.final-cta p{color:var(--dim);margin-bottom:36px;font-size:1.05rem}
+
+/* ── Footer ── */
+footer{position:relative;z-index:1;text-align:center;padding:40px;color:var(--dim);font-size:.8rem;border-top:1px solid var(--border)}
+
+/* ── Scroll Reveal ── */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- 3D Background Canvas -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="brand">🐕 <span>AGENT MAXX</span></div>
+  <div class="links">
+    <a href="#features">Features</a>
+    <a href="#arch">Architecture</a>
+    <a href="#stats">Stats</a>
+    <a href="/dashboard" class="btn-nav">Dashboard →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="bulldog-container">
+    <div class="glow-ring"></div>
+    <div class="bulldog">
+      <div class="ear left"></div>
+      <div class="ear right"></div>
+      <div class="bulldog-head">
+        <div class="bulldog-eye left"></div>
+        <div class="bulldog-eye right"></div>
+        <div class="bulldog-nose"></div>
+        <div class="bulldog-jaw"></div>
+      </div>
+      <div class="bulldog-body"></div>
+      <div class="collar"><div class="collar-tag"></div></div>
+    </div>
+  </div>
+  <h1>Your repos. <span class="teal">Shipped overnight.</span></h1>
+  <p class="sub">Agent MAXX is an autonomous coding platform that clones, analyzes, codes, tests, and ships your repos while you sleep. Powered by multi-model AI with human-in-the-loop approval gates.</p>
+  <div class="cta">
+    <a href="/dashboard" class="btn-primary">Open Cockpit</a>
+    <a href="#features" class="btn-secondary">Learn More</a>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features reveal" id="features">
+  <h2>Built for <span style="color:var(--teal)">overnight autonomy</span></h2>
+  <p class="sub">Every component designed for unsupervised, resumable, auditable work.</p>
+  <div class="feature-grid">
+    <div class="feature-card reveal">
+      <div class="icon">⚡</div>
+      <h3>Repo Factory</h3>
+      <p>Auto-scan, profile, and batch PRDs across 370+ repositories every night.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="icon">🤖</div>
+      <h3>Multi-Model Router</h3>
+      <p>Route tasks to the best model: Claude for reasoning, GPT for code, Gemini for vision, Mercury for speed.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="icon">💻</div>
+      <h3>Coding Worker</h3>
+      <p>Clone → analyze → code → test → commit. Full CI pipeline per session with git branch isolation.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="icon">🌐</div>
+      <h3>Browser Automation</h3>
+      <p>Playwright-powered browser runs with CAPTCHA detection, pause/resume, and artifact capture.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="icon">🛡️</div>
+      <h3>Approval Gates</h3>
+      <p>Risk-scored command approval via Telegram. Critical actions pause until human greenlight.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="icon">📡</div>
+      <h3>Live Notifications</h3>
+      <p>Real-time Telegram alerts for completions, failures, approvals, and browser interventions.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="icon">🔌</div>
+      <h3>MCP Tools</h3>
+      <p>19 MCP tools exposed at /mcp — connect from VS Code, Zed, JetBrains, or any MCP client.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="icon">📊</div>
+      <h3>12-Panel Cockpit</h3>
+      <p>Operator dashboard with live stats, repo browser, run tracker, approval queue, and activity log.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="icon">🕐</div>
+      <h3>Nightly Scheduler</h3>
+      <p>Cron-driven repo scan, PRD generation, and digest delivery — fully automatic.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section class="arch reveal" id="arch">
+  <h2>Architecture</h2>
+  <div class="arch-diagram">
+    <div class="arch-row">
+      <div class="arch-box"><div class="name">Caddy</div><div class="desc">Reverse Proxy + TLS</div></div>
+    </div>
+    <div class="arch-sep">↓ ↓ ↓</div>
+    <div class="arch-row">
+      <div class="arch-box"><div class="name">hermes-api</div><div class="desc">FastAPI Control Plane</div></div>
+      <div class="arch-box"><div class="name">Dashboard</div><div class="desc">12-Panel Cockpit</div></div>
+    </div>
+    <div class="arch-sep">↓ ↓ ↓</div>
+    <div class="arch-row">
+      <div class="arch-box"><div class="name">provider-router</div><div class="desc">Multi-Model LLM Proxy</div></div>
+      <div class="arch-box"><div class="name">worker-coder</div><div class="desc">Clone → Code → Test</div></div>
+      <div class="arch-box"><div class="name">worker-browser</div><div class="desc">Playwright + CAPTCHA</div></div>
+    </div>
+    <div class="arch-sep">↓ ↓ ↓</div>
+    <div class="arch-row">
+      <div class="arch-box"><div class="name">PostgreSQL</div><div class="desc">15 Tables</div></div>
+      <div class="arch-box"><div class="name">Redis</div><div class="desc">Queues + Pub/Sub</div></div>
+      <div class="arch-box"><div class="name">Notifier</div><div class="desc">Telegram Alerts</div></div>
+      <div class="arch-box"><div class="name">Scheduler</div><div class="desc">Nightly Jobs</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<section class="stats-bar reveal" id="stats">
+  <div class="stat"><div class="val">10</div><div class="label">Services</div></div>
+  <div class="stat"><div class="val">15</div><div class="label">DB Tables</div></div>
+  <div class="stat"><div class="val">19</div><div class="label">MCP Tools</div></div>
+  <div class="stat"><div class="val">370+</div><div class="label">Repos Managed</div></div>
+  <div class="stat"><div class="val">24/7</div><div class="label">Autonomous</div></div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta reveal">
+  <h2>Ready to ship <span style="color:var(--teal)">while you sleep</span>?</h2>
+  <p>Open the cockpit and let Agent MAXX handle the night shift.</p>
+  <a href="/dashboard" class="btn-primary" style="font-size:1.1rem;padding:14px 40px">Launch Dashboard →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>Agent MAXX &middot; Night Shift &middot; Built by Kupuri Media &middot; 2025</p>
+</footer>
+
+<!-- ═══ 3D Particle Background ═══ -->
+<script>
+(function(){
+  const canvas = document.getElementById("bg-canvas");
+  const ctx = canvas.getContext("2d");
+  let W, H, particles = [], mouse = { x: -1000, y: -1000 };
+
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  window.addEventListener("resize", resize); resize();
+  document.addEventListener("mousemove", e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+  class P {
+    constructor(){
+      this.x = Math.random()*W; this.y = Math.random()*H;
+      this.vx = (Math.random()-.5)*.3; this.vy = (Math.random()-.5)*.3;
+      this.r = Math.random()*1.5+.5;
+      this.base = Math.random()*.3+.1;
+    }
+    update(){
+      this.x += this.vx; this.y += this.vy;
+      if(this.x<0) this.x=W; if(this.x>W) this.x=0;
+      if(this.y<0) this.y=H; if(this.y>H) this.y=0;
+    }
+    draw(){
+      const dx=mouse.x-this.x, dy=mouse.y-this.y, d=Math.sqrt(dx*dx+dy*dy);
+      const a = d<200 ? this.base+.4*(1-d/200) : this.base;
+      ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,255,213,${a})`; ctx.fill();
+    }
+  }
+
+  const COUNT = Math.min(120, Math.floor(W*H/8000));
+  for(let i=0;i<COUNT;i++) particles.push(new P());
+
+  function connectNear(){
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<120){
+          ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y);
+          ctx.lineTo(particles[j].x,particles[j].y);
+          ctx.strokeStyle=`rgba(0,255,213,${.06*(1-d/120)})`; ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{ p.update(); p.draw(); });
+    connectNear();
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+// ── Scroll Reveal ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add("visible"); }});
+}, { threshold: 0.1 });
+document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "version": "0.1.0",
+  "name": "color-tokens",
+  "description": "Semantic color tokens for the design system",
+  "tokens": {
+    "primary": "#0066FF",
+    "primary-light": "#3D8AFF",
+    "primary-dark": "#0047CC",
+    "secondary": "#222222",
+    "secondary-light": "#444444",
+    "accent": "#00D9FF",
+    "accent-light": "#66E6FF",
+    "background": "#FFFFFF",
+    "surface": "#F9FAFB",
+    "surface-card": "#FFFFFF",
+    "surface-overlay": "rgba(249,250,251,0.9)",
+    "border-subtle": "#E5E7EB",
+    "text-primary": "#0F172A",
+    "text-secondary": "#64748B",
+    "text-disabled": "#94A3B8",
+    "success-positive": "#10B981",
+    "success-light": "#34D399",
+    "warning-attention": "#F59E0B",
+    "warning-light": "#FBBF24",
+    "error-negative": "#EF4444",
+    "error-light": "#F87171"
+  },
+  "usage": {
+    "brand": ["primary", "primary-light", "primary-dark"],
+    "ui-elements": ["secondary", "secondary-light", "accent"],
+    "surfaces": ["background", "surface", "surface-card", "surface-overlay"],
+    "borders": ["border-subtle"],
+    "text": ["text-primary", "text-secondary", "text-disabled"],
+    "states": ["success-positive", "warning-attention", "error-negative"]
+  }
+}
