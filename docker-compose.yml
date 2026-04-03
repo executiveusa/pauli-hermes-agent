@@ -1,142 +1,99 @@
-# ============================================================
-# Hermes Agent — VPS Docker Compose Stack
-# ============================================================
-# Services:
-#   hermes    — core agent + gateway (API, Telegram, Discord, etc.)
-#   dashboard — voice control web UI (served on port 3000)
-#   nginx     — reverse proxy (HTTPS termination + routing)
-#
-# Usage:
-#   cp .env.vps.example .env
-#   docker compose up -d
-# ============================================================
+version: "3.9"
 
 services:
-
-  # ── Hermes Agent Core ────────────────────────────────────
-  hermes:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: hermes-agent:latest
-    container_name: hermes
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      # Enable the OpenAI-compatible API server adapter
-      - API_SERVER_ENABLED=1
-      # API server listens on all interfaces inside the container
-      - API_SERVER_HOST=0.0.0.0
-      - API_SERVER_PORT=8642
-      # Set allowed CORS origins (your dashboard domain)
-      - API_SERVER_CORS_ORIGINS=${DASHBOARD_ORIGIN:-http://31.220.58.212:9000}
-      # Agent working directory inside container
-      - MESSAGING_CWD=/workspace
+  nightshift-api:
+    image: python:3.12-slim
+    working_dir: /app
+    command: >
+      sh -c "pip install --no-cache-dir fastapi uvicorn[standard] httpx pydantic &&
+             python -m uvicorn night_shift.app:app --host 0.0.0.0 --port 8787"
     volumes:
-      # Persist Hermes config & session data
-      - hermes_home:/home/hermes/.hermes
-      # Optional: mount a workspace for the agent to work in
-      - workspace:/workspace
-    ports:
-      # Exposed directly — Coolify manages SSL/routing
-      - "8642:8642"
-    networks:
-      - hermes_net
+      - ./:/app
+    environment:
+      - HERMES_NIGHTSHIFT_DB=sqlite:////app/.nightshift/night_shift.db
+      - HERMES_REDIS_URL=redis://redis:6379/0
+      - HERMES_TEMPORAL_HOST=temporal:7233
+      - HERMES_PAPERCLIP_URL=http://paperclip:8081
+      - HERMES_COMPOSIO_URL=http://composio:8090
+      - APPWRITE_ENDPOINT=http://appwrite:80/v1
+      - APPWRITE_PROJECT_ID=hermes-night-shift
+    depends_on:
+      redis:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
+      paperclip:
+        condition: service_healthy
+      composio:
+        condition: service_healthy
+      appwrite:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8642/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8787/health', timeout=2)"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  temporal:
+    image: temporalio/auto-setup:1.27.2
+    environment:
+      - DB=sqlite
+      - SKIP_DEFAULT_NAMESPACE_CREATION=false
+    healthcheck:
+      test: ["CMD", "tctl", "--ns", "default", "namespace", "describe"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 15s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "50m"
-        max-file: "5"
+      retries: 10
 
-  # ── Voice Control Dashboard ───────────────────────────────
-  dashboard:
-    image: nginx:alpine
-    container_name: hermes-dashboard
-    restart: unless-stopped
-    volumes:
-      - ./web-ui:/usr/share/nginx/html:ro
-    ports:
-      # Port 9000 — avoids conflict with Supabase Studio (3001), existing services (3000)
-      - "9000:80"
-    networks:
-      - hermes_net
-    depends_on:
-      - hermes
-
-  # ── Nginx Reverse Proxy ───────────────────────────────────
-  nginx:
-    image: nginx:alpine
-    container_name: hermes-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/hermes.conf:/etc/nginx/conf.d/hermes.conf:ro
-      # SSL certificates (Let's Encrypt / Coolify manages these)
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      - nginx_logs:/var/log/nginx
-    networks:
-      - hermes_net
-    depends_on:
-      - hermes
-      - dashboard
-
-  # ── Agent Zero — Personal Second Brain (port 8643) ───────
-  # Opt-in: start with `docker compose up -d agent-zero`
-  # Requires .env.agent-zero (copy from .env, set AGENT_ZERO_PERSONA)
-  agent-zero:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: hermes-agent:latest
-    container_name: agent-zero
-    restart: unless-stopped
-    env_file: .env.agent-zero
+  temporal-ui:
+    image: temporalio/ui:2.34.0
     environment:
-      - API_SERVER_ENABLED=1
-      - API_SERVER_HOST=0.0.0.0
-      - API_SERVER_PORT=8643
-      - API_SERVER_CORS_ORIGINS=${DASHBOARD_ORIGIN:-http://31.220.58.212:9000},https://pauli-hermes-agent.vercel.app
-      - MESSAGING_CWD=/workspace
-      - HERMES_HOME=/home/agent-zero/.hermes
-      # Second brain — Bambu personal context
-      - AGENT_PERSONA=agent-zero
-    volumes:
-      - agent_zero_home:/home/agent-zero/.hermes
-      - workspace:/workspace
-    ports:
-      - "8643:8643"
-    networks:
-      - hermes_net
+      - TEMPORAL_ADDRESS=temporal:7233
+    depends_on:
+      temporal:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8643/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "50m"
-        max-file: "5"
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
 
-volumes:
-  hermes_home:
-    driver: local
-  agent_zero_home:
-    driver: local
-  workspace:
-    driver: local
-  nginx_logs:
-    driver: local
+  appwrite:
+    image: appwrite/appwrite:1.8.0
+    environment:
+      - _APP_ENV=development
+      - _APP_OPENSSL_KEY_V1=dev-secret-key-for-local-night-shift
+      - _APP_OPTIONS_ROUTER_FORCE_HTTPS=disabled
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost/v1/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
 
-networks:
-  hermes_net:
-    driver: bridge
+  paperclip:
+    image: ealen/echo-server:0.9.2
+    environment:
+      - PORT=8081
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8081"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+
+  composio:
+    image: ealen/echo-server:0.9.2
+    environment:
+      - PORT=8090
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8090"]
+      interval: 15s
+      timeout: 5s
+      retries: 6

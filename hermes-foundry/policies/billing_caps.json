@@ -1,0 +1,8 @@
+{
+  "free": 25,
+  "pay_as_you_go": 250,
+  "sprint": 1500,
+  "managed_retainer": 10000,
+  "internal_nonprofit_discount": 500,
+  "manual_invoice_only": 5000
+}

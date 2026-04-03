@@ -1,0 +1,6 @@
+{
+  "max_active_per_tenant": 5,
+  "max_minutes": 120,
+  "max_spend_usd": 50,
+  "idle_cleanup_minutes": 30
+}

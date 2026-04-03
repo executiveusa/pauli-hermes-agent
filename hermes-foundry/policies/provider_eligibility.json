@@ -1,0 +1,6 @@
+{
+  "reasoning": ["reasoning_primary", "research_primary", "fallback_general"],
+  "coding": ["coding_primary", "fallback_general"],
+  "browser_vision": ["browser_vision", "fallback_general"],
+  "bulk_summary": ["cheap_summary", "fallback_general"]
+}

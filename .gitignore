@@ -57,3 +57,7 @@ environments/benchmarks/evals/
 # Vercel build output
 dist/
 mini-swe-agent/
+
+# Nix
+.direnv/
+result
