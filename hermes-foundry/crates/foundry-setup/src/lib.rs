@@ -8,14 +8,6 @@ pub struct MissingSecret {
     pub optional: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SetupItem {
-    pub code: String,
-    pub title: String,
-    pub severity: String,
-    pub proceed_without: bool,
-}
-
 pub fn inspect_missing_secrets() -> Vec<MissingSecret> {
     let checks = vec![
         ("OPENAI_API_KEY", "LLM routing", "reasoning/coding model calls", false),
@@ -37,15 +29,4 @@ pub fn inspect_missing_secrets() -> Vec<MissingSecret> {
             optional,
         })
         .collect()
-}
-
-pub fn onboarding_checklist() -> Vec<SetupItem> {
-    vec![
-        SetupItem { code: "create_tenant".into(), title: "Create tenant profile".into(), severity: "required".into(), proceed_without: false },
-        SetupItem { code: "set_branding".into(), title: "Set logo, app name, support email".into(), severity: "required".into(), proceed_without: false },
-        SetupItem { code: "billing_profile".into(), title: "Set billing plan and thresholds".into(), severity: "required".into(), proceed_without: false },
-        SetupItem { code: "provider_defaults".into(), title: "Set default provider profiles".into(), severity: "recommended".into(), proceed_without: true },
-        SetupItem { code: "appwrite_binding".into(), title: "Bind Appwrite project".into(), severity: "optional".into(), proceed_without: true },
-        SetupItem { code: "starter_workflows".into(), title: "Enable starter workflows".into(), severity: "required".into(), proceed_without: false },
-    ]
 }

@@ -13,13 +13,3 @@ pub fn should_pause_for_human(signal: &str) -> bool {
     let s = signal.to_lowercase();
     s.contains("captcha") || s.contains("mfa")
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn captcha_must_pause() {
-        assert!(should_pause_for_human("captcha detected"));
-    }
-}

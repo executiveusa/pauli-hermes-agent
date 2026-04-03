@@ -1,17 +1,25 @@
-# Hermes Foundry — Phase 2 Required Output
+# Hermes Foundry Deliverables Checklist
 
-1. Gap analysis — `docs/system-overview.md` + this checklist (Added)
-2. Existing modules kept — Rust workspace scaffold kept, Python bridge kept (Kept)
-3. Modules added/normalized — onboarding, tenant config, billing usage snapshots, admin/support endpoints, policy files (Added)
-4. Updated crate tree — `Cargo.toml` workspace + crates/* (Kept existing implementation)
-5. New migrations — `migrations/002_productization.sql` (Added)
-6. New policy services/files — `policies/*.json` + `foundry-policy` loader (Added)
-7. Billing + usage implementation — `foundry-billing` + `/v1/usage/:id` (Added)
-8. Observability implementation — `/metrics`, `/events`, run timeline fields (Added)
-9. Support/admin implementation — `/admin/...`, pause tenant, force close run, readonly impersonation (Added)
-10. Onboarding implementation — `/onboarding/tenant` + checklist + missing setup projection (Added)
-11. White-label/branding implementation — `BrandingConfig` + tenant config (Added)
-12. Deployment safety implementation — `/deployment-manifest.json`, `/openapi.json`, smoke hooks (Added)
-13. Testing/evals additions — smoke script enhanced and unit test scaffolds in crates (Added)
-14. Documentation additions — `docs/*` guides and runbooks (Added)
-15. Startup checks + operational checklist — `docs/operator-quickstart.md`, setup/backup guides (Added)
+1. **Implementation plan** — added in `README.md` (Added)
+2. **Normalized architecture diagram in prose** — `README.md` (Added)
+3. **Rust workspace file tree** — represented by `Cargo.toml` members + crate dirs (Added)
+4. **docker-compose.yml** — `docker-compose.yml` (Added)
+5. **.env.example** — `.env.example` (Added)
+6. **Migrations/schema definitions** — `migrations/001_init.sql` (Added)
+7. **API routes** — `crates/foundry-api/src/main.rs` (Added)
+8. **MCP/tool contracts** — `crates/foundry-mcp/src/lib.rs` (Added)
+9. **Provider-router module** — `crates/foundry-router/src/lib.rs` (Added)
+10. **Run ledger + billing meter** — `crates/foundry-runs`, `crates/foundry-billing` (Added)
+11. **Coding worker scaffolding** — `crates/foundry-coder` (Added)
+12. **Browser worker scaffolding** — `crates/foundry-browser` (Added)
+13. **Dashboard integration plan using Pauli Vibe cockpit** — `apps/cockpit-web/README.md` (Added)
+14. **Paperclip integration plan** — `crates/foundry-paperclip` + README architecture boundary (Added)
+15. **Appwrite integration plan** — `crates/foundry-appwrite` + API provision route (Added)
+16. **Missing-secrets flow** — `crates/foundry-setup` + `/missing-secrets` route (Added)
+17. **Smoke tests** — `infra/scripts/smoke.sh` (Added)
+18. **Startup instructions** — `README.md` (Added)
+19. **Rollback plan** — `README.md` (Added)
+
+## Existing implementation handling
+- Kept existing Hermes Python stack untouched as bridge/runtime reference.
+- Added Rust-native Foundry workspace alongside existing modules instead of duplicating existing Python features.
