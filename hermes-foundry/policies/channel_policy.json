@@ -1,0 +1,4 @@
+{
+  "allowed_channels": ["dashboard", "telegram", "venice_chat"],
+  "whatsapp_limited": ["status", "approval", "summary"]
+}
