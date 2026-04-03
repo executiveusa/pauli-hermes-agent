@@ -1,0 +1,5 @@
+{
+  "internal": ["repo_factory", "coding_worker", "browser_worker", "proposal_generator"],
+  "external": ["repo_factory", "coding_worker", "approvals"],
+  "new_world_kids": ["donor_cleanup", "volunteer_onboarding", "grant_pipeline"]
+}

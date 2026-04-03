@@ -1,0 +1,5 @@
+{
+  "artifacts_days": 30,
+  "logs_days": 14,
+  "run_timeline_days": 90
+}

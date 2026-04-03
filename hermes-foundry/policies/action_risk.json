@@ -1,0 +1,8 @@
+{
+  "delete": "irreversible_action",
+  "drop": "irreversible_action",
+  "publish": "sensitive_write",
+  "merge": "sensitive_write",
+  "create": "safe_write",
+  "read": "safe_read"
+}

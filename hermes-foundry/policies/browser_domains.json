@@ -1,0 +1,4 @@
+{
+  "default_allow": ["github.com", "appwrite.io", "docs.temporal.io"],
+  "blocked_patterns": ["*captcha*", "*exam*", "*mfa-bypass*"]
+}
