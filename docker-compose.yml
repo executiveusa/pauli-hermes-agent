@@ -1,0 +1,99 @@
+version: "3.9"
+
+services:
+  nightshift-api:
+    image: python:3.12-slim
+    working_dir: /app
+    command: >
+      sh -c "pip install --no-cache-dir fastapi uvicorn[standard] httpx pydantic &&
+             python -m uvicorn night_shift.app:app --host 0.0.0.0 --port 8787"
+    volumes:
+      - ./:/app
+    environment:
+      - HERMES_NIGHTSHIFT_DB=sqlite:////app/.nightshift/night_shift.db
+      - HERMES_REDIS_URL=redis://redis:6379/0
+      - HERMES_TEMPORAL_HOST=temporal:7233
+      - HERMES_PAPERCLIP_URL=http://paperclip:8081
+      - HERMES_COMPOSIO_URL=http://composio:8090
+      - APPWRITE_ENDPOINT=http://appwrite:80/v1
+      - APPWRITE_PROJECT_ID=hermes-night-shift
+    depends_on:
+      redis:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
+      paperclip:
+        condition: service_healthy
+      composio:
+        condition: service_healthy
+      appwrite:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8787/health', timeout=2)"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  temporal:
+    image: temporalio/auto-setup:1.27.2
+    environment:
+      - DB=sqlite
+      - SKIP_DEFAULT_NAMESPACE_CREATION=false
+    healthcheck:
+      test: ["CMD", "tctl", "--ns", "default", "namespace", "describe"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  temporal-ui:
+    image: temporalio/ui:2.34.0
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+    depends_on:
+      temporal:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+
+  appwrite:
+    image: appwrite/appwrite:1.8.0
+    environment:
+      - _APP_ENV=development
+      - _APP_OPENSSL_KEY_V1=dev-secret-key-for-local-night-shift
+      - _APP_OPTIONS_ROUTER_FORCE_HTTPS=disabled
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost/v1/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+
+  paperclip:
+    image: ealen/echo-server:0.9.2
+    environment:
+      - PORT=8081
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8081"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+
+  composio:
+    image: ealen/echo-server:0.9.2
+    environment:
+      - PORT=8090
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8090"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
