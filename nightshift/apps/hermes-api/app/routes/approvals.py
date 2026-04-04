@@ -13,6 +13,26 @@ from app.models import Approval
 
 router = APIRouter(prefix="/approvals", tags=["approvals"])
 
+# Canonical values for the decide endpoint (accept both forms)
+_APPROVE = {"approve", "approved"}
+_REJECT = {"reject", "rejected"}
+
+
+@router.get("")
+async def list_approvals(status: str = None, limit: int = 50, db: AsyncSession = Depends(get_db)):
+    q = select(Approval).order_by(Approval.created_at.desc()).limit(limit)
+    if status == "pending":
+        q = q.where(Approval.decision.is_(None))
+    elif status:
+        q = q.where(Approval.decision == status)
+    result = await db.execute(q)
+    return [{"id": str(a.id), "run_id": str(a.run_id) if a.run_id else None,
+             "risk_level": a.risk_level, "proposed_command": a.proposed_command,
+             "reason": a.reason, "decision": a.decision,
+             "created_at": a.created_at.isoformat() if a.created_at else None}
+            for a in result.scalars()]
+
+
 @router.get("/pending")
 async def list_pending(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Approval).where(Approval.decision.is_(None)).order_by(Approval.created_at.desc()))
@@ -21,19 +41,27 @@ async def list_pending(db: AsyncSession = Depends(get_db)):
              "reason": a.reason, "created_at": a.created_at.isoformat() if a.created_at else None}
             for a in result.scalars()]
 
+
 @router.post("/{approval_id}/decide")
 async def decide(approval_id: UUID, body: dict, db: AsyncSession = Depends(get_db)):
     approval = await db.get(Approval, approval_id)
-    if not approval: raise HTTPException(404, "Approval not found")
-    if approval.decision: raise HTTPException(400, "Already decided")
-    decision = body.get("decision", "")
-    if decision not in ("approve", "reject", "modify"):
-        raise HTTPException(400, "Invalid decision")
+    if not approval:
+        raise HTTPException(404, "Approval not found")
+    if approval.decision:
+        raise HTTPException(400, "Already decided")
+    raw = body.get("decision", "")
+    if raw in _APPROVE:
+        decision = "approved"
+    elif raw in _REJECT:
+        decision = "rejected"
+    elif raw == "modify":
+        decision = "modify"
+    else:
+        raise HTTPException(400, f"Invalid decision '{raw}' — use approved/rejected/modify")
     approval.decision = decision
     approval.decided_at = datetime.now(timezone.utc)
-    approval.decided_by = "operator"
+    approval.decided_by = body.get("decided_by", "operator")
     await db.commit()
-    # Publish decision event
     r = aioredis.from_url(settings.redis_url)
     await r.publish("events:approvals", json.dumps({
         "approval_id": str(approval_id), "run_id": str(approval.run_id), "decision": decision,

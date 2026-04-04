@@ -29,6 +29,12 @@ async def generate_batch(body: dict, db: AsyncSession = Depends(get_db)):
     await r.close()
     return {"batch_id": str(batch.id), "status": "queued"}
 
+
+@router.post("/prd-batches")
+async def create_batch(body: dict, db: AsyncSession = Depends(get_db)):
+    """Alias for /prd-batches/generate (used by dashboard)."""
+    return await generate_batch(body, db)
+
 @router.get("/prds")
 async def list_prds(batch_id: UUID = None, limit: int = 50, db: AsyncSession = Depends(get_db)):
     q = select(PRD).order_by(PRD.created_at.desc()).limit(limit)

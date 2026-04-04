@@ -1,0 +1,167 @@
+{
+  "version": "1",
+  "name": "agent-maxx-nightshift",
+  "description": "Agent MAXX — Autonomous Night Shift Coding Platform",
+  "type": "docker-compose",
+  "build": {
+    "context": ".",
+    "dockerComposeFile": "docker-compose.yml"
+  },
+  "environmentVariables": [
+    {
+      "key": "APP_NAME",
+      "value": "Agent MAXX",
+      "required": false
+    },
+    {
+      "key": "APP_ENV",
+      "value": "production",
+      "required": false
+    },
+    {
+      "key": "API_KEY",
+      "value": "",
+      "required": true,
+      "description": "Master API key for dashboard + API auth. Generate a long random string."
+    },
+    {
+      "key": "SECRET_KEY",
+      "value": "",
+      "required": true,
+      "description": "Secret key for signing. Generate a long random string."
+    },
+    {
+      "key": "DOMAIN",
+      "value": "",
+      "required": true,
+      "description": "Your domain (e.g. agentmaxx.yourdomain.com). Caddy will auto-provision TLS."
+    },
+    {
+      "key": "POSTGRES_USER",
+      "value": "maxx",
+      "required": false
+    },
+    {
+      "key": "POSTGRES_PASSWORD",
+      "value": "",
+      "required": true,
+      "description": "PostgreSQL password. Generate a strong random string."
+    },
+    {
+      "key": "POSTGRES_DB",
+      "value": "maxx_db",
+      "required": false
+    },
+    {
+      "key": "DATABASE_URL",
+      "value": "postgresql+asyncpg://maxx:${POSTGRES_PASSWORD}@postgres:5432/maxx_db",
+      "required": false
+    },
+    {
+      "key": "REDIS_URL",
+      "value": "redis://redis:6379/0",
+      "required": false
+    },
+    {
+      "key": "ANTHROPIC_API_KEY",
+      "value": "",
+      "required": false,
+      "description": "Anthropic Claude API key. Required for coding and reasoning tasks."
+    },
+    {
+      "key": "OPENAI_API_KEY",
+      "value": "",
+      "required": false,
+      "description": "OpenAI API key. Optional — enables GPT-4o profile."
+    },
+    {
+      "key": "GOOGLE_API_KEY",
+      "value": "",
+      "required": false,
+      "description": "Google AI (Gemini) API key. Enables vision + browser research."
+    },
+    {
+      "key": "OPENROUTER_API_KEY",
+      "value": "",
+      "required": false,
+      "description": "OpenRouter API key. Enables multi-model fallback routing."
+    },
+    {
+      "key": "GITHUB_TOKEN",
+      "value": "",
+      "required": false,
+      "description": "GitHub Personal Access Token. Required for repo scanning and coding sessions."
+    },
+    {
+      "key": "GITHUB_ORG",
+      "value": "",
+      "required": false,
+      "description": "GitHub org name to scan (e.g. my-org). Leave empty to scan all accessible repos."
+    },
+    {
+      "key": "TELEGRAM_BOT_TOKEN",
+      "value": "",
+      "required": false,
+      "description": "Telegram bot token from @BotFather. Enables alerts and approval notifications."
+    },
+    {
+      "key": "TELEGRAM_CHAT_ID",
+      "value": "",
+      "required": false,
+      "description": "Telegram chat ID where notifications are sent."
+    },
+    {
+      "key": "APPWRITE_ENDPOINT",
+      "value": "",
+      "required": false,
+      "description": "Appwrite API endpoint. Enables automated project provisioning."
+    },
+    {
+      "key": "APPWRITE_PROJECT_ID",
+      "value": "",
+      "required": false
+    },
+    {
+      "key": "APPWRITE_API_KEY",
+      "value": "",
+      "required": false
+    },
+    {
+      "key": "BROWSER_MAX_CONCURRENT",
+      "value": "3",
+      "required": false,
+      "description": "Max concurrent Playwright browser sessions."
+    },
+    {
+      "key": "SCHEDULER_SCAN_HOUR",
+      "value": "2",
+      "required": false,
+      "description": "UTC hour for nightly repo scan (0-23)."
+    },
+    {
+      "key": "SCHEDULER_PRD_HOUR",
+      "value": "3",
+      "required": false,
+      "description": "UTC hour for nightly PRD generation (0-23)."
+    },
+    {
+      "key": "SCHEDULER_DIGEST_HOUR",
+      "value": "7",
+      "required": false,
+      "description": "UTC hour for morning digest notification (0-23)."
+    }
+  ],
+  "ports": [
+    {
+      "published": 80,
+      "target": 80,
+      "description": "HTTP (redirects to HTTPS)"
+    },
+    {
+      "published": 443,
+      "target": 443,
+      "description": "HTTPS (Caddy + Let's Encrypt)"
+    }
+  ],
+  "notes": "Deploy this Docker Compose stack on any Coolify-managed server. Set DOMAIN to your subdomain and Caddy will auto-provision TLS. Minimum: 2GB RAM, 2 CPU, 20GB disk. Recommended: 4GB RAM for browser sessions."
+}

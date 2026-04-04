@@ -130,7 +130,65 @@ async def llm_chat(req: LLMRequest):
         available = list(PROFILES.keys())
         if not available:
             raise HTTPException(503, "No provider profiles configured — add API keys to .env")
-        # Fallback to first available
         provider = PROFILES[available[0]]
         logger.warning(f"Profile '{req.provider_profile_id}' not found, falling back to '{available[0]}'")
     return await provider.chat(req)
+
+
+class VisionRequest(BaseModel):
+    provider_profile_id: str = "research_browser"
+    prompt: str
+    image_base64: str  # base64-encoded PNG/JPEG
+
+
+@app.post("/v1/llm/vision")
+async def llm_vision(req: VisionRequest):
+    """Vision endpoint — sends a screenshot to a multimodal LLM and returns text."""
+    google_key = os.getenv("GOOGLE_API_KEY", "")
+    openai_key = os.getenv("OPENAI_API_KEY", "")
+
+    # Prefer Gemini Flash for vision (cheap + fast)
+    if google_key:
+        import base64
+        img_bytes = base64.b64decode(req.image_base64)
+        img_b64 = base64.b64encode(img_bytes).decode()
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={google_key}"
+        body = {
+            "contents": [{
+                "parts": [
+                    {"text": req.prompt},
+                    {"inline_data": {"mime_type": "image/png", "data": img_b64}},
+                ]
+            }],
+            "generationConfig": {"maxOutputTokens": 4096, "temperature": 0.3},
+        }
+        async with httpx.AsyncClient(timeout=90.0) as client:
+            resp = await client.post(url, json=body)
+        if resp.status_code == 200:
+            data = resp.json()
+            text = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+            return {"response_text": text, "model": "gemini-2.0-flash"}
+
+    # Fallback: GPT-4V
+    if openai_key:
+        headers = {"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"}
+        body = {
+            "model": "gpt-4o",
+            "messages": [{
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": req.prompt},
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{req.image_base64}"}},
+                ],
+            }],
+            "max_tokens": 4096,
+        }
+        async with httpx.AsyncClient(timeout=90.0) as client:
+            resp = await client.post("https://api.openai.com/v1/chat/completions",
+                                     headers=headers, json=body)
+        if resp.status_code == 200:
+            data = resp.json()
+            text = data["choices"][0]["message"].get("content", "")
+            return {"response_text": text, "model": "gpt-4o"}
+
+    raise HTTPException(503, "No vision-capable API key configured (GOOGLE_API_KEY or OPENAI_API_KEY)")

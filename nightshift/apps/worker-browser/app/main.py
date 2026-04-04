@@ -131,6 +131,12 @@ class BrowserSessionRunner:
                     content = await page.content()
                     decision = await self._ai_decide(content[:4000], value)
                     if decision.get("action"): steps.insert(i + 1, decision)
+                elif action == "vision_analyze":
+                    prompt = step.get("prompt", "Describe what you see on this page.")
+                    save_as = step.get("save_as", f"vision_{i}")
+                    analysis = await self._vision_analyze(page, prompt, save_as)
+                    self.artifacts.append({"kind": "vision_analysis", "content": analysis, "label": save_as})
+                    await self._save_artifact_remote("vision_analysis", save_as, content=analysis)
 
                 await asyncio.sleep(step.get("wait_ms", 500) / 1000.0)
                 challenge = await detect_challenge(page)
@@ -161,6 +167,58 @@ class BrowserSessionRunner:
         try: await page.screenshot(path=str(path), full_page=False)
         except Exception: pass
 
+    async def _vision_analyze(self, page, prompt: str, label: str) -> str:
+        """Take a full-page screenshot, send to vision LLM, return analysis text."""
+        import base64
+        path = ARTIFACTS_ROOT / f"screenshots/{self.run_id}/{label}.png"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            await page.screenshot(path=str(path), full_page=True)
+        except Exception as e:
+            return f"Screenshot failed: {e}"
+
+        try:
+            with open(path, "rb") as f:
+                img_b64 = base64.b64encode(f.read()).decode()
+        except Exception as e:
+            return f"Could not read screenshot: {e}"
+
+        # GPT-4V style via OpenAI-compatible endpoint
+        try:
+            async with httpx.AsyncClient(timeout=90.0) as client:
+                resp = await client.post(f"{PROVIDER_ROUTER_URL}/v1/llm/vision", json={
+                    "provider_profile_id": "research_browser",
+                    "prompt": prompt,
+                    "image_base64": img_b64,
+                })
+            if resp.status_code == 200:
+                return resp.json().get("response_text", "")
+        except Exception:
+            pass
+
+        # Fallback: extract page text and run text-only LLM
+        try:
+            text = await page.inner_text("body")
+            return await self._ai_decide_text(text[:8000], prompt)
+        except Exception as e:
+            return f"Vision analysis failed: {e}"
+
+    async def _ai_decide_text(self, text: str, instruction: str) -> str:
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                resp = await client.post(f"{PROVIDER_ROUTER_URL}/v1/llm/chat", json={
+                    "provider_profile_id": "research_browser",
+                    "messages": [
+                        {"role": "system", "content": "You are analyzing page text extracted from a browser."},
+                        {"role": "user", "content": f"Instruction: {instruction}\n\nPage text:\n{text}"},
+                    ], "max_tokens": 2048,
+                })
+            if resp.status_code == 200:
+                return resp.json().get("response_text", "")
+        except Exception as e:
+            return f"Text analysis failed: {e}"
+        return ""
+
     async def _ai_decide(self, html: str, instruction: str) -> dict:
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
@@ -181,7 +239,17 @@ class BrowserSessionRunner:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 await client.patch(f"{HERMES_API_URL}/api/browser-runs/{self.run_id}",
                                    json={"state": status, "error": error, "artifact_count": len(self.artifacts)})
-        except Exception: pass
+        except Exception:
+            pass
+
+    async def _save_artifact_remote(self, kind: str, label: str, content: str = None, file_path: str = None):
+        """Push an artifact to hermes-api for persistence."""
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                await client.post(f"{HERMES_API_URL}/api/browser-runs/{self.run_id}/artifacts",
+                                  json={"kind": kind, "label": label, "content": content, "file_path": file_path})
+        except Exception:
+            pass
 
     def pause(self): self._paused.clear(); self.state = BrowserState.paused
     def resume(self): self._paused.set(); self.state = BrowserState.interacting
