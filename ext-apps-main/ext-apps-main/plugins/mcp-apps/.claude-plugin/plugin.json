@@ -1,0 +1,11 @@
+{
+  "name": "mcp-apps",
+  "version": "0.1.0",
+  "description": "Claude Code skill for building MCP Apps with interactive UIs",
+  "author": {
+    "name": "MCP Apps"
+  },
+  "repository": "https://github.com/modelcontextprotocol/ext-apps",
+  "license": "MIT",
+  "keywords": ["mcp", "mcp-apps", "model-context-protocol", "ui", "interactive"]
+}

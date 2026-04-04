@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "test_name": "verify_copilot_error_auth_401",
+  "recorded_at": "2026-02-10T17:24:07.230Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.github.com/copilot_internal/v2/token",
+        "headers": []
+      },
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body_chunks": [
+          "{\"message\":\"Simulated error 401\"}"
+        ]
+      }
+    }
+  ]
+}

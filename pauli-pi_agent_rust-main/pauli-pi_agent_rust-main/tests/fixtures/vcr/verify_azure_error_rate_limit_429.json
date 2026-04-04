@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "test_name": "verify_azure_error_rate_limit_429",
+  "recorded_at": "2026-02-10T17:36:16.044Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://test-resource.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-02-15-preview",
+        "headers": [
+          [
+            "api-key",
+            "[REDACTED]"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ]
+      },
+      "response": {
+        "status": 429,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body_chunks": [
+          "{\"error\":{\"code\":\"rate_limit_exceeded\",\"message\":\"Simulated error 429\",\"param\":null,\"type\":\"invalid_request_error\"}}"
+        ]
+      }
+    }
+  ]
+}

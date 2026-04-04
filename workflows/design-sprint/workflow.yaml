@@ -1,0 +1,34 @@
+# Workflow: Design Sprint
+# Rapid design iteration cycle for UI/UX work.
+
+name: design-sprint
+description: 3-day design sprint for UI/UX deliverables
+steps:
+  - name: discover
+    agent: hermes
+    prompt: "Analyze requirements, user stories, and existing patterns. Search Open Brain for related work."
+    outputs: [discovery.md]
+
+  - name: sketch
+    agent: darya
+    prompt: "Create wireframes and low-fidelity mockups. Apply design-law skill."
+    depends_on: [discover]
+    outputs: [wireframes/]
+
+  - name: prototype
+    agent: darya
+    prompt: "Build interactive prototype. Apply motion-law and design-law skills."
+    depends_on: [sketch]
+    outputs: [prototype/]
+
+  - name: test
+    agent: hermes
+    prompt: "Run accessibility audit, responsive checks, and interaction tests."
+    depends_on: [prototype]
+    outputs: [test-report.md]
+
+  - name: iterate
+    agent: darya
+    prompt: "Fix issues from test report. Polish visual details. Final review against all law skills."
+    depends_on: [test]
+    outputs: [final/]

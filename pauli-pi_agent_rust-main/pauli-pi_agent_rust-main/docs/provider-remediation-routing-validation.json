@@ -1,0 +1,221 @@
+{
+  "schema": "pi.qa.remediation_routing_validation.v1",
+  "bead": "bd-3uqg.12.1.3",
+  "generated_at": "2026-02-14T00:45:00Z",
+  "generated_by": "CopperBrook (Claude Opus 4.6)",
+  "description": "Validates that remediation beads from bd-3uqg.12.1.2 are correctly wired into dependency chains with appropriate track assignments and ownership readiness.",
+
+  "summary": {
+    "total_remediation_beads": 10,
+    "closed_as_duplicate": 2,
+    "active_remediation_beads": 8,
+    "currently_actionable": 0,
+    "blocked_by_parent_tracks": 8,
+    "routing_issues_found": 3,
+    "recommendation": "Remove 6 artificial parent-track dependencies to unblock 6 self-contained remediation beads"
+  },
+
+  "bead_inventory": [
+    {
+      "id": "bd-2ncd7",
+      "title": "Add common aliases for high-traffic providers",
+      "disc_id": "DISC-010",
+      "status": "closed",
+      "closure_reason": "Duplicate of completed bd-tuh3g (CopperBrook)",
+      "track": "provider-core",
+      "routing_valid": true,
+      "notes": "14+ aliases already added. No further work needed."
+    },
+    {
+      "id": "bd-4v1xz",
+      "title": "Implement --list-providers CLI command",
+      "disc_id": "DISC-011",
+      "status": "closed",
+      "closure_reason": "Duplicate of completed bd-3gsk0 (CopperBrook)",
+      "track": "provider-core",
+      "routing_valid": true,
+      "notes": "--list-providers already implemented with table output."
+    },
+    {
+      "id": "bd-mbk79",
+      "title": "Add display_name field to ProviderMetadata",
+      "disc_id": "DISC-013",
+      "status": "open",
+      "track": "provider-core",
+      "dependencies": {
+        "bd-3uqg.12.1.2": {"status": "closed", "blocks": false},
+        "bd-3uqg.10.4": {"status": "open", "blocks": true, "is_artificial": true}
+      },
+      "routing_valid": false,
+      "routing_issue": "ROUTE-001",
+      "notes": "display_name is a self-contained metadata change. Does not need rollup handoff (bd-3uqg.10.4) to be complete first."
+    },
+    {
+      "id": "bd-2jskn",
+      "title": "Expand onboarding wizard provider recognition",
+      "disc_id": "DISC-014",
+      "status": "open",
+      "track": "provider-core",
+      "dependencies": {
+        "bd-3uqg.12.1.2": {"status": "closed", "blocks": false},
+        "bd-3uqg.10.4": {"status": "open", "blocks": true, "is_artificial": true}
+      },
+      "routing_valid": false,
+      "routing_issue": "ROUTE-001",
+      "notes": "Onboarding wizard expansion is a self-contained UX change. Does not need rollup handoff."
+    },
+    {
+      "id": "bd-396fn",
+      "title": "Fix pi_runtime.json VCR cassette for provider_factory tests",
+      "disc_id": "DISC-015",
+      "status": "open",
+      "track": "test",
+      "dependencies": {
+        "bd-3uqg.12.1.2": {"status": "closed", "blocks": false},
+        "bd-3uqg.8": {"status": "in_progress", "blocks": true, "is_artificial": true}
+      },
+      "routing_valid": false,
+      "routing_issue": "ROUTE-002",
+      "notes": "VCR cassette fix is a self-contained test infra fix. Does not need the full test track parent to complete first."
+    },
+    {
+      "id": "bd-2vlau",
+      "title": "Add per-provider artifact redaction scan on e2e output",
+      "disc_id": "DISC-018",
+      "status": "open",
+      "track": "test",
+      "dependencies": {
+        "bd-3uqg.12.1.2": {"status": "closed", "blocks": false},
+        "bd-3uqg.8": {"status": "in_progress", "blocks": true, "is_artificial": true}
+      },
+      "routing_valid": false,
+      "routing_issue": "ROUTE-002",
+      "notes": "Redaction scan is a new test addition. Does not need the full test track parent."
+    },
+    {
+      "id": "bd-2w6ts",
+      "title": "Add ci_correlation_id to JSONL log schema",
+      "disc_id": "DISC-017",
+      "status": "open",
+      "track": "ci-infra",
+      "dependencies": {
+        "bd-3uqg.12.1.2": {"status": "closed", "blocks": false},
+        "bd-3uqg.9": {"status": "in_progress", "blocks": true, "is_artificial": true}
+      },
+      "routing_valid": false,
+      "routing_issue": "ROUTE-003",
+      "notes": "CI correlation ID is a test infra change, not a docs change. Should not be blocked by docs track."
+    },
+    {
+      "id": "bd-z5vt4",
+      "title": "Artifact-index path cross-validation",
+      "disc_id": "DISC-019",
+      "status": "open",
+      "track": "ci-infra",
+      "dependencies": {
+        "bd-3uqg.12.1.2": {"status": "closed", "blocks": false},
+        "bd-3uqg.9": {"status": "in_progress", "blocks": true, "is_artificial": true}
+      },
+      "routing_valid": false,
+      "routing_issue": "ROUTE-003",
+      "notes": "Artifact cross-validation is test infra, not docs. Should not be blocked by docs track."
+    },
+    {
+      "id": "bd-7rs2j",
+      "title": "Define formal pi.qa.evidence_contract.v1 schema",
+      "disc_id": "DISC-020",
+      "status": "open",
+      "track": "docs",
+      "dependencies": {
+        "bd-3uqg.12.1.2": {"status": "closed", "blocks": false},
+        "bd-3uqg.9": {"status": "in_progress", "blocks": true, "is_artificial": false}
+      },
+      "routing_valid": true,
+      "notes": "Schema documentation correctly belongs under the docs track. Dependency on bd-3uqg.9 is appropriate."
+    },
+    {
+      "id": "bd-38m8w",
+      "title": "Enforce v2-only schema for new tests",
+      "disc_id": "DISC-021",
+      "status": "open",
+      "track": "test",
+      "dependencies": {
+        "bd-3uqg.12.1.2": {"status": "closed", "blocks": false},
+        "bd-3uqg.9": {"status": "in_progress", "blocks": true, "is_artificial": true}
+      },
+      "routing_valid": false,
+      "routing_issue": "ROUTE-003",
+      "notes": "Schema enforcement is a test/CI concern, not docs. Should not be blocked by docs track."
+    }
+  ],
+
+  "routing_issues": [
+    {
+      "id": "ROUTE-001",
+      "title": "Provider-core remediation beads unnecessarily blocked by rollup handoff",
+      "severity": "medium",
+      "affected_beads": ["bd-mbk79", "bd-2jskn"],
+      "blocking_bead": "bd-3uqg.10.4",
+      "analysis": "bd-3uqg.10.4 (completion handoff) is deeply blocked by 6 upstream dependencies. The display_name and onboarding wizard changes are self-contained code modifications that can be implemented and tested independently. Blocking them on the rollup handoff prevents early delivery of user-facing improvements.",
+      "recommendation": "Remove bd-3uqg.10.4 dependency from bd-mbk79 and bd-2jskn. These beads only need bd-3uqg.12.1.2 (now closed) as prerequisite."
+    },
+    {
+      "id": "ROUTE-002",
+      "title": "Test remediation beads unnecessarily blocked by test track parent",
+      "severity": "medium",
+      "affected_beads": ["bd-396fn", "bd-2vlau"],
+      "blocking_bead": "bd-3uqg.8",
+      "analysis": "bd-3uqg.8 is the umbrella test track that depends on 5 wave-parity beads. The VCR cassette fix and redaction scan are narrow, self-contained test improvements. They don't require the full provider test matrix to be complete.",
+      "recommendation": "Remove bd-3uqg.8 dependency from bd-396fn and bd-2vlau. Only bd-3uqg.12.1.2 (now closed) is a true prerequisite."
+    },
+    {
+      "id": "ROUTE-003",
+      "title": "Test/CI remediation beads mis-routed to docs track",
+      "severity": "low",
+      "affected_beads": ["bd-2w6ts", "bd-z5vt4", "bd-38m8w"],
+      "blocking_bead": "bd-3uqg.9",
+      "analysis": "CI correlation ID, artifact cross-validation, and v1 schema deprecation are all test infrastructure concerns. They were routed to the docs track (bd-3uqg.9) likely because the artifact contract doc (bd-3uqg.14.3.3) identified them. However, they don't require docs to be written first.",
+      "recommendation": "Remove bd-3uqg.9 dependency from bd-2w6ts, bd-z5vt4, bd-38m8w. These are implementable independently. bd-7rs2j (evidence schema) correctly stays under docs."
+    }
+  ],
+
+  "track_assignments": {
+    "provider-core": {
+      "beads": ["bd-mbk79", "bd-2jskn"],
+      "ownership": "Any agent with provider_metadata.rs experience",
+      "current_blockage": "bd-3uqg.10.4 (deep, 6 upstream deps)",
+      "if_unblocked": "Immediately actionable"
+    },
+    "test": {
+      "beads": ["bd-396fn", "bd-2vlau", "bd-38m8w"],
+      "ownership": "Any agent with test infrastructure experience",
+      "current_blockage": "bd-3uqg.8 or bd-3uqg.9",
+      "if_unblocked": "Immediately actionable"
+    },
+    "ci-infra": {
+      "beads": ["bd-2w6ts", "bd-z5vt4"],
+      "ownership": "Any agent with TestHarness/logging experience",
+      "current_blockage": "bd-3uqg.9",
+      "if_unblocked": "Immediately actionable"
+    },
+    "docs": {
+      "beads": ["bd-7rs2j"],
+      "ownership": "Any agent",
+      "current_blockage": "bd-3uqg.9 (appropriate)",
+      "if_unblocked": "Immediately actionable"
+    },
+    "policy": {
+      "beads": ["bd-3uqg.15"],
+      "ownership": "Policy decision needed",
+      "current_blockage": "None (only depends on epic parent)",
+      "if_unblocked": "Needs policy decision before implementation"
+    }
+  },
+
+  "actionability_after_fixes": {
+    "description": "If ROUTE-001/002/003 recommendations are applied, these beads become immediately actionable",
+    "newly_actionable": ["bd-mbk79", "bd-2jskn", "bd-396fn", "bd-2vlau", "bd-2w6ts", "bd-z5vt4", "bd-38m8w"],
+    "still_blocked": ["bd-7rs2j"],
+    "already_actionable": ["bd-3uqg.15"]
+  }
+}

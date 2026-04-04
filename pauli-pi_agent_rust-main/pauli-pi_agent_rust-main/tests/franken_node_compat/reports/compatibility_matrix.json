@@ -1,0 +1,94 @@
+{
+  "schema": "pi.frankennode.compatibility_matrix.v1",
+  "bead_id": "bd-3ar8v.7.3",
+  "generated_at": "2026-03-12T02:20:14Z",
+  "node_version": "v20.19.4",
+  "bun_version": "1.3.10",
+  "scenarios": [
+    {
+      "scenario_id": "SCN-module-resolution-esm-cjs",
+      "domain": "module-resolution",
+      "criticality": "high",
+      "node_pass_rate": 1.0,
+      "bun_pass_rate": 1.0,
+      "node_bun_parity": "EXACT_PARITY",
+      "fixture_count": 2,
+      "fixtures": [
+        {
+          "fixture_id": "esm-import-basic",
+          "node_all_pass": true,
+          "bun_all_pass": true,
+          "divergences": []
+        },
+        {
+          "fixture_id": "cjs-require-basic",
+          "node_all_pass": true,
+          "bun_all_pass": true,
+          "divergences": []
+        }
+      ]
+    },
+    {
+      "scenario_id": "SCN-node-builtin-apis",
+      "domain": "builtin-apis",
+      "criticality": "high",
+      "node_pass_rate": 1.0,
+      "bun_pass_rate": 1.0,
+      "node_bun_parity": "EXACT_PARITY",
+      "fixture_count": 1,
+      "fixtures": [
+        {
+          "fixture_id": "builtin-apis-core",
+          "node_all_pass": true,
+          "bun_all_pass": true,
+          "divergences": []
+        }
+      ]
+    },
+    {
+      "scenario_id": "SCN-event-loop-io-ordering",
+      "domain": "event-loop-io",
+      "criticality": "high",
+      "node_pass_rate": 1.0,
+      "bun_pass_rate": 1.0,
+      "node_bun_parity": "EXACT_PARITY",
+      "fixture_count": 1,
+      "fixtures": [
+        {
+          "fixture_id": "event-loop-ordering",
+          "node_all_pass": true,
+          "bun_all_pass": true,
+          "divergences": []
+        }
+      ]
+    },
+    {
+      "scenario_id": "SCN-error-and-diagnostics-parity",
+      "domain": "errors-diagnostics",
+      "criticality": "medium",
+      "node_pass_rate": 1.0,
+      "bun_pass_rate": 0.8888888888888888,
+      "node_bun_parity": "ACCEPTABLE_SUPERSET",
+      "fixture_count": 1,
+      "fixtures": [
+        {
+          "fixture_id": "error-diagnostics-basic",
+          "node_all_pass": true,
+          "bun_all_pass": false,
+          "divergences": [
+            "stack_has_function_names: node=true, bun=false"
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_scenarios": 4,
+    "total_fixtures": 5,
+    "total_checks": 36,
+    "node_pass_rate": 1.0,
+    "bun_pass_rate": 0.9722222222222222,
+    "node_bun_divergence_count": 1,
+    "overall_parity": "ACCEPTABLE_SUPERSET"
+  }
+}

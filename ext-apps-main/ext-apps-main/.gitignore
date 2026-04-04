@@ -1,0 +1,18 @@
+.DS_Store
+dist/
+node_modules/
+yarn.lock
+bun.lockb
+.vscode/
+docs/api/
+tmp/
+intermediate-findings/
+
+# Playwright
+playwright-report/
+test-results/
+__pycache__/
+*.pyc
+
+# MCPB bundles (built artifacts)
+*.mcpb

@@ -1,0 +1,149 @@
+{
+  "schema": "pi.qa.gate_triage_matrix.v1",
+  "bead_id": "bd-3uqg.10.2.5",
+  "generated_at_utc": "2026-02-14T02:45:00Z",
+  "generated_by": "CyanRobin (Claude Opus 4.6)",
+  "description": "Consolidated remediation ownership matrix unifying compiler, test, e2e, UBS, and artifact retention gate outputs into one actionable remediation roadmap.",
+
+  "gate_sources": {
+    "compiler": {
+      "bead": "bd-3uqg.10.2.1",
+      "report": "docs/provider-gate-compiler-report.json",
+      "verdict": "PASS",
+      "executor": "TopazFalcon"
+    },
+    "test_suites": {
+      "bead": "bd-3uqg.10.2.2",
+      "report": "docs/provider-gate-tests-report.json",
+      "verdict": "PASS (99.9% excluding infra)",
+      "executor": "TopazFalcon"
+    },
+    "e2e": {
+      "bead": "bd-3uqg.10.2.3",
+      "report": "docs/provider-gate-e2e-report.json",
+      "verdict": "PASS (411/411 e2e, 1607/1608 total)",
+      "executor": "TopazFalcon"
+    },
+    "ubs": {
+      "bead": "bd-3uqg.10.2.4",
+      "report": "docs/provider-gate-ubs-report.json",
+      "verdict": "PASS (0 production issues)",
+      "executor": "OpusMain"
+    },
+    "artifact_retention": {
+      "bead": "bd-3uqg.10.2.6",
+      "report": "tests/full_suite_gate/artifact_retention_report.json",
+      "verdict": "PASS (205/205 tests)",
+      "executor": "CyanRobin"
+    }
+  },
+
+  "full_suite_gate_status": {
+    "verdict_file": "tests/full_suite_gate/full_suite_verdict.json",
+    "overall_verdict": "FAIL",
+    "blocking_gates_pass": 5,
+    "blocking_gates_total": 7,
+    "blocking_failure": "cross_platform (bd-1f42.6.7)"
+  },
+
+  "active_failures": [
+    {
+      "id": "F1",
+      "gate": "cross_platform",
+      "gate_bead": "bd-1f42.6.7",
+      "severity": "BLOCKING",
+      "root_cause": "extension_artifacts check SKIPPED on Linux due to missing VALIDATED_MANIFEST.json",
+      "detail": "tests/ext_conformance/artifacts/VALIDATED_MANIFEST.json not found. Check is policy=required on Linux, causing 7/8 required checks (should be 8/8).",
+      "reproduce_command": "cargo test --test ci_cross_platform_matrix -- cross_platform_matrix --nocapture --exact",
+      "owner": "Extension conformance gate (bd-1f42.4.4)",
+      "remediation": "Run full extension conformance suite to generate VALIDATED_MANIFEST.json, or downgrade check policy to informational if artifact generation is optional",
+      "dependent_blockers": ["full_suite_gate overall verdict"],
+      "exit_criteria": "all_required_pass: true in platform_report.json"
+    },
+    {
+      "id": "F2",
+      "gate": "test_suites",
+      "gate_bead": "bd-3uqg.10.2.2",
+      "severity": "NON_BLOCKING",
+      "root_cause": "Missing VCR cassette tests/fixtures/vcr/pi_runtime.json",
+      "detail": "92 provider_native_contract tests fail with Config(\"Failed to read cassette tests/fixtures/vcr/pi_runtime.json\"). All failures are infra, not provider defects.",
+      "reproduce_command": "cargo test --test provider_native_contract -- --nocapture",
+      "owner": "Test infrastructure (bd-396fn)",
+      "remediation": "Create pi_runtime.json VCR cassette or add skip-when-missing logic",
+      "dependent_blockers": [],
+      "exit_criteria": "92 currently-failing tests pass or are explicitly skipped with documented reason",
+      "status": "RESOLVED (bd-396fn CLOSED)"
+    },
+    {
+      "id": "F3",
+      "gate": "test_suites",
+      "gate_bead": "bd-3uqg.10.2.2",
+      "severity": "NON_BLOCKING",
+      "root_cause": "Test assertion too strict for local-only provider",
+      "detail": "every_provider_has_at_least_one_auth_env_key fails for ollama (local server, no API key needed). Test needs to exempt is_local=true providers.",
+      "reproduce_command": "cargo test --test provider_metadata_comprehensive every_provider_has_at_least_one_auth_env_key -- --nocapture",
+      "owner": "provider_metadata_comprehensive test suite",
+      "remediation": "Update assertion to allow empty auth_env_keys for providers with local-server onboarding",
+      "dependent_blockers": [],
+      "exit_criteria": "Test passes with ollama exemption, no false negatives for remote providers"
+    },
+    {
+      "id": "F4",
+      "gate": "full_suite_gate",
+      "gate_bead": "bd-1f42.4.4",
+      "severity": "SKIPPED_BLOCKING",
+      "root_cause": "Extension must-pass gate cannot run - artifacts missing",
+      "detail": "ext_must_pass gate (208 extensions) is BLOCKING but SKIPPED because tests/ext_conformance/reports/gate/must_pass_gate_verdict.json not found.",
+      "reproduce_command": "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+      "owner": "Extension conformance (bd-1f42.4.4)",
+      "remediation": "Execute extension conformance test suite with --features ext-conformance",
+      "dependent_blockers": ["F1 (cross_platform extension_artifacts check)"],
+      "exit_criteria": "must_pass_gate_verdict.json exists with status=pass"
+    }
+  ],
+
+  "resolved_remediations": {
+    "description": "All 10 discrepancy-driven remediation beads from provider-remediation-manifest.json are CLOSED",
+    "source": "docs/provider-remediation-manifest.json",
+    "beads": [
+      {"bead": "bd-2ncd7", "disc": "DISC-010", "title": "Provider aliases", "status": "CLOSED"},
+      {"bead": "bd-4v1xz", "disc": "DISC-011", "title": "List providers CLI", "status": "CLOSED"},
+      {"bead": "bd-mbk79", "disc": "DISC-013", "title": "Display name field", "status": "CLOSED"},
+      {"bead": "bd-2jskn", "disc": "DISC-014", "title": "Onboarding wizard", "status": "CLOSED"},
+      {"bead": "bd-396fn", "disc": "DISC-015", "title": "VCR cassette fix", "status": "CLOSED"},
+      {"bead": "bd-2vlau", "disc": "DISC-018", "title": "Redaction scan", "status": "CLOSED"},
+      {"bead": "bd-2w6ts", "disc": "DISC-017", "title": "CI correlation ID", "status": "CLOSED"},
+      {"bead": "bd-z5vt4", "disc": "DISC-019", "title": "Artifact cross-ref", "status": "CLOSED"},
+      {"bead": "bd-7rs2j", "disc": "DISC-020", "title": "Evidence schema", "status": "CLOSED"},
+      {"bead": "bd-38m8w", "disc": "DISC-021", "title": "V1 deprecation", "status": "CLOSED"}
+    ]
+  },
+
+  "ubs_findings_summary": {
+    "production_critical": 0,
+    "production_warning": 0,
+    "false_positives": 3,
+    "test_only": 678,
+    "verdict": "No actionable production issues. All criticals are test-only panics or false-positive secret detection."
+  },
+
+  "summary": {
+    "total_active_failures": 3,
+    "blocking_failures": 1,
+    "non_blocking_failures": 1,
+    "skipped_blocking": 1,
+    "resolved_remediations": 10,
+    "provider_code_defects": 0,
+    "ubs_production_issues": 0,
+    "release_blocker": "F1: cross_platform gate (extension_artifacts check). Resolution: run ext conformance or adjust policy.",
+    "provider_implementation_verdict": "SOUND — 0 provider code defects across all gates. All failures are infra/test-assertion issues."
+  },
+
+  "verification_commands": {
+    "rerun_all_gates": "scripts/e2e/run_all.sh --profile=full",
+    "rerun_cross_platform": "cargo test --test ci_cross_platform_matrix -- cross_platform_matrix --nocapture --exact",
+    "rerun_full_suite": "cargo test --test ci_full_suite_gate -- full_suite_gate --nocapture --exact",
+    "rerun_artifact_retention": "cargo test --test ci_artifact_retention -- --nocapture",
+    "rerun_replay_validation": "cargo test --test e2e_replay_bundle_validation -- --nocapture"
+  }
+}

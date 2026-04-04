@@ -1,0 +1,65 @@
+{
+  "version": "1.0",
+  "test_name": "anthropic_server_error_500",
+  "recorded_at": "2026-02-05T03:41:05.458Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "X-API-Key",
+            "[REDACTED]"
+          ],
+          [
+            "anthropic-version",
+            "2023-06-01"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body": {
+          "max_tokens": 256,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "Trigger a server error.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-4-20250514",
+          "stream": true,
+          "system": "You are a test harness model. Follow instructions precisely and deterministically.",
+          "temperature": 0.0
+        }
+      },
+      "response": {
+        "status": 500,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body_chunks": [
+          "{\"type\":\"error\",\"error\":{\"type\":\"api_error\",\"message\":\"Internal server error.\"}}"
+        ]
+      }
+    }
+  ]
+}

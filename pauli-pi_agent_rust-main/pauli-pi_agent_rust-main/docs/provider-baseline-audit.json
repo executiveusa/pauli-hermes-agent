@@ -1,0 +1,2759 @@
+{
+  "audit_version": "2.0",
+  "bead_id": "bd-3uqg.11.1",
+  "generated_at_utc": "2026-02-13T04:48:33Z",
+  "upstream_snapshot_ref": "docs/provider-upstream-catalog-snapshot.json",
+  "pi_metadata_ref": "docs/provider-canonical-id-table.json",
+  "columns": [
+    "provider_id",
+    "canonical_aliases",
+    "expected_api_family",
+    "auth_scheme",
+    "tool_call_support_expectation",
+    "current_pi_status",
+    "target_status"
+  ],
+  "summary": {
+    "upstream_union_count": 90,
+    "matrix_rows_total": 92,
+    "pi_canonical_provider_count": 87,
+    "status_counts": {
+      "alias->native-implemented": 4,
+      "alias->oai-compatible-preset": 3,
+      "native-adapter-required-unimplemented": 2,
+      "native-implemented": 8,
+      "oai-compatible-preset": 75
+    },
+    "risk_counts": {
+      "high": 7,
+      "low": 14,
+      "medium": 71
+    },
+    "missing_count": 0
+  },
+  "focus_provider_resolution": [
+    {
+      "provider_id": "alibaba",
+      "canonical_provider_id": "alibaba",
+      "canonical_aliases": [
+        "dashscope",
+        "qwen"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "DASHSCOPE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "DASHSCOPE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "cerebras",
+      "canonical_provider_id": "cerebras",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "CEREBRAS_API_KEY"
+        ],
+        "pi_env_vars": [
+          "CEREBRAS_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "groq",
+      "canonical_provider_id": "groq",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "GROQ_API_KEY"
+        ],
+        "pi_env_vars": [
+          "GROQ_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "kimi",
+      "canonical_provider_id": "moonshotai",
+      "canonical_aliases": [
+        "kimi",
+        "moonshot"
+      ],
+      "upstream_sources": [
+        "user-request-alias"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MOONSHOT_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MOONSHOT_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "alias->oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": false,
+      "notes": [
+        "explicit user-request alias 'kimi' resolved to canonical 'moonshotai'"
+      ]
+    },
+    {
+      "provider_id": "moonshotai",
+      "canonical_provider_id": "moonshotai",
+      "canonical_aliases": [
+        "kimi",
+        "moonshot"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MOONSHOT_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MOONSHOT_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "openrouter",
+      "canonical_provider_id": "openrouter",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "OPENROUTER_API_KEY"
+        ],
+        "pi_env_vars": [
+          "OPENROUTER_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "qwen",
+      "canonical_provider_id": "alibaba",
+      "canonical_aliases": [
+        "dashscope",
+        "qwen"
+      ],
+      "upstream_sources": [
+        "user-request-alias"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "DASHSCOPE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "DASHSCOPE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "alias->oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": false,
+      "notes": [
+        "explicit user-request alias 'qwen' resolved to canonical 'alibaba'"
+      ]
+    }
+  ],
+  "matrix": [
+    {
+      "provider_id": "alibaba",
+      "canonical_provider_id": "alibaba",
+      "canonical_aliases": [
+        "dashscope",
+        "qwen"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "DASHSCOPE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "DASHSCOPE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "cerebras",
+      "canonical_provider_id": "cerebras",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "CEREBRAS_API_KEY"
+        ],
+        "pi_env_vars": [
+          "CEREBRAS_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "groq",
+      "canonical_provider_id": "groq",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "GROQ_API_KEY"
+        ],
+        "pi_env_vars": [
+          "GROQ_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "kimi",
+      "canonical_provider_id": "moonshotai",
+      "canonical_aliases": [
+        "kimi",
+        "moonshot"
+      ],
+      "upstream_sources": [
+        "user-request-alias"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MOONSHOT_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MOONSHOT_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "alias->oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": false,
+      "notes": [
+        "explicit user-request alias 'kimi' resolved to canonical 'moonshotai'"
+      ]
+    },
+    {
+      "provider_id": "moonshotai",
+      "canonical_provider_id": "moonshotai",
+      "canonical_aliases": [
+        "kimi",
+        "moonshot"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MOONSHOT_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MOONSHOT_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "openrouter",
+      "canonical_provider_id": "openrouter",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "OPENROUTER_API_KEY"
+        ],
+        "pi_env_vars": [
+          "OPENROUTER_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "qwen",
+      "canonical_provider_id": "alibaba",
+      "canonical_aliases": [
+        "dashscope",
+        "qwen"
+      ],
+      "upstream_sources": [
+        "user-request-alias"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "DASHSCOPE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "DASHSCOPE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "alias->oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "promote-to-provider-specific-runtime-path-and-complete-test-doc-evidence",
+      "risk": "high",
+      "in_upstream_union": false,
+      "notes": [
+        "explicit user-request alias 'qwen' resolved to canonical 'alibaba'"
+      ]
+    },
+    {
+      "provider_id": "302ai",
+      "canonical_provider_id": "302ai",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "302AI_API_KEY"
+        ],
+        "pi_env_vars": [
+          "302AI_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "abacus",
+      "canonical_provider_id": "abacus",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "ABACUS_API_KEY"
+        ],
+        "pi_env_vars": [
+          "ABACUS_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "aihubmix",
+      "canonical_provider_id": "aihubmix",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "AIHUBMIX_API_KEY"
+        ],
+        "pi_env_vars": [
+          "AIHUBMIX_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "alibaba-cn",
+      "canonical_provider_id": "alibaba-cn",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "DASHSCOPE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "DASHSCOPE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "bailing",
+      "canonical_provider_id": "bailing",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "BAILING_API_TOKEN"
+        ],
+        "pi_env_vars": [
+          "BAILING_API_TOKEN"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "baseten",
+      "canonical_provider_id": "baseten",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "BASETEN_API_KEY"
+        ],
+        "pi_env_vars": [
+          "BASETEN_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "berget",
+      "canonical_provider_id": "berget",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "BERGET_API_KEY"
+        ],
+        "pi_env_vars": [
+          "BERGET_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "chutes",
+      "canonical_provider_id": "chutes",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "CHUTES_API_KEY"
+        ],
+        "pi_env_vars": [
+          "CHUTES_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "cloudflare-ai-gateway",
+      "canonical_provider_id": "cloudflare-ai-gateway",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "CLOUDFLARE_ACCOUNT_ID",
+          "CLOUDFLARE_API_TOKEN",
+          "CLOUDFLARE_GATEWAY_ID"
+        ],
+        "pi_env_vars": [
+          "CLOUDFLARE_API_TOKEN"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "cloudflare-workers-ai",
+      "canonical_provider_id": "cloudflare-workers-ai",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "CLOUDFLARE_ACCOUNT_ID",
+          "CLOUDFLARE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "CLOUDFLARE_API_TOKEN"
+        ]
+      },
+      "tool_call_support_expectation": "not-advertised",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "cortecs",
+      "canonical_provider_id": "cortecs",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "CORTECS_API_KEY"
+        ],
+        "pi_env_vars": [
+          "CORTECS_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "deepinfra",
+      "canonical_provider_id": "deepinfra",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "unknown",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "DEEPINFRA_API_KEY"
+        ],
+        "pi_env_vars": [
+          "DEEPINFRA_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "deepseek",
+      "canonical_provider_id": "deepseek",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "DEEPSEEK_API_KEY"
+        ],
+        "pi_env_vars": [
+          "DEEPSEEK_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "fastrouter",
+      "canonical_provider_id": "fastrouter",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "FASTROUTER_API_KEY"
+        ],
+        "pi_env_vars": [
+          "FASTROUTER_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "fireworks-ai",
+      "canonical_provider_id": "fireworks",
+      "canonical_aliases": [
+        "fireworks-ai"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "FIREWORKS_API_KEY"
+        ],
+        "pi_env_vars": [
+          "FIREWORKS_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "alias->oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": [
+        "alias 'fireworks-ai' resolves to canonical 'fireworks' in current Pi metadata"
+      ]
+    },
+    {
+      "provider_id": "firmware",
+      "canonical_provider_id": "firmware",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "FIRMWARE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "FIRMWARE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "friendli",
+      "canonical_provider_id": "friendli",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "FRIENDLI_TOKEN"
+        ],
+        "pi_env_vars": [
+          "FRIENDLI_TOKEN"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "github-models",
+      "canonical_provider_id": "github-models",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "GITHUB_TOKEN"
+        ],
+        "pi_env_vars": [
+          "GITHUB_TOKEN"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "helicone",
+      "canonical_provider_id": "helicone",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "HELICONE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "HELICONE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "huggingface",
+      "canonical_provider_id": "huggingface",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "HF_TOKEN"
+        ],
+        "pi_env_vars": [
+          "HF_TOKEN"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "iflowcn",
+      "canonical_provider_id": "iflowcn",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "IFLOW_API_KEY"
+        ],
+        "pi_env_vars": [
+          "IFLOW_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "inception",
+      "canonical_provider_id": "inception",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "INCEPTION_API_KEY"
+        ],
+        "pi_env_vars": [
+          "INCEPTION_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "inference",
+      "canonical_provider_id": "inference",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "INFERENCE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "INFERENCE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "io-net",
+      "canonical_provider_id": "io-net",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "IOINTELLIGENCE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "IOINTELLIGENCE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "jiekou",
+      "canonical_provider_id": "jiekou",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "JIEKOU_API_KEY"
+        ],
+        "pi_env_vars": [
+          "JIEKOU_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "kimi-for-coding",
+      "canonical_provider_id": "kimi-for-coding",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "anthropic-messages",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "KIMI_API_KEY"
+        ],
+        "pi_env_vars": [
+          "KIMI_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "anthropic-messages",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "llama",
+      "canonical_provider_id": "llama",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "LLAMA_API_KEY"
+        ],
+        "pi_env_vars": [
+          "LLAMA_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "lmstudio",
+      "canonical_provider_id": "lmstudio",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "code-built-in",
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "LMSTUDIO_API_KEY"
+        ],
+        "pi_env_vars": [
+          "LMSTUDIO_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "lucidquery",
+      "canonical_provider_id": "lucidquery",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "LUCIDQUERY_API_KEY"
+        ],
+        "pi_env_vars": [
+          "LUCIDQUERY_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "minimax",
+      "canonical_provider_id": "minimax",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "anthropic-messages",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MINIMAX_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MINIMAX_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "anthropic-messages",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "minimax-cn",
+      "canonical_provider_id": "minimax-cn",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "anthropic-messages",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MINIMAX_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MINIMAX_CN_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "anthropic-messages",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "minimax-cn-coding-plan",
+      "canonical_provider_id": "minimax-cn-coding-plan",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "anthropic-messages",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MINIMAX_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MINIMAX_CN_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "anthropic-messages",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "minimax-coding-plan",
+      "canonical_provider_id": "minimax-coding-plan",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "anthropic-messages",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MINIMAX_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MINIMAX_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "anthropic-messages",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "mistral",
+      "canonical_provider_id": "mistral",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MISTRAL_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MISTRAL_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "moark",
+      "canonical_provider_id": "moark",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MOARK_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MOARK_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "modelscope",
+      "canonical_provider_id": "modelscope",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MODELSCOPE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MODELSCOPE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "moonshotai-cn",
+      "canonical_provider_id": "moonshotai-cn",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MOONSHOT_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MOONSHOT_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "morph",
+      "canonical_provider_id": "morph",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "MORPH_API_KEY"
+        ],
+        "pi_env_vars": [
+          "MORPH_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "not-advertised",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "nano-gpt",
+      "canonical_provider_id": "nano-gpt",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "NANO_GPT_API_KEY"
+        ],
+        "pi_env_vars": [
+          "NANO_GPT_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "nebius",
+      "canonical_provider_id": "nebius",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "NEBIUS_API_KEY"
+        ],
+        "pi_env_vars": [
+          "NEBIUS_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "nova",
+      "canonical_provider_id": "nova",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "NOVA_API_KEY"
+        ],
+        "pi_env_vars": [
+          "NOVA_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "novita-ai",
+      "canonical_provider_id": "novita-ai",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "NOVITA_API_KEY"
+        ],
+        "pi_env_vars": [
+          "NOVITA_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "nvidia",
+      "canonical_provider_id": "nvidia",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "NVIDIA_API_KEY"
+        ],
+        "pi_env_vars": [
+          "NVIDIA_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "ollama",
+      "canonical_provider_id": "ollama",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "code-built-in"
+      ],
+      "expected_api_family": "openai-responses",
+      "auth_scheme": {
+        "upstream_env_vars": [],
+        "pi_env_vars": []
+      },
+      "tool_call_support_expectation": "unknown",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "ollama-cloud",
+      "canonical_provider_id": "ollama-cloud",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "OLLAMA_API_KEY"
+        ],
+        "pi_env_vars": [
+          "OLLAMA_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "opencode",
+      "canonical_provider_id": "opencode",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "OPENCODE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "OPENCODE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "ovhcloud",
+      "canonical_provider_id": "ovhcloud",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "OVHCLOUD_API_KEY"
+        ],
+        "pi_env_vars": [
+          "OVHCLOUD_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "perplexity",
+      "canonical_provider_id": "perplexity",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "unknown",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "PERPLEXITY_API_KEY"
+        ],
+        "pi_env_vars": [
+          "PERPLEXITY_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "not-advertised",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "poe",
+      "canonical_provider_id": "poe",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "POE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "POE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "privatemode-ai",
+      "canonical_provider_id": "privatemode-ai",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "PRIVATEMODE_API_KEY",
+          "PRIVATEMODE_ENDPOINT"
+        ],
+        "pi_env_vars": [
+          "PRIVATEMODE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "requesty",
+      "canonical_provider_id": "requesty",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "REQUESTY_API_KEY"
+        ],
+        "pi_env_vars": [
+          "REQUESTY_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "scaleway",
+      "canonical_provider_id": "scaleway",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "SCALEWAY_API_KEY"
+        ],
+        "pi_env_vars": [
+          "SCALEWAY_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "siliconflow",
+      "canonical_provider_id": "siliconflow",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "SILICONFLOW_API_KEY"
+        ],
+        "pi_env_vars": [
+          "SILICONFLOW_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "siliconflow-cn",
+      "canonical_provider_id": "siliconflow-cn",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "SILICONFLOW_CN_API_KEY"
+        ],
+        "pi_env_vars": [
+          "SILICONFLOW_CN_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "stackit",
+      "canonical_provider_id": "stackit",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "STACKIT_API_KEY"
+        ],
+        "pi_env_vars": [
+          "STACKIT_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "submodel",
+      "canonical_provider_id": "submodel",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "SUBMODEL_INSTAGEN_ACCESS_KEY"
+        ],
+        "pi_env_vars": [
+          "SUBMODEL_INSTAGEN_ACCESS_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "synthetic",
+      "canonical_provider_id": "synthetic",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "SYNTHETIC_API_KEY"
+        ],
+        "pi_env_vars": [
+          "SYNTHETIC_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "togetherai",
+      "canonical_provider_id": "togetherai",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "TOGETHER_API_KEY"
+        ],
+        "pi_env_vars": [
+          "TOGETHER_AI_API_KEY",
+          "TOGETHER_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "upstage",
+      "canonical_provider_id": "upstage",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "UPSTAGE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "UPSTAGE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "venice",
+      "canonical_provider_id": "venice",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "unknown",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "VENICE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "VENICE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "vercel",
+      "canonical_provider_id": "vercel",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "unknown",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "AI_GATEWAY_API_KEY"
+        ],
+        "pi_env_vars": [
+          "AI_GATEWAY_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "vivgrid",
+      "canonical_provider_id": "vivgrid",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "VIVGRID_API_KEY"
+        ],
+        "pi_env_vars": [
+          "VIVGRID_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "vultr",
+      "canonical_provider_id": "vultr",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "VULTR_API_KEY"
+        ],
+        "pi_env_vars": [
+          "VULTR_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "wandb",
+      "canonical_provider_id": "wandb",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "WANDB_API_KEY"
+        ],
+        "pi_env_vars": [
+          "WANDB_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "xai",
+      "canonical_provider_id": "xai",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "XAI_API_KEY"
+        ],
+        "pi_env_vars": [
+          "XAI_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "xiaomi",
+      "canonical_provider_id": "xiaomi",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "XIAOMI_API_KEY"
+        ],
+        "pi_env_vars": [
+          "XIAOMI_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "zai",
+      "canonical_provider_id": "zai",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "ZHIPU_API_KEY"
+        ],
+        "pi_env_vars": [
+          "ZHIPU_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "zai-coding-plan",
+      "canonical_provider_id": "zai-coding-plan",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "ZHIPU_API_KEY"
+        ],
+        "pi_env_vars": [
+          "ZHIPU_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "zenmux",
+      "canonical_provider_id": "zenmux",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "anthropic-messages",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "ZENMUX_API_KEY"
+        ],
+        "pi_env_vars": [
+          "ZENMUX_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "anthropic-messages",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "zhipuai",
+      "canonical_provider_id": "zhipuai",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "ZHIPU_API_KEY"
+        ],
+        "pi_env_vars": [
+          "ZHIPU_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "zhipuai-coding-plan",
+      "canonical_provider_id": "zhipuai-coding-plan",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "ZHIPU_API_KEY"
+        ],
+        "pi_env_vars": [
+          "ZHIPU_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "oai-compatible-preset",
+      "pi_onboarding_mode": "oai-compatible-preset",
+      "pi_routing_api_family": "openai-completions",
+      "target_status": "keep-preset-unless-provider-specific-behavior-gap-justifies-native-path",
+      "risk": "medium",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "amazon-bedrock",
+      "canonical_provider_id": "amazon-bedrock",
+      "canonical_aliases": [
+        "bedrock"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "bedrock-converse-stream",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "AWS_ACCESS_KEY_ID",
+          "AWS_REGION",
+          "AWS_SECRET_ACCESS_KEY"
+        ],
+        "pi_env_vars": [
+          "AWS_ACCESS_KEY_ID",
+          "AWS_BEARER_TOKEN_BEDROCK",
+          "AWS_PROFILE",
+          "AWS_REGION",
+          "AWS_SECRET_ACCESS_KEY",
+          "AWS_SESSION_TOKEN"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "native-implemented",
+      "pi_onboarding_mode": "native-adapter-required",
+      "pi_routing_api_family": "bedrock-converse-stream",
+      "target_status": "maintain-native-coverage-and-regression-locks",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "anthropic",
+      "canonical_provider_id": "anthropic",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "anthropic-messages",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "ANTHROPIC_API_KEY"
+        ],
+        "pi_env_vars": [
+          "ANTHROPIC_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "native-implemented",
+      "pi_onboarding_mode": "built-in-native",
+      "pi_routing_api_family": "anthropic-messages",
+      "target_status": "maintain-native-coverage-and-regression-locks",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "azure",
+      "canonical_provider_id": "azure-openai",
+      "canonical_aliases": [
+        "azure",
+        "azure-cognitive-services"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "azure-openai",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "AZURE_API_KEY",
+          "AZURE_RESOURCE_NAME"
+        ],
+        "pi_env_vars": [
+          "AZURE_OPENAI_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "alias->native-implemented",
+      "pi_onboarding_mode": "native-adapter-required",
+      "pi_routing_api_family": null,
+      "target_status": "maintain-native-coverage-and-regression-locks",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": [
+        "alias 'azure' resolves to canonical 'azure-openai' in current Pi metadata",
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "azure-cognitive-services",
+      "canonical_provider_id": "azure-openai",
+      "canonical_aliases": [
+        "azure",
+        "azure-cognitive-services"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "azure-openai",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "AZURE_COGNITIVE_SERVICES_API_KEY",
+          "AZURE_COGNITIVE_SERVICES_RESOURCE_NAME"
+        ],
+        "pi_env_vars": [
+          "AZURE_OPENAI_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "alias->native-implemented",
+      "pi_onboarding_mode": "native-adapter-required",
+      "pi_routing_api_family": null,
+      "target_status": "maintain-native-coverage-and-regression-locks",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": [
+        "alias 'azure-cognitive-services' resolves to canonical 'azure-openai' in current Pi metadata",
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "cohere",
+      "canonical_provider_id": "cohere",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "cohere-chat",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "COHERE_API_KEY"
+        ],
+        "pi_env_vars": [
+          "COHERE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "native-implemented",
+      "pi_onboarding_mode": "built-in-native",
+      "pi_routing_api_family": "cohere-chat",
+      "target_status": "maintain-native-coverage-and-regression-locks",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "github-copilot",
+      "canonical_provider_id": "github-copilot",
+      "canonical_aliases": [
+        "copilot",
+        "github-copilot-enterprise"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "GITHUB_TOKEN"
+        ],
+        "pi_env_vars": [
+          "GITHUB_COPILOT_API_KEY",
+          "GITHUB_TOKEN"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "native-implemented",
+      "pi_onboarding_mode": "native-adapter-required",
+      "pi_routing_api_family": null,
+      "target_status": "maintain-native-coverage-and-regression-locks",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "github-copilot-enterprise",
+      "canonical_provider_id": "github-copilot",
+      "canonical_aliases": [
+        "copilot",
+        "github-copilot-enterprise"
+      ],
+      "upstream_sources": [
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "GITHUB_TOKEN"
+        ],
+        "pi_env_vars": [
+          "GITHUB_COPILOT_API_KEY",
+          "GITHUB_TOKEN"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "alias->native-implemented",
+      "pi_onboarding_mode": "native-adapter-required",
+      "pi_routing_api_family": null,
+      "target_status": "maintain-native-coverage-and-regression-locks",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": [
+        "alias 'github-copilot-enterprise' resolves to canonical 'github-copilot' in current Pi metadata",
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "gitlab",
+      "canonical_provider_id": "gitlab",
+      "canonical_aliases": [
+        "gitlab-duo"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "unknown",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "GITLAB_TOKEN"
+        ],
+        "pi_env_vars": [
+          "GITLAB_API_KEY",
+          "GITLAB_TOKEN"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "native-implemented",
+      "pi_onboarding_mode": "native-adapter-required",
+      "pi_routing_api_family": null,
+      "target_status": "maintain-native-coverage-and-regression-locks",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "google",
+      "canonical_provider_id": "google",
+      "canonical_aliases": [
+        "gemini"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "google-generative-ai",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "GEMINI_API_KEY",
+          "GOOGLE_GENERATIVE_AI_API_KEY"
+        ],
+        "pi_env_vars": [
+          "GEMINI_API_KEY",
+          "GOOGLE_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "native-implemented",
+      "pi_onboarding_mode": "built-in-native",
+      "pi_routing_api_family": "google-generative-ai",
+      "target_status": "maintain-native-coverage-and-regression-locks",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": []
+    },
+    {
+      "provider_id": "google-vertex",
+      "canonical_provider_id": "google-vertex",
+      "canonical_aliases": [
+        "google-vertex-anthropic",
+        "vertexai"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "google-vertex",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "GOOGLE_APPLICATION_CREDENTIALS",
+          "GOOGLE_VERTEX_LOCATION",
+          "GOOGLE_VERTEX_PROJECT"
+        ],
+        "pi_env_vars": [
+          "GOOGLE_CLOUD_API_KEY",
+          "VERTEX_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "native-implemented",
+      "pi_onboarding_mode": "built-in-native",
+      "pi_routing_api_family": "google-vertex",
+      "target_status": "maintain-native-coverage-and-regression-locks",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "google-vertex-anthropic",
+      "canonical_provider_id": "google-vertex",
+      "canonical_aliases": [
+        "google-vertex-anthropic",
+        "vertexai"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "unknown",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "GOOGLE_APPLICATION_CREDENTIALS",
+          "GOOGLE_VERTEX_LOCATION",
+          "GOOGLE_VERTEX_PROJECT"
+        ],
+        "pi_env_vars": [
+          "GOOGLE_CLOUD_API_KEY",
+          "VERTEX_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "alias->native-implemented",
+      "pi_onboarding_mode": "built-in-native",
+      "pi_routing_api_family": "google-vertex",
+      "target_status": "maintain-native-coverage-and-regression-locks",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": [
+        "alias 'google-vertex-anthropic' resolves to canonical 'google-vertex' in current Pi metadata",
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "openai",
+      "canonical_provider_id": "openai",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "code-built-in",
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "OPENAI_API_KEY"
+        ],
+        "pi_env_vars": [
+          "OPENAI_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "native-implemented",
+      "pi_onboarding_mode": "built-in-native",
+      "pi_routing_api_family": "openai-responses",
+      "target_status": "maintain-native-coverage-and-regression-locks",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "sap-ai-core",
+      "canonical_provider_id": "sap-ai-core",
+      "canonical_aliases": [
+        "sap"
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "expected_api_family": "unknown",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "AICORE_SERVICE_KEY"
+        ],
+        "pi_env_vars": [
+          "AICORE_SERVICE_KEY",
+          "SAP_AI_CORE_CLIENT_ID",
+          "SAP_AI_CORE_CLIENT_SECRET",
+          "SAP_AI_CORE_SERVICE_URL",
+          "SAP_AI_CORE_TOKEN_URL"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "native-adapter-required-unimplemented",
+      "pi_onboarding_mode": "native-adapter-required",
+      "pi_routing_api_family": null,
+      "target_status": "stabilize-and-fill-evidence-gaps",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": [
+        "provider has explicit opencode custom loader behavior"
+      ]
+    },
+    {
+      "provider_id": "v0",
+      "canonical_provider_id": "v0",
+      "canonical_aliases": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "expected_api_family": "openai-compatible",
+      "auth_scheme": {
+        "upstream_env_vars": [
+          "V0_API_KEY"
+        ],
+        "pi_env_vars": [
+          "V0_API_KEY"
+        ]
+      },
+      "tool_call_support_expectation": "expected-supported",
+      "current_pi_status": "native-adapter-required-unimplemented",
+      "pi_onboarding_mode": "native-adapter-required",
+      "pi_routing_api_family": null,
+      "target_status": "stabilize-and-fill-evidence-gaps",
+      "risk": "low",
+      "in_upstream_union": true,
+      "notes": []
+    }
+  ]
+}

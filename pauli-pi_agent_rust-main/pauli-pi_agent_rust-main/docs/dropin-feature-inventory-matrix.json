@@ -1,0 +1,801 @@
+{
+  "schema": "pi.dropin.feature_inventory.v1",
+  "bead_id": "bd-w9i9o",
+  "generated_at_utc": "2026-02-14T19:04:00Z",
+  "status": "draft_reconciled_to_pinned_baseline",
+  "baseline": {
+    "upstream_root": "legacy_pi_mono_code/pi-mono/packages/coding-agent",
+    "upstream_baseline_status": "pinned",
+    "baseline_reference": "docs/dropin-upstream-baseline.json",
+    "upstream_commit": "10bca71fcfc2c4cb7bbbdb4110644a8c5aaef768",
+    "upstream_describe": "v0.51.0-8-g10bca71f",
+    "reconciled_at_utc": "2026-02-14T19:08:00Z",
+    "notes": "Inventory reconciled against pinned upstream baseline artifact."
+  },
+  "rows": [
+    {
+      "row_id": "mode.shared.primary",
+      "surface": "execution_modes",
+      "elements": [
+        "interactive",
+        "print:text",
+        "print:json",
+        "rpc"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/cli/args.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/main.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/modes/index.ts"
+      ],
+      "rust_evidence": [
+        "src/cli.rs",
+        "src/main.rs",
+        "src/interactive.rs",
+        "src/rpc.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "mode.sdk.embedding",
+      "surface": "execution_modes",
+      "elements": [
+        "sdk:createAgentSession",
+        "sdk:rpc-client"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/sdk.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/modes/rpc/rpc-client.ts"
+      ],
+      "rust_evidence": [
+        "src/sdk.rs",
+        "src/lib.rs"
+      ],
+      "status": "partial_contract_shape_diff",
+      "assigned_beads": [
+        "bd-1it6z",
+        "bd-2km0n",
+        "bd-c9usa"
+      ]
+    },
+    {
+      "row_id": "tools.builtin.shared",
+      "surface": "tool_surface",
+      "elements": [
+        "read",
+        "bash",
+        "edit",
+        "write",
+        "grep",
+        "find",
+        "ls"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/tools/index.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/cli/args.ts"
+      ],
+      "rust_evidence": [
+        "src/tools.rs",
+        "src/cli.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "cli.flags.shared",
+      "surface": "cli_flags",
+      "elements": [
+        "--help|-h",
+        "--version|-v",
+        "--provider",
+        "--model",
+        "--api-key",
+        "--system-prompt",
+        "--append-system-prompt",
+        "--mode",
+        "--print|-p",
+        "--continue|-c",
+        "--resume|-r",
+        "--session",
+        "--session-dir",
+        "--no-session",
+        "--models",
+        "--thinking",
+        "--no-tools",
+        "--tools",
+        "--extension|-e",
+        "--no-extensions",
+        "--skill",
+        "--no-skills",
+        "--prompt-template",
+        "--no-prompt-templates",
+        "--theme",
+        "--no-themes",
+        "--export",
+        "--list-models",
+        "--verbose"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/cli/args.ts"
+      ],
+      "rust_evidence": [
+        "src/cli.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "cli.flags.rust_only",
+      "surface": "cli_flags",
+      "elements": [
+        "--list-providers",
+        "--theme-path",
+        "--extension-policy",
+        "--explain-extension-policy",
+        "--repair-policy",
+        "--explain-repair-policy"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/cli/args.ts"
+      ],
+      "rust_evidence": [
+        "src/cli.rs",
+        "src/main.rs"
+      ],
+      "status": "rust_superset",
+      "notes": "Additional Rust controls for extension governance and diagnostics; not a blocking parity gap."
+    },
+    {
+      "row_id": "cli.extensions.dynamic_flags",
+      "surface": "cli_flags",
+      "elements": [
+        "extension-registered-unknown-flags-pass-through"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/cli/args.ts"
+      ],
+      "rust_evidence": [
+        "src/cli.rs",
+        "src/main.rs"
+      ],
+      "status": "partial_in_progress",
+      "assigned_bead": "bd-2cd9b"
+    },
+    {
+      "row_id": "cli.argument_conventions",
+      "surface": "cli_integration_contract",
+      "elements": [
+        "@file-argument-expansion",
+        "trailing-message-args",
+        "comma-delimited-tools",
+        "comma-delimited-model-scope"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/cli/args.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/cli/file-processor.ts"
+      ],
+      "rust_evidence": [
+        "src/cli.rs",
+        "src/app.rs",
+        "src/resources.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "cli.subcommands.shared",
+      "surface": "cli_subcommands",
+      "elements": [
+        "install",
+        "remove",
+        "update",
+        "list",
+        "config"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/main.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/cli/args.ts"
+      ],
+      "rust_evidence": [
+        "src/cli.rs",
+        "src/main.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "cli.subcommands.rust_only",
+      "surface": "cli_subcommands",
+      "elements": [
+        "update-index",
+        "info",
+        "search",
+        "doctor"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/cli/args.ts"
+      ],
+      "rust_evidence": [
+        "src/cli.rs",
+        "src/main.rs",
+        "src/doctor.rs",
+        "src/extension_index.rs"
+      ],
+      "status": "rust_superset",
+      "notes": "Operational quality-of-life additions beyond upstream surface."
+    },
+    {
+      "row_id": "rpc.commands.shared",
+      "surface": "rpc_commands",
+      "elements": [
+        "prompt",
+        "steer",
+        "follow_up",
+        "abort",
+        "new_session",
+        "get_state",
+        "get_messages",
+        "set_model",
+        "cycle_model",
+        "get_available_models",
+        "set_thinking_level",
+        "cycle_thinking_level",
+        "set_steering_mode",
+        "set_follow_up_mode",
+        "compact",
+        "set_auto_compaction",
+        "set_auto_retry",
+        "abort_retry",
+        "bash",
+        "abort_bash",
+        "get_session_stats",
+        "export_html",
+        "switch_session",
+        "fork",
+        "get_fork_messages",
+        "get_last_assistant_text",
+        "set_session_name",
+        "get_commands"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/modes/rpc/rpc-types.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/rpc.md"
+      ],
+      "rust_evidence": [
+        "src/rpc.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "rpc.prompt.streaming_behavior",
+      "surface": "rpc_commands",
+      "elements": [
+        "prompt.streamingBehavior=steer",
+        "prompt.streamingBehavior=followUp"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/modes/rpc/rpc-types.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/rpc.md"
+      ],
+      "rust_evidence": [
+        "src/rpc.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "rpc.extension_ui_contract",
+      "surface": "rpc_integration_contract",
+      "elements": [
+        "extension_ui_request.select",
+        "extension_ui_request.confirm",
+        "extension_ui_request.input",
+        "extension_ui_request.editor",
+        "extension_ui_request.notify",
+        "extension_ui_request.setStatus",
+        "extension_ui_request.setWidget",
+        "extension_ui_request.setTitle",
+        "extension_ui_request.set_editor_text",
+        "extension_ui_response.value",
+        "extension_ui_response.confirmed",
+        "extension_ui_response.cancelled"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/modes/rpc/rpc-types.ts"
+      ],
+      "rust_evidence": [
+        "src/rpc.rs",
+        "src/extensions.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "json.events.agent_lifecycle",
+      "surface": "json_event_types",
+      "elements": [
+        "agent_start",
+        "agent_end",
+        "turn_start",
+        "turn_end",
+        "message_start",
+        "message_update",
+        "message_end",
+        "tool_execution_start",
+        "tool_execution_update",
+        "tool_execution_end"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/json.md",
+        "legacy_pi_mono_code/pi-mono/packages/agent/src/types.ts"
+      ],
+      "rust_evidence": [
+        "src/agent.rs",
+        "src/main.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "json.events.auto_lifecycle",
+      "surface": "json_event_types",
+      "elements": [
+        "auto_compaction_start",
+        "auto_compaction_end",
+        "auto_retry_start",
+        "auto_retry_end"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/json.md"
+      ],
+      "rust_evidence": [
+        "src/agent.rs",
+        "src/rpc.rs",
+        "src/main.rs"
+      ],
+      "status": "in_progress_parity_hardening",
+      "assigned_bead": "bd-2ilgm"
+    },
+    {
+      "row_id": "json.events.assistant_message_substream",
+      "surface": "json_event_types",
+      "elements": [
+        "assistantMessageEvent.start",
+        "assistantMessageEvent.text_start",
+        "assistantMessageEvent.text_delta",
+        "assistantMessageEvent.text_end",
+        "assistantMessageEvent.thinking_start",
+        "assistantMessageEvent.thinking_delta",
+        "assistantMessageEvent.thinking_end",
+        "assistantMessageEvent.toolcall_start",
+        "assistantMessageEvent.toolcall_delta",
+        "assistantMessageEvent.toolcall_end",
+        "assistantMessageEvent.done",
+        "assistantMessageEvent.error"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/agent/src/types.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/json.md"
+      ],
+      "rust_evidence": [
+        "src/model.rs",
+        "src/agent.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "session.format.header",
+      "surface": "session_contract",
+      "elements": [
+        "jsonl-line-0=session-header",
+        "session.version=3",
+        "session.id",
+        "session.cwd",
+        "session.parentSession(optional)"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/session.md"
+      ],
+      "rust_evidence": [
+        "src/session.rs",
+        "docs/session.md"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "session.format.entry_types",
+      "surface": "session_contract",
+      "elements": [
+        "message",
+        "model_change",
+        "thinking_level_change",
+        "compaction",
+        "branch_summary",
+        "session_info",
+        "custom",
+        "label"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/session.md",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/session-manager.ts"
+      ],
+      "rust_evidence": [
+        "src/session.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "session.message_union",
+      "surface": "session_contract",
+      "elements": [
+        "user",
+        "assistant",
+        "toolResult",
+        "bashExecution",
+        "custom",
+        "branchSummary",
+        "compactionSummary"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/session.md",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/messages.ts"
+      ],
+      "rust_evidence": [
+        "src/session.rs",
+        "src/model.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "session.branching_contract",
+      "surface": "session_contract",
+      "elements": [
+        "entry.id",
+        "entry.parentId",
+        "tree-navigation",
+        "fork-session",
+        "branch-summary-on-switch"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/session.md",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/session-manager.ts"
+      ],
+      "rust_evidence": [
+        "src/session.rs",
+        "src/session_index.rs",
+        "docs/session.md"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "config.model_and_thinking",
+      "surface": "config_knobs",
+      "elements": [
+        "defaultProvider|default_provider",
+        "defaultModel|default_model",
+        "defaultThinkingLevel|default_thinking_level",
+        "enabledModels|enabled_models",
+        "thinkingBudgets.minimal|thinking_budgets.minimal",
+        "thinkingBudgets.low|thinking_budgets.low",
+        "thinkingBudgets.medium|thinking_budgets.medium",
+        "thinkingBudgets.high|thinking_budgets.high",
+        "thinkingBudgets.xhigh|thinking_budgets.xhigh"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/settings-manager.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/settings.md"
+      ],
+      "rust_evidence": [
+        "src/config.rs",
+        "docs/settings.md"
+      ],
+      "status": "mostly_present_both",
+      "notes": "Rust supports xhigh budget explicitly in config defaults."
+    },
+    {
+      "row_id": "config.queue_modes",
+      "surface": "config_knobs",
+      "elements": [
+        "steeringMode|steering_mode",
+        "followUpMode|follow_up_mode"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/settings-manager.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/settings.md"
+      ],
+      "rust_evidence": [
+        "src/config.rs",
+        "src/agent.rs",
+        "src/rpc.rs",
+        "docs/settings.md"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "config.ui_editor",
+      "surface": "config_knobs",
+      "elements": [
+        "theme",
+        "quietStartup|quiet_startup",
+        "collapseChangelog|collapse_changelog",
+        "doubleEscapeAction|double_escape_action",
+        "editorPaddingX|editor_padding_x",
+        "autocompleteMaxVisible|autocomplete_max_visible",
+        "showHardwareCursor|show_hardware_cursor",
+        "sessionPickerInput|session_picker_input",
+        "lastChangelogVersion|last_changelog_version"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/settings-manager.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/settings.md"
+      ],
+      "rust_evidence": [
+        "src/config.rs",
+        "docs/settings.md"
+      ],
+      "status": "partial_some_not_fully_wired",
+      "assigned_beads": [
+        "bd-uuf2z",
+        "bd-13pqz"
+      ]
+    },
+    {
+      "row_id": "config.compaction_branch_retry",
+      "surface": "config_knobs",
+      "elements": [
+        "compaction.enabled",
+        "compaction.reserveTokens|compaction.reserve_tokens",
+        "compaction.keepRecentTokens|compaction.keep_recent_tokens",
+        "branchSummary.reserveTokens|branch_summary.reserve_tokens",
+        "retry.enabled",
+        "retry.maxRetries|retry.max_retries",
+        "retry.baseDelayMs|retry.base_delay_ms",
+        "retry.maxDelayMs|retry.max_delay_ms"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/settings-manager.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/settings.md"
+      ],
+      "rust_evidence": [
+        "src/config.rs",
+        "src/agent.rs",
+        "src/rpc.rs",
+        "docs/settings.md"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "config.shell_terminal_images",
+      "surface": "config_knobs",
+      "elements": [
+        "shellPath|shell_path",
+        "shellCommandPrefix|shell_command_prefix",
+        "terminal.showImages|terminal.show_images",
+        "terminal.clearOnShrink|terminal.clear_on_shrink",
+        "images.autoResize|images.auto_resize",
+        "images.blockImages|images.block_images",
+        "hideThinkingBlock|hide_thinking_block"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/settings-manager.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/settings.md"
+      ],
+      "rust_evidence": [
+        "src/config.rs",
+        "src/tools.rs",
+        "docs/settings.md"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "config.resources",
+      "surface": "config_knobs",
+      "elements": [
+        "packages",
+        "extensions",
+        "skills",
+        "prompts",
+        "themes",
+        "enableSkillCommands|enable_skill_commands"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/settings-manager.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/settings.md"
+      ],
+      "rust_evidence": [
+        "src/config.rs",
+        "src/resources.rs",
+        "docs/settings.md"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "config.markdown",
+      "surface": "config_knobs",
+      "elements": [
+        "markdown.codeBlockIndent"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/settings-manager.ts",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/settings.md"
+      ],
+      "rust_evidence": [
+        "src/config.rs"
+      ],
+      "status": "missing_or_unverified_in_rust",
+      "assigned_bead": "bd-uuf2z"
+    },
+    {
+      "row_id": "config.rust_additional_policy_knobs",
+      "surface": "config_knobs",
+      "elements": [
+        "extensionPolicy|extension_policy",
+        "repairPolicy|repair_policy",
+        "extensionRisk|extension_risk",
+        "ghPath|gh_path",
+        "sessionStore|session_store"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/settings-manager.ts"
+      ],
+      "rust_evidence": [
+        "src/config.rs",
+        "src/main.rs",
+        "src/extensions.rs"
+      ],
+      "status": "rust_superset"
+    },
+    {
+      "row_id": "env.contracts.common",
+      "surface": "integration_contract",
+      "elements": [
+        "ANTHROPIC_API_KEY",
+        "OPENAI_API_KEY",
+        "GEMINI_API_KEY",
+        "AZURE_OPENAI_API_KEY",
+        "PI_CODING_AGENT_DIR",
+        "PI_PACKAGE_DIR"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/cli/args.ts"
+      ],
+      "rust_evidence": [
+        "README.md",
+        "src/main.rs",
+        "src/config.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "env.contracts.pi_ai_antigravity_version",
+      "surface": "integration_contract",
+      "elements": [
+        "PI_AI_ANTIGRAVITY_VERSION"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/cli/args.ts"
+      ],
+      "rust_evidence": [
+        "README.md",
+        "src/main.rs"
+      ],
+      "status": "unknown_needs_gap_classification",
+      "assigned_bead": "bd-13pqz"
+    },
+    {
+      "row_id": "integration.rpc_wire",
+      "surface": "integration_contract",
+      "elements": [
+        "stdin-jsonl-command-channel",
+        "stdout-jsonl-response-event-channel",
+        "optional-id-correlation",
+        "response-envelope:{type,command,success,data|error}"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/rpc.md",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/modes/rpc/rpc-types.ts"
+      ],
+      "rust_evidence": [
+        "src/rpc.rs",
+        "docs/rpc.md"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "integration.json_mode_wire",
+      "surface": "integration_contract",
+      "elements": [
+        "session-header-first-line",
+        "jsonl-event-stream",
+        "assistant-message-incremental-deltas"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/json.md"
+      ],
+      "rust_evidence": [
+        "src/main.rs",
+        "src/agent.rs",
+        "src/model.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    },
+    {
+      "row_id": "integration.settings_precedence",
+      "surface": "integration_contract",
+      "elements": [
+        "cli-overrides-env-overrides-project-overrides-global-overrides-defaults",
+        "global+project-settings-loading",
+        "single-file-mode-via-PI_CONFIG_PATH"
+      ],
+      "upstream_evidence": [
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/settings.md",
+        "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/settings-manager.ts"
+      ],
+      "rust_evidence": [
+        "docs/settings.md",
+        "src/config.rs",
+        "src/main.rs"
+      ],
+      "status": "provisional_present_both",
+      "reconcile_with_bead": "bd-2ej25"
+    }
+  ],
+  "unknowns": [
+    {
+      "id": "unknown-01-sdk-dropin-contract",
+      "description": "Rust sdk module exposes stable types but does not yet mirror upstream createAgentSession/rpc-client contract shape.",
+      "assigned_beads": [
+        "bd-1it6z",
+        "bd-2km0n",
+        "bd-c9usa"
+      ],
+      "impact": "SDK parity stream remains incomplete for strict drop-in embedding semantics."
+    },
+    {
+      "id": "unknown-02-extension-cli-flag-pass-through",
+      "description": "Two-pass extension flag compatibility is still in progress.",
+      "assigned_bead": "bd-2cd9b",
+      "impact": "CLI parity for extension-registered flags is not fully closed."
+    },
+    {
+      "id": "unknown-03-markdown-code-block-indent",
+      "description": "Upstream markdown.codeBlockIndent knob requires parity classification/implementation decision in Rust.",
+      "assigned_bead": "bd-uuf2z",
+      "impact": "Configuration compatibility surface has at least one unresolved knob."
+    },
+    {
+      "id": "unknown-04-gap-ledger-reconciliation",
+      "description": "Rows marked unknown/partial need severity + ownership mapping in canonical gap ledger.",
+      "assigned_bead": "bd-13pqz",
+      "impact": "Cannot claim full drop-in closure until ledger is updated and accepted."
+    }
+  ],
+  "inventory_summary": {
+    "row_count": 32,
+    "status_counts": {
+      "provisional_present_both": 22,
+      "mostly_present_both": 1,
+      "partial_contract_shape_diff": 1,
+      "partial_in_progress": 1,
+      "in_progress_parity_hardening": 1,
+      "partial_some_not_fully_wired": 1,
+      "missing_or_unverified_in_rust": 1,
+      "rust_superset": 3,
+      "unknown_needs_gap_classification": 1
+    },
+    "note": "This matrix is evidence-linked and now reconciled to the pinned baseline; remaining unknowns are assigned to follow-up beads."
+  }
+}

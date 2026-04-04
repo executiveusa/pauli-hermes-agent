@@ -1,0 +1,25 @@
+{
+  "schema": "pi.fuzz.regression_manifest.v1",
+  "generated_at": "2026-02-15T04:40:15.784156+00:00",
+  "case_count": 3,
+  "cases": [
+    {
+      "target": "fuzz_smoke",
+      "category": "unknown",
+      "path": "fuzz/regression/fuzz_smoke/unknown-001.bin",
+      "stem": "unknown-001"
+    },
+    {
+      "target": "fuzz_sse_parser",
+      "category": "unknown",
+      "path": "fuzz/regression/fuzz_sse_parser/harness-false-positive-001.bin",
+      "stem": "harness-false-positive-001"
+    },
+    {
+      "target": "fuzz_sse_parser",
+      "category": "unknown",
+      "path": "fuzz/regression/fuzz_sse_parser/panic-unwrap-001.bin",
+      "stem": "panic-unwrap-001"
+    }
+  ]
+}

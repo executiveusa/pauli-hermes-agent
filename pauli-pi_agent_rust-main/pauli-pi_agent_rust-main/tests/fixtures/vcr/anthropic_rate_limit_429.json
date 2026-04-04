@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "test_name": "anthropic_rate_limit_429",
+  "recorded_at": "2026-02-05T03:41:05.458Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "X-API-Key",
+            "[REDACTED]"
+          ],
+          [
+            "anthropic-version",
+            "2023-06-01"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body": {
+          "max_tokens": 256,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "Trigger a rate limit error.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-4-20250514",
+          "stream": true,
+          "system": "You are a test harness model. Follow instructions precisely and deterministically.",
+          "temperature": 0.0
+        }
+      },
+      "response": {
+        "status": 429,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "retry-after",
+            "30"
+          ]
+        ],
+        "body_chunks": [
+          "{\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Rate limit exceeded. Please retry after 30 seconds.\"}}"
+        ]
+      }
+    }
+  ]
+}

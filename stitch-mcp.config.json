@@ -1,0 +1,185 @@
+{
+  "mcpServers": {
+    "hermes-orchestrator": {
+      "command": "npx",
+      "args": ["stitch-bridge", "--port", "8642"],
+      "env": {
+        "API_URL": "http://localhost:8642",
+        "API_KEY": "${HERMES_API_KEY}",
+        "AGENT_TYPE": "orchestrator"
+      },
+      "tools": [
+        "invoke_agent",
+        "get_agent_status",
+        "list_tools",
+        "search_memory",
+        "manage_tasks",
+        "execute_skill"
+      ]
+    },
+    "agent-zero": {
+      "command": "npx",
+      "args": ["stitch-bridge", "--port", "8643"],
+      "env": {
+        "API_URL": "http://localhost:8643",
+        "API_KEY": "${AGENT_ZERO_API_KEY}",
+        "AGENT_TYPE": "personal"
+      },
+      "tools": [
+        "invoke_agent",
+        "get_agent_status",
+        "list_tools",
+        "search_memory",
+        "manage_tasks"
+      ]
+    },
+    "open-brain": {
+      "command": "npx",
+      "args": ["stitch-bridge", "--port", "8001", "--db", "supabase"],
+      "env": {
+        "SUPABASE_URL": "${SUPABASE_URL}",
+        "SUPABASE_KEY": "${SUPABASE_KEY}",
+        "SUPABASE_SERVICE_KEY": "${SUPABASE_SERVICE_KEY}"
+      },
+      "tools": [
+        "store_memory",
+        "search_memories",
+        "get_memory_collection",
+        "consolidate_memories",
+        "analyze_patterns"
+      ]
+    },
+    "vercel-deployment": {
+      "command": "npx",
+      "args": ["stitch-bridge", "--api", "vercel"],
+      "env": {
+        "VERCEL_TOKEN": "${VERCEL_TOKEN}",
+        "PROJECT_ID": "prj_hLAOeM1ml6C0Pp5uIApODsIhC83A",
+        "VERCEL_TEAM_ID": "${VERCEL_TEAM_ID}"
+      },
+      "tools": [
+        "deploy",
+        "get_deployment_status",
+        "list_deployments",
+        "rollback",
+        "get_logs"
+      ]
+    },
+    "vps-orchestration": {
+      "command": "npx",
+      "args": ["stitch-bridge", "--api", "docker"],
+      "env": {
+        "VPS_HOST": "31.220.58.212",
+        "VPS_PORT": "22",
+        "VPS_KEY": "${VPS_SSH_KEY}",
+        "DOCKER_HOST": "unix:///var/run/docker.sock"
+      },
+      "tools": [
+        "docker_compose_up",
+        "docker_compose_down",
+        "docker_logs",
+        "status_services",
+        "restart_service",
+        "get_resource_usage"
+      ]
+    },
+    "skill-wizard": {
+      "command": "npx",
+      "args": ["stitch-bridge", "--api", "skill"],
+      "env": {
+        "HERMES_HOME": "${HERMES_HOME}",
+        "SKILLS_PATH": "~/.hermes/skills"
+      },
+      "tools": [
+        "generate_skill",
+        "validate_skill",
+        "install_skill",
+        "list_available_skills",
+        "get_skill_metadata"
+      ]
+    },
+    "cron-scheduler": {
+      "command": "npx",
+      "args": ["stitch-bridge", "--api", "cron"],
+      "env": {
+        "CRON_DB": "${CRON_DB_URL}"
+      },
+      "tools": [
+        "schedule_job",
+        "list_jobs",
+        "get_job_status",
+        "cancel_job",
+        "view_job_logs"
+      ]
+    },
+    "beads-task-tracking": {
+      "command": "npx",
+      "args": ["stitch-bridge", "--api", "git"],
+      "env": {
+        "BEADS_HOME": "${BEADS_HOME}",
+        "GIT_REPO": "."
+      },
+      "tools": [
+        "create_task",
+        "update_task",
+        "list_tasks",
+        "close_task",
+        "get_task_dependencies"
+      ]
+    }
+  },
+  "capabilities": {
+    "invoke_agent": {
+      "description": "Invoke a specific Hermes agent with a prompt",
+      "parameters": {
+        "agent": "string",
+        "prompt": "string",
+        "context": "object",
+        "max_iterations": "integer"
+      }
+    },
+    "get_agent_status": {
+      "description": "Get real-time status of an agent (busy, idle, error)",
+      "parameters": {
+        "agent": "string"
+      }
+    },
+    "deploy": {
+      "description": "Deploy Hermes Agent to Vercel",
+      "parameters": {
+        "branch": "string",
+        "env": "object",
+        "skip_build": "boolean"
+      }
+    },
+    "docker_compose_up": {
+      "description": "Start VPS services with docker-compose",
+      "parameters": {
+        "services": "array",
+        "follow_logs": "boolean"
+      }
+    },
+    "search_memory": {
+      "description": "Search Open Brain Supabase for memories",
+      "parameters": {
+        "query": "string",
+        "collection": "string",
+        "limit": "integer"
+      }
+    }
+  },
+  "testing": {
+    "enabled": true,
+    "testTimeout": 30000,
+    "testSuites": [
+      "hermes_connection_test",
+      "agent_zero_connection_test",
+      "open_brain_test",
+      "vercel_deployment_test",
+      "vps_orchestration_test",
+      "skill_wizard_test",
+      "cron_scheduler_test",
+      "beads_integration_test"
+    ]
+  }
+}

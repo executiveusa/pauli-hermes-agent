@@ -1,0 +1,108 @@
+{
+  "schema": "pi.frankennode.runtime_integration_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.13",
+  "support_bead_ids": [],
+  "status": "active_blocking_policy",
+  "effective_date_utc": "2026-02-17T10:00:00Z",
+  "scope": {
+    "target_project_root": "/dp/franken_node",
+    "source_project_root": "/data/projects/pi_agent_rust",
+    "objective": "Integrate franken_node runtime crates into pi_agent_rust through clean runtime boundaries, retire duplicate paths, and validate the integrated stack."
+  },
+  "integration_boundary": {
+    "required_crate_dependencies": [
+      "franken_node_kernel",
+      "franken_node_event_loop",
+      "franken_node_io"
+    ],
+    "runtime_boundary_trait": "FrankenNodeRuntime",
+    "boundary_enforcement": "trait_object_only",
+    "fail_closed_on_missing_crate": true,
+    "invariants": [
+      "All franken_node crate dependencies are declared in Cargo.toml with exact version pins",
+      "No direct access to franken_node internals — all interaction through public trait boundary",
+      "Runtime boundary trait is object-safe for dynamic dispatch",
+      "Feature flags gate franken_node integration for incremental rollout"
+    ]
+  },
+  "duplicate_path_retirement": {
+    "required_retirement_targets": [
+      "inline_event_loop_polling",
+      "inline_io_driver",
+      "inline_timer_wheel",
+      "inline_dns_resolver"
+    ],
+    "retirement_strategy": "feature_flag_switchover",
+    "rollback_supported": true,
+    "invariants": [
+      "Every retired code path has a feature flag to re-enable the old implementation",
+      "No retired path is deleted until the replacement passes all integration tests",
+      "Retirement is incremental — one subsystem at a time, not big-bang",
+      "Dead code from retired paths is removed only after two release cycles"
+    ]
+  },
+  "validation_gates": {
+    "required_validation_stages": [
+      "compilation_check",
+      "unit_test_pass",
+      "integration_test_pass",
+      "benchmark_regression_check",
+      "e2e_smoke_test"
+    ],
+    "fail_closed": true,
+    "invariants": [
+      "Integration cannot proceed past compilation_check if any crate fails to resolve",
+      "Benchmark regression check uses the same thresholds as franken-node-benchmark-resource-gate-contract",
+      "E2E smoke test exercises the full agent loop through the new runtime path",
+      "All validation stages produce structured pass/fail artifacts"
+    ]
+  },
+  "feature_flag_contract": {
+    "integration_feature_flag": "franken_node_runtime",
+    "default_enabled": false,
+    "graduation_criteria": "all validation_gates pass for 5 consecutive CI runs",
+    "invariants": [
+      "Feature flag defaults to disabled until graduation criteria met",
+      "Both old and new runtime paths are tested in CI until graduation",
+      "Feature flag removal requires explicit approval and is tracked by bead"
+    ]
+  },
+  "structured_logging_contract": {
+    "required_fields": [
+      "run_id",
+      "correlation_id",
+      "integration_stage",
+      "crate_name",
+      "validation_result",
+      "retired_path_id",
+      "feature_flag_state",
+      "timestamp_utc"
+    ],
+    "required_event_types": [
+      "crate_dependency_resolved",
+      "validation_stage_started",
+      "validation_stage_completed",
+      "path_retirement_started",
+      "path_retirement_completed",
+      "feature_flag_toggled"
+    ]
+  },
+  "release_blockers": [
+    "franken_node crate dependency fails to resolve",
+    "runtime boundary trait not object-safe",
+    "retired path without rollback feature flag",
+    "validation gate produces non-structured output",
+    "benchmark regression exceeds configured thresholds"
+  ],
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.12"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-benchmark-resource-gate-contract.json",
+      "docs/franken-node-unified-test-certification-contract.json",
+      "docs/franken-node-shadow-canary-rollout-contract.json"
+    ]
+  }
+}

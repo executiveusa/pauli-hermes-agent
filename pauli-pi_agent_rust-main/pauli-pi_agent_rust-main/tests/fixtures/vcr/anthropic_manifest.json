@@ -1,0 +1,226 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-02-05T03:51:46.127Z",
+  "scenarios": [
+    {
+      "name": "anthropic_auth_failure_401",
+      "description": "Auth failure (HTTP 401)",
+      "cassette": "anthropic_auth_failure_401.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "92184e1f70e142cc6473cb47d91cbf519720cb0518108fd29a700d078e5b3567",
+      "recorded_at": "2026-02-05T03:41:05.458Z"
+    },
+    {
+      "name": "anthropic_bad_request_400",
+      "description": "Bad request error (HTTP 400)",
+      "cassette": "anthropic_bad_request_400.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "0e188080212f2a6ff698e70e316c2beb922a5c9e3ed23bafaf93a1402c88b149",
+      "recorded_at": "2026-02-05T03:41:05.458Z"
+    },
+    {
+      "name": "anthropic_empty_response",
+      "description": "Empty response (no content blocks)",
+      "cassette": "anthropic_empty_response.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 16,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "dd4355a71f5ee20b3007ecfda6be7d073d9230bee7ec44472d86ba507e2771a6",
+      "recorded_at": "2026-02-05T03:41:05.054Z"
+    },
+    {
+      "name": "anthropic_extended_thinking",
+      "description": "Thinking enabled with text response",
+      "cassette": "anthropic_extended_thinking.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": "Medium",
+      "prompt_hash": "2b2a4da91d4b69a669a3993f972a1b9c5db7f3bb60969621390c32d76673c805",
+      "recorded_at": "2026-02-05T03:43:56.804Z"
+    },
+    {
+      "name": "anthropic_forbidden_403",
+      "description": "Forbidden error (HTTP 403)",
+      "cassette": "anthropic_forbidden_403.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "0059b42f044a374d148b8670b879d7e67338a33e141ce4c8144267bd575b7318",
+      "recorded_at": "2026-02-05T03:41:05.458Z"
+    },
+    {
+      "name": "anthropic_large_tool_args",
+      "description": "Large tool call arguments",
+      "cassette": "anthropic_large_tool_args.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "5b5d5c57ff1a3a10ade19e4d5483d1feb76b16d58565e1f8e38e9824a5d8550d",
+      "recorded_at": "2026-02-05T03:41:07.395Z"
+    },
+    {
+      "name": "anthropic_multi_paragraph",
+      "description": "Multi-paragraph response",
+      "cassette": "anthropic_multi_paragraph.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "cfddce9d4f4e72cc2579417335e4272825367c678cf75d677ef4e12c367b01b1",
+      "recorded_at": "2026-02-05T03:41:04.803Z"
+    },
+    {
+      "name": "anthropic_overloaded_529",
+      "description": "Overloaded error (HTTP 529)",
+      "cassette": "anthropic_overloaded_529.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "b8168609742623050204194d526e2509c107fa094b7d695551e3ba74998fb16f",
+      "recorded_at": "2026-02-05T03:41:05.458Z"
+    },
+    {
+      "name": "anthropic_rate_limit_429",
+      "description": "Rate limit error (HTTP 429)",
+      "cassette": "anthropic_rate_limit_429.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "69ab5b014ccd1b03b11215452dcbf5efef0ed244f4b653318e51c43dddd67eca",
+      "recorded_at": "2026-02-05T03:41:05.458Z"
+    },
+    {
+      "name": "anthropic_server_error_500",
+      "description": "Server error (HTTP 500)",
+      "cassette": "anthropic_server_error_500.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "039542db6228a70a2585d46dad0785b0683731835566acd0be7cd0e1a5473537",
+      "recorded_at": "2026-02-05T03:41:05.458Z"
+    },
+    {
+      "name": "anthropic_simple_text",
+      "description": "Simple text response",
+      "cassette": "anthropic_simple_text.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 64,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "1dbfba9056dcf4aced5188f6bf2e98ef5942e892c5dddc41733cbc9fec7cddae",
+      "recorded_at": "2026-02-05T03:41:05.458Z"
+    },
+    {
+      "name": "anthropic_stream_interruption",
+      "description": "Stream interruption / partial response",
+      "cassette": "anthropic_stream_interruption.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 32,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "adddba406cfcaf8f6185348e39a23020d10d32fe5e758cc1529ded485d865381",
+      "recorded_at": "2026-02-05T03:41:05.447Z"
+    },
+    {
+      "name": "anthropic_thinking_budget_exceeded",
+      "description": "Thinking budget exceeded",
+      "cassette": "anthropic_thinking_budget_exceeded.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 96,
+      "temperature": 0.0,
+      "thinking_level": "High",
+      "prompt_hash": "bf4f6c6f34122d3a4912918cd138c6d6c6c1c7279c9034c48444b760cbb3eaa8",
+      "recorded_at": "2026-02-05T03:46:03.569Z"
+    },
+    {
+      "name": "anthropic_thinking_only",
+      "description": "Thinking only, no final text",
+      "cassette": "anthropic_thinking_only.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": "High",
+      "prompt_hash": "8123d00f9e4471a60f251047f4aa3ec855570938ebf3641a44861ac7b7efcb3a",
+      "recorded_at": "2026-02-05T03:45:25.220Z"
+    },
+    {
+      "name": "anthropic_thinking_with_tool_calls",
+      "description": "Thinking with tool calls",
+      "cassette": "anthropic_thinking_with_tool_calls.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": "High",
+      "prompt_hash": "221b2b944fc354f5cd40fc5678d99b9fcc40b39f6eec2cac077e70c4c28240d3",
+      "recorded_at": "2026-02-05T03:45:39.369Z"
+    },
+    {
+      "name": "anthropic_tool_call_multiple",
+      "description": "Multiple tool calls in one response",
+      "cassette": "anthropic_tool_call_multiple.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "38d0b5ba0b5b0e5d37cf5d90b7c6549f98833eeb2e0638982ddaea49ac1f593a",
+      "recorded_at": "2026-02-05T03:41:05.743Z"
+    },
+    {
+      "name": "anthropic_tool_call_single",
+      "description": "Single tool call response",
+      "cassette": "anthropic_tool_call_single.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "aeaca7e761ceaa1cccf8792f4633730296f0b1adcc8175fc2c4b5ee4c04bf8cb",
+      "recorded_at": "2026-02-05T03:41:05.687Z"
+    },
+    {
+      "name": "anthropic_tool_result_processing",
+      "description": "Tool result message handling",
+      "cassette": "anthropic_tool_result_processing.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "08b87e68b9b8e3f13fcf7ead091dc7157f3116bb0fcd0c9af0921c0a4bbb3975",
+      "recorded_at": "2026-02-05T03:41:05.125Z"
+    },
+    {
+      "name": "anthropic_unicode_content",
+      "description": "Unicode content response",
+      "cassette": "anthropic_unicode_content.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 256,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "f3abcb982f77d98ed06b9e1a77a21217b5114b354c14f72ea12a7c36a225d407",
+      "recorded_at": "2026-02-05T03:41:04.678Z"
+    },
+    {
+      "name": "anthropic_very_long_response",
+      "description": "Very long response hitting max tokens",
+      "cassette": "anthropic_very_long_response.json",
+      "model": "claude-sonnet-4-20250514",
+      "max_tokens": 64,
+      "temperature": 0.0,
+      "thinking_level": null,
+      "prompt_hash": "99f39d8a58660a2eec0475f93f9c3578d662668d9334113d62bd6ce840b3f5a0",
+      "recorded_at": "2026-02-05T03:41:06.046Z"
+    }
+  ]
+}

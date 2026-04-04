@@ -1,0 +1,172 @@
+# MCP Agent Mail - Structured Agent Communication Protocol
+
+## Purpose
+MCP Agent Mail provides a structured message protocol for agent-to-agent communication with async delivery, priority routing, and guaranteed delivery semantics.
+
+## Core Capabilities
+- **Async Delivery:** Non-blocking message sending
+- **Priority Routing:** P0 (critical) to P3 (low priority)
+- **Retry Policies:** Exponential backoff with max retries
+- **Inbox/Outbox:** Persistent message queues per agent
+- **Message Tracking:** Delivery confirmation and read receipts
+- **Batch Operations:** Send to multiple agents at once
+
+## Message Format
+```json
+{
+  "id": "msg_abc123",
+  "from": "agent://claudecode/inbox",
+  "to": "agent://cynthia/inbox",
+  "timestamp": "2026-02-02T10:30:00Z",
+  "subject": "Design Review Request",
+  "priority": "P1",
+  "payload": {
+    "component": "LoginForm",
+    "requirements": {
+      "fields": ["email", "password"],
+      "validation": true,
+      "remember_me": true  
+    },
+    "deadline": "2026-02-03T00:00:00Z"
+  },
+  "reply_channel": "agent://claudecode/inbox",
+  "metadata": {
+    "workflow_id": "wf_456",
+    "task_id": "task_789"
+  }
+}
+```
+
+## Usage
+
+### Sending Messages
+```python
+from mcp_agent_mail import AgentMail
+
+mail = AgentMail()
+
+# Simple send
+mail.send(
+    from_addr="agent://claudecode/inbox",
+    to_addr="agent://cynthia/inbox",
+    subject="Design Request",
+    priority="P1",
+    payload={"component": "LoginForm"}
+)
+
+# Batch send
+mail.broadcast(
+    from_addr="agent://claudecode/inbox",
+    to_addrs=[
+        "agent://cynthia/inbox",
+        "agent://switchblade/inbox"
+    ],
+    subject="Deployment Ready",
+    payload={"version": "1.2.0"}
+)
+
+# Send with reply callback
+mail.send_with_reply(
+    to_addr="agent://memory/inbox",
+    subject="Query Knowledge Base",
+    payload={"query": "user authentication patterns"},
+    callback=lambda reply: process_result(reply)
+)
+```
+
+### Receiving Messages
+```python
+# Receive from inbox
+messages = mail.receive("agent://claudecode/inbox")
+
+for msg in messages:
+    print(f"From: {msg['from']}")
+    print(f"Subject: {msg['subject']}")
+    print(f"Payload: {msg['payload']}")
+    
+    # Mark as read
+    mail.mark_read(msg['id'])
+    
+    # Send reply
+    if msg['reply_channel']:
+        mail.reply(
+            original=msg,
+            payload={"status": "received", "eta": "2h"}
+        )
+
+# Subscribe to inbox (async)
+mail.subscribe(
+    inbox="agent://claudecode/inbox",
+    callback=handle_message
+)
+```
+
+## Priority Levels
+- **P0 (Critical):** Immediate delivery, no retry delay, escalate on failure
+- **P1 (High):** Deliver within 1 minute, 3 retries
+- **P2 (Normal):** Deliver within 5 minutes, 3 retries  
+- **P3 (Low):** Deliver within 1 hour, 1 retry
+
+## Retry Policy
+```json
+{
+  "max_retries": 3,
+  "backoff_ms": 1000,
+  "backoff_multiplier": 2,
+  "max_backoff_ms": 30000
+}
+```
+
+Retry delays: 1s → 2s → 4s (max 30s)
+
+## Message Queue
+```
+Memory Structure:
+  memory/agent_mail_queue.json
+    ├── claudecode/
+    │   ├── inbox/
+    │   ├── outbox/
+    │   └── sent/
+    ├── cynthia/
+    │   ├── inbox/
+    │   ├── outbox/
+    │   └── sent/
+    └── ...other agents
+```
+
+## Delivery Guarantees
+- **At-least-once:** Messages may be delivered multiple times
+- **Ordering:** FIFO within same priority level
+- **Persistence:** Messages stored until confirmed received
+- **Durability:** Survives agent restarts
+
+## Integration
+```python
+# In agent code
+from mcp_agent_mail import AgentMail
+
+class ClaudeCodeAgent:
+    def __init__(self):
+        self.mail = AgentMail()
+        self.inbox = "agent://claudecode/inbox"
+        
+    def handle_messages(self):
+        # Process inbox
+        for msg in self.mail.receive(self.inbox):
+            if msg['subject'] == "code_review":
+                result = self.review_code(msg['payload'])
+                self.mail.reply(
+                    original=msg,
+                    payload={"status": "approved", "feedback": result}
+                )
+```
+
+## Monitoring
+- **Dashboard:** View all agent inboxes and message flow
+- **Metrics:** Messages sent/received per agent, latency, retry rate
+- **Alerts:** Undelivered messages, queue depth warnings
+
+## Files
+- `core/mcp-agent-mail/` - Core protocol implementation
+- `memory/agent_mail_queue.json` - Message queue storage
+- `mcp-docker-server.js` - WebSocket server for real-time delivery

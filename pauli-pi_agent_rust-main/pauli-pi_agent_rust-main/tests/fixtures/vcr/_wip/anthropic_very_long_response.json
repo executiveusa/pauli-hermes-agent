@@ -1,0 +1,139 @@
+{
+  "version": "1.0",
+  "test_name": "anthropic_very_long_response",
+  "recorded_at": "2026-02-05T03:41:06.046Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "X-API-Key",
+            "[REDACTED]"
+          ],
+          [
+            "anthropic-version",
+            "2023-06-01"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body": {
+          "max_tokens": 64,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "Write 50 short sentences about Rust without stopping early.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-4-20250514",
+          "stream": true,
+          "system": "You are a test harness model. Follow instructions precisely and deterministically.",
+          "temperature": 0.0
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "Date",
+            "Thu, 05 Feb 2026 03:41:04 GMT"
+          ],
+          [
+            "Content-Type",
+            "text/event-stream; charset=utf-8"
+          ],
+          [
+            "Transfer-Encoding",
+            "chunked"
+          ],
+          [
+            "Connection",
+            "keep-alive"
+          ],
+          [
+            "Cache-Control",
+            "no-cache"
+          ],
+          [
+            "request-id",
+            "req_011CXpEDwFwJWWfHGcgbjUiX"
+          ],
+          [
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          [
+            "anthropic-organization-id",
+            "2c19872b-debd-4294-9e6a-43d74c1afba3"
+          ],
+          [
+            "Server",
+            "cloudflare"
+          ],
+          [
+            "x-envoy-upstream-service-time",
+            "977"
+          ],
+          [
+            "cf-cache-status",
+            "DYNAMIC"
+          ],
+          [
+            "X-Robots-Tag",
+            "none"
+          ],
+          [
+            "Content-Security-Policy",
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          [
+            "CF-RAY",
+            "9c8f63d37a84dd93-STL"
+          ]
+        ],
+        "body_chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-sonnet-4-20250514\",\"id\":\"msg_01Q63EtbCPL5bvAjLd2apETW\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"stop_reason\":null,\"stop_sequence\":null,\"usage\":{\"input_tokens\":35,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":1,\"service_tier\":\"standard\"}} }\n\n",
+          "event: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\",\"text\":\"\"}         }\n\n",
+          "event: ping\ndata: {\"type\": \"ping\"}\n\nevent: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"1\"}  }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\". Rust is a systems programming language\"}       }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" developed\"}          }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" by Mozilla.\"} }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"\\n2. It focuses\"}               }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" on safety\"}          }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\", speed\"}       }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\", and concurrency.\\n3.\"}  }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" Rust prevents\"}    }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" memory\"} }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" leaks through\"}        }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" its\"}            }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" ownership system.\\n4. The\"}}\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" language has\"}             }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" zero\"} }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"-cost abstractions.\\n5.\"}      }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\" Rust comp\"}               }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"iles to native machine\"}   }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0            }\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"max_tokens\",\"stop_sequence\":null},\"usage\":{\"input_tokens\":35,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":64}               }\n\n",
+          "event: message_stop\ndata: {\"type\":\"message_stop\"         }\n\n"
+        ]
+      }
+    }
+  ]
+}

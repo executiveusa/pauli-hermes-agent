@@ -1,0 +1,59 @@
+{
+  "version": "1.0",
+  "cases": [
+    {
+      "name": "hostcall_before_due_timer",
+      "start_ms": 1000,
+      "ops": [
+        { "op": "set_timeout", "delay_ms": 0, "save_as": "t1" },
+        { "op": "enqueue_hostcall_completion", "call_id": "call-1" },
+        {
+          "op": "tick",
+          "microtasks": 0,
+          "expect": { "kind": "hostcall_complete", "call_id": "call-1" }
+        }
+      ]
+    },
+    {
+      "name": "timers_order_by_deadline_then_schedule_seq",
+      "start_ms": 0,
+      "ops": [
+        { "op": "set_timeout", "delay_ms": 10, "save_as": "t1" },
+        { "op": "set_timeout", "delay_ms": 10, "save_as": "t2" },
+        { "op": "set_timeout", "delay_ms": 5, "save_as": "t3" },
+        { "op": "set_clock", "ms": 10 },
+        { "op": "tick", "expect": { "kind": "timer_fired", "timer": "t3" } },
+        { "op": "tick", "expect": { "kind": "timer_fired", "timer": "t1" } },
+        { "op": "tick", "expect": { "kind": "timer_fired", "timer": "t2" } }
+      ]
+    },
+    {
+      "name": "clear_timeout_prevents_fire",
+      "start_ms": 0,
+      "ops": [
+        { "op": "set_timeout", "delay_ms": 5, "save_as": "t1" },
+        { "op": "clear_timeout", "timer": "t1" },
+        { "op": "set_clock", "ms": 10 },
+        { "op": "tick", "expect": null }
+      ]
+    },
+    {
+      "name": "inbound_events_fifo",
+      "start_ms": 0,
+      "ops": [
+        { "op": "enqueue_inbound_event", "event_id": "evt-1" },
+        { "op": "enqueue_inbound_event", "event_id": "evt-2" },
+        { "op": "tick", "expect": { "kind": "inbound_event", "event_id": "evt-1" } },
+        { "op": "tick", "expect": { "kind": "inbound_event", "event_id": "evt-2" } }
+      ]
+    },
+    {
+      "name": "microtasks_drain_to_fixpoint",
+      "start_ms": 0,
+      "ops": [
+        { "op": "enqueue_inbound_event", "event_id": "evt-1" },
+        { "op": "tick", "microtasks": 2, "expect": { "kind": "inbound_event", "event_id": "evt-1" } }
+      ]
+    }
+  ]
+}

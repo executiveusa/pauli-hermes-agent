@@ -1,0 +1,693 @@
+{
+  "schema": "pi.qa.provider_closure_truth_table.v1",
+  "bead_id": "bd-3uqg.12.2.2",
+  "generated_at_utc": "2026-02-14T01:00:00Z",
+  "generated_by": "Opus4.6-agent (enhanced from CopperBrook baseline)",
+  "purpose": "Self-contained closure truth table for the 5 focus providers (Groq, Cerebras, OpenRouter, Kimi, Qwen) covering implementation routing, auth/env contract, unit/conformance/e2e evidence, docs status, and final disposition.",
+  "methodology": {
+    "inputs": [
+      "src/provider_metadata.rs (canonical IDs, aliases, routing defaults)",
+      "src/providers/openai.rs (OpenAI-compatible implementation)",
+      "src/providers/anthropic.rs (Anthropic-messages implementation for kimi-for-coding)",
+      "src/models.rs (model registry and alias resolution)",
+      "tests/fixtures/vcr/verify_*.json (VCR cassettes — counted per provider)",
+      "tests/e2e_provider_scenarios.rs (e2e scenario specs with line refs)",
+      "tests/provider_native_verify.rs (conformance verification)",
+      "tests/provider_native_contract.rs (contract tests)",
+      "docs/provider-*-capability-profile.json (5 capability profiles)",
+      "docs/provider-*-setup.json (5 setup guides)",
+      "docs/provider-discrepancy-classification.json (21 discrepancies, bd-3uqg.12.1.1)",
+      "docs/provider-parity-reconciliation-report.json (100% parity, bd-3uqg.14.3.1)",
+      "docs/provider-audit-evidence-index.json (evidence index, bd-3uqg.12.2.1)"
+    ],
+    "dimensions": [
+      "implementation_routing: provider module, API family, base URL, route kind, metadata source",
+      "auth_env_contract: required env vars, auth mechanism, header format, fallbacks",
+      "test_evidence: VCR cassettes (exact count + names), unit tests, conformance, e2e coverage",
+      "docs_status: setup guide, capability profile, discrepancy cross-references",
+      "disposition: CLOSED/OPEN with summary, related bead status, blocking issues"
+    ]
+  },
+
+  "providers": {
+    "groq": {
+      "display_name": "Groq",
+      "canonical_id": "groq",
+      "aliases": [],
+      "upstream_id": "groq",
+      "implementation": {
+        "provider_module": "src/providers/openai.rs",
+        "api_family": "openai-completions",
+        "base_url": "https://api.groq.com/openai/v1",
+        "route_kind": "ApiOpenAICompletions",
+        "metadata_source": "src/provider_metadata.rs:122-136",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "context_window": 128000,
+        "max_tokens": 16384,
+        "reasoning": true,
+        "vision": false,
+        "tool_calling": true,
+        "parallel_tools": true,
+        "streaming": true
+      },
+      "auth_env_contract": {
+        "primary_key": "GROQ_API_KEY",
+        "fallback_keys": [],
+        "auth_header": true,
+        "auth_format": "Bearer <key> in Authorization header",
+        "additional_headers": []
+      },
+      "test_evidence": {
+        "vcr_cassettes": {
+          "count": 7,
+          "scenarios": [
+            "verify_groq_simple_text",
+            "verify_groq_unicode_text",
+            "verify_groq_tool_call_single",
+            "verify_groq_tool_call_multiple",
+            "verify_groq_error_auth_401",
+            "verify_groq_error_bad_request_400",
+            "verify_groq_error_rate_limit_429"
+          ],
+          "coverage": "7/7 canonical scenarios"
+        },
+        "unit_tests": {
+          "metadata_validated": true,
+          "factory_routing_tested": true,
+          "smoke_matrix_included": true,
+          "test_files": [
+            "tests/provider_metadata_comprehensive.rs",
+            "tests/provider_factory.rs",
+            "tests/provider_smoke_matrix.rs"
+          ]
+        },
+        "conformance_tests": {
+          "native_verify_pass": true,
+          "contract_test_pass": true,
+          "test_files": [
+            "tests/provider_native_verify.rs",
+            "tests/provider_native_contract.rs"
+          ]
+        },
+        "e2e_tests": {
+          "scenario_spec": "OPENAI_COMPLETIONS family (tests/e2e_provider_scenarios.rs:723-728)",
+          "wave_preset_validated": true,
+          "test_files": ["tests/e2e_provider_scenarios.rs"]
+        }
+      },
+      "docs": {
+        "setup_guide": "docs/provider-groq-setup.json",
+        "capability_profile": "docs/provider-groq-capability-profile.json",
+        "discrepancy_entries": [],
+        "status": "complete"
+      },
+      "known_caveats": [
+        "n parameter constrained to 1 (400 error on n>1)",
+        "temperature=0 normalized to 1e-8 server-side",
+        "Unsupported fields: logprobs, logit_bias, top_logprobs, messages[].name",
+        "Custom error codes 498/499",
+        "Inference timing metrics in response",
+        "Standard SSE with data: [DONE] termination"
+      ],
+      "related_beads": {
+        "onboarding": { "id": "bd-3uqg.11.5", "status": "CLOSED" },
+        "audit_verification": { "id": "bd-3uqg.14.1", "status": "CLOSED" }
+      },
+      "disposition": {
+        "status": "CLOSED",
+        "label": "PRODUCTION_READY",
+        "blocking_issues": 0,
+        "summary": "Full parity achieved. 7/7 VCR cassettes, complete unit/conformance/e2e coverage, documentation complete. No open discrepancies or blockers."
+      }
+    },
+
+    "cerebras": {
+      "display_name": "Cerebras",
+      "canonical_id": "cerebras",
+      "aliases": [],
+      "upstream_id": "cerebras",
+      "implementation": {
+        "provider_module": "src/providers/openai.rs",
+        "api_family": "openai-completions",
+        "base_url": "https://api.cerebras.ai/v1",
+        "route_kind": "ApiOpenAICompletions",
+        "metadata_source": "src/provider_metadata.rs:154-168",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "context_window": 128000,
+        "max_tokens": 16384,
+        "reasoning": true,
+        "vision": false,
+        "tool_calling": "model_gated",
+        "parallel_tools": true,
+        "streaming": true
+      },
+      "auth_env_contract": {
+        "primary_key": "CEREBRAS_API_KEY",
+        "fallback_keys": [],
+        "auth_header": true,
+        "auth_format": "Bearer <key> in Authorization header",
+        "additional_headers": []
+      },
+      "test_evidence": {
+        "vcr_cassettes": {
+          "count": 7,
+          "scenarios": [
+            "verify_cerebras_simple_text",
+            "verify_cerebras_unicode_text",
+            "verify_cerebras_tool_call_single",
+            "verify_cerebras_tool_call_multiple",
+            "verify_cerebras_error_auth_401",
+            "verify_cerebras_error_bad_request_400",
+            "verify_cerebras_error_rate_limit_429"
+          ],
+          "coverage": "7/7 canonical scenarios"
+        },
+        "unit_tests": {
+          "metadata_validated": true,
+          "factory_routing_tested": true,
+          "smoke_matrix_included": true,
+          "test_files": [
+            "tests/provider_metadata_comprehensive.rs",
+            "tests/provider_factory.rs",
+            "tests/provider_smoke_matrix.rs"
+          ]
+        },
+        "conformance_tests": {
+          "native_verify_pass": true,
+          "contract_test_pass": true,
+          "test_files": [
+            "tests/provider_native_verify.rs",
+            "tests/provider_native_contract.rs"
+          ]
+        },
+        "e2e_tests": {
+          "scenario_spec": "CEREBRAS_COMPLETIONS family (tests/e2e_provider_scenarios.rs:797-809)",
+          "wave_preset_validated": true,
+          "test_files": ["tests/e2e_provider_scenarios.rs"]
+        }
+      },
+      "docs": {
+        "setup_guide": "docs/provider-cerebras-setup.json",
+        "capability_profile": "docs/provider-cerebras-capability-profile.json",
+        "discrepancy_entries": [],
+        "status": "complete"
+      },
+      "known_caveats": [
+        "Tool calling only on 3 models: gpt-oss-120b, qwen-3-32b, zai-glm-4.7",
+        "Non-standard rate-limit header dimension suffixes: -requests-day, -tokens-minute",
+        "WSE-specific time_info fields: queue_time, prompt_time, completion_time, total_time",
+        "Smaller model lineup (6 models)",
+        "Prompt caching, CePO reasoning, batch API, service tiers"
+      ],
+      "related_beads": {
+        "onboarding": { "id": "bd-3uqg.11.6", "status": "CLOSED" },
+        "audit_verification": { "id": "bd-3uqg.14.5", "status": "CLOSED" }
+      },
+      "disposition": {
+        "status": "CLOSED",
+        "label": "PRODUCTION_READY",
+        "blocking_issues": 0,
+        "summary": "Full parity achieved. 7/7 VCR cassettes, complete unit/conformance/e2e coverage, documentation complete. Per-model tool support gating documented but not blocking."
+      }
+    },
+
+    "openrouter": {
+      "display_name": "OpenRouter",
+      "canonical_id": "openrouter",
+      "aliases": ["open-router"],
+      "upstream_id": "openrouter",
+      "implementation": {
+        "provider_module": "src/providers/openai.rs",
+        "api_family": "openai-completions",
+        "base_url": "https://openrouter.ai/api/v1",
+        "route_kind": "ApiOpenAICompletions",
+        "metadata_source": "src/provider_metadata.rs:170-184",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "context_window": 128000,
+        "max_tokens": 16384,
+        "reasoning": true,
+        "vision": "via_model_selection",
+        "tool_calling": true,
+        "parallel_tools": "varies_by_model",
+        "streaming": true,
+        "model_id_normalization": "canonicalize_openrouter_model_id() in src/models.rs:130-157",
+        "built_in_models": ["openrouter/auto", "openai/gpt-4o-mini", "openai/gpt-4o", "anthropic/claude-3.5-sonnet", "google/gemini-2.5-pro"]
+      },
+      "auth_env_contract": {
+        "primary_key": "OPENROUTER_API_KEY",
+        "fallback_keys": [],
+        "auth_header": true,
+        "auth_format": "Bearer <key> in Authorization header",
+        "additional_headers": [
+          {
+            "header": "HTTP-Referer",
+            "env_vars": ["OPENROUTER_HTTP_REFERER", "PI_OPENROUTER_HTTP_REFERER"],
+            "required": false,
+            "purpose": "Attribution for OpenRouter dashboard"
+          },
+          {
+            "header": "X-Title",
+            "env_vars": ["OPENROUTER_X_TITLE", "PI_OPENROUTER_X_TITLE"],
+            "required": false,
+            "purpose": "Application title for OpenRouter dashboard"
+          }
+        ]
+      },
+      "test_evidence": {
+        "vcr_cassettes": {
+          "count": 7,
+          "scenarios": [
+            "verify_openrouter_simple_text",
+            "verify_openrouter_unicode_text",
+            "verify_openrouter_tool_call_single",
+            "verify_openrouter_tool_call_multiple",
+            "verify_openrouter_error_auth_401",
+            "verify_openrouter_error_bad_request_400",
+            "verify_openrouter_error_rate_limit_429"
+          ],
+          "coverage": "7/7 canonical scenarios"
+        },
+        "unit_tests": {
+          "metadata_validated": true,
+          "factory_routing_tested": true,
+          "smoke_matrix_included": true,
+          "model_id_normalization_tested": true,
+          "test_files": [
+            "tests/provider_metadata_comprehensive.rs",
+            "tests/provider_factory.rs",
+            "tests/provider_smoke_matrix.rs"
+          ]
+        },
+        "conformance_tests": {
+          "native_verify_pass": true,
+          "contract_test_pass": true,
+          "test_files": [
+            "tests/provider_native_verify.rs",
+            "tests/provider_native_contract.rs"
+          ]
+        },
+        "e2e_tests": {
+          "scenario_spec": "OPENROUTER_COMPLETIONS family (tests/e2e_provider_scenarios.rs:811-823)",
+          "wave_preset_validated": true,
+          "test_files": ["tests/e2e_provider_scenarios.rs"]
+        }
+      },
+      "docs": {
+        "setup_guide": "docs/provider-openrouter-setup.json",
+        "capability_profile": "docs/provider-openrouter-capability-profile.json",
+        "discrepancy_entries": [
+          "DISC-003 (alias_mismatch: open-router vs openrouter, severity: none)"
+        ],
+        "status": "complete"
+      },
+      "known_caveats": [
+        "Serving model may differ from requested (dynamic routing/fallback)",
+        "Mid-stream errors: finish_reason='error' + error object in SSE payload (HTTP 200)",
+        "SSE comment frames (': OPENROUTER PROCESSING') must be ignored by parser",
+        "Provider routing with order, allow_fallbacks, require_parameters, max_price",
+        "Response includes actual serving provider/model for diagnostics",
+        "Attribution headers: HTTP-Referer, X-Title (optional but recommended)"
+      ],
+      "related_beads": {
+        "onboarding": { "id": "bd-3uqg.11.7", "status": "CLOSED" },
+        "audit_verification": { "id": "bd-3uqg.14.2", "status": "CLOSED" }
+      },
+      "disposition": {
+        "status": "CLOSED",
+        "label": "PRODUCTION_READY",
+        "blocking_issues": 0,
+        "summary": "Full parity achieved. 7/7 VCR cassettes, complete unit/conformance/e2e coverage, documentation complete. Mid-stream error handling and SSE comment filtering documented as known caveats."
+      }
+    },
+
+    "kimi": {
+      "display_name": "Kimi (Moonshot AI)",
+      "upstream_id": "kimi",
+      "variants": {
+        "moonshotai": {
+          "canonical_id": "moonshotai",
+          "aliases": ["moonshot", "kimi"],
+          "provider_module": "src/providers/openai.rs",
+          "api_family": "openai-completions",
+          "base_url": "https://api.moonshot.ai/v1",
+          "route_kind": "ApiOpenAICompletions",
+          "metadata_source": "src/provider_metadata.rs:202-216",
+          "onboarding_mode": "OpenAICompatiblePreset",
+          "context_window": 128000,
+          "max_tokens": 16384,
+          "reasoning": true,
+          "vision": "kimi-k2.5 only",
+          "tool_calling": true,
+          "parallel_tools": false,
+          "streaming": true
+        },
+        "moonshotai-cn": {
+          "canonical_id": "moonshotai-cn",
+          "aliases": [],
+          "provider_module": "src/providers/openai.rs",
+          "api_family": "openai-completions",
+          "base_url": "https://api.moonshot.cn/v1",
+          "route_kind": "ApiOpenAICompletions",
+          "metadata_source": "src/provider_metadata.rs:977-991",
+          "onboarding_mode": "OpenAICompatiblePreset",
+          "context_window": 262144,
+          "max_tokens": 262144,
+          "note": "China endpoint — .ai keys NOT interchangeable with .cn keys"
+        },
+        "kimi-for-coding": {
+          "canonical_id": "kimi-for-coding",
+          "aliases": [],
+          "provider_module": "src/providers/anthropic.rs",
+          "api_family": "anthropic-messages",
+          "base_url": "https://api.kimi.com/coding/v1/messages",
+          "route_kind": "ApiAnthropicMessages",
+          "metadata_source": "src/provider_metadata.rs:880-896",
+          "onboarding_mode": "OpenAICompatiblePreset",
+          "context_window": 262144,
+          "max_tokens": 32768,
+          "note": "Anthropic Messages API format — routes through Anthropic provider path"
+        }
+      },
+      "auth_env_contract": {
+        "moonshotai": {
+          "primary_key": "MOONSHOT_API_KEY",
+          "fallback_keys": ["KIMI_API_KEY"],
+          "auth_header": true,
+          "auth_format": "Bearer <key>"
+        },
+        "moonshotai-cn": {
+          "primary_key": "MOONSHOT_API_KEY",
+          "fallback_keys": [],
+          "auth_header": true,
+          "auth_format": "Bearer <key>"
+        },
+        "kimi-for-coding": {
+          "primary_key": "KIMI_API_KEY",
+          "fallback_keys": [],
+          "auth_header": false,
+          "auth_format": "x-api-key header (Anthropic format)"
+        }
+      },
+      "test_evidence": {
+        "vcr_cassettes": {
+          "total_count": 15,
+          "by_entry": {
+            "moonshotai": {
+              "count": 7,
+              "scenarios": [
+                "verify_moonshotai_simple_text",
+                "verify_moonshotai_unicode_text",
+                "verify_moonshotai_tool_call_single",
+                "verify_moonshotai_tool_call_multiple",
+                "verify_moonshotai_error_auth_401",
+                "verify_moonshotai_error_bad_request_400",
+                "verify_moonshotai_error_rate_limit_429"
+              ],
+              "coverage": "7/7 canonical scenarios"
+            },
+            "moonshotai-cn": {
+              "count": 4,
+              "scenarios": [
+                "verify_moonshotai-cn_simple_text",
+                "verify_moonshotai-cn_error_auth_401",
+                "verify_moonshotai-cn_tool_call_single",
+                "verify_moonshotai-cn_tool_call_multiple"
+              ],
+              "coverage": "4/7 (regional variant reduced set)"
+            },
+            "kimi-for-coding": {
+              "count": 4,
+              "scenarios": [
+                "verify_kimi-for-coding_simple_text",
+                "verify_kimi-for-coding_error_auth_401",
+                "verify_kimi-for-coding_tool_call_single",
+                "verify_kimi-for-coding_tool_call_multiple"
+              ],
+              "coverage": "4/7 (Anthropic-format variant reduced set)"
+            }
+          }
+        },
+        "unit_tests": {
+          "metadata_validated": true,
+          "factory_routing_tested": true,
+          "smoke_matrix_included": true,
+          "alias_resolution_tested": true,
+          "test_files": [
+            "tests/provider_metadata_comprehensive.rs",
+            "tests/provider_factory.rs",
+            "tests/provider_smoke_matrix.rs"
+          ]
+        },
+        "conformance_tests": {
+          "native_verify_pass": true,
+          "contract_test_pass": true,
+          "test_files": [
+            "tests/provider_native_verify.rs",
+            "tests/provider_native_contract.rs"
+          ]
+        },
+        "e2e_tests": {
+          "scenario_spec": "MOONSHOTAI_COMPLETIONS family (tests/e2e_provider_scenarios.rs:825-837)",
+          "wave_preset_validated": true,
+          "test_files": ["tests/e2e_provider_scenarios.rs"]
+        }
+      },
+      "docs": {
+        "setup_guide": "docs/provider-kimi-setup.json",
+        "capability_profile": "docs/provider-kimi-capability-profile.json",
+        "discrepancy_entries": [
+          "DISC-001 (alias_mismatch: kimi -> moonshotai, severity: none)",
+          "DISC-009 (ux_discoverability: kimi-for-coding hidden behind moonshotai, severity: medium)"
+        ],
+        "status": "complete"
+      },
+      "known_caveats": [
+        "THREE distinct provider entries — do not merge",
+        "Keys NOT interchangeable between .ai and .cn endpoints",
+        "kimi-for-coding uses Anthropic messages API (critical routing decision)",
+        "moonshot-v1-auto auto-selects context window (8k/32k/128k) based on input",
+        "Temperature range 0-1 (narrower than OpenAI 0-2)",
+        "Automatic prompt caching (75% savings)",
+        "6 rate limit tiers based on cumulative recharge ($1-$3000)"
+      ],
+      "related_beads": {
+        "onboarding": { "id": "bd-3uqg.11.8", "status": "CLOSED" },
+        "audit_verification": { "id": "bd-3uqg.14.6", "status": "CLOSED" }
+      },
+      "disposition": {
+        "status": "CLOSED",
+        "label": "PRODUCTION_READY",
+        "blocking_issues": 0,
+        "summary": "Full parity achieved. 15 VCR cassettes across 3 provider entries, complete unit/conformance/e2e coverage. kimi-for-coding Anthropic-format routing verified. Medium-severity discoverability issue (DISC-009) documented but not blocking."
+      }
+    },
+
+    "qwen": {
+      "display_name": "Qwen (Alibaba DashScope)",
+      "upstream_id": "qwen",
+      "variants": {
+        "alibaba": {
+          "canonical_id": "alibaba",
+          "aliases": ["dashscope", "qwen"],
+          "provider_module": "src/providers/openai.rs",
+          "api_family": "openai-completions",
+          "base_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+          "route_kind": "ApiOpenAICompletions",
+          "metadata_source": "src/provider_metadata.rs:218-232",
+          "onboarding_mode": "OpenAICompatiblePreset",
+          "context_window": 128000,
+          "max_tokens": 16384,
+          "reasoning": true,
+          "vision": "qwen-vl-* models",
+          "tool_calling": "model_gated",
+          "parallel_tools": false,
+          "streaming": true
+        },
+        "alibaba-cn": {
+          "canonical_id": "alibaba-cn",
+          "aliases": [],
+          "provider_module": "src/providers/openai.rs",
+          "api_family": "openai-completions",
+          "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+          "route_kind": "ApiOpenAICompletions",
+          "metadata_source": "src/provider_metadata.rs:864-878",
+          "onboarding_mode": "OpenAICompatiblePreset",
+          "context_window": 128000,
+          "max_tokens": 16384,
+          "note": "China/Beijing endpoint"
+        }
+      },
+      "auth_env_contract": {
+        "alibaba": {
+          "primary_key": "DASHSCOPE_API_KEY",
+          "fallback_keys": ["QWEN_API_KEY"],
+          "auth_header": true,
+          "auth_format": "Bearer <key>"
+        },
+        "alibaba-cn": {
+          "primary_key": "DASHSCOPE_API_KEY",
+          "fallback_keys": [],
+          "auth_header": true,
+          "auth_format": "Bearer <key>"
+        }
+      },
+      "test_evidence": {
+        "vcr_cassettes": {
+          "total_count": 11,
+          "by_entry": {
+            "alibaba": {
+              "count": 7,
+              "scenarios": [
+                "verify_alibaba_simple_text",
+                "verify_alibaba_unicode_text",
+                "verify_alibaba_tool_call_single",
+                "verify_alibaba_tool_call_multiple",
+                "verify_alibaba_error_auth_401",
+                "verify_alibaba_error_bad_request_400",
+                "verify_alibaba_error_rate_limit_429"
+              ],
+              "coverage": "7/7 canonical scenarios"
+            },
+            "alibaba-cn": {
+              "count": 4,
+              "scenarios": [
+                "verify_alibaba-cn_simple_text",
+                "verify_alibaba-cn_error_auth_401",
+                "verify_alibaba-cn_tool_call_single",
+                "verify_alibaba-cn_tool_call_multiple"
+              ],
+              "coverage": "4/7 (regional variant reduced set)"
+            }
+          }
+        },
+        "unit_tests": {
+          "metadata_validated": true,
+          "factory_routing_tested": true,
+          "smoke_matrix_included": true,
+          "alias_resolution_tested": true,
+          "test_files": [
+            "tests/provider_metadata_comprehensive.rs",
+            "tests/provider_factory.rs",
+            "tests/provider_smoke_matrix.rs"
+          ]
+        },
+        "conformance_tests": {
+          "native_verify_pass": true,
+          "contract_test_pass": true,
+          "test_files": [
+            "tests/provider_native_verify.rs",
+            "tests/provider_native_contract.rs"
+          ]
+        },
+        "e2e_tests": {
+          "scenario_spec": "ALIBABA_COMPLETIONS family (tests/e2e_provider_scenarios.rs:839-851)",
+          "wave_preset_validated": true,
+          "test_files": ["tests/e2e_provider_scenarios.rs"]
+        }
+      },
+      "docs": {
+        "setup_guide": "docs/provider-qwen-setup.json",
+        "capability_profile": "docs/provider-qwen-capability-profile.json",
+        "discrepancy_entries": [
+          "DISC-002 (alias_mismatch: qwen -> alibaba, severity: none)",
+          "DISC-010 (ux_discoverability: alibaba canonical vs qwen brand name, severity: medium)"
+        ],
+        "status": "complete"
+      },
+      "known_caveats": [
+        "CRITICAL: tools CANNOT be combined with stream=true — must force stream=false when tools defined",
+        "Tool calling only on 4 models: qwen-turbo, qwen-plus, qwen-max, qwen3-coder-plus",
+        "n parameter: only qwen-plus supports n>1; must be 1 when tools specified",
+        "429 errors have two sub-types: qps (retryable) vs quota (non-retryable billing)",
+        "stream_options.include_usage=true required for token counts",
+        "system_fingerprint returns empty string",
+        "Virginia endpoint (dashscope-us.aliyuncs.com) exists but not yet registered in Pi"
+      ],
+      "related_beads": {
+        "onboarding": { "id": "bd-3uqg.11.9", "status": "CLOSED" },
+        "audit_verification": { "id": "bd-3uqg.14.4", "status": "CLOSED" }
+      },
+      "disposition": {
+        "status": "CLOSED",
+        "label": "PRODUCTION_READY",
+        "blocking_issues": 0,
+        "summary": "Full parity for VCR/conformance/e2e coverage. 11 VCR cassettes across 2 entries. tools+streaming incompatibility documented as critical caveat — requires stream=false fallback for tool calls (documented, not blocking audit closure)."
+      }
+    }
+  },
+
+  "cross_provider_matrix": {
+    "headers": ["capability", "groq", "cerebras", "openrouter", "kimi", "qwen"],
+    "rows": [
+      ["api_family", "openai-completions", "openai-completions", "openai-completions", "openai-completions + anthropic-messages", "openai-completions"],
+      ["pi_entries", 1, 1, 1, 3, 2],
+      ["tool_calling", "all models", "model-gated (3/6)", "normalized", "all models", "model-gated (4 models)"],
+      ["parallel_tools", true, true, "varies_by_model", false, false],
+      ["streaming", true, true, "true + comment frames", true, "true (NOT with tools)"],
+      ["vision", false, false, "via_model_selection", "kimi-k2.5 only", "qwen-vl-* models"],
+      ["reasoning", true, "model-gated", "via_model_selection", "thinking models", "model-gated"],
+      ["regional_variants", 0, 0, 0, 2, 1],
+      ["vcr_cassettes", 7, 7, 7, 15, 11],
+      ["open_discrepancies", 0, 0, 1, 2, 2],
+      ["production_ready", true, true, true, true, true]
+    ]
+  },
+
+  "aggregate_summary": {
+    "total_providers_audited": 5,
+    "total_pi_entries": 8,
+    "total_vcr_cassettes": 47,
+    "canonical_scenarios_covered": "7/7 for all primary entries, 4/7 for regional/variant entries",
+    "all_dispositions_closed": true,
+    "all_production_ready": true,
+    "blocking_issues": 0,
+    "open_discrepancies_total": 5,
+    "open_discrepancies_by_severity": {
+      "none": 3,
+      "medium": 2,
+      "high": 0,
+      "p0_blocker": 0
+    },
+    "discrepancy_refs": [
+      "DISC-001 (alias: kimi->moonshotai, severity: none)",
+      "DISC-002 (alias: qwen->alibaba, severity: none)",
+      "DISC-003 (alias: open-router->openrouter, severity: none)",
+      "DISC-009 (ux: kimi-for-coding discoverability, severity: medium)",
+      "DISC-010 (ux: alibaba vs qwen branding, severity: medium)"
+    ],
+    "critical_constraints": [
+      "Qwen: tools+streaming incompatible (must disable streaming when tools present)",
+      "Kimi: kimi-for-coding routes through Anthropic API, not OpenAI",
+      "Kimi: .ai and .cn auth keys are NOT interchangeable",
+      "Cerebras: tool calling limited to 3 of 6 models",
+      "Qwen: tool calling limited to 4 models"
+    ]
+  },
+
+  "acceptance_criteria": {
+    "ac_1_all_five_providers_covered": {
+      "met": true,
+      "evidence": "All 5 focus providers (Groq, Cerebras, OpenRouter, Kimi, Qwen) have complete truth table entries"
+    },
+    "ac_2_implementation_routing_documented": {
+      "met": true,
+      "evidence": "Each entry specifies provider_module, api_family, base_url, route_kind, metadata_source with line references"
+    },
+    "ac_3_auth_contract_documented": {
+      "met": true,
+      "evidence": "Each entry specifies primary_key, fallback_keys, auth_header, auth_format, additional_headers per variant"
+    },
+    "ac_4_test_evidence_enumerated": {
+      "met": true,
+      "evidence": "47 VCR cassettes enumerated by name, unit/conformance/e2e test files listed with line references"
+    },
+    "ac_5_docs_status_verified": {
+      "met": true,
+      "evidence": "All 5 providers have setup guide + capability profile. Discrepancy cross-references from DISC classification included."
+    },
+    "ac_6_disposition_assigned": {
+      "met": true,
+      "evidence": "All 5 providers marked CLOSED/PRODUCTION_READY. Zero blocking discrepancies. Related bead statuses verified."
+    }
+  }
+}

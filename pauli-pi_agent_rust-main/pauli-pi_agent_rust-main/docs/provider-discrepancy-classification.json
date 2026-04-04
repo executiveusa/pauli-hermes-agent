@@ -1,0 +1,497 @@
+{
+  "schema": "pi.qa.provider_discrepancy_classification.v1",
+  "bead_id": "bd-3uqg.12.1.1",
+  "generated_at_utc": "2026-02-14T00:30:00Z",
+  "generated_by": "LilacCat (Claude Opus 4.6), updated by Opus4.6-agent",
+  "description": "Classifies all identified provider discrepancies by root cause, severity, and user impact. Every entry includes provider_scope, discrepancy_type, severity, user_impact, evidence_refs, and proposed_action. Covers the full bead taxonomy: alias_mismatch, naming_convention, api_architecture_deviation, ux_discoverability, test_evidence_gap, logging_schema_drift, infrastructure, docs_mismatch, implementation_gap.",
+  "methodology": {
+    "inputs": [
+      "docs/provider-parity-reconciliation.json (bd-3uqg.14.3.1)",
+      "docs/provider-parity-reconciliation-report.json (bd-3uqg.14.3.1)",
+      "docs/provider-test-matrix-validation-report.json (bd-3uqg.14.3.2)",
+      "docs/provider_e2e_artifact_contract.json (bd-3uqg.14.3.3, GAP-1 through GAP-5)",
+      "docs/provider-gate-compiler-report.json (bd-3uqg.10.2.1)",
+      "src/provider_metadata.rs (canonical IDs + aliases)"
+    ],
+    "classification_rules": {
+      "alias_mismatch": "Upstream ID differs from Pi canonical but resolves via registered alias — zero functional impact",
+      "naming_convention": "Pi and upstream use different canonical forms for same provider — both forms work via alias",
+      "api_architecture_deviation": "Provider API uses different mechanism than standard — intentional, not a gap",
+      "ux_discoverability": "Provider exists but is hard for users to find — functional gap in user experience",
+      "test_evidence_gap": "Test coverage exists but validation of specific artifact or schema property is missing",
+      "logging_schema_drift": "Structured logging or artifact schema has inconsistency, missing field, or unenforced deprecation",
+      "infrastructure": "Test infrastructure issue unrelated to provider implementation",
+      "docs_mismatch": "Documentation references or schema contracts lack formal definition",
+      "implementation_gap": "Missing provider functionality — true gap requiring code change"
+    },
+    "severity_grading": {
+      "none": "No user impact, fully transparent alias resolution",
+      "low": "Minor polish or ergonomic improvement, no functionality affected",
+      "medium": "User frustration from discoverability issues, workarounds exist",
+      "high": "Significant functionality or workflow blocker",
+      "p0_blocker": "Rollout blocker requiring immediate attention"
+    }
+  },
+
+  "summary": {
+    "total_discrepancies": 21,
+    "by_type": {
+      "alias_mismatch": 5,
+      "naming_convention": 2,
+      "api_architecture_deviation": 2,
+      "ux_discoverability": 6,
+      "test_evidence_gap": 1,
+      "logging_schema_drift": 3,
+      "infrastructure": 1,
+      "docs_mismatch": 1,
+      "implementation_gap": 0
+    },
+    "by_severity": {
+      "none": 7,
+      "low": 9,
+      "medium": 5,
+      "high": 0,
+      "p0_blocker": 0
+    },
+    "verdict": "ZERO true implementation gaps. Full upstream provider parity (100% coverage of 90 upstream IDs). Remaining work is UX discoverability improvements and logging/schema hygiene."
+  },
+
+  "discrepancies": [
+    {
+      "id": "DISC-001",
+      "provider_scope": "azure-openai",
+      "discrepancy_type": "alias_mismatch",
+      "title": "Upstream 'azure' resolves to Pi canonical 'azure-openai'",
+      "severity": "none",
+      "user_impact": "Zero — users typing 'azure' get correct provider",
+      "evidence_refs": [
+        "docs/provider-parity-reconciliation.json:alias_matches[0]",
+        "src/provider_metadata.rs:1412 (aliases: [\"azure\", \"azure-cognitive-services\"])"
+      ],
+      "proposed_action": "none"
+    },
+    {
+      "id": "DISC-002",
+      "provider_scope": "azure-openai",
+      "discrepancy_type": "alias_mismatch",
+      "title": "Upstream 'azure-cognitive-services' resolves to Pi canonical 'azure-openai'",
+      "severity": "none",
+      "user_impact": "Zero — alias resolution is transparent",
+      "evidence_refs": [
+        "docs/provider-parity-reconciliation.json:alias_matches[1]",
+        "src/provider_metadata.rs:1412"
+      ],
+      "proposed_action": "none"
+    },
+    {
+      "id": "DISC-003",
+      "provider_scope": "fireworks",
+      "discrepancy_type": "alias_mismatch",
+      "title": "Upstream 'fireworks-ai' resolves to Pi canonical 'fireworks'",
+      "severity": "none",
+      "user_impact": "Zero — alias resolution is transparent",
+      "evidence_refs": [
+        "docs/provider-parity-reconciliation.json:alias_matches[2]",
+        "src/provider_metadata.rs:251 (aliases: [\"fireworks-ai\"])"
+      ],
+      "proposed_action": "none"
+    },
+    {
+      "id": "DISC-004",
+      "provider_scope": "github-copilot",
+      "discrepancy_type": "alias_mismatch",
+      "title": "Upstream 'github-copilot-enterprise' resolves to Pi canonical 'github-copilot'",
+      "severity": "none",
+      "user_impact": "Zero — enterprise variant routes to same provider",
+      "evidence_refs": [
+        "docs/provider-parity-reconciliation.json:alias_matches[3]",
+        "src/provider_metadata.rs:1420"
+      ],
+      "proposed_action": "none"
+    },
+    {
+      "id": "DISC-005",
+      "provider_scope": "google-vertex",
+      "discrepancy_type": "alias_mismatch",
+      "title": "Upstream 'google-vertex-anthropic' resolves to Pi canonical 'google-vertex'",
+      "severity": "none",
+      "user_impact": "Zero — Anthropic-through-Vertex routes correctly",
+      "evidence_refs": [
+        "docs/provider-parity-reconciliation.json:alias_matches[4]",
+        "src/provider_metadata.rs:1351"
+      ],
+      "proposed_action": "none"
+    },
+    {
+      "id": "DISC-006",
+      "provider_scope": "fireworks",
+      "discrepancy_type": "naming_convention",
+      "title": "Pi uses 'fireworks' (short form), upstream uses 'fireworks-ai' (long form)",
+      "severity": "none",
+      "user_impact": "Zero — both forms work via alias resolution",
+      "evidence_refs": [
+        "docs/provider-parity-reconciliation-report.json:naming_discrepancies[0]",
+        "docs/provider-canonical-id-table.json"
+      ],
+      "proposed_action": "Consider future migration of Pi canonical to 'fireworks-ai' per deprecation schedule (non-urgent)"
+    },
+    {
+      "id": "DISC-007",
+      "provider_scope": "azure-openai",
+      "discrepancy_type": "naming_convention",
+      "title": "Pi uses 'azure-openai' (service-qualified), upstream uses 'azure' (short form)",
+      "severity": "none",
+      "user_impact": "Zero — both forms work via alias resolution",
+      "evidence_refs": [
+        "docs/provider-parity-reconciliation-report.json:naming_discrepancies[1]",
+        "docs/provider-canonical-id-table.json"
+      ],
+      "proposed_action": "Consider future migration of Pi canonical to 'azure' per deprecation schedule (non-urgent)"
+    },
+    {
+      "id": "DISC-008",
+      "provider_scope": "amazon-bedrock",
+      "discrepancy_type": "api_architecture_deviation",
+      "title": "Missing error_bad_request_400 and error_rate_limit_429 VCR cassettes",
+      "severity": "low",
+      "user_impact": "Test coverage gap for error paths — runtime functionality unaffected",
+      "evidence_refs": [
+        "docs/provider-test-matrix-validation-report.json:per_provider_coverage.bedrock.deviation"
+      ],
+      "proposed_action": "Document as intentional — AWS Bedrock signals errors via ConversationStreamError events, not HTTP status codes"
+    },
+    {
+      "id": "DISC-009",
+      "provider_scope": "gitlab",
+      "discrepancy_type": "api_architecture_deviation",
+      "title": "Missing tool_call_single VCR cassette for GitLab Duo",
+      "severity": "low",
+      "user_impact": "Test coverage gap — GitLab Duo API doesn't expose standard OpenAI tool_call format natively",
+      "evidence_refs": [
+        "docs/provider-test-matrix-validation-report.json:per_provider_coverage.gitlab.deviation"
+      ],
+      "proposed_action": "Document as intentional API limitation"
+    },
+    {
+      "id": "DISC-010",
+      "provider_scope": "all",
+      "discrepancy_type": "ux_discoverability",
+      "title": "78 of 88 providers have zero aliases — users must know exact canonical ID",
+      "severity": "medium",
+      "user_impact": "Users trying common names (e.g., 'together', 'grok', 'hf', 'nim') get no results. High-traffic providers especially affected: togetherai, xai, huggingface, nvidia, lmstudio, deepseek, perplexity, zhipuai, siliconflow",
+      "evidence_refs": [
+        "docs/provider-parity-reconciliation.json:alias_inventory (only 16 aliases for 88 providers)",
+        "src/provider_metadata.rs"
+      ],
+      "proposed_action": "Add common aliases for high-traffic providers: together/together-ai→togetherai, grok/x-ai→xai, hf/hugging-face→huggingface, nim/nvidia-nim→nvidia, lm-studio→lmstudio, deep-seek→deepseek, pplx→perplexity, zhipu/glm→zhipuai, silicon-flow→siliconflow"
+    },
+    {
+      "id": "DISC-011",
+      "provider_scope": "all",
+      "discrepancy_type": "ux_discoverability",
+      "title": "No --list-providers CLI command",
+      "severity": "medium",
+      "user_impact": "--list-models exists but no way to see all available providers with their aliases, auth env keys, and base URLs",
+      "evidence_refs": [
+        "src/cli.rs (--list-models exists, no --list-providers)"
+      ],
+      "proposed_action": "Implement --list-providers CLI command showing canonical IDs, aliases, env keys, and base URLs"
+    },
+    {
+      "id": "DISC-012",
+      "provider_scope": "all",
+      "discrepancy_type": "ux_discoverability",
+      "title": "Model selector alias search now implemented (bd-1gi21 CLOSED)",
+      "severity": "low",
+      "user_impact": "RESOLVED — model_selector.rs now searches provider aliases from provider_metadata",
+      "evidence_refs": [
+        "bd-1gi21 (closed: enhanced model selector alias search)",
+        "src/interactive/model_selector.rs:matches_query()"
+      ],
+      "proposed_action": "none — already resolved"
+    },
+    {
+      "id": "DISC-013",
+      "provider_scope": "all",
+      "discrepancy_type": "ux_discoverability",
+      "title": "No display_name field in ProviderMetadata",
+      "severity": "low",
+      "user_impact": "Users see cryptic IDs like '302ai', 'xai', 'moonshotai' with no human-friendly label",
+      "evidence_refs": [
+        "src/provider_metadata.rs (ProviderMetadata struct has canonical_id and aliases but no display_name)"
+      ],
+      "proposed_action": "Add optional display_name field to ProviderMetadata for user-facing contexts"
+    },
+    {
+      "id": "DISC-014",
+      "provider_scope": "all",
+      "discrepancy_type": "ux_discoverability",
+      "title": "Onboarding wizard only recognizes 3 providers",
+      "severity": "medium",
+      "user_impact": "provider_from_token() in main.rs only recognizes anthropic/claude, openai/gpt, google/gemini — users of other providers get no guidance during setup",
+      "evidence_refs": [
+        "src/main.rs:provider_from_token()"
+      ],
+      "proposed_action": "Expand PROVIDER_CHOICES or use provider_metadata registry for broader recognition"
+    },
+    {
+      "id": "DISC-015",
+      "provider_scope": "all",
+      "discrepancy_type": "infrastructure",
+      "title": "10 provider_factory test failures due to missing pi_runtime.json VCR cassette",
+      "severity": "medium",
+      "user_impact": "No runtime impact — CI test suite gap only",
+      "evidence_refs": [
+        "docs/provider-test-matrix-validation-report.json:deviations (infrastructure failures)"
+      ],
+      "proposed_action": "Fix pi_runtime.json VCR cassette to unblock provider_factory tests"
+    },
+    {
+      "id": "DISC-016",
+      "provider_scope": "all",
+      "discrepancy_type": "ux_discoverability",
+      "title": "Error messages lack fuzzy provider suggestions (RESOLVED)",
+      "severity": "low",
+      "user_impact": "RESOLVED — suggest_similar_providers() function added with 4 tests (bd-1fgjj CLOSED)",
+      "evidence_refs": [
+        "bd-1fgjj (closed: add fuzzy provider suggestions in error path)"
+      ],
+      "proposed_action": "none — already resolved"
+    },
+    {
+      "id": "DISC-017",
+      "provider_scope": "all",
+      "discrepancy_type": "logging_schema_drift",
+      "title": "CI correlation ID not propagated to JSONL records",
+      "severity": "low",
+      "user_impact": "Cross-run correlation requires manual matching of CI_CORRELATION_ID to test trace_ids",
+      "evidence_refs": [
+        "docs/provider_e2e_artifact_contract.json:gaps_identified[0] (GAP-1)",
+        "docs/provider_e2e_artifact_contract.json:correlation_model.ci_correlation_id"
+      ],
+      "proposed_action": "Add optional ci_correlation_id field to pi.test.log.v2 context"
+    },
+    {
+      "id": "DISC-018",
+      "provider_scope": "all",
+      "discrepancy_type": "test_evidence_gap",
+      "title": "No per-provider artifact redaction scan on actual e2e output",
+      "severity": "medium",
+      "user_impact": "Redaction functions exist and are unit-tested, but no test scans real provider e2e output artifacts for unredacted secrets",
+      "evidence_refs": [
+        "docs/provider_e2e_artifact_contract.json:gaps_identified[1] (GAP-2)",
+        "tests/common/logging.rs:find_unredacted_keys()"
+      ],
+      "proposed_action": "Add test that runs find_unredacted_keys() on provider test JSONL fixtures"
+    },
+    {
+      "id": "DISC-019",
+      "provider_scope": "all",
+      "discrepancy_type": "logging_schema_drift",
+      "title": "Artifact-index path existence not cross-validated",
+      "severity": "low",
+      "user_impact": "artifact-index.jsonl records paths but nothing validates those paths exist in the artifact directory",
+      "evidence_refs": [
+        "docs/provider_e2e_artifact_contract.json:gaps_identified[2] (GAP-3)"
+      ],
+      "proposed_action": "Add optional cross-reference check in evidence contract validation"
+    },
+    {
+      "id": "DISC-020",
+      "provider_scope": "all",
+      "discrepancy_type": "docs_mismatch",
+      "title": "No formal evidence_contract JSON schema document",
+      "severity": "low",
+      "user_impact": "evidence_contract.json is referenced in ci_policy but has no formal schema defining required fields",
+      "evidence_refs": [
+        "docs/provider_e2e_artifact_contract.json:gaps_identified[3] (GAP-4)",
+        "docs/e2e_scenario_matrix.json:ci_policy.required_run_artifacts"
+      ],
+      "proposed_action": "Define pi.qa.evidence_contract.v1 schema with required fields"
+    },
+    {
+      "id": "DISC-021",
+      "provider_scope": "all",
+      "discrepancy_type": "logging_schema_drift",
+      "title": "V1 schema deprecation not enforced",
+      "severity": "low",
+      "user_impact": "pi.test.log.v1 is accepted by validator but all new tests should use v2; no enforcement prevents v1 usage in new tests",
+      "evidence_refs": [
+        "docs/provider_e2e_artifact_contract.json:gaps_identified[4] (GAP-5)",
+        "tests/common/logging.rs:validate_jsonl_line()"
+      ],
+      "proposed_action": "Add lint or CI check that new test files emit v2 only"
+    }
+  ],
+
+  "cross_reference_matrix": {
+    "by_root_cause": {
+      "naming_preference_difference": {
+        "count": 7,
+        "severity": "none",
+        "ids": ["DISC-001", "DISC-002", "DISC-003", "DISC-004", "DISC-005", "DISC-006", "DISC-007"],
+        "summary": "All 5 alias mismatches and 2 naming conventions are functionally transparent"
+      },
+      "api_architecture_difference": {
+        "count": 2,
+        "severity": "low",
+        "ids": ["DISC-008", "DISC-009"],
+        "summary": "Bedrock and GitLab use non-standard error/tool-call mechanisms — intentional, documented"
+      },
+      "missing_metadata_enrichment": {
+        "count": 3,
+        "severity": "medium",
+        "ids": ["DISC-010", "DISC-013", "DISC-014"],
+        "summary": "Provider metadata lacks aliases for most providers, display names, and broad onboarding recognition"
+      },
+      "missing_cli_affordance": {
+        "count": 1,
+        "severity": "medium",
+        "ids": ["DISC-011"],
+        "summary": "No --list-providers command exists"
+      },
+      "logging_schema_drift": {
+        "count": 3,
+        "severity": "low",
+        "ids": ["DISC-017", "DISC-019", "DISC-021"],
+        "summary": "CI correlation not propagated to JSONL, artifact-index paths not cross-validated, V1 schema deprecation not enforced"
+      },
+      "test_evidence_gap": {
+        "count": 1,
+        "severity": "medium",
+        "ids": ["DISC-018"],
+        "summary": "No per-provider redaction scan on actual e2e output artifacts"
+      },
+      "docs_mismatch": {
+        "count": 1,
+        "severity": "low",
+        "ids": ["DISC-020"],
+        "summary": "evidence_contract.json referenced in ci_policy but has no formal schema"
+      },
+      "infrastructure_config": {
+        "count": 1,
+        "severity": "medium",
+        "ids": ["DISC-015"],
+        "summary": "VCR cassette gap blocks provider_factory tests"
+      },
+      "already_resolved": {
+        "count": 2,
+        "severity": "none",
+        "ids": ["DISC-012", "DISC-016"],
+        "summary": "Model selector alias search and fuzzy error suggestions both shipped"
+      }
+    },
+    "by_user_impact": {
+      "zero_impact_transparent": {
+        "count": 9,
+        "ids": ["DISC-001", "DISC-002", "DISC-003", "DISC-004", "DISC-005", "DISC-006", "DISC-007", "DISC-012", "DISC-016"]
+      },
+      "low_dev_hygiene": {
+        "count": 6,
+        "ids": ["DISC-008", "DISC-009", "DISC-017", "DISC-019", "DISC-020", "DISC-021"]
+      },
+      "medium_user_or_ci_friction": {
+        "count": 6,
+        "ids": ["DISC-010", "DISC-011", "DISC-013", "DISC-014", "DISC-015", "DISC-018"]
+      }
+    }
+  },
+
+  "remediation_priority": [
+    {
+      "rank": 1,
+      "id": "DISC-010",
+      "action": "Add common aliases for high-traffic providers",
+      "effort": "low (metadata-only changes in provider_metadata.rs)",
+      "impact": "high (directly improves user discovery for 10+ popular providers)",
+      "rollout_risk": "none (additive change, no breaking)"
+    },
+    {
+      "rank": 2,
+      "id": "DISC-011",
+      "action": "Implement --list-providers CLI command",
+      "effort": "medium (new CLI subcommand + formatting)",
+      "impact": "medium (gives users visibility into available providers)",
+      "rollout_risk": "none (additive feature)"
+    },
+    {
+      "rank": 3,
+      "id": "DISC-015",
+      "action": "Fix pi_runtime.json VCR cassette for provider_factory tests",
+      "effort": "low (cassette recording)",
+      "impact": "medium (unblocks 10 tests in CI)",
+      "rollout_risk": "none (test-only change)"
+    },
+    {
+      "rank": 4,
+      "id": "DISC-014",
+      "action": "Expand onboarding wizard provider recognition",
+      "effort": "low (expand PROVIDER_CHOICES array)",
+      "impact": "medium (better first-run experience for non-Anthropic/OpenAI/Google users)",
+      "rollout_risk": "none (additive)"
+    },
+    {
+      "rank": 5,
+      "id": "DISC-013",
+      "action": "Add display_name field to ProviderMetadata",
+      "effort": "medium (struct change + 88 entries to populate)",
+      "impact": "low (cosmetic improvement in model selector and --list-models)",
+      "rollout_risk": "low (requires updating all ProviderMetadata construction sites)"
+    },
+    {
+      "rank": 6,
+      "id": "DISC-018",
+      "action": "Add per-provider redaction scan on actual e2e output artifacts",
+      "effort": "low (add test calling find_unredacted_keys() on JSONL fixtures)",
+      "impact": "medium (closes security testing gap for provider artifacts)",
+      "rollout_risk": "none (test-only change)"
+    },
+    {
+      "rank": 7,
+      "ids": ["DISC-017", "DISC-019", "DISC-021"],
+      "action": "Logging schema hygiene: propagate CI correlation ID, cross-validate artifact paths, enforce V2-only",
+      "effort": "low-medium (3 independent small changes)",
+      "impact": "low (developer experience and CI traceability)",
+      "rollout_risk": "none (additive changes)"
+    },
+    {
+      "rank": 8,
+      "id": "DISC-020",
+      "action": "Define formal pi.qa.evidence_contract.v1 schema",
+      "effort": "low (JSON schema document)",
+      "impact": "low (documentation completeness)",
+      "rollout_risk": "none (docs-only)"
+    },
+    {
+      "rank": 9,
+      "ids": ["DISC-006", "DISC-007"],
+      "action": "Migrate Pi canonicals to match upstream naming (fireworks→fireworks-ai, azure-openai→azure)",
+      "effort": "medium (canonical ID change affects multiple code paths)",
+      "impact": "low (current aliases already resolve correctly)",
+      "rollout_risk": "medium (canonical ID change may affect configs, tests, docs)"
+    }
+  ],
+
+  "acceptance_criteria_compliance": {
+    "criterion_1": {
+      "requirement": "Every discrepancy has fields: provider_scope, discrepancy_type, severity, user_impact, evidence_refs, proposed_action",
+      "status": "PASS — all 21 discrepancies have all 6 required fields"
+    },
+    "criterion_2": {
+      "requirement": "Alias-only mismatches are distinguished from true implementation gaps",
+      "status": "PASS — 5 alias_mismatch + 2 naming_convention explicitly separated from 0 implementation_gap entries"
+    },
+    "criterion_3": {
+      "requirement": "Severity grading is consistent with rollout risk (P0/P1 blockers vs doc-only hygiene)",
+      "status": "PASS — severity grades range from none (transparent alias resolution) through medium (UX/CI friction), with no high/P0 blockers identified"
+    },
+    "criterion_4": {
+      "requirement": "Root-cause taxonomy covers all bead-specified classes: missing implementation, alias mismatch, test evidence gap, docs mismatch, logging/schema drift",
+      "status": "PASS — classification_rules includes alias_mismatch, test_evidence_gap, docs_mismatch, logging_schema_drift, and implementation_gap (0 found)"
+    },
+    "criterion_5": {
+      "requirement": "Logging/artifact contract gaps from bd-3uqg.14.3.3 are incorporated",
+      "status": "PASS — GAP-1 through GAP-5 from provider_e2e_artifact_contract.json mapped to DISC-017 through DISC-021"
+    }
+  }
+}

@@ -2288,6 +2288,14 @@ class AIAgent:
             if _hermes_md_path is not None:
                 prompt_parts.append(EMERALD_TABLETS_GUIDANCE)
 
+        # Studio Orchestrator prompt — loaded once from prompts/system.txt
+        # Stable per session (file content cached) so prompt caching stays valid.
+        if not self.skip_context_files:
+            from agent.prompt_builder import load_studio_prompt
+            studio = load_studio_prompt()
+            if studio:
+                prompt_parts.append(studio)
+
         # Honcho CLI awareness: tell Hermes about its own management commands
         # so it can refer the user to them rather than reinventing answers.
         if self._honcho and self._honcho_session_key:

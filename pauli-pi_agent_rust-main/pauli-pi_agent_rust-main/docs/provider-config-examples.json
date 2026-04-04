@@ -1,0 +1,620 @@
+{
+  "schema": "pi.provider_config_examples.v2",
+  "bead_id": "bd-3uqg.9.2",
+  "last_verified_utc": "2026-02-13T20:00:00Z",
+  "description": "End-to-end configuration examples for every provider family. Each entry includes minimal env setup, CLI invocation, expected behavior, and known pitfalls.",
+
+  "provider_families": [
+    {
+      "family": "built_in_native",
+      "description": "Dedicated Rust implementations with full feature support.",
+      "providers": [
+        {
+          "provider_id": "anthropic",
+          "display_name": "Anthropic",
+          "aliases": [],
+          "api_family": "anthropic-messages",
+          "base_url": "https://api.anthropic.com/v1/messages",
+          "env_required": { "ANTHROPIC_API_KEY": "sk-ant-..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider anthropic --model claude-sonnet-4-5",
+          "advanced_cli": [
+            "pi --provider anthropic --model claude-opus-4-5 --thinking high",
+            "pi --provider anthropic --model claude-haiku-4-5"
+          ],
+          "supports": ["text", "image", "reasoning", "tool_calling", "streaming"],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE (content_block_delta events)",
+            "auth_failure": "401 with error.type='authentication_error'",
+            "rate_limit": "429 with retry-after header"
+          },
+          "key_caveats": [
+            "Auth uses x-api-key header (not Bearer token)",
+            "Context window: 200K tokens",
+            "Max output: 8192 tokens by default"
+          ]
+        },
+        {
+          "provider_id": "openai",
+          "display_name": "OpenAI",
+          "aliases": [],
+          "api_family": "openai-responses",
+          "base_url": "https://api.openai.com/v1",
+          "env_required": { "OPENAI_API_KEY": "sk-..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider openai --model gpt-4o",
+          "advanced_cli": [
+            "pi --provider openai --model gpt-5.1-codex",
+            "pi --provider openai --model gpt-4o-mini"
+          ],
+          "supports": ["text", "image", "reasoning", "tool_calling", "streaming"],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE response",
+            "auth_failure": "401 with error.code='invalid_api_key'",
+            "rate_limit": "429 with x-ratelimit-remaining header"
+          },
+          "key_caveats": [
+            "Native openai-responses API used when available",
+            "Context window: 128K tokens",
+            "Max output: 16384 tokens by default"
+          ]
+        },
+        {
+          "provider_id": "google",
+          "display_name": "Google Gemini",
+          "aliases": ["gemini"],
+          "api_family": "google-generative-ai",
+          "base_url": "https://generativelanguage.googleapis.com/v1beta",
+          "env_required": { "GOOGLE_API_KEY": "AIza..." },
+          "env_optional": { "GEMINI_API_KEY": "AIza... (alias for GOOGLE_API_KEY)" },
+          "minimal_cli": "pi --provider google --model gemini-2.5-pro",
+          "advanced_cli": [
+            "pi --provider gemini --model gemini-2.5-flash",
+            "pi --provider google --model gemini-1.5-pro"
+          ],
+          "supports": ["text", "image", "reasoning", "tool_calling", "streaming"],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming JSON response",
+            "auth_failure": "401 or 403 with API key error",
+            "rate_limit": "429 with retry-after"
+          },
+          "key_caveats": [
+            "Context window: 128K tokens (up to 1M for some models)",
+            "API key passed as query parameter, not header"
+          ]
+        },
+        {
+          "provider_id": "google-vertex",
+          "display_name": "Google Vertex AI",
+          "aliases": ["vertexai"],
+          "api_family": "google-vertex",
+          "base_url": "(region-based, constructed dynamically)",
+          "env_required": { "GOOGLE_CLOUD_API_KEY": "..." },
+          "env_optional": { "VERTEX_API_KEY": "... (alias)" },
+          "minimal_cli": "pi --provider google-vertex --model gemini-2.5-pro",
+          "advanced_cli": [
+            "pi --provider vertexai --model gemini-2.5-pro"
+          ],
+          "supports": ["text", "image", "reasoning", "tool_calling", "streaming"],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming response",
+            "auth_failure": "401/403 with credentials error",
+            "rate_limit": "429 with quota exhausted"
+          },
+          "key_caveats": [
+            "No single base URL; endpoint derived from region + project",
+            "Context window: up to 1,000,000 tokens",
+            "Use --base-url to override regional endpoint"
+          ]
+        },
+        {
+          "provider_id": "cohere",
+          "display_name": "Cohere",
+          "aliases": [],
+          "api_family": "cohere-chat",
+          "base_url": "https://api.cohere.com/v2",
+          "env_required": { "COHERE_API_KEY": "..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider cohere --model command-r-plus",
+          "advanced_cli": [],
+          "supports": ["text", "reasoning", "tool_calling", "streaming"],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming response",
+            "auth_failure": "401 with invalid API key",
+            "rate_limit": "429 with rate limit exceeded"
+          },
+          "key_caveats": [
+            "Text input only (no image support)",
+            "Uses Cohere-specific chat API (not OpenAI-compatible)"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "native_adapter_required",
+      "description": "Require specialized protocol/auth handling beyond generic OpenAI compatibility.",
+      "providers": [
+        {
+          "provider_id": "amazon-bedrock",
+          "display_name": "Amazon Bedrock",
+          "aliases": ["bedrock"],
+          "api_family": "bedrock-converse-stream",
+          "base_url": "(AWS regional endpoint)",
+          "env_required": { "AWS_ACCESS_KEY_ID": "AKIA...", "AWS_SECRET_ACCESS_KEY": "..." },
+          "env_optional": {
+            "AWS_SESSION_TOKEN": "... (temporary credentials)",
+            "AWS_BEARER_TOKEN_BEDROCK": "... (bearer auth alternative)",
+            "AWS_PROFILE": "... (named profile)",
+            "AWS_REGION": "us-east-1"
+          },
+          "minimal_cli": "pi --provider amazon-bedrock --model anthropic.claude-sonnet-4-20250514-v1:0",
+          "advanced_cli": [
+            "pi --provider bedrock --model anthropic.claude-sonnet-4-20250514-v1:0"
+          ],
+          "supports": ["text", "reasoning", "tool_calling", "streaming"],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming converse response",
+            "auth_failure": "403 with UnrecognizedClientException",
+            "rate_limit": "429 with ThrottlingException"
+          },
+          "key_caveats": [
+            "No single base URL; endpoint is region-dependent",
+            "Model IDs use Bedrock format (e.g., anthropic.claude-sonnet-4-20250514-v1:0)",
+            "Uses AWS SigV4 signing, not simple Bearer token",
+            "Text input only (no image passthrough)"
+          ]
+        },
+        {
+          "provider_id": "azure-openai",
+          "display_name": "Azure OpenAI",
+          "aliases": ["azure", "azure-cognitive-services"],
+          "api_family": "openai (Azure variant)",
+          "base_url": "(deployment-specific, must configure)",
+          "env_required": { "AZURE_OPENAI_API_KEY": "..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider azure-openai --model gpt-4o",
+          "advanced_cli": [
+            "pi --provider azure --model my-gpt4o-deployment --base-url \"https://my-resource.openai.azure.com/openai/deployments/my-gpt4o-deployment/chat/completions?api-version=2024-02-15-preview\""
+          ],
+          "supports": ["text", "image", "tool_calling", "streaming"],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE response",
+            "auth_failure": "401 with invalid subscription key",
+            "rate_limit": "429 with retry-after header"
+          },
+          "key_caveats": [
+            "Requires deployment-specific endpoint configuration via --base-url or models.json",
+            "Endpoint format: https://{resource}.openai.azure.com/openai/deployments/{deployment}/...",
+            "Model ID maps to deployment name, not the OpenAI model ID"
+          ]
+        },
+        {
+          "provider_id": "sap-ai-core",
+          "display_name": "SAP AI Core",
+          "aliases": ["sap"],
+          "api_family": "openai (SAP variant)",
+          "base_url": "(SAP service URL, from credentials)",
+          "env_required": { "AICORE_SERVICE_KEY": "{...json service key...}" },
+          "env_optional": {
+            "SAP_AI_CORE_CLIENT_ID": "... (if not using service key)",
+            "SAP_AI_CORE_CLIENT_SECRET": "...",
+            "SAP_AI_CORE_TOKEN_URL": "https://...",
+            "SAP_AI_CORE_SERVICE_URL": "https://..."
+          },
+          "minimal_cli": "pi --provider sap-ai-core --model gpt-4o",
+          "advanced_cli": [
+            "pi --provider sap --model gpt-4o"
+          ],
+          "supports": ["text", "tool_calling", "streaming"],
+          "expected_behavior": {
+            "auth_success": "200 OK after OAuth2 token exchange",
+            "auth_failure": "401 with OAuth client error",
+            "rate_limit": "429 with SAP rate limit"
+          },
+          "key_caveats": [
+            "Requires SAP BTP subscription with AI Core service",
+            "OAuth2 client credentials flow (token exchange automatic)",
+            "AICORE_SERVICE_KEY is a JSON blob containing all credentials",
+            "Model availability depends on resource group configuration"
+          ]
+        },
+        {
+          "provider_id": "github-copilot",
+          "display_name": "GitHub Copilot",
+          "aliases": ["copilot", "github-copilot-enterprise"],
+          "api_family": "openai (Copilot variant)",
+          "base_url": "(GitHub API, token exchange)",
+          "env_required": { "GITHUB_COPILOT_API_KEY": "..." },
+          "env_optional": { "GITHUB_TOKEN": "ghp_... (alternative auth)" },
+          "minimal_cli": "pi --provider github-copilot --model gpt-4o",
+          "advanced_cli": [
+            "pi --provider copilot --model gpt-4o"
+          ],
+          "supports": ["text", "tool_calling", "streaming"],
+          "expected_behavior": {
+            "auth_success": "200 OK after GitHub token exchange",
+            "auth_failure": "401 with invalid token",
+            "rate_limit": "429 with Copilot rate limit"
+          },
+          "key_caveats": [
+            "Requires active GitHub Copilot subscription",
+            "Token exchange against GitHub API required before each session",
+            "Enterprise version has separate token handling"
+          ]
+        },
+        {
+          "provider_id": "gitlab",
+          "display_name": "GitLab Duo",
+          "aliases": ["gitlab-duo"],
+          "api_family": "openai (GitLab variant)",
+          "base_url": "(GitLab instance URL, must configure)",
+          "env_required": { "GITLAB_TOKEN": "glpat-..." },
+          "env_optional": { "GITLAB_API_KEY": "... (alternative auth)" },
+          "minimal_cli": "pi --provider gitlab --model claude-sonnet-4",
+          "advanced_cli": [
+            "pi --provider gitlab-duo --model claude-sonnet-4 --base-url \"https://gitlab.mycompany.com\""
+          ],
+          "supports": ["text", "tool_calling", "streaming"],
+          "expected_behavior": {
+            "auth_success": "200 OK with response",
+            "auth_failure": "401 with unauthorized",
+            "rate_limit": "429 with rate limit"
+          },
+          "key_caveats": [
+            "Configure --base-url to point at your GitLab instance",
+            "Returns non-streaming done event (streaming behavior differs)",
+            "Model availability depends on GitLab subscription tier"
+          ]
+        }
+      ]
+    },
+    {
+      "family": "openai_compatible_flagship",
+      "description": "Flagship OpenAI-compatible providers with full VCR test coverage.",
+      "providers": [
+        {
+          "provider_id": "groq",
+          "display_name": "Groq (LPU Inference)",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://api.groq.com/openai/v1/chat/completions",
+          "env_required": { "GROQ_API_KEY": "gsk_..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider groq --model llama-3.3-70b-versatile",
+          "advanced_cli": [
+            "pi --provider groq --model deepseek-r1-distill-llama-70b"
+          ],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE response",
+            "auth_failure": "401 with 'Invalid API Key'",
+            "rate_limit": "429 with x-ratelimit-remaining-requests header"
+          },
+          "key_caveats": [
+            "temperature=0 normalized to 1e-8 server-side",
+            "logprobs, logit_bias, messages[].name silently ignored"
+          ]
+        },
+        {
+          "provider_id": "deepseek",
+          "display_name": "DeepSeek",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://api.deepseek.com",
+          "env_required": { "DEEPSEEK_API_KEY": "sk-..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider deepseek --model deepseek-chat",
+          "advanced_cli": [
+            "pi --provider deepseek --model deepseek-reasoner"
+          ],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE response",
+            "auth_failure": "401 with invalid API key",
+            "rate_limit": "429 with rate limit exceeded"
+          },
+          "key_caveats": [
+            "Context window: 128K tokens",
+            "Reasoning model (deepseek-reasoner) available"
+          ]
+        },
+        {
+          "provider_id": "cerebras",
+          "display_name": "Cerebras (WSE Hardware)",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://api.cerebras.ai/v1/chat/completions",
+          "env_required": { "CEREBRAS_API_KEY": "csk-..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider cerebras --model llama-3.3-70b",
+          "advanced_cli": [
+            "pi --provider cerebras --model qwen-3-32b"
+          ],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE including time_info",
+            "auth_failure": "401 with Invalid API key",
+            "rate_limit": "429 with x-ratelimit-remaining-requests-day header"
+          },
+          "key_caveats": [
+            "Tool calling only on gpt-oss-120b, qwen-3-32b, zai-glm-4.7",
+            "Non-standard rate limit headers (per-day and per-minute)"
+          ]
+        },
+        {
+          "provider_id": "openrouter",
+          "display_name": "OpenRouter (Aggregator)",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://openrouter.ai/api/v1/chat/completions",
+          "env_required": { "OPENROUTER_API_KEY": "sk-or-v1-..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider openrouter --model openai/gpt-4o-mini",
+          "advanced_cli": [
+            "pi --provider openrouter --model anthropic/claude-sonnet-4",
+            "pi --provider openrouter --model meta-llama/llama-3.3-70b-instruct"
+          ],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE (may include OPENROUTER PROCESSING comments)",
+            "auth_failure": "401 with error.message",
+            "rate_limit": "429 with error.code"
+          },
+          "key_caveats": [
+            "Model IDs use org/model format (e.g., openai/gpt-4o-mini)",
+            "Mid-stream errors use HTTP 200 + SSE error payload",
+            "Serving model may differ from requested (fallback routing)"
+          ]
+        },
+        {
+          "provider_id": "mistral",
+          "display_name": "Mistral",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://api.mistral.ai/v1/chat/completions",
+          "env_required": { "MISTRAL_API_KEY": "..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider mistral --model mistral-large-latest",
+          "advanced_cli": [],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE",
+            "auth_failure": "401",
+            "rate_limit": "429"
+          },
+          "key_caveats": []
+        },
+        {
+          "provider_id": "moonshotai",
+          "display_name": "Kimi / Moonshot AI",
+          "aliases": ["moonshot", "kimi"],
+          "api_family": "openai-completions",
+          "base_url": "https://api.moonshot.ai/v1/chat/completions",
+          "env_required": { "MOONSHOT_API_KEY": "sk-..." },
+          "env_optional": { "KIMI_API_KEY": "sk-... (moonshotai global only)" },
+          "minimal_cli": "pi --provider moonshotai --model moonshot-v1-128k",
+          "advanced_cli": [
+            "pi --provider moonshotai-cn --model moonshot-v1-128k",
+            "pi --provider kimi-for-coding --model kimi-k2.5"
+          ],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE",
+            "auth_failure": "401 with key/endpoint mismatch",
+            "rate_limit": "429 with tier-based limits"
+          },
+          "key_caveats": [
+            "Three entries: moonshotai (.ai global), moonshotai-cn (.cn China), kimi-for-coding (Anthropic API)",
+            "Keys NOT interchangeable between .ai and .cn endpoints",
+            "kimi-for-coding uses anthropic-messages API, not openai-completions",
+            "Temperature range 0-1 (not 0-2)"
+          ]
+        },
+        {
+          "provider_id": "alibaba",
+          "display_name": "Qwen / DashScope",
+          "aliases": ["dashscope", "qwen"],
+          "api_family": "openai-completions",
+          "base_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
+          "env_required": { "DASHSCOPE_API_KEY": "sk-..." },
+          "env_optional": { "QWEN_API_KEY": "sk-... (alibaba intl only)" },
+          "minimal_cli": "pi --provider alibaba --model qwen-plus",
+          "advanced_cli": [
+            "pi --provider alibaba-cn --model qwen-plus"
+          ],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE",
+            "auth_failure": "401 with invalid API key",
+            "rate_limit": "429 with code 'qps' (retryable) or 'quota' (non-retryable)"
+          },
+          "key_caveats": [
+            "CRITICAL: Tool calling CANNOT be combined with streaming",
+            "Two distinct 429 categories: qps (retryable) vs quota (non-retryable)",
+            "QWEN_API_KEY fallback only for alibaba (intl), not alibaba-cn"
+          ]
+        },
+        {
+          "provider_id": "fireworks",
+          "display_name": "Fireworks AI",
+          "aliases": ["fireworks-ai"],
+          "api_family": "openai-completions",
+          "base_url": "https://api.fireworks.ai/inference/v1",
+          "env_required": { "FIREWORKS_API_KEY": "..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider fireworks --model accounts/fireworks/models/llama-v3p1-70b-instruct",
+          "advanced_cli": [],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE",
+            "auth_failure": "401",
+            "rate_limit": "429"
+          },
+          "key_caveats": []
+        },
+        {
+          "provider_id": "perplexity",
+          "display_name": "Perplexity",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://api.perplexity.ai",
+          "env_required": { "PERPLEXITY_API_KEY": "pplx-..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider perplexity --model sonar-pro",
+          "advanced_cli": [],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE",
+            "auth_failure": "401",
+            "rate_limit": "429"
+          },
+          "key_caveats": []
+        },
+        {
+          "provider_id": "xai",
+          "display_name": "xAI (Grok)",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://api.x.ai/v1",
+          "env_required": { "XAI_API_KEY": "xai-..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider xai --model grok-2",
+          "advanced_cli": [],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE",
+            "auth_failure": "401",
+            "rate_limit": "429"
+          },
+          "key_caveats": []
+        },
+        {
+          "provider_id": "togetherai",
+          "display_name": "Together AI",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://api.together.xyz/v1/chat/completions",
+          "env_required": { "TOGETHER_API_KEY": "..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider togetherai --model meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+          "advanced_cli": [],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE",
+            "auth_failure": "401",
+            "rate_limit": "429"
+          },
+          "key_caveats": []
+        },
+        {
+          "provider_id": "deepinfra",
+          "display_name": "DeepInfra",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://api.deepinfra.com/v1/openai/chat/completions",
+          "env_required": { "DEEPINFRA_API_KEY": "..." },
+          "env_optional": {},
+          "minimal_cli": "pi --provider deepinfra --model meta-llama/Meta-Llama-3.1-70B-Instruct",
+          "advanced_cli": [],
+          "expected_behavior": {
+            "auth_success": "200 OK with streaming SSE",
+            "auth_failure": "401",
+            "rate_limit": "429"
+          },
+          "key_caveats": []
+        }
+      ]
+    },
+    {
+      "family": "regional_specialized",
+      "description": "Regional cloud and specialized hosting providers.",
+      "providers": [
+        {
+          "provider_id": "nvidia",
+          "display_name": "NVIDIA",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://integrate.api.nvidia.com/v1/chat/completions",
+          "env_required": { "NVIDIA_API_KEY": "nvapi-..." },
+          "minimal_cli": "pi --provider nvidia --model meta/llama-3.1-70b-instruct",
+          "key_caveats": []
+        },
+        {
+          "provider_id": "huggingface",
+          "display_name": "Hugging Face",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://router.huggingface.co/v1/chat/completions",
+          "env_required": { "HF_TOKEN": "hf_..." },
+          "minimal_cli": "pi --provider huggingface --model meta-llama/Meta-Llama-3.1-70B-Instruct",
+          "key_caveats": []
+        },
+        {
+          "provider_id": "stackit",
+          "display_name": "STACKIT (EU)",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://api.openai-compat.model-serving.eu01.onstackit.cloud/v1/chat/completions",
+          "env_required": { "STACKIT_API_KEY": "..." },
+          "minimal_cli": "pi --provider stackit --model <model-id>",
+          "key_caveats": ["EU-hosted with data residency compliance"]
+        },
+        {
+          "provider_id": "ollama-cloud",
+          "display_name": "Ollama Cloud",
+          "aliases": [],
+          "api_family": "openai-completions",
+          "base_url": "https://ollama.com/v1/chat/completions",
+          "env_required": { "OLLAMA_API_KEY": "..." },
+          "minimal_cli": "pi --provider ollama-cloud --model llama3.1:70b",
+          "key_caveats": []
+        }
+      ]
+    }
+  ],
+
+  "env_quick_reference": {
+    "description": "All env vars across provider families. Set only the providers you use.",
+    "built_in_native": [
+      {"var": "ANTHROPIC_API_KEY", "provider": "anthropic", "format": "sk-ant-...", "source": "https://console.anthropic.com/settings/keys"},
+      {"var": "OPENAI_API_KEY", "provider": "openai", "format": "sk-...", "source": "https://platform.openai.com/api-keys"},
+      {"var": "GOOGLE_API_KEY", "provider": "google/gemini", "format": "AIza...", "source": "https://aistudio.google.com/apikey"},
+      {"var": "GOOGLE_CLOUD_API_KEY", "provider": "google-vertex", "source": "https://console.cloud.google.com/apis/credentials"},
+      {"var": "COHERE_API_KEY", "provider": "cohere", "source": "https://dashboard.cohere.com/api-keys"}
+    ],
+    "native_adapter": [
+      {"var": "AWS_ACCESS_KEY_ID", "provider": "amazon-bedrock", "source": "AWS IAM Console"},
+      {"var": "AZURE_OPENAI_API_KEY", "provider": "azure-openai", "source": "Azure Portal"},
+      {"var": "AICORE_SERVICE_KEY", "provider": "sap-ai-core", "source": "SAP BTP Cockpit"},
+      {"var": "GITHUB_COPILOT_API_KEY", "provider": "github-copilot", "source": "GitHub Settings"},
+      {"var": "GITLAB_TOKEN", "provider": "gitlab", "format": "glpat-...", "source": "GitLab Settings > Access Tokens"}
+    ],
+    "openai_compatible": [
+      {"var": "GROQ_API_KEY", "provider": "groq", "format": "gsk_...", "source": "https://console.groq.com/keys"},
+      {"var": "DEEPSEEK_API_KEY", "provider": "deepseek", "format": "sk-...", "source": "https://platform.deepseek.com/api_keys"},
+      {"var": "CEREBRAS_API_KEY", "provider": "cerebras", "format": "csk-...", "source": "https://cloud.cerebras.ai/"},
+      {"var": "OPENROUTER_API_KEY", "provider": "openrouter", "format": "sk-or-v1-...", "source": "https://openrouter.ai/settings/keys"},
+      {"var": "MISTRAL_API_KEY", "provider": "mistral", "source": "https://console.mistral.ai/api-keys/"},
+      {"var": "MOONSHOT_API_KEY", "provider": "moonshotai", "format": "sk-...", "source": "https://platform.moonshot.cn/console/api-keys"},
+      {"var": "DASHSCOPE_API_KEY", "provider": "alibaba", "format": "sk-...", "source": "https://dashscope.console.aliyun.com/apiKey"},
+      {"var": "FIREWORKS_API_KEY", "provider": "fireworks", "source": "https://fireworks.ai/account/api-keys"},
+      {"var": "PERPLEXITY_API_KEY", "provider": "perplexity", "format": "pplx-...", "source": "https://www.perplexity.ai/settings/api"},
+      {"var": "XAI_API_KEY", "provider": "xai", "format": "xai-...", "source": "https://console.x.ai/"},
+      {"var": "TOGETHER_API_KEY", "provider": "togetherai", "source": "https://api.together.xyz/settings/api-keys"},
+      {"var": "DEEPINFRA_API_KEY", "provider": "deepinfra", "source": "https://deepinfra.com/dash/api_keys"}
+    ]
+  },
+
+  "verification_commands": {
+    "description": "Quick smoke test commands for each family. Pipe 'Say OK' to verify auth + streaming.",
+    "built_in_native": [
+      "pi --provider anthropic --model claude-haiku-4-5 -m 'Say OK'",
+      "pi --provider openai --model gpt-4o-mini -m 'Say OK'",
+      "pi --provider google --model gemini-2.5-flash -m 'Say OK'",
+      "pi --provider cohere --model command-r-plus -m 'Say OK'"
+    ],
+    "native_adapter": [
+      "pi --provider amazon-bedrock --model anthropic.claude-sonnet-4-20250514-v1:0 -m 'Say OK'",
+      "pi --provider azure-openai --model gpt-4o -m 'Say OK'",
+      "pi --provider github-copilot --model gpt-4o -m 'Say OK'",
+      "pi --provider gitlab --model claude-sonnet-4 -m 'Say OK'"
+    ],
+    "openai_compatible": [
+      "pi --provider groq --model llama-3.3-70b-versatile -m 'Say OK'",
+      "pi --provider deepseek --model deepseek-chat -m 'Say OK'",
+      "pi --provider cerebras --model llama-3.3-70b -m 'Say OK'",
+      "pi --provider openrouter --model openai/gpt-4o-mini -m 'Say OK'",
+      "pi --provider moonshotai --model moonshot-v1-128k -m 'Say OK'",
+      "pi --provider alibaba --model qwen-plus -m 'Say OK'"
+    ]
+  }
+}

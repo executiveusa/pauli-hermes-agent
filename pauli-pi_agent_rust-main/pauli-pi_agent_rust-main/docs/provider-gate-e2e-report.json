@@ -1,0 +1,206 @@
+{
+  "report_version": "1.0",
+  "bead_id": "bd-3uqg.10.2.3",
+  "generated_at_utc": "2026-02-14T01:15:00Z",
+  "generated_by": "TopazFalcon (Claude Opus 4.6)",
+  "description": "Provider E2E gate: scenario execution, streaming, cross-provider parity, failure injection, and structured logging validation",
+  "environment": {
+    "cargo_target_dir": "/data/projects/pi_agent_rust/_target_topaz",
+    "vcr_mode": "playback",
+    "vcr_cassette_dir": "tests/fixtures/vcr",
+    "ollama_live": true,
+    "ollama_model": "qwen2.5:0.5b",
+    "ollama_endpoint": "http://127.0.0.1:11434/v1"
+  },
+  "e2e_test_suites": {
+    "e2e_provider_scenarios": {
+      "command": "cargo test --test e2e_provider_scenarios",
+      "result": "PASS",
+      "passed": 101,
+      "failed": 0,
+      "ignored": 0,
+      "duration_seconds": 13.52,
+      "scope": "Multi-turn conversations, OpenAI-compatible preset waves, auth/rate-limit/schema-drift error scenarios, tool calls, event ordering, determinism proofs, request body stability",
+      "key_tests": [
+        "e2e_multi_turn_conversation",
+        "e2e_openai_compatible_wave_presets",
+        "e2e_error_schema_drift_all_families",
+        "e2e_error_rate_limit_all_families",
+        "e2e_error_auth_all_families",
+        "e2e_tool_call_all_families",
+        "e2e_event_ordering_all_families",
+        "e2e_simple_text_all_families",
+        "e2e_request_body_stability",
+        "e2e_determinism_proof",
+        "e2e_comprehensive_report"
+      ]
+    },
+    "e2e_provider_streaming": {
+      "command": "cargo test --test e2e_provider_streaming",
+      "result": "PASS",
+      "passed": 93,
+      "failed": 0,
+      "ignored": 0,
+      "duration_seconds": 2.44,
+      "scope": "Anthropic SSE streaming determinism, comprehensive streaming scenarios across all provider families, error scenario coverage",
+      "key_tests": [
+        "e2e_anthropic_streaming_determinism",
+        "e2e_anthropic_error_scenarios_comprehensive",
+        "e2e_anthropic_streaming_all_scenarios"
+      ]
+    },
+    "e2e_cross_provider_parity": {
+      "command": "cargo test --test e2e_cross_provider_parity",
+      "result": "PASS",
+      "passed": 91,
+      "failed": 0,
+      "ignored": 0,
+      "duration_seconds": 0.03,
+      "scope": "Cross-provider behavioral parity matrix: same prompt across all provider families produces structurally equivalent outputs"
+    },
+    "e2e_provider_failure_injection": {
+      "command": "cargo test --test e2e_provider_failure_injection",
+      "result": "PASS",
+      "passed": 126,
+      "failed": 0,
+      "ignored": 0,
+      "duration_seconds": 1.76,
+      "scope": "Fault injection across all provider families: HTTP 4xx/5xx errors, malformed SSE, truncated JSON, empty bodies, wrong content types, missing fields, tool call errors",
+      "key_tests": [
+        "http_503_service_unavailable",
+        "http_500_with_json_error_body",
+        "http_500_with_empty_body",
+        "http_502_bad_gateway",
+        "gemini_malformed_sse_stream",
+        "truncated_sse_mid_json_is_error",
+        "empty_body_200_is_detected_as_error",
+        "malformed_tool_call_arguments_handled",
+        "malformed_sse_event_is_handled",
+        "wrong_content_type_is_detected",
+        "null_json_body_is_handled",
+        "missing_expected_fields_handled_gracefully",
+        "cross_provider_error_parity_matrix",
+        "comprehensive_failure_injection_report"
+      ]
+    }
+  },
+  "supporting_suites": {
+    "provider_native_contract": {
+      "command": "cargo test --test provider_native_contract",
+      "result": "PASS",
+      "passed": 235,
+      "failed": 0,
+      "ignored": 0,
+      "duration_seconds": 3.28,
+      "scope": "Native provider contracts: auth, streaming, tool calls, error handling"
+    },
+    "provider_native_verify": {
+      "command": "cargo test --test provider_native_verify",
+      "result": "PASS",
+      "passed": 312,
+      "failed": 0,
+      "ignored": 0,
+      "duration_seconds": 1.08,
+      "scope": "VCR-backed provider verification across all waves"
+    },
+    "provider_session_coverage": {
+      "command": "cargo test --test provider_session_coverage",
+      "result": "PASS",
+      "passed": 138,
+      "failed": 0,
+      "ignored": 0,
+      "duration_seconds": 1.84,
+      "scope": "Provider session lifecycle and state management"
+    },
+    "provider_metadata_comprehensive": {
+      "command": "cargo test --test provider_metadata_comprehensive",
+      "result": "PARTIAL_FAIL",
+      "passed": 117,
+      "failed": 1,
+      "ignored": 0,
+      "duration_seconds": 10.56,
+      "failure_category": "test_assertion",
+      "failure_details": "every_provider_has_at_least_one_auth_env_key: ollama (local server) has no auth keys - correct behavior, test assertion too strict"
+    },
+    "vcr_parity_validation": {
+      "command": "cargo test --test vcr_parity_validation",
+      "result": "PASS",
+      "passed": 24,
+      "failed": 0,
+      "ignored": 0,
+      "duration_seconds": 0.02,
+      "scope": "VCR cassette availability and mode classification"
+    },
+    "provider_lib_unit_tests": {
+      "command": "cargo test --lib provider",
+      "result": "PASS",
+      "passed": 370,
+      "failed": 0,
+      "ignored": 0,
+      "duration_seconds": 1.17,
+      "scope": "All provider-related unit tests in src/"
+    }
+  },
+  "structured_logging_contract": {
+    "correlation_id_continuity": {
+      "status": "PASS",
+      "evidence": "e2e_provider_scenarios generates correlation IDs per scenario; e2e_cross_provider_parity validates ID format in scenario_runner tests"
+    },
+    "redaction_safe_logs": {
+      "status": "PASS",
+      "evidence": "common::logging tests validate API key redaction (find_unredacted_keys_detects_leaks, find_unredacted_keys_empty_when_redacted, find_unredacted_keys_in_arrays); VCR cassettes redact Authorization headers"
+    },
+    "artifact_outputs": {
+      "status": "PASS",
+      "evidence": "e2e_comprehensive_report and comprehensive_failure_injection_report tests produce deterministic structured summary artifacts; transcript_jsonl_roundtrip validates JSONL schema"
+    }
+  },
+  "summary": {
+    "e2e_suites": 4,
+    "e2e_suites_passing": 4,
+    "e2e_tests_passed": 411,
+    "e2e_tests_failed": 0,
+    "e2e_pass_rate": "100%",
+    "supporting_suites": 7,
+    "supporting_suites_fully_passing": 6,
+    "supporting_tests_passed": 1196,
+    "supporting_tests_failed": 1,
+    "total_tests_passed": 1607,
+    "total_tests_failed": 1,
+    "total_tests_run": 1608,
+    "overall_pass_rate": "99.94%",
+    "failure_categories": {
+      "provider_defect": 0,
+      "infra": 0,
+      "test_assertion_too_strict": 1
+    },
+    "verdict": "ALL 4 E2E PROVIDER GATE SUITES PASS (411/411). Full provider stack validated: scenarios, streaming, cross-provider parity, and failure injection. Structured logging contract verified (correlation IDs, redaction, artifacts). 1 non-defect failure in supporting suite (ollama auth-key assertion)."
+  },
+  "live_provider_tests": {
+    "e2e_ollama_live": {
+      "command": "cargo test --test e2e_ollama_live",
+      "result": "PASS",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "duration_seconds": 8.69,
+      "scope": "Live E2E tests against real ollama server (qwen2.5:0.5b at 127.0.0.1:11434)",
+      "key_tests": [
+        "live_ollama_simple_text_streaming (correct '4' response to 2+2)",
+        "live_ollama_event_ordering (Start → TextDelta(s) → Done verified)",
+        "live_ollama_provider_properties (name=ollama, api=openai-completions)"
+      ],
+      "evidence": "Full provider stack validated: create_provider → stream → collect events → verify content against live ollama server with qwen2.5:0.5b model"
+    }
+  },
+  "remediation_items": [
+    {
+      "id": "R1",
+      "category": "test_assertion",
+      "description": "Update every_provider_has_at_least_one_auth_env_key test to exempt local-only providers (ollama)",
+      "impact": "1 test failure",
+      "priority": "low",
+      "owning_scope": "provider_metadata_comprehensive test suite"
+    }
+  ]
+}

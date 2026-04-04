@@ -1,0 +1,240 @@
+{
+  "version": "1.0",
+  "provider": "gemini",
+  "cases": [
+    {
+      "name": "text_basic",
+      "events": [
+        {
+          "candidates": [
+            { "content": { "parts": [{ "text": "Hello " }] } }
+          ],
+          "usageMetadata": {
+            "promptTokenCount": 5,
+            "candidatesTokenCount": 1,
+            "totalTokenCount": 6
+          }
+        },
+        {
+          "candidates": [
+            {
+              "content": { "parts": [{ "text": "world" }] },
+              "finishReason": "STOP"
+            }
+          ],
+          "usageMetadata": {
+            "promptTokenCount": 5,
+            "candidatesTokenCount": 2,
+            "totalTokenCount": 7
+          }
+        }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "Hello " },
+        { "kind": "text_delta", "content_index": 0, "delta": "world" },
+        { "kind": "text_end", "content_index": 0, "content": "Hello world" },
+        { "kind": "done", "reason": "stop" }
+      ]
+    },
+    {
+      "name": "text_multi_chunk",
+      "events": [
+        {
+          "candidates": [
+            { "content": { "parts": [{ "text": "First " }] } }
+          ]
+        },
+        {
+          "candidates": [
+            { "content": { "parts": [{ "text": "second " }] } }
+          ]
+        },
+        {
+          "candidates": [
+            {
+              "content": { "parts": [{ "text": "third" }] },
+              "finishReason": "STOP"
+            }
+          ],
+          "usageMetadata": {
+            "promptTokenCount": 10,
+            "candidatesTokenCount": 3,
+            "totalTokenCount": 13
+          }
+        }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "First " },
+        { "kind": "text_delta", "content_index": 0, "delta": "second " },
+        { "kind": "text_delta", "content_index": 0, "delta": "third" },
+        { "kind": "text_end", "content_index": 0, "content": "First second third" },
+        { "kind": "done", "reason": "stop" }
+      ]
+    },
+    {
+      "name": "tool_call",
+      "events": [
+        {
+          "candidates": [
+            {
+              "content": {
+                "parts": [
+                  {
+                    "functionCall": {
+                      "name": "read_file",
+                      "args": { "path": "/tmp/test.txt" }
+                    }
+                  }
+                ]
+              },
+              "finishReason": "STOP"
+            }
+          ],
+          "usageMetadata": {
+            "promptTokenCount": 20,
+            "candidatesTokenCount": 15,
+            "totalTokenCount": 35
+          }
+        }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "done", "reason": "tool_use" }
+      ]
+    },
+    {
+      "name": "max_tokens_finish",
+      "events": [
+        {
+          "candidates": [
+            { "content": { "parts": [{ "text": "truncated output" }] } }
+          ]
+        },
+        {
+          "candidates": [
+            {
+              "content": { "parts": [{ "text": "..." }] },
+              "finishReason": "MAX_TOKENS"
+            }
+          ],
+          "usageMetadata": {
+            "promptTokenCount": 100,
+            "candidatesTokenCount": 8192,
+            "totalTokenCount": 8292
+          }
+        }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "truncated output" },
+        { "kind": "text_delta", "content_index": 0, "delta": "..." },
+        { "kind": "text_end", "content_index": 0, "content": "truncated output..." },
+        { "kind": "done", "reason": "length" }
+      ]
+    },
+    {
+      "name": "safety_finish",
+      "events": [
+        {
+          "candidates": [
+            {
+              "content": { "parts": [{ "text": "I " }] }
+            }
+          ]
+        },
+        {
+          "candidates": [
+            {
+              "finishReason": "SAFETY"
+            }
+          ]
+        }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "I " },
+        { "kind": "text_end", "content_index": 0, "content": "I " },
+        { "kind": "done", "reason": "error" }
+      ]
+    },
+    {
+      "name": "text_then_tool_call",
+      "events": [
+        {
+          "candidates": [
+            { "content": { "parts": [{ "text": "Let me check that file." }] } }
+          ]
+        },
+        {
+          "candidates": [
+            {
+              "content": {
+                "parts": [
+                  {
+                    "functionCall": {
+                      "name": "bash",
+                      "args": { "command": "ls" }
+                    }
+                  }
+                ]
+              },
+              "finishReason": "STOP"
+            }
+          ]
+        }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "Let me check that file." },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "text_end", "content_index": 0, "content": "Let me check that file." },
+        { "kind": "done", "reason": "tool_use" }
+      ]
+    },
+    {
+      "name": "usage_only_event",
+      "events": [
+        {
+          "candidates": [
+            { "content": { "parts": [{ "text": "hi" }] } }
+          ]
+        },
+        {
+          "usageMetadata": {
+            "promptTokenCount": 50,
+            "candidatesTokenCount": 1,
+            "totalTokenCount": 51
+          }
+        },
+        {
+          "candidates": [
+            {
+              "content": { "parts": [{ "text": " there" }] },
+              "finishReason": "STOP"
+            }
+          ]
+        }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "hi" },
+        { "kind": "text_delta", "content_index": 0, "delta": " there" },
+        { "kind": "text_end", "content_index": 0, "content": "hi there" },
+        { "kind": "done", "reason": "stop" }
+      ]
+    }
+  ]
+}

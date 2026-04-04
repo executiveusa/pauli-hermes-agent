@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "test_name": "openai_auth_failure_401",
+  "recorded_at": "2026-02-06T21:00:00.000Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "headers": [
+          ["Authorization", "[REDACTED]"],
+          ["Content-Type", "application/json"],
+          ["Accept", "text/event-stream"]
+        ]
+      },
+      "response": {
+        "status": 401,
+        "headers": [
+          ["Content-Type", "application/json"]
+        ],
+        "body_chunks": [
+          "{\"error\":{\"message\":\"Incorrect API key provided: test-key. You can find your API key at https://platform.openai.com/account/api-keys.\",\"type\":\"invalid_request_error\",\"param\":null,\"code\":\"invalid_api_key\"}}"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "extension": {
+    "id": "minimal_command",
+    "source": {
+      "path": "tests/ext_conformance/artifacts/base_fixtures/minimal_command/index.ts"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "scn-minimal-command-001",
+      "kind": "command",
+      "summary": "Invokes the ping command",
+      "command_name": "ping",
+      "input": {
+        "arguments": ""
+      },
+      "expect": {
+        "content_contains": [
+          "pong"
+        ]
+      }
+    },
+    {
+      "id": "scn-minimal-command-neg-001",
+      "kind": "command",
+      "summary": "Negative: command fails with invalid arguments",
+      "expect": {
+        "is_error": true
+      }
+    }
+  ]
+}

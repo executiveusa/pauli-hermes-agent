@@ -1,0 +1,172 @@
+{
+  "schema": "pi.frankennode.event_loop_io_parity_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.7",
+  "support_bead_ids": [],
+  "status": "active_blocking_policy",
+  "effective_date_utc": "2026-02-17T09:00:00Z",
+  "scope": {
+    "target_project_root": "/dp/franken_node",
+    "source_project_root": "/data/projects/pi_agent_rust",
+    "objective": "Provide production-grade event-loop and IO semantics with compatibility toggles and deterministic fallback behavior under unsupported edge conditions."
+  },
+  "event_loop_model": {
+    "architecture": "single_threaded_reactor_with_thread_pool",
+    "phases": [
+      {
+        "phase_id": "timers",
+        "description": "Execute callbacks from setTimeout and setInterval whose thresholds have elapsed",
+        "node_parity": "full",
+        "deterministic_fallback": "timer_ordering_is_insertion_order_on_equal_delay"
+      },
+      {
+        "phase_id": "pending_callbacks",
+        "description": "Execute IO callbacks deferred from previous iteration (e.g., TCP errors)",
+        "node_parity": "full",
+        "deterministic_fallback": "pending_callbacks_drained_in_fifo_order"
+      },
+      {
+        "phase_id": "poll",
+        "description": "Retrieve new IO events; execute IO-related callbacks (except close, timers, setImmediate)",
+        "node_parity": "full",
+        "deterministic_fallback": "poll_returns_deterministic_event_order_in_replay_mode"
+      },
+      {
+        "phase_id": "check",
+        "description": "Execute setImmediate callbacks",
+        "node_parity": "full",
+        "deterministic_fallback": "check_callbacks_fifo"
+      },
+      {
+        "phase_id": "close_callbacks",
+        "description": "Execute close event callbacks (e.g., socket.on('close'))",
+        "node_parity": "full",
+        "deterministic_fallback": "close_callbacks_fifo"
+      }
+    ],
+    "microtask_semantics": {
+      "process_nextTick": "drained_between_each_phase_transition",
+      "promise_then": "drained_after_nextTick_queue",
+      "queueMicrotask": "alias_for_promise_then_semantics",
+      "node_parity": "full"
+    },
+    "invariants": [
+      "Microtask queue fully drained between every event-loop phase transition",
+      "Timer callbacks never starve IO poll phase beyond configurable budget",
+      "setImmediate always executes after poll phase, never before",
+      "process.nextTick callbacks have strict priority over Promise microtasks",
+      "Event loop exits when no pending timers, IO watchers, or active handles remain"
+    ]
+  },
+  "io_subsystem": {
+    "backend": "epoll_with_io_uring_optional",
+    "supported_primitives": [
+      {
+        "primitive_id": "tcp_stream",
+        "description": "Non-blocking TCP client and server sockets",
+        "node_api_parity": ["net.Socket", "net.Server", "net.createConnection"],
+        "fallback_on_unsupported": "error_with_diagnostic"
+      },
+      {
+        "primitive_id": "udp_socket",
+        "description": "Non-blocking UDP datagram sockets",
+        "node_api_parity": ["dgram.Socket", "dgram.createSocket"],
+        "fallback_on_unsupported": "error_with_diagnostic"
+      },
+      {
+        "primitive_id": "filesystem",
+        "description": "Async filesystem operations via thread-pool or io_uring",
+        "node_api_parity": ["fs.promises.*", "fs.read", "fs.write", "fs.stat"],
+        "fallback_on_unsupported": "sync_fallback_with_warning"
+      },
+      {
+        "primitive_id": "dns_resolver",
+        "description": "Async DNS resolution via thread-pool",
+        "node_api_parity": ["dns.promises.resolve", "dns.lookup"],
+        "fallback_on_unsupported": "error_with_diagnostic"
+      },
+      {
+        "primitive_id": "child_process",
+        "description": "Spawning and communicating with child processes",
+        "node_api_parity": ["child_process.spawn", "child_process.exec"],
+        "fallback_on_unsupported": "capability_denied_if_not_granted"
+      },
+      {
+        "primitive_id": "tls_stream",
+        "description": "TLS-wrapped TCP streams via rustls",
+        "node_api_parity": ["tls.connect", "tls.createServer"],
+        "fallback_on_unsupported": "error_with_diagnostic"
+      }
+    ],
+    "invariants": [
+      "All IO primitives are non-blocking on the event-loop thread",
+      "Thread-pool size is configurable and bounded (default: 4, max: 128)",
+      "IO errors produce structured diagnostics, never silent failures",
+      "Unsupported IO primitives produce clear error_with_diagnostic, not panics",
+      "Filesystem operations respect sandbox capability grants from security contract"
+    ]
+  },
+  "compatibility_toggles": [
+    {
+      "toggle_id": "deterministic_replay",
+      "description": "Enable deterministic event ordering for record/replay scenarios",
+      "default": false,
+      "affects": ["timer ordering", "IO poll event ordering", "thread-pool scheduling"]
+    },
+    {
+      "toggle_id": "io_uring_backend",
+      "description": "Use io_uring instead of epoll for filesystem and supported IO operations",
+      "default": false,
+      "affects": ["filesystem throughput", "IO latency"],
+      "minimum_kernel": "5.11"
+    },
+    {
+      "toggle_id": "strict_node_timing",
+      "description": "Enforce Node.js-compatible timer resolution and ordering edge cases",
+      "default": true,
+      "affects": ["setTimeout(fn,0) ordering vs setImmediate", "timer coalescing"]
+    }
+  ],
+  "parity_matrix": {
+    "covered_apis": [
+      "setTimeout", "setInterval", "setImmediate", "clearTimeout", "clearInterval", "clearImmediate",
+      "process.nextTick", "queueMicrotask",
+      "EventEmitter", "Stream (Readable, Writable, Duplex, Transform)",
+      "net.Socket", "net.Server",
+      "fs.promises.*", "fs.readFile", "fs.writeFile", "fs.stat",
+      "dns.lookup", "dns.promises.resolve",
+      "child_process.spawn"
+    ],
+    "known_divergences": [
+      {
+        "api": "process.nextTick",
+        "divergence": "Maximum recursion depth before yielding to IO is bounded (default: 1000)",
+        "reason": "Prevents nextTick starvation of IO in production workloads",
+        "severity": "low"
+      },
+      {
+        "api": "fs.watch",
+        "divergence": "Uses polling fallback on filesystems without inotify support",
+        "reason": "Cross-platform consistency",
+        "severity": "low"
+      }
+    ]
+  },
+  "release_blockers": [
+    "event-loop phase ordering does not match Node.js specification",
+    "microtask queue not fully drained between phase transitions",
+    "IO primitive produces silent failure instead of structured diagnostic",
+    "timer starvation causes IO poll phase to be skipped indefinitely",
+    "compatibility toggle changes behavior without restart or clear documentation"
+  ],
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.10",
+      "bd-3ar8v.7.11"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-runtime-substrate-contract.json",
+      "docs/franken-node-security-sandbox-contract.json"
+    ]
+  }
+}

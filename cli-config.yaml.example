@@ -574,18 +574,6 @@ platform_toolsets:
 #     env:
 #       GITHUB_PERSONAL_ACCESS_TOKEN: "ghp_..."
 #
-# ── Studio connectors (Pauli ecosystem) ──
-#   stitch-mcp:
-#     command: npx
-#     args: ["-y", "@kupuri/stitch-mcp"]
-#     env:
-#       SUPABASE_URL: "${SUPABASE_URL}"
-#       SUPABASE_KEY: "${SUPABASE_KEY}"
-#   ext-apps:
-#     url: http://localhost:8650/mcp
-#     headers:
-#       Authorization: "Bearer ${EXT_APPS_TOKEN}"
-#
 # Sampling (server-initiated LLM requests) — enabled by default.
 # Per-server config under the 'sampling' key:
 #   analysis:

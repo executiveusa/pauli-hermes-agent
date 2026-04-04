@@ -1,0 +1,38 @@
+{
+  "version": "1.0",
+  "test_name": "verify_openai_tool_call_single",
+  "recorded_at": "2026-02-10T17:36:16.053Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "headers": [
+          [
+            "Authorization",
+            "Bearer [REDACTED]"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "Content-Type",
+            "text/event-stream"
+          ]
+        ],
+        "body_chunks": [
+          "data: {\"choices\":[{\"delta\":{\"role\":\"assistant\",\"tool_calls\":[{\"function\":{\"arguments\":\"\",\"name\":\"echo\"},\"id\":\"call_verify_echo\",\"index\":0,\"type\":\"function\"}]},\"finish_reason\":null,\"index\":0}],\"created\":1738875600,\"id\":\"chatcmpl-verify-002\",\"model\":\"gpt-4o-mini\",\"object\":\"chat.completion.chunk\"}\n\n",
+          "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"function\":{\"arguments\":\"{\\\"text\\\":\\\"verification test\\\"}\"},\"index\":0}]},\"finish_reason\":null,\"index\":0}],\"created\":1738875600,\"id\":\"chatcmpl-verify-002\",\"model\":\"gpt-4o-mini\",\"object\":\"chat.completion.chunk\"}\n\n",
+          "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\",\"index\":0}],\"created\":1738875600,\"id\":\"chatcmpl-verify-002\",\"model\":\"gpt-4o-mini\",\"object\":\"chat.completion.chunk\",\"usage\":{\"completion_tokens\":12,\"prompt_tokens\":30,\"total_tokens\":42}}\n\n",
+          "data: [DONE]\n\n"
+        ]
+      }
+    }
+  ]
+}

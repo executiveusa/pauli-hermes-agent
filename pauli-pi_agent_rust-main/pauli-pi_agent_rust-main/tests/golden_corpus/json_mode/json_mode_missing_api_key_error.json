@@ -1,0 +1,31 @@
+{
+  "schema": "pi.golden_corpus.v1",
+  "scenario": "json_mode_missing_api_key_error",
+  "surface": "json_mode",
+  "description": "JSON mode failure path: missing API key should fail fast with non-zero exit and no panic",
+  "cli_args": [
+    "--mode", "json",
+    "-p",
+    "--provider", "anthropic",
+    "--model", "claude-sonnet-4-5",
+    "--no-tools",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--thinking", "off",
+    "Hello from missing key fixture"
+  ],
+  "stdin": null,
+  "env_overrides": {
+    "ANTHROPIC_API_KEY": ""
+  },
+  "cassette": null,
+  "expected": {
+    "exit_code_nonzero": true,
+    "stdout_contains": [],
+    "stdout_not_contains": [],
+    "stderr_not_contains": ["panic"],
+    "no_session_files": true
+  }
+}

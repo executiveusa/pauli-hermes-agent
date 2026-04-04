@@ -1,0 +1,171 @@
+{
+  "report_version": "1.0",
+  "bead_id": "bd-3uqg.14.3.1",
+  "generated_at_utc": "2026-02-13T23:45:00Z",
+  "methodology": {
+    "description": "Deterministic reconciliation of upstream provider IDs against Pi canonical provider metadata with alias-aware resolution",
+    "steps": [
+      "1. Extract Pi canonical IDs from src/provider_metadata.rs (87 IDs)",
+      "2. Extract Pi alias mappings from same file (11 canonical IDs have 17 total aliases)",
+      "3. Load upstream union from docs/provider-upstream-catalog-snapshot.json (90 IDs)",
+      "4. For each upstream ID: check canonical match, then alias match, then flag as gap",
+      "5. For each Pi canonical ID: check if present in upstream union"
+    ],
+    "sources": {
+      "pi_canonical": {
+        "file": "src/provider_metadata.rs",
+        "count": 87,
+        "extraction": "grep for canonical_id field in PROVIDER_METADATA array"
+      },
+      "upstream_union": {
+        "file": "docs/provider-upstream-catalog-snapshot.json",
+        "count": 90,
+        "composition": "88 models.dev + 1 opencode-only (github-copilot-enterprise) + 1 codex-only (ollama)"
+      }
+    }
+  },
+
+  "summary": {
+    "upstream_total": 90,
+    "pi_canonical_total": 87,
+    "canonical_matches": 85,
+    "alias_matches": 5,
+    "true_missing_gaps": 0,
+    "coverage_percentage": 100.0,
+    "pi_only_ids_not_in_upstream": 2,
+    "naming_discrepancies": 2
+  },
+
+  "classification": {
+    "canonical_match": {
+      "description": "Upstream ID exactly equals a Pi canonical_id",
+      "count": 85,
+      "ids": [
+        "302ai", "abacus", "aihubmix", "alibaba", "alibaba-cn",
+        "amazon-bedrock", "anthropic", "bailing", "baseten", "berget",
+        "cerebras", "chutes", "cloudflare-ai-gateway", "cloudflare-workers-ai",
+        "cohere", "cortecs", "deepinfra", "deepseek", "fastrouter",
+        "firmware", "friendli", "github-copilot", "github-models", "gitlab",
+        "google", "google-vertex", "groq", "helicone", "huggingface",
+        "iflowcn", "inception", "inference", "io-net", "jiekou",
+        "kimi-for-coding", "llama", "lmstudio", "lucidquery", "minimax",
+        "minimax-cn", "minimax-cn-coding-plan", "minimax-coding-plan",
+        "mistral", "moark", "modelscope", "moonshotai", "moonshotai-cn",
+        "morph", "nano-gpt", "nebius", "nova", "novita-ai", "nvidia",
+        "ollama", "ollama-cloud", "openai", "opencode", "openrouter",
+        "ovhcloud", "perplexity", "poe", "privatemode-ai", "requesty",
+        "sap-ai-core", "scaleway", "siliconflow", "siliconflow-cn",
+        "stackit", "submodel", "synthetic", "togetherai", "upstage",
+        "v0", "venice", "vercel", "vivgrid", "vultr", "wandb", "xai",
+        "xiaomi", "zai", "zai-coding-plan", "zenmux", "zhipuai",
+        "zhipuai-coding-plan"
+      ]
+    },
+
+    "alias_match": {
+      "description": "Upstream ID is registered as an alias in Pi's provider_metadata.rs, resolves to a Pi canonical_id",
+      "count": 5,
+      "entries": [
+        {
+          "upstream_id": "azure",
+          "pi_canonical_id": "azure-openai",
+          "alias_source_line": "src/provider_metadata.rs:1412",
+          "evidence": "aliases: &[\"azure\", \"azure-cognitive-services\"]",
+          "discoverability_risk": "low — alias resolution is transparent to users"
+        },
+        {
+          "upstream_id": "azure-cognitive-services",
+          "pi_canonical_id": "azure-openai",
+          "alias_source_line": "src/provider_metadata.rs:1412",
+          "evidence": "aliases: &[\"azure\", \"azure-cognitive-services\"]",
+          "discoverability_risk": "low — alias resolution is transparent to users"
+        },
+        {
+          "upstream_id": "fireworks-ai",
+          "pi_canonical_id": "fireworks",
+          "alias_source_line": "src/provider_metadata.rs:251",
+          "evidence": "aliases: &[\"fireworks-ai\"]",
+          "discoverability_risk": "low — alias resolution is transparent to users"
+        },
+        {
+          "upstream_id": "github-copilot-enterprise",
+          "pi_canonical_id": "github-copilot",
+          "alias_source_line": "src/provider_metadata.rs:1420",
+          "evidence": "aliases: &[\"copilot\", \"github-copilot-enterprise\"]",
+          "discoverability_risk": "none — enterprise variant routes to same provider"
+        },
+        {
+          "upstream_id": "google-vertex-anthropic",
+          "pi_canonical_id": "google-vertex",
+          "alias_source_line": "src/provider_metadata.rs:1351",
+          "evidence": "aliases: &[\"vertexai\", \"google-vertex-anthropic\"]",
+          "discoverability_risk": "none — Anthropic-through-Vertex routes to same provider"
+        }
+      ]
+    },
+
+    "true_missing_gap": {
+      "description": "Upstream ID that has no canonical or alias match in Pi",
+      "count": 0,
+      "ids": []
+    }
+  },
+
+  "naming_discrepancies": {
+    "description": "Cases where Pi canonical_id differs from upstream canonical naming convention (models.dev). Functionally equivalent via alias resolution, but flagged for discoverability awareness.",
+    "count": 2,
+    "entries": [
+      {
+        "pi_canonical_id": "fireworks",
+        "upstream_canonical_id": "fireworks-ai",
+        "direction": "Pi uses shorter form, upstream uses longer form",
+        "resolution": "fireworks-ai is registered as alias in Pi (line 251)",
+        "user_impact": "Users typing 'fireworks-ai' (upstream convention) resolve correctly. Users typing 'fireworks' (Pi convention) also work. No breakage.",
+        "recommendation": "Consider migrating Pi canonical to 'fireworks-ai' per policy doc deprecation schedule"
+      },
+      {
+        "pi_canonical_id": "azure-openai",
+        "upstream_canonical_id": "azure",
+        "direction": "Pi uses service-qualified form, upstream uses short form",
+        "resolution": "azure is registered as alias in Pi (line 1412)",
+        "user_impact": "Users typing 'azure' (upstream convention) resolve correctly. Users typing 'azure-openai' (Pi convention) also work. No breakage.",
+        "recommendation": "Consider migrating Pi canonical to 'azure' per policy doc deprecation schedule"
+      }
+    ]
+  },
+
+  "pi_only_canonical_ids": {
+    "description": "Pi canonical IDs that exist in Pi but are NOT present in the upstream union of 90 IDs (as exact strings). These are the reverse of naming_discrepancies — the Pi canonical name is the non-upstream variant.",
+    "count": 2,
+    "ids": ["azure-openai", "fireworks"],
+    "note": "Both are covered by alias_match entries above (the upstream form is an alias in Pi). This means Pi supports all upstream IDs plus these additional canonical forms."
+  },
+
+  "complete_alias_inventory": {
+    "description": "All Pi alias mappings from provider_metadata.rs for reference",
+    "entries": [
+      {"canonical": "google", "aliases": ["gemini"]},
+      {"canonical": "openrouter", "aliases": ["open-router"]},
+      {"canonical": "moonshotai", "aliases": ["moonshot", "kimi"]},
+      {"canonical": "alibaba", "aliases": ["dashscope", "qwen"]},
+      {"canonical": "fireworks", "aliases": ["fireworks-ai"]},
+      {"canonical": "google-vertex", "aliases": ["vertexai", "google-vertex-anthropic"]},
+      {"canonical": "amazon-bedrock", "aliases": ["bedrock"]},
+      {"canonical": "sap-ai-core", "aliases": ["sap"]},
+      {"canonical": "azure-openai", "aliases": ["azure", "azure-cognitive-services"]},
+      {"canonical": "github-copilot", "aliases": ["copilot", "github-copilot-enterprise"]},
+      {"canonical": "gitlab", "aliases": ["gitlab-duo"]}
+    ],
+    "total_aliases": 17,
+    "total_canonical_with_aliases": 11
+  },
+
+  "verification_commands": {
+    "extract_pi_canonical_ids": "grep 'canonical_id:' src/provider_metadata.rs | sed 's/.*\"\\(.*\\)\".*/\\1/' | sort",
+    "extract_upstream_union": "jq -r '.combined.union_provider_ids[]' docs/provider-upstream-catalog-snapshot.json | sort",
+    "diff_canonical_vs_upstream": "diff <(grep 'canonical_id:' src/provider_metadata.rs | sed 's/.*\"\\(.*\\)\".*/\\1/' | sort) <(jq -r '.combined.union_provider_ids[]' docs/provider-upstream-catalog-snapshot.json | sort)",
+    "verify_alias_resolution": "grep -A1 'canonical_id:.*fireworks' src/provider_metadata.rs && grep -A1 'canonical_id:.*azure-openai' src/provider_metadata.rs"
+  },
+
+  "conclusion": "100% upstream provider coverage achieved. All 90 upstream provider IDs resolve to a Pi canonical provider via either direct canonical match (85) or registered alias (5). Zero true implementation gaps. Two naming discrepancies exist (fireworks vs fireworks-ai, azure-openai vs azure) that are functionally transparent via alias resolution but flagged for future canonical ID migration per the deprecation policy in provider-canonical-id-policy.json."
+}

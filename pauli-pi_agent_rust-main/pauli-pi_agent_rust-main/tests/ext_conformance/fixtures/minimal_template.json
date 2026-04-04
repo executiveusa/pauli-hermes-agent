@@ -1,0 +1,28 @@
+{
+  "extension": {
+    "id": "minimal_template",
+    "source": {
+      "path": "tests/ext_conformance/artifacts/base_fixtures/minimal_template/index.ts"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "scn-minimal-template-001",
+      "kind": "template",
+      "summary": "Discovers template",
+      "expect": {
+        "templates_contain": [
+          "test-template"
+        ]
+      }
+    },
+    {
+      "id": "scn-minimal-template-neg-001",
+      "kind": "template",
+      "summary": "Negative: template discovery fails with malformed template",
+      "expect": {
+        "is_error": true
+      }
+    }
+  ]
+}

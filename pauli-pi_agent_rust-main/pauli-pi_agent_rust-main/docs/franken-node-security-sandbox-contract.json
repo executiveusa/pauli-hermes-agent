@@ -1,0 +1,164 @@
+{
+  "schema": "pi.frankennode.security_sandbox_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.8",
+  "support_bead_ids": [],
+  "status": "active_blocking_policy",
+  "effective_date_utc": "2026-02-17T08:40:00Z",
+  "scope": {
+    "target_project_root": "/dp/franken_node",
+    "source_project_root": "/data/projects/pi_agent_rust",
+    "security_objective": "Extend Pi extension-host capability policy and sandbox isolation to general runtime workloads without capability drift, privilege escalation, or implicit trust expansion."
+  },
+  "capability_model": {
+    "policy_enforcement_mode": "deny_by_default",
+    "capability_classes": [
+      {
+        "capability_id": "fs_read",
+        "description": "Read filesystem paths within allowed scope",
+        "default_grant": false,
+        "escalation_risk": "medium"
+      },
+      {
+        "capability_id": "fs_write",
+        "description": "Write/create/delete filesystem paths within allowed scope",
+        "default_grant": false,
+        "escalation_risk": "high"
+      },
+      {
+        "capability_id": "network_outbound",
+        "description": "Outbound network connections to allowed hosts/ports",
+        "default_grant": false,
+        "escalation_risk": "high"
+      },
+      {
+        "capability_id": "process_spawn",
+        "description": "Spawn child processes with inherited or restricted capabilities",
+        "default_grant": false,
+        "escalation_risk": "critical"
+      },
+      {
+        "capability_id": "env_read",
+        "description": "Read environment variables (allowlist-filtered)",
+        "default_grant": true,
+        "escalation_risk": "low"
+      },
+      {
+        "capability_id": "hostcall_dispatch",
+        "description": "Invoke registered hostcall handlers",
+        "default_grant": true,
+        "escalation_risk": "medium"
+      }
+    ],
+    "invariants": [
+      "No capability may be granted implicitly by lane selection or workload class",
+      "Capability grants are immutable after policy snapshot capture",
+      "Denied capabilities produce structured diagnostic events, never silent failures",
+      "Process spawn inherits at most the parent's capability set, never escalates"
+    ]
+  },
+  "sandbox_boundaries": [
+    {
+      "boundary_id": "js_runtime_isolation",
+      "description": "QuickJS execution context cannot access host memory outside bridged API surface",
+      "enforcement": "runtime_architecture",
+      "violation_response": "hard_abort"
+    },
+    {
+      "boundary_id": "filesystem_scope",
+      "description": "Filesystem access restricted to explicitly allowed paths; no traversal beyond scope",
+      "enforcement": "capability_check",
+      "violation_response": "deny_with_diagnostic"
+    },
+    {
+      "boundary_id": "network_allowlist",
+      "description": "Outbound connections restricted to allowlisted host:port pairs",
+      "enforcement": "capability_check",
+      "violation_response": "deny_with_diagnostic"
+    },
+    {
+      "boundary_id": "hostcall_abi_boundary",
+      "description": "Hostcall interface cannot be extended at runtime; fixed at policy snapshot time",
+      "enforcement": "compile_time_type_safety",
+      "violation_response": "compilation_error"
+    },
+    {
+      "boundary_id": "extension_mutual_isolation",
+      "description": "Extensions cannot read/write each other's state or intercept each other's hostcalls",
+      "enforcement": "runtime_namespace_isolation",
+      "violation_response": "hard_abort"
+    }
+  ],
+  "policy_decision_logging": {
+    "required_fields": [
+      "run_id",
+      "decision_id",
+      "capability_id",
+      "action",
+      "grant_or_deny",
+      "policy_snapshot_id",
+      "reason",
+      "timestamp_utc"
+    ],
+    "required_event_types": [
+      "capability_granted",
+      "capability_denied",
+      "sandbox_violation_attempt",
+      "policy_snapshot_captured",
+      "escalation_blocked"
+    ],
+    "retention_policy": "per_session"
+  },
+  "threat_model_surfaces": [
+    {
+      "surface_id": "TM-privilege-escalation",
+      "description": "Workload attempts to gain capabilities not in its policy snapshot",
+      "mitigation": "Deny-by-default capability model with immutable snapshots",
+      "severity": "critical"
+    },
+    {
+      "surface_id": "TM-sandbox-escape",
+      "description": "JS code attempts to access host resources beyond bridged API",
+      "mitigation": "QuickJS isolation boundary + hostcall ABI type safety",
+      "severity": "critical"
+    },
+    {
+      "surface_id": "TM-extension-cross-contamination",
+      "description": "Extension A reads/modifies Extension B's state or hostcall results",
+      "mitigation": "Runtime namespace isolation + separate capability snapshots",
+      "severity": "high"
+    },
+    {
+      "surface_id": "TM-implicit-trust-drift",
+      "description": "New workload class or lane implicitly grants more capabilities than intended",
+      "mitigation": "Explicit capability grant required; no implicit trust from lane/class",
+      "severity": "high"
+    },
+    {
+      "surface_id": "TM-diagnostic-information-leak",
+      "description": "Structured diagnostics expose sensitive host system details",
+      "mitigation": "Diagnostic field allowlist + redaction policy",
+      "severity": "medium"
+    }
+  ],
+  "release_blockers": [
+    "capability model not deny-by-default",
+    "sandbox boundary violation produces silent failure",
+    "policy decision logging fields incomplete",
+    "threat model surface without documented mitigation",
+    "implicit capability grant from workload class or lane"
+  ],
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.10",
+      "bd-3ar8v.7.11",
+      "bd-3ar8v.7.14",
+      "bd-3ar8v.7.15"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-runtime-substrate-contract.json",
+      "docs/franken-node-mission-contract.json",
+      "docs/franken-node-claim-gating-contract.json"
+    ]
+  }
+}

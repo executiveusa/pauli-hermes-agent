@@ -1,45 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "node scripts/build-deploy.js",
-  "outputDirectory": "dist",
-  "installCommand": "echo 'Static build — no dependencies'",
+  "buildCommand": null,
+  "outputDirectory": "web-ui",
+  "installCommand": null,
   "framework": null,
   "routes": [
-    { "src": "/dashboard",        "dest": "/dashboard/index.html" },
-    { "src": "/dashboard/(.*)",   "dest": "/dashboard/$1" },
-    { "src": "/repos.json",       "dest": "/repos.json" },
-    { "src": "/(.*)",             "dest": "/$1" }
-  ],
-  "headers": [
     {
-      "source": "/dashboard(/|$)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "microphone=(self), geolocation=()" }
-      ]
-    },
-    {
-      "source": "/dashboard/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/repos.json",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=1800" }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-      ]
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ]
 }

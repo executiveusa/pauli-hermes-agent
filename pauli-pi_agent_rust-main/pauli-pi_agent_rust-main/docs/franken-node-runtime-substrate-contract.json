@@ -1,0 +1,187 @@
+{
+  "schema": "pi.frankennode.runtime_substrate_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.5",
+  "support_bead_id": "bd-3ar8v.7.5.3",
+  "support_bead_ids": [
+    "bd-3ar8v.7.5.1",
+    "bd-3ar8v.7.5.2",
+    "bd-3ar8v.7.5.3"
+  ],
+  "status": "active_blocking_policy",
+  "workload_classes": [
+    {
+      "workload_id": "WL-extension-only-burst",
+      "criticality": "medium",
+      "required_envelope_fields": [
+        "run_id",
+        "workload_id",
+        "operation_id",
+        "lane_id",
+        "policy_snapshot_id"
+      ],
+      "allowed_lanes": [
+        "lane_fast_path_extension",
+        "lane_balanced_runtime",
+        "lane_safe_degraded"
+      ],
+      "fallback_lane": "lane_safe_degraded"
+    },
+    {
+      "workload_id": "WL-runtime-mixed-long-session",
+      "criticality": "high",
+      "required_envelope_fields": [
+        "run_id",
+        "workload_id",
+        "operation_id",
+        "lane_id",
+        "policy_snapshot_id",
+        "capability_profile"
+      ],
+      "allowed_lanes": [
+        "lane_balanced_runtime",
+        "lane_conservative_serial",
+        "lane_safe_degraded"
+      ],
+      "fallback_lane": "lane_conservative_serial"
+    },
+    {
+      "workload_id": "WL-io-heavy-hostcall-burst",
+      "criticality": "high",
+      "required_envelope_fields": [
+        "run_id",
+        "workload_id",
+        "operation_id",
+        "lane_id",
+        "policy_snapshot_id"
+      ],
+      "allowed_lanes": [
+        "lane_balanced_runtime",
+        "lane_conservative_serial",
+        "lane_safe_degraded"
+      ],
+      "fallback_lane": "lane_safe_degraded"
+    },
+    {
+      "workload_id": "WL-policy-sensitive-capability-restricted",
+      "criticality": "high",
+      "required_envelope_fields": [
+        "run_id",
+        "workload_id",
+        "operation_id",
+        "lane_id",
+        "policy_snapshot_id",
+        "capability_profile"
+      ],
+      "allowed_lanes": [
+        "lane_conservative_serial",
+        "lane_safe_degraded"
+      ],
+      "fallback_lane": "lane_safe_degraded"
+    }
+  ],
+  "lane_contract": [
+    {
+      "lane_id": "lane_fast_path_extension",
+      "class": "fast_path",
+      "degrade_to": "lane_balanced_runtime",
+      "policy_constraints": [
+        "requires_capability_allowlist_match",
+        "disallow_implicit_privilege_escalation"
+      ]
+    },
+    {
+      "lane_id": "lane_balanced_runtime",
+      "class": "balanced",
+      "degrade_to": "lane_conservative_serial",
+      "policy_constraints": [
+        "requires_policy_snapshot",
+        "records_queue_pressure"
+      ]
+    },
+    {
+      "lane_id": "lane_conservative_serial",
+      "class": "conservative",
+      "degrade_to": "lane_safe_degraded",
+      "policy_constraints": [
+        "strict_capability_enforcement",
+        "deterministic_serial_execution"
+      ]
+    },
+    {
+      "lane_id": "lane_safe_degraded",
+      "class": "degraded",
+      "degrade_to": "lane_safe_degraded",
+      "policy_constraints": [
+        "minimal_capability_surface",
+        "hard_fail_on_policy_ambiguity"
+      ]
+    }
+  ],
+  "routing_policy": {
+    "fail_closed": true,
+    "require_explicit_lane_for_workload": true,
+    "require_fallback_lane": true,
+    "disallow_implicit_capability_escalation": true
+  },
+  "operation_envelope_contract": {
+    "required_fields": [
+      "run_id",
+      "correlation_id",
+      "workload_id",
+      "operation_id",
+      "lane_id",
+      "policy_snapshot_id",
+      "capability_profile",
+      "timestamp_utc"
+    ],
+    "failure_policy": "hard_fail"
+  },
+  "policy_snapshot_contract": {
+    "required_fields": [
+      "policy_snapshot_id",
+      "capability_profile",
+      "allowed_capabilities",
+      "denied_capabilities",
+      "decision_hash",
+      "captured_at_utc"
+    ],
+    "failure_policy": "hard_fail"
+  },
+  "structured_logging_contract": {
+    "required_fields": [
+      "run_id",
+      "workload_id",
+      "lane_id",
+      "fallback_trigger",
+      "policy_decision",
+      "queue_pressure",
+      "reason",
+      "timestamp_utc"
+    ],
+    "required_event_types": [
+      "lane_selected",
+      "lane_degraded",
+      "capability_denied",
+      "fallback_engaged"
+    ]
+  },
+  "release_blockers": [
+    "missing workload-to-lane mapping",
+    "fallback lane undefined for workload",
+    "policy snapshot fields incomplete",
+    "structured logging contract incomplete"
+  ],
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.6",
+      "bd-3ar8v.7.7",
+      "bd-3ar8v.7.8",
+      "bd-3ar8v.7.9"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-mission-contract.json",
+      "docs/franken-node-claim-gating-contract.json"
+    ]
+  }
+}

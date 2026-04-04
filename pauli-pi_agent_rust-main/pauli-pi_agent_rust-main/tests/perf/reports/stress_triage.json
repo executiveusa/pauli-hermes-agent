@@ -1,0 +1,55 @@
+{
+  "config": {
+    "duration_secs": 30,
+    "events_per_sec": 50,
+    "extensions": [
+      "antigravity-image-gen/antigravity-image-gen.ts",
+      "bash-spawn-hook/bash-spawn-hook.ts",
+      "bookmark/bookmark.ts",
+      "claude-rules/claude-rules.ts",
+      "confirm-destructive/confirm-destructive.ts",
+      "custom-compaction/custom-compaction.ts",
+      "custom-footer/custom-footer.ts",
+      "custom-header/custom-header.ts",
+      "custom-provider-anthropic/index.ts",
+      "custom-provider-qwen-cli/index.ts",
+      "dynamic-resources/index.ts",
+      "event-bus/event-bus.ts",
+      "file-trigger/file-trigger.ts",
+      "handoff/handoff.ts",
+      "hello/hello.ts"
+    ],
+    "rss_interval_secs": 5
+  },
+  "run_id": "local-20260206T012910000Z",
+  "correlation_id": "stress-triage-local-20260206T012910000Z",
+  "generated_at": "2026-02-06T01:29:10Z",
+  "pass": true,
+  "results": {
+    "error_count": 0,
+    "event_count": 1350,
+    "extensions_loaded": 15,
+    "latency": {
+      "ok": true,
+      "p99_first_us": 29788,
+      "p99_last_us": 20266,
+      "summary": {
+        "count": 1350,
+        "max": 35995,
+        "mean": 17929,
+        "min": 11379,
+        "p50": 17415,
+        "p95": 21190,
+        "p99": 26540
+      }
+    },
+    "rss": {
+      "growth_pct": 0.0,
+      "initial_kb": 58707968,
+      "max_kb": 58707968,
+      "ok": true
+    },
+    "sample_errors": []
+  },
+  "schema": "pi.ext.stress_triage.v1"
+}

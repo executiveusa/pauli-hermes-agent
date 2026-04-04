@@ -1,0 +1,160 @@
+{
+  "version": "1.0",
+  "provider": "azure",
+  "cases": [
+    {
+      "name": "text_basic",
+      "events": [
+        { "choices": [{ "delta": {} }] },
+        { "choices": [{ "delta": { "content": "Hello " } }] },
+        { "choices": [{ "delta": { "content": "world" } }] },
+        {
+          "choices": [{ "delta": {}, "finish_reason": "stop" }],
+          "usage": { "prompt_tokens": 5, "completion_tokens": 2, "total_tokens": 7 }
+        },
+        "[DONE]"
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "Hello " },
+        { "kind": "text_delta", "content_index": 0, "delta": "world" },
+        { "kind": "text_end", "content_index": 0, "content": "Hello world" },
+        { "kind": "done", "reason": "stop" }
+      ]
+    },
+    {
+      "name": "text_multi_chunk",
+      "events": [
+        { "choices": [{ "delta": {} }] },
+        { "choices": [{ "delta": { "content": "First " } }] },
+        { "choices": [{ "delta": { "content": "second " } }] },
+        { "choices": [{ "delta": { "content": "third" } }] },
+        {
+          "choices": [{ "delta": {}, "finish_reason": "stop" }],
+          "usage": { "prompt_tokens": 10, "completion_tokens": 3, "total_tokens": 13 }
+        },
+        "[DONE]"
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "First " },
+        { "kind": "text_delta", "content_index": 0, "delta": "second " },
+        { "kind": "text_delta", "content_index": 0, "delta": "third" },
+        { "kind": "text_end", "content_index": 0, "content": "First second third" },
+        { "kind": "done", "reason": "stop" }
+      ]
+    },
+    {
+      "name": "tool_call",
+      "events": [
+        { "choices": [{ "delta": { "role": "assistant", "tool_calls": [{ "index": 0, "id": "call_001", "type": "function", "function": { "name": "read_file", "arguments": "" } }] } }] },
+        { "choices": [{ "delta": { "tool_calls": [{ "index": 0, "function": { "arguments": "{\"path\"" } }] } }] },
+        { "choices": [{ "delta": { "tool_calls": [{ "index": 0, "function": { "arguments": ": \"/tmp/test.txt\"}" } }] } }] },
+        {
+          "choices": [{ "delta": {}, "finish_reason": "tool_calls" }],
+          "usage": { "prompt_tokens": 20, "completion_tokens": 15, "total_tokens": 35 }
+        },
+        "[DONE]"
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "done", "reason": "tool_use" }
+      ]
+    },
+    {
+      "name": "tool_call_multiple",
+      "events": [
+        { "choices": [{ "delta": { "role": "assistant", "tool_calls": [{ "index": 0, "id": "call_add01", "type": "function", "function": { "name": "add", "arguments": "" } }] } }] },
+        { "choices": [{ "delta": { "tool_calls": [{ "index": 0, "function": { "arguments": "{\"a\":2,\"b\":3}" } }] } }] },
+        { "choices": [{ "delta": { "tool_calls": [{ "index": 1, "id": "call_mul01", "type": "function", "function": { "name": "multiply", "arguments": "" } }] } }] },
+        { "choices": [{ "delta": { "tool_calls": [{ "index": 1, "function": { "arguments": "{\"a\":4,\"b\":5}" } }] } }] },
+        {
+          "choices": [{ "delta": {}, "finish_reason": "tool_calls" }],
+          "usage": { "prompt_tokens": 55, "completion_tokens": 30, "total_tokens": 85 }
+        },
+        "[DONE]"
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "done", "reason": "tool_use" }
+      ]
+    },
+    {
+      "name": "max_tokens_finish",
+      "events": [
+        { "choices": [{ "delta": {} }] },
+        { "choices": [{ "delta": { "content": "truncated output" } }] },
+        { "choices": [{ "delta": { "content": "..." } }] },
+        {
+          "choices": [{ "delta": {}, "finish_reason": "length" }],
+          "usage": { "prompt_tokens": 100, "completion_tokens": 8192, "total_tokens": 8292 }
+        },
+        "[DONE]"
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "truncated output" },
+        { "kind": "text_delta", "content_index": 0, "delta": "..." },
+        { "kind": "text_end", "content_index": 0, "content": "truncated output..." },
+        { "kind": "done", "reason": "length" }
+      ]
+    },
+    {
+      "name": "content_filter_finish",
+      "events": [
+        { "choices": [{ "delta": {} }] },
+        { "choices": [{ "delta": { "content": "I " } }] },
+        {
+          "choices": [{ "delta": {}, "finish_reason": "content_filter" }]
+        },
+        "[DONE]"
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "I " },
+        { "kind": "text_end", "content_index": 0, "content": "I " },
+        { "kind": "done", "reason": "error" }
+      ]
+    },
+    {
+      "name": "text_then_tool_call",
+      "events": [
+        { "choices": [{ "delta": { "content": "Let me check that file." } }] },
+        { "choices": [{ "delta": { "tool_calls": [{ "index": 0, "id": "call_bash01", "type": "function", "function": { "name": "bash", "arguments": "" } }] } }] },
+        { "choices": [{ "delta": { "tool_calls": [{ "index": 0, "function": { "arguments": "{\"command\": \"ls\"}" } }] } }] },
+        {
+          "choices": [{ "delta": {}, "finish_reason": "tool_calls" }]
+        },
+        "[DONE]"
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "Let me check that file." },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "text_end", "content_index": 0, "content": "Let me check that file." },
+        { "kind": "other" },
+        { "kind": "done", "reason": "tool_use" }
+      ]
+    }
+  ]
+}

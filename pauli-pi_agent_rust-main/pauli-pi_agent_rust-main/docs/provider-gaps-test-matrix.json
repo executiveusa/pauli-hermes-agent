@@ -1,0 +1,286 @@
+{
+  "schema": "pi.provider_gap_test_matrix.v1",
+  "schema_version": "1.0",
+  "bead_id": "bd-3uqg.11.11.1",
+  "generated_at_utc": "2026-02-13T05:03:00Z",
+  "purpose": "Machine-readable mapping from provider-gap focus providers to required test layers, scenario obligations, artifact expectations, and owning beads.",
+  "sources": [
+    "tests/provider_metadata_comprehensive.rs",
+    "tests/provider_factory.rs",
+    "tests/provider_smoke_matrix.rs",
+    "tests/provider_native_verify.rs",
+    "tests/e2e_cross_provider_parity.rs",
+    "tests/e2e_provider_streaming.rs",
+    "scripts/check_traceability_matrix.py"
+  ],
+  "focus_provider_ids": [
+    "groq",
+    "cerebras",
+    "openrouter",
+    "kimi",
+    "qwen"
+  ],
+  "canonical_provider_map": {
+    "groq": "groq",
+    "cerebras": "cerebras",
+    "openrouter": "openrouter",
+    "kimi": "moonshotai",
+    "qwen": "alibaba"
+  },
+  "dependency_unblock_map": {
+    "this_bead": "bd-3uqg.11.11.1",
+    "direct_unblocks": [
+      "bd-3uqg.11.11.2",
+      "bd-3uqg.11.12"
+    ],
+    "provider_specific_test_beads": [
+      "bd-3uqg.11.5.5",
+      "bd-3uqg.11.5.6",
+      "bd-3uqg.11.6.5",
+      "bd-3uqg.11.6.6",
+      "bd-3uqg.11.7.5",
+      "bd-3uqg.11.7.6",
+      "bd-3uqg.11.8.5",
+      "bd-3uqg.11.8.6",
+      "bd-3uqg.11.9.5",
+      "bd-3uqg.11.9.6"
+    ]
+  },
+  "artifact_contract": {
+    "required_e2e_suite_artifacts": [
+      "output.log",
+      "result.json",
+      "test-log.jsonl",
+      "artifact-index.jsonl"
+    ],
+    "required_e2e_run_artifacts": [
+      "summary.json",
+      "environment.json",
+      "evidence_contract.json"
+    ],
+    "conformance_verify_report_pattern": "verify/<provider>_<scenario>.verify.json",
+    "conformance_verify_schema": "pi.test.native_verify.v1"
+  },
+  "test_layers": {
+    "unit_contract": {
+      "owner_bead": "bd-3uqg.11.11.2",
+      "required_tests": [
+        "tests/provider_metadata_comprehensive.rs",
+        "tests/provider_factory.rs::wave_a_presets_resolve_openai_compat_defaults_and_factory_route",
+        "tests/provider_factory.rs::wave_a_openai_compat_streams_use_chat_completions_path_and_bearer_auth",
+        "tests/provider_smoke_matrix.rs::smoke_openai_completions_matrix",
+        "tests/provider_smoke_matrix.rs::smoke_openai_completions_presets_use_bearer_auth"
+      ]
+    },
+    "conformance": {
+      "owner_bead": "bd-3uqg.11.11.3",
+      "required_harness": "tests/provider_native_verify.rs",
+      "canonical_scenarios": [
+        "simple_text",
+        "unicode_text",
+        "tool_call_single",
+        "tool_call_multiple",
+        "error_auth_401",
+        "error_bad_request_400",
+        "error_rate_limit_429"
+      ]
+    },
+    "e2e": {
+      "owner_bead": "bd-3uqg.11.11.4",
+      "required_tests": [
+        "tests/e2e_provider_scenarios.rs",
+        "tests/e2e_cross_provider_parity.rs",
+        "tests/e2e_provider_streaming.rs"
+      ],
+      "notes": [
+        "openrouter already appears in PARITY_TARGETS baseline; groq/cerebras/moonshotai/alibaba additions are required in follow-up beads.",
+        "E2E rows are considered complete only when required artifacts are emitted and indexed."
+      ]
+    }
+  },
+  "providers": [
+    {
+      "provider_id": "groq",
+      "canonical_provider_id": "groq",
+      "aliases": [],
+      "auth_env_precedence": [
+        "GROQ_API_KEY"
+      ],
+      "owner_map": {
+        "unit_contract_bead": "bd-3uqg.11.5.5",
+        "e2e_bead": "bd-3uqg.11.5.6",
+        "docs_auth_bead": "bd-3uqg.11.12.2"
+      },
+      "baseline_evidence": {
+        "unit_contract": [
+          "tests/provider_factory.rs::wave_a_presets_resolve_openai_compat_defaults_and_factory_route",
+          "tests/provider_factory.rs::wave_a_openai_compat_streams_use_chat_completions_path_and_bearer_auth",
+          "tests/provider_smoke_matrix.rs::smoke_openai_completions_matrix"
+        ],
+        "conformance": [
+          "planned in bd-3uqg.11.5.5 via canonical_scenarios set"
+        ],
+        "e2e": [
+          "planned in bd-3uqg.11.5.6"
+        ]
+      },
+      "required_scenarios": [
+        "simple_text",
+        "unicode_text",
+        "tool_call_single",
+        "tool_call_multiple",
+        "error_auth_401",
+        "error_bad_request_400",
+        "error_rate_limit_429"
+      ]
+    },
+    {
+      "provider_id": "cerebras",
+      "canonical_provider_id": "cerebras",
+      "aliases": [],
+      "auth_env_precedence": [
+        "CEREBRAS_API_KEY"
+      ],
+      "owner_map": {
+        "unit_contract_bead": "bd-3uqg.11.6.5",
+        "e2e_bead": "bd-3uqg.11.6.6",
+        "docs_auth_bead": "bd-3uqg.11.12.2"
+      },
+      "baseline_evidence": {
+        "unit_contract": [
+          "tests/provider_factory.rs::wave_a_presets_resolve_openai_compat_defaults_and_factory_route",
+          "tests/provider_factory.rs::wave_a_openai_compat_streams_use_chat_completions_path_and_bearer_auth",
+          "tests/provider_smoke_matrix.rs::smoke_openai_completions_matrix"
+        ],
+        "conformance": [
+          "planned in bd-3uqg.11.6.5 via canonical_scenarios set"
+        ],
+        "e2e": [
+          "planned in bd-3uqg.11.6.6"
+        ]
+      },
+      "required_scenarios": [
+        "simple_text",
+        "unicode_text",
+        "tool_call_single",
+        "tool_call_multiple",
+        "error_auth_401",
+        "error_bad_request_400",
+        "error_rate_limit_429"
+      ]
+    },
+    {
+      "provider_id": "openrouter",
+      "canonical_provider_id": "openrouter",
+      "aliases": [],
+      "auth_env_precedence": [
+        "OPENROUTER_API_KEY"
+      ],
+      "owner_map": {
+        "unit_contract_bead": "bd-3uqg.11.7.5",
+        "e2e_bead": "bd-3uqg.11.7.6",
+        "docs_auth_bead": "bd-3uqg.11.12.2"
+      },
+      "baseline_evidence": {
+        "unit_contract": [
+          "tests/provider_factory.rs::wave_a_presets_resolve_openai_compat_defaults_and_factory_route",
+          "tests/provider_factory.rs::wave_a_openai_compat_streams_use_chat_completions_path_and_bearer_auth",
+          "tests/provider_smoke_matrix.rs::smoke_openai_completions_matrix"
+        ],
+        "conformance": [
+          "planned in bd-3uqg.11.7.5 via canonical_scenarios set"
+        ],
+        "e2e": [
+          "tests/e2e_cross_provider_parity.rs::e2e_cross_provider_parity (current baseline)",
+          "additional provider-gap scenarios planned in bd-3uqg.11.7.6"
+        ]
+      },
+      "required_scenarios": [
+        "simple_text",
+        "unicode_text",
+        "tool_call_single",
+        "tool_call_multiple",
+        "error_auth_401",
+        "error_bad_request_400",
+        "error_rate_limit_429"
+      ]
+    },
+    {
+      "provider_id": "kimi",
+      "canonical_provider_id": "moonshotai",
+      "aliases": [
+        "moonshot"
+      ],
+      "auth_env_precedence": [
+        "MOONSHOT_API_KEY",
+        "KIMI_API_KEY"
+      ],
+      "owner_map": {
+        "unit_contract_bead": "bd-3uqg.11.8.5",
+        "e2e_bead": "bd-3uqg.11.8.6",
+        "docs_auth_bead": "bd-3uqg.11.12.2"
+      },
+      "baseline_evidence": {
+        "unit_contract": [
+          "tests/provider_factory.rs::wave_a_presets_resolve_openai_compat_defaults_and_factory_route",
+          "tests/provider_factory.rs::wave_b1_family_coherence_with_existing_moonshot_and_alibaba_mappings",
+          "tests/provider_smoke_matrix.rs::smoke_alias_resolution_full_matrix"
+        ],
+        "conformance": [
+          "planned in bd-3uqg.11.8.5 via canonical_scenarios set",
+          "do not substitute kimi-for-coding coverage for moonshotai/kimi alias coverage"
+        ],
+        "e2e": [
+          "planned in bd-3uqg.11.8.6"
+        ]
+      },
+      "required_scenarios": [
+        "simple_text",
+        "unicode_text",
+        "tool_call_single",
+        "tool_call_multiple",
+        "error_auth_401",
+        "error_bad_request_400",
+        "error_rate_limit_429"
+      ]
+    },
+    {
+      "provider_id": "qwen",
+      "canonical_provider_id": "alibaba",
+      "aliases": [
+        "dashscope"
+      ],
+      "auth_env_precedence": [
+        "DASHSCOPE_API_KEY",
+        "QWEN_API_KEY"
+      ],
+      "owner_map": {
+        "unit_contract_bead": "bd-3uqg.11.9.5",
+        "e2e_bead": "bd-3uqg.11.9.6",
+        "docs_auth_bead": "bd-3uqg.11.12.2"
+      },
+      "baseline_evidence": {
+        "unit_contract": [
+          "tests/provider_factory.rs::wave_a_presets_resolve_openai_compat_defaults_and_factory_route",
+          "tests/provider_factory.rs::wave_b1_family_coherence_with_existing_moonshot_and_alibaba_mappings",
+          "tests/provider_smoke_matrix.rs::smoke_alias_resolution_full_matrix"
+        ],
+        "conformance": [
+          "planned in bd-3uqg.11.9.5 via canonical_scenarios set"
+        ],
+        "e2e": [
+          "planned in bd-3uqg.11.9.6"
+        ]
+      },
+      "required_scenarios": [
+        "simple_text",
+        "unicode_text",
+        "tool_call_single",
+        "tool_call_multiple",
+        "error_auth_401",
+        "error_bad_request_400",
+        "error_rate_limit_429"
+      ]
+    }
+  ]
+}

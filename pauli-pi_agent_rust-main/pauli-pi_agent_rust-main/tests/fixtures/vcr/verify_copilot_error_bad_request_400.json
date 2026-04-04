@@ -1,0 +1,67 @@
+{
+  "version": "1.0",
+  "test_name": "verify_copilot_error_bad_request_400",
+  "recorded_at": "2026-02-10T17:24:07.230Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "https://api.github.com/copilot_internal/v2/token",
+        "headers": [
+          [
+            "Accept",
+            "application/json"
+          ],
+          [
+            "Authorization",
+            "token [REDACTED]"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body_chunks": [
+          "{\"endpoints\":{\"api\":\"https://api.githubcopilot.com\"},\"expires_at\":1770747847,\"token\":\"[REDACTED]\"}"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.githubcopilot.com/chat/completions",
+        "headers": [
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "Authorization",
+            "Bearer [REDACTED]"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ]
+      },
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body_chunks": [
+          "{\"error\":{\"code\":\"invalid_request_error\",\"message\":\"Simulated error 400\",\"param\":null,\"type\":\"invalid_request_error\"}}"
+        ]
+      }
+    }
+  ]
+}

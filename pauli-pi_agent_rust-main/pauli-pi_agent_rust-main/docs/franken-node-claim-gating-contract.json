@@ -1,0 +1,126 @@
+{
+  "schema": "pi.frankennode.claim_gating_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.1",
+  "support_bead_id": "bd-3ar8v.7.1.1",
+  "support_bead_ids": [
+    "bd-3ar8v.7.1.1",
+    "bd-3ar8v.7.4.3",
+    "bd-3ar8v.7.2.4",
+    "bd-3ar8v.7.5.1",
+    "bd-3ar8v.7.6.1",
+    "bd-3ar8v.7.16.1"
+  ],
+  "status": "active_blocking_policy",
+  "effective_date_utc": "2026-02-17T07:18:00Z",
+  "mission_statement": "FrankenNode must use machine-verifiable claim tiers and hard release gates so extension-host parity progress cannot be overstated as full Node/Bun replacement.",
+  "scope": {
+    "target_project_root": "/dp/franken_node",
+    "upstream_comparison_targets": [
+      "Node.js",
+      "Bun"
+    ],
+    "non_goals": [
+      "Do not claim strict Node/Bun replacement when certification evidence is incomplete.",
+      "Do not publish full-runtime parity language for extension-host-only milestones."
+    ]
+  },
+  "claim_tiers": [
+    {
+      "tier_id": "TIER-1-EXTENSION-HOST-PARITY",
+      "label": "Extension-host parity",
+      "allowed_claim_language": [
+        "Extension-hosting parity scope only",
+        "Validated extension-runtime compatibility subset"
+      ],
+      "required_evidence": [
+        "extension conformance reports",
+        "capability policy conformance",
+        "security policy invariants"
+      ],
+      "forbidden_claim_language": [
+        "Full Node/Bun replacement",
+        "General-purpose runtime parity"
+      ]
+    },
+    {
+      "tier_id": "TIER-2-TARGETED-RUNTIME-PARITY",
+      "label": "Targeted runtime parity",
+      "allowed_claim_language": [
+        "Targeted runtime parity for explicitly listed workloads",
+        "Matched-state parity for declared compatibility matrix rows"
+      ],
+      "required_evidence": [
+        "compatibility matrix with executable conformance harness",
+        "package/ecosystem interoperability contract evidence (CJS/ESM/npm)",
+        "resource-budget benchmark evidence",
+        "security and replay reliability evidence"
+      ],
+      "forbidden_claim_language": [
+        "Strict drop-in replacement for all Node/Bun workloads"
+      ]
+    },
+    {
+      "tier_id": "TIER-3-FULL-NODE-BUN-REPLACEMENT",
+      "label": "Full Node/Bun replacement",
+      "allowed_claim_language": [
+        "Full replacement claim is allowed only when all hard gates are certified"
+      ],
+      "required_evidence": [
+        "unified certification stack pass across unit/e2e/conformance/security/perf",
+        "package/ecosystem interoperability strict-tier evidence and claim-tier linkage",
+        "kernel extraction boundary manifest and reintegration mapping evidence",
+        "runtime-substrate generalization evidence for bd-3ar8v.7.5",
+        "multi-tier execution engine evidence for bd-3ar8v.7.6",
+        "compatibility remediation backlog generator evidence for bd-3ar8v.7.16",
+        "benchmark and resource gate pass with confidence-tagged evidence",
+        "migration assistant and shadow-canary rollback safeguards",
+        "crate reintegration evidence into pi_agent_rust"
+      ],
+      "forbidden_claim_language": [
+        "Replacement claim when any hard gate is missing",
+        "Replacement claim with stale or missing verdict artifacts"
+      ]
+    }
+  ],
+  "forbidden_claim_patterns": [
+    "strict drop-in replacement for Node/Bun",
+    "fully Node-compatible and Bun-compatible without qualification",
+    "production-ready full runtime replacement without certification"
+  ],
+  "claim_gate_policy": {
+    "release_claim_gate_mode": "hard_fail_if_unmet",
+    "strict_replacement_requires": {
+      "overall_verdict": "CERTIFIED",
+      "required_artifacts": [
+        "tests/full_suite_gate/franken_node_claim_verdict.json",
+        "tests/full_suite_gate/practical_finish_checkpoint.json",
+        "tests/full_suite_gate/franken_node_kernel_boundary_drift_report.json"
+      ]
+    },
+    "overclaim_blockers": [
+      "missing_required_evidence",
+      "open_critical_gap",
+      "missing_or_stale_verdict_artifact",
+      "forbidden_claim_phrase_detected"
+    ]
+  },
+  "future_crate_reintegration_obligations": {
+    "required_bead": "bd-3ar8v.7.13",
+    "obligations": [
+      "Integrate franken_node runtime crate(s) into pi_agent_rust.",
+      "Retire duplicate runtime logic after reintegration verification.",
+      "Retain parity and certification gates post-reintegration."
+    ]
+  },
+  "structured_logging_contract": {
+    "required_fields": [
+      "run_id",
+      "tier_id",
+      "decision",
+      "blocking_reasons",
+      "evidence_refs",
+      "timestamp_utc"
+    ]
+  }
+}

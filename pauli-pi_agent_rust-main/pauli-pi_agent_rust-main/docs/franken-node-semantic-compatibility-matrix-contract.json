@@ -1,0 +1,220 @@
+{
+  "schema": "pi.frankennode.semantic_compatibility_matrix_contract.v1",
+  "contract_version": "1.2.0",
+  "bead_id": "bd-3ar8v.7.3",
+  "support_bead_id": "bd-3ar8v.7.3.1",
+  "support_bead_ids": [
+    "bd-3ar8v.7.3.1",
+    "bd-3ar8v.7.3.7",
+    "bd-3ar8v.7.4.5"
+  ],
+  "status": "active_blocking_policy",
+  "effective_date_utc": "2026-02-17T08:10:00Z",
+  "mission_statement": "FrankenNode semantic compatibility claims must be based on an executable matrix with fail-closed verdict policy and evidence lineage for every scenario row.",
+  "scope": {
+    "target_project_root": "/dp/franken_node",
+    "comparison_targets": [
+      "Node.js",
+      "Bun"
+    ],
+    "matrix_objective": "Declare behavioral compatibility row-by-row and block broad claims when high-criticality rows are missing or incompatible."
+  },
+  "scenario_taxonomy": [
+    {
+      "scenario_id": "SCN-module-resolution-esm-cjs",
+      "domain": "module-resolution",
+      "criticality": "high",
+      "required_surfaces": [
+        "esm",
+        "cjs",
+        "package.exports"
+      ]
+    },
+    {
+      "scenario_id": "SCN-node-builtin-apis",
+      "domain": "builtin-apis",
+      "criticality": "high",
+      "required_surfaces": [
+        "fs",
+        "path",
+        "crypto",
+        "process",
+        "timers"
+      ]
+    },
+    {
+      "scenario_id": "SCN-event-loop-io-ordering",
+      "domain": "event-loop-io",
+      "criticality": "high",
+      "required_surfaces": [
+        "timers",
+        "microtasks",
+        "io-backpressure"
+      ]
+    },
+    {
+      "scenario_id": "SCN-tooling-and-package-workflows",
+      "domain": "tooling-interop",
+      "criticality": "medium",
+      "required_surfaces": [
+        "npm-install",
+        "lockfile-resolution",
+        "script-entrypoints"
+      ]
+    },
+    {
+      "scenario_id": "SCN-package-interop-cjs-esm-npm",
+      "domain": "package-interop",
+      "criticality": "medium",
+      "required_surfaces": [
+        "cjs-entrypoints",
+        "esm-entrypoints",
+        "package-json-main",
+        "package-json-type-module",
+        "conditional-exports",
+        "fallback-diagnostics"
+      ]
+    },
+    {
+      "scenario_id": "SCN-error-and-diagnostics-parity",
+      "domain": "errors-diagnostics",
+      "criticality": "medium",
+      "required_surfaces": [
+        "error-codes",
+        "stack-shape",
+        "exit-behavior"
+      ]
+    }
+  ],
+  "verdict_policy": {
+    "allowed_row_verdicts": [
+      "EXACT_PARITY",
+      "ACCEPTABLE_SUPERSET",
+      "PARTIAL_PARITY",
+      "UNSUPPORTED",
+      "INCOMPATIBLE"
+    ],
+    "release_blockers": [
+      "INCOMPATIBLE verdict in any high-criticality scenario",
+      "Missing evidence lineage for any declared scenario",
+      "Implicitly unsupported out-of-tier scenarios (missing explicit UNSUPPORTED rows)",
+      "Missing required package interop scenario rows for claim tiers",
+      "Summary claim language exceeding matrix-derived verdict envelope"
+    ],
+    "global_claim_rules": {
+      "forbid_full_replacement_when_any_high_row_non_exact": true,
+      "forbid_global_claim_when_lineage_missing": true,
+      "require_explicit_scope_for_partial_parity": true,
+      "require_package_interop_policy_coverage": true
+    }
+  },
+  "package_interop_policy": {
+    "required_for_claim_tiers": [
+      "ecosystem_compatibility",
+      "full_runtime_replacement"
+    ],
+    "required_scenario_ids": [
+      "SCN-package-interop-cjs-esm-npm",
+      "SCN-tooling-and-package-workflows"
+    ],
+    "required_diagnostic_fields": [
+      "fallback_diagnostics_signature",
+      "fallback_reason_code",
+      "fallback_remediation_tag"
+    ],
+    "require_deterministic_fallback_diagnostics": true,
+    "missing_policy_behavior": "hard_fail"
+  },
+  "incremental_tiering_policy": {
+    "enabled": true,
+    "active_tier": "tier0-core",
+    "tier_definitions": [
+      {
+        "tier_id": "tier0-core",
+        "description": "Core scenarios required for claim-gating checkpoints.",
+        "supported_scenario_ids": [
+          "SCN-module-resolution-esm-cjs",
+          "SCN-node-builtin-apis",
+          "SCN-event-loop-io-ordering"
+        ]
+      },
+      {
+        "tier_id": "tier1-expanded",
+        "description": "Secondary compatibility surface for workflow/tooling parity.",
+        "supported_scenario_ids": [
+          "SCN-tooling-and-package-workflows",
+          "SCN-package-interop-cjs-esm-npm"
+        ]
+      },
+      {
+        "tier_id": "tier2-longtail",
+        "description": "Long-tail diagnostics and ergonomics parity checks.",
+        "supported_scenario_ids": [
+          "SCN-error-and-diagnostics-parity"
+        ]
+      }
+    ],
+    "unsupported_class_policy": {
+      "explicit_unsupported_required_for_out_of_tier": true,
+      "unsupported_verdict": "UNSUPPORTED",
+      "required_metadata_fields": [
+        "unsupported_reason_code",
+        "remediation_tag"
+      ],
+      "silent_omission_policy": "hard_fail"
+    }
+  },
+  "evidence_lineage_contract": {
+    "required_fields": [
+      "run_id",
+      "scenario_id",
+      "fixture_id",
+      "oracle_source",
+      "observed_runtime",
+      "comparison_result",
+      "artifact_path",
+      "captured_at_utc"
+    ],
+    "oracle_sources": [
+      "node-baseline-fixture",
+      "bun-baseline-fixture",
+      "dual-run-shadow-capture"
+    ],
+    "lineage_failure_policy": "hard_fail"
+  },
+  "executable_row_schema": {
+    "required_fields": [
+      "scenario_id",
+      "expected_baseline",
+      "observed_runtime",
+      "comparison_result",
+      "verdict",
+      "lineage"
+    ],
+    "scenario_id_normalization": {
+      "trim_whitespace": true,
+      "require_exact_taxonomy_match": true
+    },
+    "verdict_normalization": {
+      "trim_whitespace": true,
+      "case": "upper_snake"
+    },
+    "adjudication_policy": {
+      "rule": "comparison_result_must_match_verdict_after_normalization",
+      "failure_policy": "hard_fail"
+    }
+  },
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.4",
+      "bd-3ar8v.7.5",
+      "bd-3ar8v.7.8",
+      "bd-3ar8v.7.11",
+      "bd-3ar8v.7.14"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-claim-gating-contract.json",
+      "docs/franken-node-package-interop-contract.json"
+    ]
+  }
+}

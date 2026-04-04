@@ -1,0 +1,248 @@
+{
+  "schema": "pi.security.compat_dashboard.v1",
+  "generated_at": "2026-03-12T02:22:09.149Z",
+  "bead": "bd-1a2cu",
+  "profiles_tested": [
+    "safe",
+    "standard"
+  ],
+  "total_checks": 24,
+  "total_passed": 24,
+  "total_failed": 0,
+  "overall_pass_rate_pct": 100.0,
+  "per_profile": [
+    {
+      "profile": "safe",
+      "total_checks": 12,
+      "passed": 12,
+      "failed": 0,
+      "pass_rate_pct": 100.0
+    },
+    {
+      "profile": "standard",
+      "total_checks": 12,
+      "passed": 12,
+      "failed": 0,
+      "pass_rate_pct": 100.0
+    }
+  ],
+  "checks": [
+    {
+      "name": "safe:read:benign_access",
+      "profile": "safe",
+      "capability": "read",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "safe:write:benign_access",
+      "profile": "safe",
+      "capability": "write",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "safe:http:benign_access",
+      "profile": "safe",
+      "capability": "http",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "safe:events:benign_access",
+      "profile": "safe",
+      "capability": "events",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "safe:session:benign_access",
+      "profile": "safe",
+      "capability": "session",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "safe:exec:dangerous_denied",
+      "profile": "safe",
+      "capability": "exec",
+      "expected_decision": "Deny",
+      "actual_decision": "Deny",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "safe:env:dangerous_denied",
+      "profile": "safe",
+      "capability": "env",
+      "expected_decision": "Deny",
+      "actual_decision": "Deny",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "safe:read:ext_override_benign",
+      "profile": "safe",
+      "capability": "read",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "safe:write:ext_override_benign",
+      "profile": "safe",
+      "capability": "write",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "safe:http:ext_override_benign",
+      "profile": "safe",
+      "capability": "http",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "safe:exec:ext_override_no_escalation",
+      "profile": "safe",
+      "capability": "exec",
+      "expected_decision": "Deny",
+      "actual_decision": "Deny",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "safe:env:ext_override_no_escalation",
+      "profile": "safe",
+      "capability": "env",
+      "expected_decision": "Deny",
+      "actual_decision": "Deny",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "standard:read:benign_access",
+      "profile": "standard",
+      "capability": "read",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "standard:write:benign_access",
+      "profile": "standard",
+      "capability": "write",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "standard:http:benign_access",
+      "profile": "standard",
+      "capability": "http",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "standard:events:benign_access",
+      "profile": "standard",
+      "capability": "events",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "standard:session:benign_access",
+      "profile": "standard",
+      "capability": "session",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "standard:exec:dangerous_denied",
+      "profile": "standard",
+      "capability": "exec",
+      "expected_decision": "Deny",
+      "actual_decision": "Deny",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "standard:env:dangerous_denied",
+      "profile": "standard",
+      "capability": "env",
+      "expected_decision": "Deny",
+      "actual_decision": "Deny",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "standard:read:ext_override_benign",
+      "profile": "standard",
+      "capability": "read",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "standard:write:ext_override_benign",
+      "profile": "standard",
+      "capability": "write",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "standard:http:ext_override_benign",
+      "profile": "standard",
+      "capability": "http",
+      "expected_decision": "Allow",
+      "actual_decision": "Allow",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "standard:exec:ext_override_no_escalation",
+      "profile": "standard",
+      "capability": "exec",
+      "expected_decision": "Deny",
+      "actual_decision": "Deny",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "standard:env:ext_override_no_escalation",
+      "profile": "standard",
+      "capability": "env",
+      "expected_decision": "Deny",
+      "actual_decision": "Deny",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "regression_detected": false
+}

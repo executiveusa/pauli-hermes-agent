@@ -1,0 +1,108 @@
+{
+  "schema": "pi.dropin.certification_verdict.v1",
+  "git_commit": "c7bd1b33cdb6289c8c0cc83fdbd6fecc337e1e54",
+  "generated_at_utc": "2026-02-18T05:49:09Z",
+  "overall_verdict": "NOT_CERTIFIED",
+  "hard_gate_results": [
+    {
+      "gate_id": "G01-baseline-freeze",
+      "status": "pass",
+      "reason": "Pinned upstream baseline artifact is present and referenced by active parity artifacts."
+    },
+    {
+      "gate_id": "G02-feature-inventory-complete",
+      "status": "pass",
+      "reason": "Drop-in feature inventory artifacts are present in both machine-readable and markdown forms."
+    },
+    {
+      "gate_id": "G03-gap-ledger-owned",
+      "status": "pass",
+      "reason": "Gap ledger exists with owned entries and closure paths for known mismatches."
+    },
+    {
+      "gate_id": "G04-cli-parity",
+      "status": "fail",
+      "reason": "Open critical/high CLI parity gaps remain (for example extension flag pass-through and slash-command surface verification)."
+    },
+    {
+      "gate_id": "G05-json-rpc-parity",
+      "status": "fail",
+      "reason": "Open critical/high JSON/RPC semantic and command-surface parity gaps remain unresolved."
+    },
+    {
+      "gate_id": "G06-sdk-parity",
+      "status": "fail",
+      "reason": "SDK contract-shape critical gap remains open for strict drop-in embedding compatibility."
+    },
+    {
+      "gate_id": "G07-config-and-env-parity",
+      "status": "blocked",
+      "reason": "Config/environment parity domain remains listed as open in the active contract snapshot."
+    },
+    {
+      "gate_id": "G08-session-error-parity",
+      "status": "blocked",
+      "reason": "Session/error parity domain remains listed as open in the active contract snapshot."
+    },
+    {
+      "gate_id": "G09-integration-io-parity",
+      "status": "blocked",
+      "reason": "Integration I/O parity domain remains listed as open in the active contract snapshot."
+    },
+    {
+      "gate_id": "G10-differential-evidence-suite",
+      "status": "blocked",
+      "reason": "Differential-testing hard gate domain remains open and not fully closed with certifying evidence."
+    },
+    {
+      "gate_id": "G11-test-architecture-and-ci-enforcement",
+      "status": "blocked",
+      "reason": "Quality-gates domain remains open; release gate audit currently reports failing evidence-contract status."
+    },
+    {
+      "gate_id": "G12-claim-language-alignment",
+      "status": "pass",
+      "reason": "Parity documents are now conditioned on drop-in certification verdict instead of strict replacement claims."
+    }
+  ],
+  "blocking_reasons": [
+    "Open critical gaps: gap-sdk-contract-shape, gap-cli-extension-flag-pass-through, gap-json-rpc-command-semantic-coverage.",
+    "Open high-severity drop-in gaps remain across CLI, JSON/RPC, extension lifecycle, integration I/O, and config-default domains.",
+    "Contract immediate-status snapshot marks open critical hard-gate domains: cli, json-and-rpc, sdk, config-and-env, session-and-errors, integration-io, differential-testing, quality-gates.",
+    "Strict drop-in release language is fail-closed until every hard gate is pass."
+  ],
+  "evidence_index": [
+    {
+      "path": "docs/dropin-certification-contract.json",
+      "description": "Normative hard-gate contract and verdict artifact requirements"
+    },
+    {
+      "path": "docs/dropin-upstream-baseline.json",
+      "description": "Pinned upstream baseline reference"
+    },
+    {
+      "path": "docs/dropin-feature-inventory-matrix.json",
+      "description": "Machine-readable execution-surface inventory"
+    },
+    {
+      "path": "docs/dropin-112-feature-inventory-matrix.md",
+      "description": "Human-auditable inventory companion"
+    },
+    {
+      "path": "docs/dropin-parity-gap-ledger.json",
+      "description": "Owned parity gaps with severity and closure paths"
+    },
+    {
+      "path": "docs/parity-certification.json",
+      "description": "Informational parity implementation snapshot (non-release gate)"
+    },
+    {
+      "path": "FEATURE_PARITY.md",
+      "description": "Implementation matrix with strict-claim guardrail language"
+    },
+    {
+      "path": "tests/e2e_results/20260208T080120Z/evidence_contract.json",
+      "description": "Recent evidence-contract artifact used by release gate checks"
+    }
+  ]
+}

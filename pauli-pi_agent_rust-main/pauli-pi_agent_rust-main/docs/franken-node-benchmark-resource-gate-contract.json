@@ -1,0 +1,145 @@
+{
+  "schema": "pi.frankennode.benchmark_resource_gate_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.10",
+  "support_bead_id": "bd-3ar8v.7.10.1",
+  "support_bead_ids": [
+    "bd-3ar8v.7.10.1"
+  ],
+  "status": "active_blocking_policy",
+  "claim_tier_alignment": {
+    "required_claim_tiers": [
+      "extension_host_dropin",
+      "full_runtime_replacement"
+    ],
+    "mission_contract_path": "docs/franken-node-mission-contract.json",
+    "enforce_claim_tier_consistency": true
+  },
+  "workload_protocol": {
+    "required_workload_classes": [
+      "macro_long_session_resume",
+      "macro_extension_heavy_mixed",
+      "macro_io_burst_pipeline",
+      "macro_policy_restricted_path"
+    ],
+    "required_comparison_targets": [
+      "franken_node",
+      "nodejs",
+      "bun"
+    ],
+    "require_absolute_and_relative_metrics": true,
+    "forbid_microbench_only_claims": true,
+    "minimum_macro_workloads_per_run": 4
+  },
+  "dataset_contract": {
+    "required_dataset_artifacts": [
+      "tests/perf/reports/franken_node_macro_workload_dataset.json",
+      "tests/perf/reports/franken_node_node_bun_comparison_matrix.json",
+      "tests/perf/reports/franken_node_resource_envelope_matrix.json"
+    ],
+    "require_reproducible_dataset_hash": true,
+    "dataset_schema": "pi.frankennode.benchmark_dataset.v1"
+  },
+  "metric_aggregator_contract": {
+    "required_metrics": [
+      "latency_p50_ms",
+      "latency_p95_ms",
+      "throughput_ops_per_sec",
+      "rss_peak_mb",
+      "cpu_time_ms"
+    ],
+    "required_relative_metrics": [
+      "speedup_vs_node",
+      "speedup_vs_bun",
+      "rss_delta_vs_node",
+      "rss_delta_vs_bun"
+    ],
+    "aggregation_methods": [
+      "median",
+      "percentile",
+      "trimmed_mean"
+    ],
+    "fail_closed_on_missing_metric": true
+  },
+  "variance_confidence_contract": {
+    "required_fields": [
+      "sample_count",
+      "variance",
+      "stddev",
+      "confidence_interval",
+      "confidence_level",
+      "bootstrap_iterations"
+    ],
+    "minimum_sample_count": 20,
+    "minimum_confidence_level": 0.95,
+    "max_allowed_relative_variance": 0.25,
+    "fail_closed_on_insufficient_confidence": true
+  },
+  "gate_evaluation_contract": {
+    "required_gate_checks": [
+      "macro_workload_coverage_complete",
+      "comparison_targets_present",
+      "confidence_threshold_met",
+      "microbench_only_claim_blocked",
+      "resource_envelope_within_budget"
+    ],
+    "strict_gate_thresholds": {
+      "min_speedup_vs_node": 1.05,
+      "min_speedup_vs_bun": 1.0,
+      "max_rss_increase_ratio": 1.2,
+      "max_cpu_time_increase_ratio": 1.15
+    },
+    "fail_closed": true
+  },
+  "evidence_contract": {
+    "required_artifacts": [
+      "tests/perf/reports/franken_node_macro_gate_summary.json",
+      "tests/perf/reports/franken_node_macro_gate_checks.json",
+      "tests/e2e_results/<run>/franken_node_macro_benchmark_trace.jsonl"
+    ],
+    "required_rejection_checks": [
+      "claim_integrity.microbench_only_claim",
+      "claim_integrity.global_claim_missing_partition_coverage"
+    ]
+  },
+  "structured_logging_contract": {
+    "required_fields": [
+      "run_id",
+      "correlation_id",
+      "workload_class",
+      "comparison_target",
+      "stage",
+      "metric",
+      "value",
+      "confidence_interval",
+      "regression_root_cause_hint",
+      "timestamp_utc"
+    ],
+    "required_event_types": [
+      "benchmark_stage_started",
+      "benchmark_stage_completed",
+      "metric_aggregated",
+      "gate_check_evaluated",
+      "gate_failed"
+    ],
+    "require_stage_decomposition": true,
+    "require_regression_root_cause_hint": true
+  },
+  "release_blockers": [
+    "missing macro workload class coverage",
+    "missing Node/Bun comparison target metrics",
+    "confidence threshold not met",
+    "microbench-only claim rejection guard missing"
+  ],
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.15",
+      "bd-3ar8v.7.16"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-mission-contract.json",
+      "docs/franken-node-claim-gating-contract.json",
+      "docs/franken-node-semantic-compatibility-matrix-contract.json"
+    ]
+  }
+}

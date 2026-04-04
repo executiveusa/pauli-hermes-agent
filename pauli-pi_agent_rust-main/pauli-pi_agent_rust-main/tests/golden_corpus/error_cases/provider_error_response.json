@@ -1,0 +1,67 @@
+{
+  "schema": "pi.golden_corpus.v1",
+  "scenario": "error_provider_error_response",
+  "surface": "error_cases",
+  "description": "Error: provider returns HTTP 429 rate limit error",
+  "cli_args": [
+    "-p",
+    "--provider", "anthropic",
+    "--model", "claude-sonnet-4-5",
+    "--no-tools",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--thinking", "off",
+    "--system-prompt", "Test.",
+    "Hello"
+  ],
+  "stdin": null,
+  "env_overrides": {},
+  "cassette": {
+    "version": "1.0",
+    "test_name": "golden_error_provider_429",
+    "recorded_at": "2026-02-14T00:00:00.000Z",
+    "interactions": [
+      {
+        "request": {
+          "method": "POST",
+          "url": "https://api.anthropic.com/v1/messages",
+          "headers": [
+            ["Content-Type", "application/json"],
+            ["Accept", "text/event-stream"],
+            ["X-API-Key", "[REDACTED]"],
+            ["anthropic-version", "2023-06-01"],
+            ["Content-Type", "application/json"]
+          ],
+          "body": {
+            "model": "claude-sonnet-4-5",
+            "messages": [
+              {"role": "user", "content": [{"type": "text", "text": "Hello"}]}
+            ],
+            "system": "Test.\nCurrent date and time: <TIMESTAMP>\nCurrent working directory: <CWD>",
+            "max_tokens": 8192,
+            "stream": true
+          }
+        },
+        "response": {
+          "status": 429,
+          "headers": [
+            ["Content-Type", "application/json"],
+            ["retry-after", "30"]
+          ],
+          "body_chunks": [
+            "{\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\",\"message\":\"Rate limit exceeded. Please retry after 30 seconds.\"}}"
+          ]
+        }
+      }
+    ]
+  },
+  "expected": {
+    "exit_code_nonzero": true,
+    "stdout_contains": [],
+    "stdout_not_contains": [],
+    "stderr_not_contains": ["panic"],
+    "no_session_files": true
+  }
+}

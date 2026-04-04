@@ -1,0 +1,385 @@
+{
+  "schema": "pi.provider_capability_profile.v1",
+  "schema_version": "1.0",
+  "bead_id": "bd-3uqg.11.9.1",
+  "provider_id": "qwen",
+  "canonical_provider_id": "alibaba",
+  "verified_at_utc": "2026-02-13T09:15:00Z",
+  "source_snapshot": [
+    {
+      "label": "Alibaba Cloud Model Studio — OpenAI Compatibility",
+      "url": "https://www.alibabacloud.com/help/en/model-studio/compatibility-of-openai-with-dashscope",
+      "key_points": [
+        "Three regional base URLs: Singapore (intl), Virginia (us), Beijing (cn)",
+        "OpenAI-compatible /chat/completions endpoint",
+        "CRITICAL: tool calling CANNOT be combined with streaming",
+        "system_fingerprint returns empty string, logprobs returns null",
+        "n parameter only works with qwen-plus, must be 1 with tools"
+      ]
+    },
+    {
+      "label": "Qwen API Reference",
+      "url": "https://www.alibabacloud.com/help/en/model-studio/qwen-api-reference/",
+      "key_points": [
+        "Supported parameters: model, messages, temperature, top_p, presence_penalty, n, max_tokens, seed, stream, tools, stop",
+        "Finish reasons: stop, length, null",
+        "Usage fields: prompt_tokens, completion_tokens, total_tokens"
+      ]
+    },
+    {
+      "label": "DashScope API Reference (Native Format)",
+      "url": "https://www.alibabacloud.com/help/en/model-studio/qwen-api-via-dashscope",
+      "key_points": [
+        "Native DashScope format available but NOT recommended for Pi",
+        "OpenAI-compatible endpoint is preferred for consistency"
+      ]
+    },
+    {
+      "label": "OpenAI Responses API Reference",
+      "url": "https://www.alibabacloud.com/help/en/model-studio/qwen-api-via-openai-responses",
+      "key_points": [
+        "Alibaba also supports OpenAI Responses API format",
+        "Potential future Pi integration path"
+      ]
+    },
+    {
+      "label": "liteLLM DashScope Provider",
+      "url": "https://docs.litellm.ai/docs/providers/dashscope",
+      "key_points": [
+        "Community-validated OpenAI compatibility",
+        "Model ID prefix patterns documented"
+      ]
+    },
+    {
+      "label": "Qwen VL OpenAI Compatibility",
+      "url": "https://www.alibabacloud.com/help/en/model-studio/qwen-vl-compatible-with-openai",
+      "key_points": [
+        "Vision models use OpenAI-compatible multimodal format",
+        "qwen-vl-max, qwen-vl-plus for image understanding"
+      ]
+    }
+  ],
+  "endpoint_profile": {
+    "singapore_base_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+    "virginia_base_url": "https://dashscope-us.aliyuncs.com/compatible-mode/v1",
+    "beijing_base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "primary_chat_endpoint": "/chat/completions",
+    "models_endpoint": "/models",
+    "responses_api": {
+      "supported": true,
+      "status": "available",
+      "notes": "Alibaba also supports OpenAI Responses API format at /responses endpoint"
+    },
+    "endpoint_disambiguation": {
+      "note": "Pi has TWO distinct provider entries for the Alibaba/Qwen family",
+      "entries": [
+        {
+          "canonical_id": "alibaba",
+          "aliases": ["dashscope", "qwen"],
+          "base_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+          "api_family": "openai-completions",
+          "auth_keys": ["DASHSCOPE_API_KEY", "QWEN_API_KEY"],
+          "note": "International endpoint (Singapore default)"
+        },
+        {
+          "canonical_id": "alibaba-cn",
+          "aliases": [],
+          "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+          "api_family": "openai-completions",
+          "auth_keys": ["DASHSCOPE_API_KEY"],
+          "note": "China endpoint (Beijing)"
+        }
+      ],
+      "us_endpoint_note": "Virginia endpoint (dashscope-us) exists but not yet registered in Pi. May add if needed for US-specific models (qwen-plus-us, qwen-flash-us)."
+    }
+  },
+  "openai_compatibility_contract": {
+    "compatible": true,
+    "critical_incompatibilities": [
+      {
+        "issue": "TOOL_CALLING_INCOMPATIBLE_WITH_STREAMING",
+        "severity": "critical",
+        "description": "tools parameter CANNOT be combined with stream=true. Pi uses streaming by default and tool calling extensively. This is the #1 compatibility issue.",
+        "workaround": "Must disable streaming when tool calls are expected, or implement a fallback to non-streaming for tool-call turns.",
+        "affects": "All provider routing decisions for Qwen"
+      }
+    ],
+    "unsupported_chat_fields": [
+      "logprobs (returns null)",
+      "system_fingerprint (returns empty string)"
+    ],
+    "n_parameter": {
+      "min": 1,
+      "max": 4,
+      "restriction": "Only qwen-plus supports n>1. Must be 1 when tools specified.",
+      "non_1_behavior": "400 response on unsupported models"
+    },
+    "temperature_behavior": {
+      "input_zero_behavior": "standard",
+      "recommended_range": "[0, 2)"
+    },
+    "presence_penalty": {
+      "supported": true,
+      "restriction": "Only on commercial models and qwen1.5+ open-source",
+      "range": "[-2.0, 2.0]"
+    },
+    "additional_capabilities": [
+      "vision_multimodal",
+      "responses_api",
+      "multiple_regional_endpoints"
+    ]
+  },
+  "streaming_contract": {
+    "protocol": "server_sent_events",
+    "stream_parameter_default": false,
+    "termination_marker": "data: [DONE]",
+    "chunk_object_type": "chat.completion.chunk",
+    "stream_options_include_usage": {
+      "supported": true,
+      "required_for_token_counting": true,
+      "format": "{\"include_usage\": true}"
+    },
+    "pi_normalization_expectations": [
+      "Map delta chunks into StreamEvent::TextDelta consistently",
+      "CRITICAL: When tools are defined, Pi MUST use non-streaming mode (stream=false)",
+      "Use stream_options.include_usage=true to get token counts in streaming final chunk",
+      "system_fingerprint will be empty string — do not rely on it"
+    ]
+  },
+  "tool_calling_contract": {
+    "supported": true,
+    "supported_models": [
+      "qwen-turbo",
+      "qwen-plus",
+      "qwen-max",
+      "qwen3-coder-plus"
+    ],
+    "tool_choice_modes": [
+      "auto",
+      "none"
+    ],
+    "parallel_tool_calls_default": false,
+    "critical_limitation": "CANNOT combine tool calling with streaming. Must use stream=false when tools are defined.",
+    "function_name_constraints": {
+      "allowed_chars": "letters, digits, underscores, hyphens",
+      "max_length": 64
+    },
+    "pi_normalization_expectations": [
+      "CRITICAL: Detect when tools are present and force stream=false for Qwen provider",
+      "Standard OpenAI function calling format",
+      "Multi-round tool calling supported (append tool results, re-call API)",
+      "n must be 1 when tools are specified"
+    ]
+  },
+  "usage_and_metrics": {
+    "usage_fields": [
+      "prompt_tokens",
+      "completion_tokens",
+      "total_tokens"
+    ],
+    "streaming_usage": "Only available when stream_options.include_usage=true is set",
+    "system_fingerprint": "Returns empty string (not implemented)"
+  },
+  "error_and_rate_limit_profile": {
+    "http_errors_documented": [
+      400,
+      401,
+      429,
+      500,
+      503
+    ],
+    "rate_limit_status_code": 429,
+    "rate_limit_categories": {
+      "qps_qpm_exceeded": "Too many requests per second/minute — retry after brief pause",
+      "quota_exceeded": "Account quota depleted or payment overdue — requires account action"
+    },
+    "error_response_format": {
+      "structure": {
+        "error": {
+          "message": "string",
+          "type": "string (e.g. invalid_request_error)",
+          "code": "string (e.g. invalid_api_key)"
+        }
+      }
+    },
+    "pi_expectations": [
+      "Classify 429/qps as rate-limit diagnostic with retry guidance",
+      "Classify 429/quota as billing diagnostic requiring account action",
+      "Classify 401 as auth diagnostic with DASHSCOPE_API_KEY remediation",
+      "Distinguish between regional endpoint 429s (different quota pools)"
+    ]
+  },
+  "model_lineup": {
+    "commercial_models": [
+      {
+        "model_id": "qwen-max",
+        "description": "Most capable Qwen model",
+        "context_window": 128000,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": true
+      },
+      {
+        "model_id": "qwen-plus",
+        "description": "Balanced capability/cost",
+        "context_window": 128000,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": false
+      },
+      {
+        "model_id": "qwen-turbo",
+        "description": "Fast and cost-effective",
+        "context_window": 128000,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": false
+      },
+      {
+        "model_id": "qwen-flash",
+        "description": "Fastest inference",
+        "context_window": 128000,
+        "tool_calling": false,
+        "vision": false,
+        "reasoning": false
+      },
+      {
+        "model_id": "qwen-long",
+        "description": "Extended context window",
+        "context_window": 1000000,
+        "tool_calling": false,
+        "vision": false,
+        "reasoning": false
+      }
+    ],
+    "qwen3_models": [
+      {
+        "model_id": "qwen3-max",
+        "description": "Qwen3 flagship",
+        "context_window": 128000,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": true
+      },
+      {
+        "model_id": "qwen3-coder-plus",
+        "description": "Coding agent specialist with tool use",
+        "context_window": 128000,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": true
+      },
+      {
+        "model_id": "qwq-plus",
+        "description": "Reasoning-focused model",
+        "context_window": 128000,
+        "tool_calling": false,
+        "vision": false,
+        "reasoning": true
+      }
+    ],
+    "vision_models": [
+      {
+        "model_id": "qwen-vl-max",
+        "description": "Vision + language, most capable",
+        "context_window": 128000,
+        "tool_calling": false,
+        "vision": true,
+        "reasoning": false
+      },
+      {
+        "model_id": "qwen-vl-plus",
+        "description": "Vision + language, balanced",
+        "context_window": 128000,
+        "tool_calling": false,
+        "vision": true,
+        "reasoning": false
+      },
+      {
+        "model_id": "qwen3-vl-plus",
+        "description": "Qwen3 vision with high-res + long context",
+        "context_window": 128000,
+        "tool_calling": false,
+        "vision": true,
+        "reasoning": false
+      }
+    ],
+    "open_source_models": [
+      {
+        "model_id": "qwen3-235b-a22b",
+        "description": "MoE 235B total / 22B active",
+        "context_window": 128000,
+        "tool_calling": false,
+        "vision": false,
+        "reasoning": false
+      },
+      {
+        "model_id": "qwen3-30b-a3b",
+        "description": "MoE 30B total / 3B active",
+        "context_window": 128000,
+        "tool_calling": false,
+        "vision": false,
+        "reasoning": false
+      },
+      {
+        "model_id": "qwen2.5-72b-instruct",
+        "description": "Qwen 2.5 large open-source",
+        "context_window": 128000,
+        "tool_calling": false,
+        "vision": false,
+        "reasoning": false
+      }
+    ],
+    "notes": "Large and evolving model lineup. Model IDs may include date suffixes (e.g., qwen-plus-2025-01-25). US-specific variants have -us suffix."
+  },
+  "differentiators": {
+    "regional_endpoints": "Three dedicated endpoints: Singapore (intl), Virginia (us), Beijing (cn) with regional model variants",
+    "responses_api": "Supports both OpenAI Chat Completions and Responses API formats",
+    "model_breadth": "Extensive lineup: commercial, open-source, vision, reasoning, coding-specialized models",
+    "context_window": "Up to 1M tokens on qwen-long model",
+    "tool_streaming_gap": "CRITICAL: Cannot combine tools with streaming — unique limitation vs other providers"
+  },
+  "implementation_decisions_for_pi": [
+    {
+      "decision_id": "qwen-spec-001",
+      "decision": "Maintain two Pi provider entries: alibaba (international/Singapore) and alibaba-cn (China/Beijing). Do NOT add Virginia endpoint as separate provider unless US-specific models are needed.",
+      "rationale": "International endpoint already covers most users. Adding Virginia would triple provider entries without clear benefit. Can add later if needed.",
+      "downstream_bead": "bd-3uqg.11.9.3"
+    },
+    {
+      "decision_id": "qwen-spec-002",
+      "decision": "Auth chain: alibaba uses DASHSCOPE_API_KEY + QWEN_API_KEY fallback. alibaba-cn uses DASHSCOPE_API_KEY only.",
+      "rationale": "Already correctly configured in provider_metadata.rs and auth.rs.",
+      "downstream_bead": "bd-3uqg.11.9.2"
+    },
+    {
+      "decision_id": "qwen-spec-003",
+      "decision": "CRITICAL: When routing to Qwen provider with tools defined, Pi MUST force stream=false. This is a hard API constraint — tools + streaming = 400 error.",
+      "rationale": "This is the most significant Qwen incompatibility. Pi's agent loop uses streaming by default with tool definitions. The provider factory or OpenAI-completions driver must detect Qwen and disable streaming for tool-call turns.",
+      "downstream_bead": "bd-3uqg.11.9.3"
+    },
+    {
+      "decision_id": "qwen-spec-004",
+      "decision": "Always set stream_options.include_usage=true when streaming to get token counts in the final chunk.",
+      "rationale": "Without this option, streaming responses lack usage data. Pi needs token counts for context window management.",
+      "downstream_bead": "bd-3uqg.11.9.3"
+    },
+    {
+      "decision_id": "qwen-spec-005",
+      "decision": "Distinguish between 429/qps (retry-able rate limit) and 429/quota (billing issue requiring user action) in error classification.",
+      "rationale": "Qwen uses the same 429 code for two fundamentally different problems. Pi's error handling should inspect the error.code field to differentiate.",
+      "downstream_bead": "bd-3uqg.11.9.3"
+    },
+    {
+      "decision_id": "qwen-spec-006",
+      "decision": "Tool calling model support is selective — only qwen-turbo/plus/max and qwen3-coder-plus. Model registry must flag tool support per-model.",
+      "rationale": "Open-source models, vision models, and flash/long models do NOT support tool calling. Sending tools to these models will fail.",
+      "downstream_bead": "bd-3uqg.11.9.4"
+    }
+  ],
+  "downstream_beads_unblocked": [
+    "bd-3uqg.11.9.2",
+    "bd-3uqg.11.9.3",
+    "bd-3uqg.11.9.4"
+  ]
+}

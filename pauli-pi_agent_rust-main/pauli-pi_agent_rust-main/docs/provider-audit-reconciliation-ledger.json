@@ -1,0 +1,171 @@
+{
+  "report_version": "1.0",
+  "bead_id": "bd-3uqg.12.1",
+  "generated_at_utc": "2026-02-14T00:35:00Z",
+  "scope": "Consolidation of all audit findings from bd-3uqg.14.* subtree into normalized discrepancy ledger",
+
+  "executive_summary": {
+    "upstream_providers_audited": 90,
+    "pi_canonical_ids": 87,
+    "true_implementation_gaps": 0,
+    "total_discrepancies": 21,
+    "needs_remediation": 12,
+    "informational": 7,
+    "already_resolved": 2,
+    "verdict": "100% upstream provider parity. Zero functional blockers. Remaining items are UX, observability, and documentation improvements."
+  },
+
+  "discrepancies": [
+    {
+      "id": "DISC-001", "root_cause": "alias_mismatch", "provider": "azure-openai",
+      "detail": "Upstream 'azure' resolves to Pi canonical 'azure-openai'",
+      "user_impact": "none", "status": "informational"
+    },
+    {
+      "id": "DISC-002", "root_cause": "alias_mismatch", "provider": "azure-openai",
+      "detail": "Upstream 'azure-cognitive-services' resolves to Pi canonical 'azure-openai'",
+      "user_impact": "none", "status": "informational"
+    },
+    {
+      "id": "DISC-003", "root_cause": "alias_mismatch", "provider": "fireworks",
+      "detail": "Upstream 'fireworks-ai' resolves to Pi canonical 'fireworks'",
+      "user_impact": "none", "status": "informational"
+    },
+    {
+      "id": "DISC-004", "root_cause": "alias_mismatch", "provider": "github-copilot",
+      "detail": "Upstream 'github-copilot-enterprise' resolves to Pi canonical 'github-copilot'",
+      "user_impact": "none", "status": "informational"
+    },
+    {
+      "id": "DISC-005", "root_cause": "alias_mismatch", "provider": "google-vertex",
+      "detail": "Upstream 'google-vertex-anthropic' resolves to Pi canonical 'google-vertex'",
+      "user_impact": "none", "status": "informational"
+    },
+    {
+      "id": "DISC-006", "root_cause": "naming_convention", "provider": "fireworks",
+      "detail": "Pi canonical 'fireworks' differs from upstream 'fireworks-ai'",
+      "user_impact": "none", "status": "needs_remediation",
+      "action": "Consider future migration per deprecation policy schedule"
+    },
+    {
+      "id": "DISC-007", "root_cause": "naming_convention", "provider": "azure-openai",
+      "detail": "Pi canonical 'azure-openai' differs from upstream 'azure'",
+      "user_impact": "none", "status": "needs_remediation",
+      "action": "Consider future migration per deprecation policy schedule"
+    },
+    {
+      "id": "DISC-008", "root_cause": "api_architecture", "provider": "amazon-bedrock",
+      "detail": "Missing error_bad_request_400 and error_rate_limit_429 VCR cassettes (AWS uses ConversationStreamError events)",
+      "user_impact": "low", "status": "informational"
+    },
+    {
+      "id": "DISC-009", "root_cause": "api_architecture", "provider": "gitlab",
+      "detail": "Missing tool_call_single VCR cassette (GitLab Duo API lacks standard tool_call format)",
+      "user_impact": "low", "status": "informational"
+    },
+    {
+      "id": "DISC-010", "root_cause": "ux_discoverability", "provider": "all",
+      "detail": "78 of 88 providers have zero aliases — users must know exact canonical ID",
+      "user_impact": "medium", "status": "needs_remediation",
+      "action": "Add common aliases for high-traffic providers (togetherai/together, xai/grok, huggingface/hf, etc.)"
+    },
+    {
+      "id": "DISC-011", "root_cause": "ux_discoverability", "provider": "all",
+      "detail": "No --list-providers CLI command",
+      "user_impact": "medium", "status": "needs_remediation",
+      "action": "Implement --list-providers CLI flag (bd-3gsk0 in progress)"
+    },
+    {
+      "id": "DISC-012", "root_cause": "ux_discoverability", "provider": "all",
+      "detail": "Model selector alias search not implemented",
+      "user_impact": "low", "status": "resolved",
+      "resolution": "bd-1gi21 (closed)"
+    },
+    {
+      "id": "DISC-013", "root_cause": "ux_discoverability", "provider": "all",
+      "detail": "No display_name field in ProviderMetadata",
+      "user_impact": "low", "status": "needs_remediation",
+      "action": "Add optional display_name to ProviderMetadata struct"
+    },
+    {
+      "id": "DISC-014", "root_cause": "ux_discoverability", "provider": "all",
+      "detail": "Onboarding wizard only recognizes 3 providers (anthropic, openai, google)",
+      "user_impact": "medium", "status": "needs_remediation",
+      "action": "Expand wizard to recognize more popular providers"
+    },
+    {
+      "id": "DISC-015", "root_cause": "infrastructure", "provider": "all",
+      "detail": "10 provider_factory test failures due to missing pi_runtime.json VCR cassette",
+      "user_impact": "medium", "status": "needs_remediation",
+      "action": "Create pi_runtime.json VCR cassette"
+    },
+    {
+      "id": "DISC-016", "root_cause": "ux_discoverability", "provider": "all",
+      "detail": "Error messages lack fuzzy provider suggestions",
+      "user_impact": "low", "status": "resolved",
+      "resolution": "bd-1fgjj (closed)"
+    },
+    {
+      "id": "DISC-017", "root_cause": "logging_schema", "provider": "all",
+      "detail": "CI correlation ID not propagated to JSONL records",
+      "user_impact": "low", "status": "needs_remediation"
+    },
+    {
+      "id": "DISC-018", "root_cause": "test_evidence_gap", "provider": "all",
+      "detail": "No per-provider artifact redaction scan on actual e2e output",
+      "user_impact": "medium", "status": "needs_remediation",
+      "action": "Add test calling find_unredacted_keys() on provider JSONL fixtures"
+    },
+    {
+      "id": "DISC-019", "root_cause": "logging_schema", "provider": "all",
+      "detail": "Artifact-index path existence not cross-validated",
+      "user_impact": "low", "status": "needs_remediation"
+    },
+    {
+      "id": "DISC-020", "root_cause": "docs_mismatch", "provider": "all",
+      "detail": "No formal evidence_contract JSON schema document",
+      "user_impact": "low", "status": "needs_remediation"
+    },
+    {
+      "id": "DISC-021", "root_cause": "logging_schema", "provider": "all",
+      "detail": "V1 schema deprecation not enforced (v1 still accepted in new tests)",
+      "user_impact": "low", "status": "needs_remediation"
+    }
+  ],
+
+  "by_root_cause": {
+    "alias_mismatch": {"count": 5, "status": "informational", "action_needed": false},
+    "naming_convention": {"count": 2, "status": "low_priority_remediation", "action_needed": true},
+    "api_architecture": {"count": 2, "status": "informational", "action_needed": false},
+    "ux_discoverability": {"count": 6, "resolved": 2, "needs_work": 4, "action_needed": true},
+    "test_evidence_gap": {"count": 1, "status": "needs_remediation", "action_needed": true},
+    "logging_schema": {"count": 3, "status": "needs_remediation", "action_needed": true},
+    "infrastructure": {"count": 1, "status": "needs_remediation", "action_needed": true},
+    "docs_mismatch": {"count": 1, "status": "needs_remediation", "action_needed": true},
+    "implementation_gap": {"count": 0, "action_needed": false}
+  },
+
+  "remediation_priority": [
+    {"rank": 1, "disc_ids": ["DISC-010"], "action": "Add common aliases for high-traffic providers", "effort": "low", "impact": "high"},
+    {"rank": 2, "disc_ids": ["DISC-011"], "action": "Implement --list-providers CLI (in progress: bd-3gsk0)", "effort": "medium", "impact": "medium"},
+    {"rank": 3, "disc_ids": ["DISC-015"], "action": "Fix pi_runtime.json VCR cassette", "effort": "low", "impact": "medium"},
+    {"rank": 4, "disc_ids": ["DISC-014"], "action": "Expand onboarding wizard provider recognition", "effort": "low", "impact": "medium"},
+    {"rank": 5, "disc_ids": ["DISC-018"], "action": "Add per-provider redaction scan on e2e artifacts", "effort": "low", "impact": "medium"},
+    {"rank": 6, "disc_ids": ["DISC-013"], "action": "Add display_name to ProviderMetadata", "effort": "medium", "impact": "low"},
+    {"rank": 7, "disc_ids": ["DISC-017", "DISC-019", "DISC-021"], "action": "Logging schema hygiene fixes", "effort": "low-medium", "impact": "low"},
+    {"rank": 8, "disc_ids": ["DISC-020"], "action": "Define evidence_contract.v1 JSON schema", "effort": "low", "impact": "low"},
+    {"rank": 9, "disc_ids": ["DISC-006", "DISC-007"], "action": "Migrate canonical IDs to match upstream naming", "effort": "medium", "impact": "low"}
+  ],
+
+  "source_beads": {
+    "upstream_parity": "bd-3uqg.14.3.1 (closed)",
+    "test_matrix": "bd-3uqg.14.3.2 (closed)",
+    "log_schema": "bd-3uqg.14.3.3 (closed)",
+    "ux_discoverability": "bd-3uqg.14.3.4 (closed)",
+    "groq_audit": "bd-3uqg.14.1 (closed)",
+    "openrouter_audit": "bd-3uqg.14.2 (closed)",
+    "qwen_audit": "bd-3uqg.14.4 (closed)",
+    "cerebras_audit": "bd-3uqg.14.5 (closed)",
+    "kimi_audit": "bd-3uqg.14.6 (closed)"
+  }
+}

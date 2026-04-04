@@ -1,0 +1,126 @@
+{
+  "schema": "pi.frankennode.unified_test_certification_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.11",
+  "support_bead_ids": [],
+  "status": "active_blocking_policy",
+  "effective_date_utc": "2026-02-17T10:00:00Z",
+  "scope": {
+    "target_project_root": "/dp/franken_node",
+    "source_project_root": "/data/projects/pi_agent_rust",
+    "objective": "Create release-blocking certification that requires comprehensive automated tests and structured diagnostics across all FrankenNode subsystems."
+  },
+  "certification_dimensions": [
+    {
+      "dimension_id": "unit_tests",
+      "description": "Pure logic tests for all runtime kernel crates",
+      "pass_criteria": "100% pass rate, zero flaky tests",
+      "coverage_minimum_percent": 80,
+      "required": true
+    },
+    {
+      "dimension_id": "integration_tests",
+      "description": "Cross-crate integration tests for subsystem interactions",
+      "pass_criteria": "100% pass rate",
+      "coverage_minimum_percent": 70,
+      "required": true
+    },
+    {
+      "dimension_id": "e2e_tests",
+      "description": "End-to-end tests running real workloads through FrankenNode",
+      "pass_criteria": "100% pass rate on deterministic scenarios",
+      "coverage_minimum_percent": 60,
+      "required": true
+    },
+    {
+      "dimension_id": "conformance_tests",
+      "description": "Node.js API conformance tests against specification",
+      "pass_criteria": "pass rate >= 95% of targeted APIs",
+      "coverage_minimum_percent": 0,
+      "required": true
+    },
+    {
+      "dimension_id": "security_tests",
+      "description": "Sandbox boundary, capability policy, and threat model tests",
+      "pass_criteria": "100% pass rate, zero sandbox escape vectors",
+      "coverage_minimum_percent": 90,
+      "required": true
+    },
+    {
+      "dimension_id": "performance_tests",
+      "description": "Benchmark gate tests with statistical confidence",
+      "pass_criteria": "all benchmark gates pass at configured thresholds",
+      "coverage_minimum_percent": 0,
+      "required": true
+    }
+  ],
+  "certification_verdict": {
+    "verdict_values": ["CERTIFIED", "CONDITIONAL", "FAILED"],
+    "certified_requires": "all required dimensions pass",
+    "conditional_requires": "at most 1 dimension at CONDITIONAL with documented waiver",
+    "failed_requires": "any required dimension at FAILED",
+    "artifact_path": "tests/full_suite_gate/franken_node_certification_verdict.json",
+    "required_fields": [
+      "verdict",
+      "timestamp_utc",
+      "frankennode_version",
+      "dimension_results",
+      "total_tests_run",
+      "total_tests_passed",
+      "total_tests_failed",
+      "waivers_applied"
+    ]
+  },
+  "diagnostic_requirements": {
+    "on_failure": {
+      "required_outputs": [
+        "failing_test_name",
+        "failure_message",
+        "stack_trace_or_assertion_context",
+        "reproduction_command",
+        "related_contract_reference"
+      ]
+    },
+    "on_conditional": {
+      "required_outputs": [
+        "waiver_id",
+        "waiver_reason",
+        "waiver_expiry_date",
+        "remediation_bead_id"
+      ]
+    },
+    "invariants": [
+      "Every test failure produces structured diagnostics, never silent failures",
+      "Reproduction commands are self-contained (no external state required)",
+      "Diagnostic output is bounded to 10MB per failing test"
+    ]
+  },
+  "ci_integration": {
+    "gate_id": "franken_node_certification",
+    "blocking": true,
+    "runs_on": ["pre_merge", "nightly", "release"],
+    "timeout_minutes": 60,
+    "retry_policy": {
+      "max_retries": 2,
+      "retry_only_on": ["infrastructure_failure"],
+      "no_retry_on": ["test_failure", "compilation_error"]
+    }
+  },
+  "release_blockers": [
+    "any required certification dimension at FAILED verdict",
+    "certification verdict artifact missing or malformed",
+    "test failure without structured diagnostic output",
+    "waiver applied without linked remediation bead",
+    "conditional verdict with more than 1 waivered dimension"
+  ],
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.12"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-security-sandbox-contract.json",
+      "docs/franken-node-benchmark-resource-gate-contract.json",
+      "docs/franken-node-event-loop-io-parity-contract.json"
+    ]
+  }
+}

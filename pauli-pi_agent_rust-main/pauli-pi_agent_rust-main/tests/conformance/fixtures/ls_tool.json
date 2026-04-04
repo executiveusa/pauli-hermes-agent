@@ -1,0 +1,103 @@
+{
+  "version": "1.0",
+  "tool": "ls",
+  "description": "Conformance tests for the ls tool (pi-mono parity)",
+  "cases": [
+    {
+      "name": "ls_directory",
+      "description": "List directory contents",
+      "setup": [
+        {"type": "create_file", "path": "file.txt", "content": "content"},
+        {"type": "create_dir", "path": "subdir"}
+      ],
+      "input": {},
+      "expected": {
+        "content_contains": ["file.txt", "subdir/"],
+        "details_none": true
+      }
+    },
+    {
+      "name": "ls_empty_directory",
+      "description": "List empty directory",
+      "input": {},
+      "expected": {
+        "content_exact": "(empty directory)",
+        "details_none": true
+      }
+    },
+    {
+      "name": "ls_nonexistent_directory",
+      "description": "List nonexistent directory errors",
+      "input": {"path": "/nonexistent/directory"},
+      "expect_error": true,
+      "error_contains": "Path not found",
+      "expected": {}
+    },
+    {
+      "name": "ls_file_not_directory",
+      "description": "List a file (not directory) errors",
+      "setup": [
+        {"type": "create_file", "path": "file.txt", "content": "content"}
+      ],
+      "input": {"path": "file.txt"},
+      "expect_error": true,
+      "error_contains": "Not a directory",
+      "expected": {}
+    },
+    {
+      "name": "ls_shows_files_and_dirs",
+      "description": "Output shows files and directories correctly",
+      "setup": [
+        {"type": "create_file", "path": "small.txt", "content": "x"},
+        {"type": "create_dir", "path": "mydir"}
+      ],
+      "input": {},
+      "expected": {
+        "content_contains": ["small.txt", "mydir/"],
+        "details_none": true
+      }
+    },
+    {
+      "name": "ls_directories_have_trailing_slash",
+      "description": "Directories are marked with trailing slash",
+      "setup": [
+        {"type": "create_file", "path": "zfile.txt", "content": ""},
+        {"type": "create_dir", "path": "adir"}
+      ],
+      "input": {},
+      "expected": {
+        "content_contains": ["adir/", "zfile.txt"],
+        "details_none": true
+      }
+    },
+    {
+      "name": "ls_with_limit",
+      "description": "Respects limit parameter",
+      "setup": [
+        {"type": "create_file", "path": "a.txt", "content": ""},
+        {"type": "create_file", "path": "b.txt", "content": ""},
+        {"type": "create_file", "path": "c.txt", "content": ""}
+      ],
+      "input": {"limit": 2},
+      "expected": {
+        "content_contains": ["limit reached"],
+        "details_exact": {
+          "entryLimitReached": 2
+        }
+      }
+    },
+    {
+      "name": "ls_case_insensitive_sort",
+      "description": "Sorting is case-insensitive",
+      "setup": [
+        {"type": "create_file", "path": "Zebra.txt", "content": ""},
+        {"type": "create_file", "path": "apple.txt", "content": ""}
+      ],
+      "input": {},
+      "expected": {
+        "content_regex": "(?s)apple\\.txt.*Zebra\\.txt",
+        "details_none": true
+      }
+    }
+  ]
+}

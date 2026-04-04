@@ -1,0 +1,13 @@
+{
+  "schema": "pi.fuzz.crash_metadata.v1",
+  "target": "fuzz_smoke",
+  "category": "unknown",
+  "original_artifact": "crash-synthetic-demo",
+  "stored_as": "unknown-001.bin",
+  "description": "Synthetic demo crash for workflow validation",
+  "stored_at": "2026-02-15T03:45:53Z",
+  "size_bytes": 3,
+  "status": "resolved",
+  "resolved_at": "2026-02-15T03:46:00Z",
+  "bead": "bd-2xl3c"
+}

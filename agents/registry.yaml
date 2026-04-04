@@ -1,0 +1,73 @@
+# Agent Registry
+# Defines all agents in the Pauli Studio ecosystem.
+# Read by the dashboard (GET /v1/agents) and orchestration mode.
+
+agents:
+  - name: hermes
+    display_name: Hermes
+    role: Business orchestrator — coding, research, deployment, multi-agent coordination
+    endpoint: http://localhost:8642
+    port: 8642
+    type: hermes
+    status: active
+    capabilities:
+      - coding
+      - research
+      - deployment
+      - web_search
+      - browser_automation
+      - file_management
+      - terminal
+      - delegation
+
+  - name: agent-zero
+    display_name: Agent Zero
+    role: Personal assistant — second brain, mental models, life management
+    endpoint: http://localhost:8643
+    port: 8643
+    type: zero
+    status: active
+    capabilities:
+      - personal_memory
+      - mental_models
+      - life_planning
+      - journaling
+      - health_tracking
+
+  - name: darya
+    display_name: Darya
+    role: Design system — UI/UX, component library, visual identity
+    endpoint: null
+    type: external
+    status: planned
+    repo: https://github.com/kupuri/darya-designs
+    capabilities:
+      - ui_design
+      - component_library
+      - design_tokens
+      - accessibility_audit
+
+  - name: pi
+    display_name: Pi
+    role: Rust microservices — performance tooling, system programming
+    endpoint: null
+    type: external
+    status: planned
+    repo: https://github.com/kupuri/pi_agent_rust
+    capabilities:
+      - rust_development
+      - performance_optimization
+      - system_programming
+
+  - name: humanizer
+    display_name: Humanizer
+    role: Copy and brand language — voice, tone, messaging
+    endpoint: null
+    type: external
+    status: planned
+    repo: https://github.com/kupuri/humanizer
+    capabilities:
+      - copywriting
+      - brand_voice
+      - content_strategy
+      - localization

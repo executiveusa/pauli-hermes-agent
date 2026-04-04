@@ -1,0 +1,1216 @@
+{
+  "schema_version": "1.0.0",
+  "program_issue_id": "bd-k5q5.7",
+  "program_title": "Comprehensive Verification Program: unit tests, end-to-end scripts, and detailed diagnostics logging",
+  "updated_at": "2026-02-09",
+  "ci_policy": {
+    "required_categories": [
+      "unit_tests",
+      "e2e_scripts",
+      "evidence_logs"
+    ],
+    "min_classified_trace_coverage_pct": 100
+  },
+  "requirements": [
+    {
+      "id": "bd-k5q5.7",
+      "title": "Comprehensive Verification Program: unit tests, end-to-end scripts, and detailed diagnostics logging",
+      "acceptance_criteria": "Every major runtime surface and workflow is covered by deterministic unit tests and end-to-end scripts with structured logs, and evidence is consumable in CI and local workflows.",
+      "unit_tests": [
+        {
+          "path": "tests/tools_conformance.rs",
+          "justification": "Core host tools conformance and behavior checks."
+        },
+        {
+          "path": "tests/tools_hardened.rs",
+          "justification": "Hardened tool execution tests for real filesystem/process edge cases and diagnostics fidelity."
+        },
+        {
+          "path": "tests/ext_conformance_scenarios.rs",
+          "justification": "Extension runtime scenario verification."
+        },
+        {
+          "path": "tests/conformance_regression_gate.rs",
+          "justification": "12 regression gate tests validating pass-rate thresholds, N/A limits, exception policy, and verdict generation."
+        },
+        {
+          "path": "tests/e2e_agent_loop.rs",
+          "justification": "Validates end-to-end agent loop behavior through realistic integration turns."
+        },
+        {
+          "path": "tests/e2e_cli.rs",
+          "justification": "Covers CLI-level interactive and non-interactive end-to-end execution flows."
+        },
+        {
+          "path": "tests/e2e_cross_provider_parity.rs",
+          "justification": "Checks cross-provider behavioral parity across the end-to-end integration surface."
+        },
+        {
+          "path": "tests/e2e_message_session_control.rs",
+          "justification": "Exercises session/message orchestration controls in end-to-end workflows."
+        },
+        {
+          "path": "tests/e2e_provider_streaming.rs",
+          "justification": "Verifies provider streaming behavior in full end-to-end execution paths."
+        },
+        {
+          "path": "tests/e2e_rpc.rs",
+          "justification": "Ensures RPC mode and transport semantics hold under end-to-end test conditions."
+        },
+        {
+          "path": "tests/e2e_session_persistence.rs",
+          "justification": "Validates end-to-end session persistence, resume, and state continuity behavior."
+        },
+        {
+          "path": "tests/e2e_tools.rs",
+          "justification": "Runs end-to-end tool invocation and result handling across representative tool paths."
+        },
+        {
+          "path": "tests/e2e_tui.rs",
+          "justification": "Covers terminal UI interaction loops and rendering-relevant end-to-end behavior."
+        },
+        {
+          "path": "tests/e2e_workflow_preflight.rs",
+          "justification": "Validates preflight workflow expectations before end-to-end runtime execution."
+        },
+        {
+          "path": "tests/bench_schema.rs",
+          "justification": "Schema-level bench artifact shape checks for deterministic diagnostics output."
+        },
+        {
+          "path": "tests/capability_policy_model.rs",
+          "justification": "Model-scoped capability policy resolution and precedence verification."
+        },
+        {
+          "path": "tests/capability_policy_scoped.rs",
+          "justification": "Scoped capability policy enforcement checks across nested policy contexts."
+        },
+        {
+          "path": "tests/compaction.rs",
+          "justification": "Session compaction correctness coverage for history truncation and continuity."
+        },
+        {
+          "path": "tests/compaction_bug.rs",
+          "justification": "Regression guard for previously observed compaction edge-case failures."
+        },
+        {
+          "path": "tests/config_precedence.rs",
+          "justification": "Configuration precedence behavior across defaults, env, project, and CLI layers."
+        },
+        {
+          "path": "tests/error_types.rs",
+          "justification": "Error typing and conversion-path behavior checks for stable diagnostics."
+        },
+        {
+          "path": "tests/extension_scoring.rs",
+          "justification": "Extension scoring logic and ranking stability under deterministic inputs."
+        },
+        {
+          "path": "tests/mock_spec_schema.rs",
+          "justification": "Mock spec schema invariants and validation behavior coverage."
+        },
+        {
+          "path": "tests/mock_spec_validation.rs",
+          "justification": "End-to-end mock spec validation and failure-path diagnostics checks."
+        },
+        {
+          "path": "tests/model_selector_cycling.rs",
+          "justification": "Model selector cycling behavior across available model inventories."
+        },
+        {
+          "path": "tests/model_serialization.rs",
+          "justification": "Model/message serialization round-trip correctness and edge-case handling."
+        },
+        {
+          "path": "tests/perf_budgets.rs",
+          "justification": "Performance budget policy enforcement for regression detection."
+        },
+        {
+          "path": "tests/performance_comparison.rs",
+          "justification": "Performance comparison harness behavior and report integrity checks."
+        },
+        {
+          "path": "tests/scheduler_repro.rs",
+          "justification": "Scheduler reproducer coverage for deterministic ordering and race regression guards."
+        },
+        {
+          "path": "tests/security_budgets.rs",
+          "justification": "Security budget threshold enforcement and evidence emission checks."
+        },
+        {
+          "path": "tests/session_conformance.rs",
+          "justification": "Session contract conformance for persistence, structure, and replay behavior."
+        },
+        {
+          "path": "tests/agent_loop_vcr.rs",
+          "justification": "Agent-loop behavior verification against recorded VCR fixtures."
+        },
+        {
+          "path": "tests/agent_loop_reliability.rs",
+          "justification": "Agent-loop interruption/retry/resume reliability scenarios with timeline artifact coverage."
+        },
+        {
+          "path": "tests/auth_oauth_refresh_vcr.rs",
+          "justification": "OAuth refresh-path behavior and token lifecycle checks using deterministic VCR traces."
+        },
+        {
+          "path": "tests/http_client.rs",
+          "justification": "HTTP client request/response behavior and transport-level diagnostics coverage."
+        },
+        {
+          "path": "tests/main_cli_selection.rs",
+          "justification": "CLI command/model selection behavior and argument-routing correctness."
+        },
+        {
+          "path": "tests/model_registry.rs",
+          "justification": "Model registry loading, lookup, and selection behavior under realistic fixtures."
+        },
+        {
+          "path": "tests/provider_factory.rs",
+          "justification": "Provider construction and backend-selection invariants across configured providers."
+        },
+        {
+          "path": "tests/provider_streaming.rs",
+          "justification": "Streaming provider behavior and event-shape stability across runtimes."
+        },
+        {
+          "path": "tests/resource_loader.rs",
+          "justification": "Resource loading and path-resolution correctness for runtime dependency inputs."
+        },
+        {
+          "path": "tests/rpc_mode.rs",
+          "justification": "RPC mode lifecycle and execution-path correctness checks."
+        },
+        {
+          "path": "tests/rpc_protocol.rs",
+          "justification": "RPC protocol message contract validation and compatibility checks."
+        },
+        {
+          "path": "tests/rpc_session_connector.rs",
+          "justification": "Session-connector behavior in RPC flows and state-carrying interactions."
+        },
+        {
+          "path": "tests/session_connector_conformance.rs",
+          "justification": "Conformance coverage for session connector semantics and invariants."
+        },
+        {
+          "path": "tests/session_index_tests.rs",
+          "justification": "Session index creation, lookup, and persistence consistency checks."
+        },
+        {
+          "path": "tests/session_picker.rs",
+          "justification": "Session picker behavior, ordering, and selection edge-case coverage."
+        },
+        {
+          "path": "tests/session_sqlite.rs",
+          "justification": "SQLite-backed session persistence and retrieval correctness checks."
+        },
+        {
+          "path": "tests/sse_strict_compliance.rs",
+          "justification": "Strict Server-Sent Events parsing and protocol compliance verification."
+        },
+        {
+          "path": "tests/streaming_hostcall.rs",
+          "justification": "Streaming hostcall handling and event-forwarding correctness checks."
+        },
+        {
+          "path": "tests/repro_sse_flush.rs",
+          "justification": "Regression reproducer for SSE flush-boundary handling stability."
+        },
+        {
+          "path": "tests/repro_sse_newline.rs",
+          "justification": "Regression reproducer for newline-sensitive SSE parsing behavior."
+        },
+        {
+          "path": "tests/capability_prompt.rs",
+          "justification": "Capability prompt construction and policy text shaping coverage."
+        },
+        {
+          "path": "tests/conformance_comparator.rs",
+          "justification": "Conformance report comparator diff logic and verdict behavior checks."
+        },
+        {
+          "path": "tests/conformance_mock.rs",
+          "justification": "Conformance harness behavior under deterministic mock-style fixture conditions."
+        },
+        {
+          "path": "tests/event_dispatch_latency.rs",
+          "justification": "Event-dispatch latency measurement and regression threshold checks."
+        },
+        {
+          "path": "tests/ext_bench_harness.rs",
+          "justification": "Extension benchmark harness orchestration and result-shape validation."
+        },
+        {
+          "path": "tests/ext_conformance.rs",
+          "justification": "Primary extension conformance integration verification across corpus fixtures."
+        },
+        {
+          "path": "tests/ext_conformance_generated.rs",
+          "justification": "Generated extension conformance cases and fixture integration checks."
+        },
+        {
+          "path": "tests/ext_conformance_guard.rs",
+          "justification": "Conformance guardrail enforcement for required report and pass-rate invariants."
+        },
+        {
+          "path": "tests/ext_conformance_negative.rs",
+          "justification": "Negative-path conformance behavior and failure-surface verification."
+        },
+        {
+          "path": "tests/ext_conformance_selector.rs",
+          "justification": "Conformance selector filtering and suite-target routing checks."
+        },
+        {
+          "path": "tests/ext_conformance_shapes.rs",
+          "justification": "Conformance output schema/shape stability checks for report consumers."
+        },
+        {
+          "path": "tests/ext_entry_scan.rs",
+          "justification": "Extension entry scanning and discovery behavior verification."
+        },
+        {
+          "path": "tests/ext_inclusion_list.rs",
+          "justification": "Extension inclusion-list policy and allowlist selection coverage."
+        },
+        {
+          "path": "tests/ext_load_time_benchmark.rs",
+          "justification": "Extension load-time benchmark execution and budget assertions."
+        },
+        {
+          "path": "tests/ext_preflight_analyzer.rs",
+          "justification": "Extension preflight analysis diagnostics and classification checks."
+        },
+        {
+          "path": "tests/ext_proptest.rs",
+          "justification": "Property-based extension runtime invariants and robustness coverage."
+        },
+        {
+          "path": "tests/ext_provenance_verification.rs",
+          "justification": "Extension provenance verification and policy conformance checks."
+        },
+        {
+          "path": "tests/ext_random_trials.rs",
+          "justification": "Randomized extension trial harness behavior and reproducibility checks."
+        },
+        {
+          "path": "tests/ext_risk_review.rs",
+          "justification": "Extension risk-review artifact generation and rule coverage."
+        },
+        {
+          "path": "tests/extension_code_search.rs",
+          "justification": "Extension code-search indexing/query behavior correctness checks."
+        },
+        {
+          "path": "tests/extension_license.rs",
+          "justification": "Extension license scanning and compliance classification coverage."
+        },
+        {
+          "path": "tests/extension_tiered_corpus.rs",
+          "justification": "Tiered extension corpus loading/selection behavior validation."
+        },
+        {
+          "path": "tests/extension_validation.rs",
+          "justification": "Extension validation pipeline checks for schema and runtime constraints."
+        },
+        {
+          "path": "tests/extensions_concurrent_correctness.rs",
+          "justification": "Concurrent extension execution correctness and race-regression coverage."
+        },
+        {
+          "path": "tests/extensions_event_cancellation.rs",
+          "justification": "Extension event cancellation semantics and propagation behavior checks."
+        },
+        {
+          "path": "tests/extensions_event_wiring.rs",
+          "justification": "Extension event registration/dispatch wiring correctness checks."
+        },
+        {
+          "path": "tests/extensions_fs_shim.rs",
+          "justification": "Filesystem shim behavior consistency and sandbox semantics coverage."
+        },
+        {
+          "path": "tests/extensions_manifest.rs",
+          "justification": "Extension manifest parsing/validation and metadata handling checks."
+        },
+        {
+          "path": "tests/extensions_message_session.rs",
+          "justification": "Message/session extension integration behavior and state handoff checks."
+        },
+        {
+          "path": "tests/extensions_process_shim.rs",
+          "justification": "Process shim runtime behavior and compatibility checks for extensions."
+        },
+        {
+          "path": "tests/extensions_provider_oauth.rs",
+          "justification": "Extension provider OAuth flow integration and failure-path coverage."
+        },
+        {
+          "path": "tests/extensions_url_shim.rs",
+          "justification": "URL shim behavior compatibility and normalization checks."
+        },
+        {
+          "path": "tests/interactive_extension_ui.rs",
+          "justification": "Interactive extension UI flow behavior and render-state checks."
+        },
+        {
+          "path": "tests/lab_runtime_extensions.rs",
+          "justification": "Lab runtime extension integration behavior under deterministic runtime controls."
+        },
+        {
+          "path": "tests/node_child_process_shim.rs",
+          "justification": "Node child_process shim API behavior and sandbox handling checks."
+        },
+        {
+          "path": "tests/node_events_shim.rs",
+          "justification": "Node events shim semantics and emitter behavior compatibility coverage."
+        },
+        {
+          "path": "tests/node_fs_shim.rs",
+          "justification": "Node fs shim path and file-operation compatibility checks."
+        },
+        {
+          "path": "tests/node_shim_integration.rs",
+          "justification": "Cross-shim integration behavior across Node compatibility surfaces."
+        },
+        {
+          "path": "tests/package_manager.rs",
+          "justification": "Package-manager integration behavior and command contract checks."
+        },
+        {
+          "path": "tests/perf_bench_harness.rs",
+          "justification": "Performance benchmark harness orchestration and artifact contract checks."
+        },
+        {
+          "path": "tests/pi_connector_shims.rs",
+          "justification": "Pi connector shim behavior and bridge compatibility checks."
+        },
+        {
+          "path": "tests/repro_config_error.rs",
+          "justification": "Config-error reproducer regression coverage for known failure modes."
+        },
+        {
+          "path": "tests/repro_edit_encoding.rs",
+          "justification": "Edit encoding reproducer regression coverage for text-encoding edge cases."
+        },
+        {
+          "path": "tests/reproduction_truncate.rs",
+          "justification": "Regression placeholder for truncation reproduction coverage tracked in traceability governance."
+        },
+        {
+          "path": "tests/reproduce_bom_bug.rs",
+          "justification": "BOM-related regression reproducer for file parsing/editing behavior."
+        },
+        {
+          "path": "tests/reproduce_edit_whitespace.rs",
+          "justification": "Whitespace edit reproducer regression checks for patch/edit stability."
+        },
+        {
+          "path": "tests/traceability_staleness.rs",
+          "justification": "Governance gate ensuring matrix/classification/file-set staleness stays bounded."
+        },
+        {
+          "path": "tests/tui_snapshot.rs",
+          "justification": "TUI snapshot stability checks for interactive rendering behavior."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "Unified end-to-end orchestration script."
+        },
+        {
+          "path": "tests/run_e2e.sh",
+          "justification": "Existing E2E invocation wrapper."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/e2e_results/**/*.jsonl",
+          "generated_by_ci": true,
+          "justification": "Structured E2E run logs and artifact index output."
+        },
+        {
+          "path": "tests/ext_conformance/reports/**/*.json",
+          "generated_by_ci": true,
+          "justification": "Conformance and scenario reports published by CI."
+        }
+      ]
+    },
+    {
+      "id": "bd-k5q5.7.1",
+      "title": "Traceability matrix linking requirements to unit tests, e2e scripts, and evidence logs",
+      "acceptance_criteria": "Matrix is committed, machine-readable, and used by CI checks to detect uncovered requirements.",
+      "unit_tests": [
+        {
+          "path": "tests/conformance_fixtures.rs",
+          "justification": "Fixture-driven tests validate matrix-linked behavior categories."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "Primary E2E entrypoint referenced by matrix entries."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/e2e_results/**/*.jsonl",
+          "generated_by_ci": true,
+          "justification": "CI artifacts proving runtime coverage."
+        }
+      ]
+    },
+    {
+      "id": "bd-k5q5.7.2",
+      "title": "Harness unit-test expansion for normalization, dispatch, and determinism",
+      "acceptance_criteria": "Harness unit suite covers all known failure classes with detailed assertion messages and structured test logs.",
+      "unit_tests": [
+        {
+          "path": "tests/event_loop_conformance.rs",
+          "justification": "Deterministic event-loop behavior and ordering checks."
+        },
+        {
+          "path": "tests/js_runtime_ordering.rs",
+          "justification": "Dispatch ordering and deterministic runtime behavior."
+        },
+        {
+          "path": "tests/ext_conformance_fixture_schema.rs",
+          "justification": "Fixture normalization and schema-level validation."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "Runs harness-sensitive suites through reproducible command flow."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/ext_conformance/reports/**/*.jsonl",
+          "generated_by_ci": true,
+          "justification": "Harness scenario execution traces and diagnostics."
+        }
+      ]
+    },
+    {
+      "id": "bd-k5q5.7.3",
+      "title": "Runtime compatibility unit-test matrix for Node and Bun API surfaces",
+      "acceptance_criteria": "API-level compatibility matrix is executable and produces per-API pass/fail output with rich diagnostics.",
+      "unit_tests": [
+        {
+          "path": "tests/node_buffer_shim.rs",
+          "justification": "Buffer API behavior coverage."
+        },
+        {
+          "path": "tests/node_crypto_shim.rs",
+          "justification": "Crypto API behavior coverage."
+        },
+        {
+          "path": "tests/node_http_shim.rs",
+          "justification": "HTTP shim behavior coverage."
+        },
+        {
+          "path": "tests/npm_module_stubs.rs",
+          "justification": "Module-level runtime compatibility checks."
+        },
+        {
+          "path": "tests/ext_conformance_matrix.rs",
+          "justification": "Compatibility matrix regression guard."
+        },
+        {
+          "path": "tests/node_bun_api_matrix.rs",
+          "justification": "151-test cross-module API surface coverage for Node/Bun shims."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "Executes compatibility-sensitive integration suites."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/ext_conformance/reports/**/*.json",
+          "generated_by_ci": true,
+          "justification": "Matrix and parity result payloads."
+        }
+      ]
+    },
+    {
+      "id": "bd-k5q5.7.4",
+      "title": "Capability policy unit tests for precedence, toggles, and scoped enforcement",
+      "acceptance_criteria": "Policy unit tests prove no unauthorized path is silently allowed and logs contain actionable context.",
+      "unit_tests": [
+        {
+          "path": "tests/extensions_policy_negative.rs",
+          "justification": "Negative policy enforcement and denial-path coverage."
+        },
+        {
+          "path": "tests/capability_denial_matrix.rs",
+          "justification": "Capability-denial matrix checks for safety controls."
+        },
+        {
+          "path": "tests/security_http_policy.rs",
+          "justification": "HTTP policy-level guard coverage."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "End-to-end policy behavior under interactive and non-interactive flows."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/ext_conformance/reports/negative/**/*.json*",
+          "generated_by_ci": true,
+          "justification": "Policy negative test reports and event traces."
+        }
+      ]
+    },
+    {
+      "id": "bd-k5q5.7.5",
+      "title": "End-to-end extension corpus test suite across capability profiles",
+      "acceptance_criteria": "E2E results include per-profile pass rates, blocked-operation summaries, detailed structured logs, and preflight-to-runtime consistency checks suitable for root-cause analysis.",
+      "unit_tests": [
+        {
+          "path": "tests/extensions_registration.rs",
+          "justification": "Registration and baseline runtime correctness before corpus E2E."
+        },
+        {
+          "path": "tests/extensions_provider_streaming.rs",
+          "justification": "Provider-path extension runtime behavior support."
+        },
+        {
+          "path": "tests/extension_auto_repair_integration.rs",
+          "justification": "Integration coverage for auto-repair behavior on real-world extension failure patterns."
+        },
+        {
+          "path": "tests/extensions_auto_repair_unit.rs",
+          "justification": "Pattern-level unit coverage for auto-repair decisions and fallback correctness."
+        },
+        {
+          "path": "tests/security_fs_escape.rs",
+          "justification": "Validates auto-repair fallback confinement so escape paths stay blocked outside extension scope."
+        },
+        {
+          "path": "tests/e2e_auto_repair.rs",
+          "justification": "Corpus-wide auto-repair end-to-end verification and report generation."
+        },
+        {
+          "path": "tests/e2e_extension_registration.rs",
+          "justification": "Verifies extension registration workflows in end-to-end runtime conditions."
+        },
+        {
+          "path": "tests/e2e_library_integration.rs",
+          "justification": "Covers end-to-end extension library integration behavior and compatibility."
+        },
+        {
+          "path": "tests/e2e_live.rs",
+          "justification": "Runs live end-to-end extension/provider flows for real integration behavior checks."
+        },
+        {
+          "path": "tests/e2e_live_harness.rs",
+          "justification": "Validates live harness wiring and execution contract for extension-centric E2E runs."
+        },
+        {
+          "path": "tests/e2e_ts_extension_loading.rs",
+          "justification": "Checks TypeScript extension loading behavior end-to-end across the runtime pipeline."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "Central script that runs extension-centric E2E suites."
+        },
+        {
+          "path": "tests/run_e2e.sh",
+          "justification": "Baseline shell wrapper for E2E orchestration."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/e2e_results/**/*.jsonl",
+          "generated_by_ci": true,
+          "justification": "Cross-profile E2E logs and artifact index entries."
+        },
+        {
+          "path": "tests/ext_conformance/reports/**/*.jsonl",
+          "generated_by_ci": true,
+          "justification": "Extension corpus parity/scenario traces."
+        }
+      ]
+    },
+    {
+      "id": "bd-k5q5.7.6",
+      "title": "Fault-injection e2e suite for resilience and error clarity",
+      "acceptance_criteria": "System degrades gracefully with clear user-facing diagnostics and logs sufficient for deterministic reproduction.",
+      "unit_tests": [
+        {
+          "path": "tests/provider_error_paths.rs",
+          "justification": "Provider fault and protocol edge-case coverage."
+        },
+        {
+          "path": "tests/error_handling.rs",
+          "justification": "Cross-provider error-path and messaging validation."
+        },
+        {
+          "path": "tests/extensions_reliability.rs",
+          "justification": "Extension-level resilience behavior checks."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "Fault-sensitive E2E suites execute via unified runner."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/e2e_results/**/*.jsonl",
+          "generated_by_ci": true,
+          "justification": "Failure logs and reproducibility artifacts."
+        }
+      ]
+    },
+    {
+      "id": "bd-k5q5.7.7",
+      "title": "Test logging contract and correlation model",
+      "acceptance_criteria": "All test layers emit contract-compliant logs and tooling validates schema in CI.",
+      "unit_tests": [
+        {
+          "path": "tests/tui_state.rs",
+          "justification": "State tests exercise structured log + artifact emission helpers."
+        },
+        {
+          "path": "tests/ext_conformance_artifacts.rs",
+          "justification": "Artifact/report structure validation for conformance outputs."
+        },
+        {
+          "path": "tests/extensions_repair_events.rs",
+          "justification": "Auto-repair event schema, emission, and drain-path logging contract checks."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "Produces normalized multi-suite artifact outputs."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/e2e_results/**/*.jsonl",
+          "generated_by_ci": true,
+          "justification": "Structured E2E logs with correlation metadata."
+        },
+        {
+          "path": "tests/ext_conformance/reports/**/*.jsonl",
+          "generated_by_ci": true,
+          "justification": "Conformance logging outputs for schema validation."
+        }
+      ]
+    },
+    {
+      "id": "bd-k5q5.7.8",
+      "title": "Unified test runner scripts for local and CI workflows",
+      "acceptance_criteria": "Engineers can run verification quickly, and CI can reuse the exact same scripts for reproducibility.",
+      "unit_tests": [
+        {
+          "path": "tests/bench_scenario_runner.rs",
+          "justification": "Runner semantics and deterministic scenario orchestration checks."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "Canonical runner for local + CI workflows."
+        },
+        {
+          "path": "tests/run_e2e.sh",
+          "justification": "Legacy-compatible wrapper still used by contributors."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/e2e_results/**/*.json",
+          "generated_by_ci": true,
+          "justification": "Run metadata summaries and artifact manifests."
+        }
+      ]
+    },
+    {
+      "id": "bd-k5q5.7.9",
+      "title": "Evidence diff and triage tooling for failed unit or e2e runs",
+      "acceptance_criteria": "Failure triage time is reduced with actionable, ranked diagnostics and reproducible command snippets.",
+      "unit_tests": [
+        {
+          "path": "tests/ext_conformance_diff.rs",
+          "justification": "Differential evidence and regression triage baseline."
+        },
+        {
+          "path": "tests/perf_comparison.rs",
+          "justification": "Comparison tooling for regression diagnostics."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "Produces baseline and current artifacts consumed by diff workflows."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/ext_conformance/reports/parity/**/*.json*",
+          "generated_by_ci": true,
+          "justification": "Parity diff artifacts for triage."
+        }
+      ]
+    },
+    {
+      "id": "bd-k5q5.7.10",
+      "title": "Soak and longevity end-to-end verification",
+      "acceptance_criteria": "Soak reports include memory, timing, and error-rate trends with structured logs and pass/fail thresholds.",
+      "unit_tests": [
+        {
+          "path": "tests/extensions_stress.rs",
+          "justification": "Stress-path checks for prolonged extension runtime behavior."
+        },
+        {
+          "path": "tests/ext_memory_stress.rs",
+          "justification": "Memory-focused longevity checks."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "Used as base orchestrator for long-running suites."
+        },
+        {
+          "path": "scripts/bench_extension_workloads.sh",
+          "justification": "Bench-oriented workload runs for sustained execution evidence."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/perf/reports/**/*.json*",
+          "generated_by_ci": true,
+          "justification": "Soak/perf artifacts and trend summaries."
+        }
+      ]
+    },
+    {
+      "id": "bd-k5q5.7.11",
+      "title": "User-focused verification reports and release-readiness summary",
+      "acceptance_criteria": "Reports are generated automatically from test artifacts and directly answer whether users can safely run extensions in each profile.",
+      "unit_tests": [
+        {
+          "path": "tests/conformance_report.rs",
+          "justification": "Conformance reporting shape and output checks."
+        },
+        {
+          "path": "tests/ext_conformance_artifacts.rs",
+          "justification": "Artifact/report integrity validation."
+        },
+        {
+          "path": "tests/release_readiness.rs",
+          "justification": "Unified release-readiness report aggregating conformance, performance, security, provenance, and traceability evidence."
+        },
+        {
+          "path": "tests/release_evidence_gate.rs",
+          "justification": "Release gate validating evidence bundle completeness, schema, thresholds, and exception policy."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "Generates top-level artifacts consumed by release-readiness summaries."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/ext_conformance/reports/**/*.json",
+          "generated_by_ci": true,
+          "justification": "Machine-readable reporting artifacts for user-facing summaries."
+        },
+        {
+          "path": "tests/e2e_results/**/*.json",
+          "generated_by_ci": true,
+          "justification": "Aggregated E2E run summaries for readiness output."
+        }
+      ]
+    },
+    {
+      "id": "bd-k5q5.7.14",
+      "title": "Golden-path first-time-user e2e suite (install -> configure -> run -> recover)",
+      "acceptance_criteria": "Complete onboarding journey is proven end-to-end: version/help, config, doctor (all formats), policy escalation, fix-and-recheck, and full user journey simulation.",
+      "unit_tests": [
+        {
+          "path": "tests/e2e_golden_path.rs",
+          "justification": "25 golden-path E2E tests covering install, configure, run, policy, recover, and full journey phases."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "scripts/e2e/run_all.sh",
+          "justification": "Unified E2E runner that includes golden-path suite."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "tests/e2e_results/**/*.jsonl",
+          "generated_by_ci": true,
+          "justification": "Golden-path journey logs and artifact capture."
+        }
+      ]
+    },
+    {
+      "id": "bd-3bwpg",
+      "title": "SEC-TRACK: Deterministic Extension Security Program",
+      "acceptance_criteria": "Every SEC implementation bead has at least one mapped unit test target, deterministic behavior claims are backed by fixed-fixture tests, and matrix updates are required when behavior changes.",
+      "unit_tests": [
+        {
+          "path": "tests/accuracy_performance_sec63.rs",
+          "justification": "SEC-6.3: FP/FN accuracy metrics and performance evaluation."
+        },
+        {
+          "path": "tests/sec_traceability_matrix.rs",
+          "justification": "SEC-6.5 (bd-2jkio): Traceability matrix governance gate validating all SEC beads have mapped test targets."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "tests/e2e_runtime_risk_telemetry.rs",
+          "justification": "E2E: Benign/adversarial/recovery hostcall flows with structured JSONL telemetry."
+        },
+        {
+          "path": "tests/e2e_high_risk_workflows.rs",
+          "justification": "E2E: Provider errors, infinite loops, tool failures, session corruption, CLI errors."
+        },
+        {
+          "path": "tests/e2e_security_scenario_sec66.rs",
+          "justification": "E2E: SEC-6.6 security scenario suite."
+        },
+        {
+          "path": "tests/e2e_security_scenarios.rs",
+          "justification": "E2E: Cross-workstream security scenarios."
+        }
+      ],
+      "evidence_logs": [
+        {
+          "path": "docs/security/threat-model.md",
+          "justification": "Threat model defining attack surface and mitigations."
+        },
+        {
+          "path": "docs/security/security-slos.md",
+          "justification": "Security SLOs and acceptable risk thresholds."
+        },
+        {
+          "path": "docs/security/invariants.machine.json",
+          "justification": "Machine-readable security invariants for CI validation."
+        }
+      ]
+    },
+    {
+      "id": "bd-f0huc",
+      "title": "SEC-2.1: Extension manifest v2 \u2014 explicit capabilities, behavioral intents, and trust metadata",
+      "acceptance_criteria": "Manifest v2 parsing, validation, and metadata extraction covered by unit tests.",
+      "unit_tests": [
+        {
+          "path": "tests/extensions_manifest.rs",
+          "justification": "27 tests: manifest parsing, validation, field handling, and metadata extraction."
+        },
+        {
+          "path": "tests/capability_policy_model.rs",
+          "justification": "34 tests: capability model resolution and manifest-driven policy precedence."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "tests/e2e_workflow_preflight.rs",
+          "justification": "Preflight validation exercises manifest v2 fields in real extension pipelines."
+        }
+      ],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-3br2a",
+      "title": "SEC-2.2: Deterministic extension lockfile and provenance verification pipeline",
+      "acceptance_criteria": "Lockfile generation, integrity checks, and provenance verification covered by fixed-fixture tests.",
+      "unit_tests": [
+        {
+          "path": "tests/extension_lockfile_provenance.rs",
+          "justification": "29 tests: lockfile generation, integrity verification, and provenance chain validation."
+        },
+        {
+          "path": "tests/ext_provenance_verification.rs",
+          "justification": "Provenance verification policy checks and artifact integrity."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "tests/e2e_workflow_preflight.rs",
+          "justification": "Preflight exercises lockfile provenance checks end-to-end."
+        }
+      ],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-21vng",
+      "title": "SEC-2.3: Install-time static scanner with deterministic risk classifier",
+      "acceptance_criteria": "Static scanner pattern matching, classification, and deterministic scoring covered by unit tests.",
+      "unit_tests": [
+        {
+          "path": "tests/install_time_security_scanner.rs",
+          "justification": "49 tests: pattern detection, risk classification, deterministic scoring, and edge cases."
+        },
+        {
+          "path": "tests/ext_preflight_analyzer.rs",
+          "justification": "7 tests: preflight analysis diagnostics and classification integration."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "tests/e2e_workflow_preflight.rs",
+          "justification": "Preflight exercises scanner in real extension install flows."
+        }
+      ],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-21nj4",
+      "title": "SEC-2.4: Quarantine-to-trust promotion workflow for unknown/high-risk extensions",
+      "acceptance_criteria": "Quarantine states, promotion criteria, and trust escalation covered by unit tests.",
+      "unit_tests": [
+        {
+          "path": "tests/extension_trust_promotion.rs",
+          "justification": "37 tests: quarantine state transitions, promotion criteria, and trust escalation paths."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-2a9ll",
+      "title": "SEC-3.1: Runtime hostcall telemetry schema and feature extraction pipeline",
+      "acceptance_criteria": "Telemetry schema, event emission, and feature extraction covered by tests.",
+      "unit_tests": [
+        {
+          "path": "tests/baseline_modeling.rs",
+          "justification": "32 tests: telemetry event processing, feature extraction, and schema validation."
+        }
+      ],
+      "e2e_scripts": [
+        {
+          "path": "tests/e2e_runtime_risk_telemetry.rs",
+          "justification": "E2E telemetry pipeline with benign/adversarial/recovery flows."
+        }
+      ],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-153pv",
+      "title": "SEC-3.2: Baseline modeling with robust statistics and Markov transition profiles",
+      "acceptance_criteria": "Baseline computation, Dirichlet posteriors, and Markov profiles covered by deterministic tests.",
+      "unit_tests": [
+        {
+          "path": "tests/baseline_modeling.rs",
+          "justification": "32 tests: robust statistics, Dirichlet posteriors, Markov transition profiles."
+        },
+        {
+          "path": "tests/baseline_modeling_evidence.rs",
+          "justification": "6 tests: evidence artifact generation and validation."
+        },
+        {
+          "path": "tests/runtime_risk_quantile_validation.rs",
+          "justification": "8 tests: quantile validation across scoring pipeline."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-3f1ab",
+      "title": "SEC-3.3: Online deterministic risk scorer with explainable reason codes",
+      "acceptance_criteria": "Risk scoring formula, determinism, and explanation generation covered by golden-fixture tests.",
+      "unit_tests": [
+        {
+          "path": "tests/risk_scorer_golden_fixtures.rs",
+          "justification": "7 tests: deterministic golden-fixture replay for scoring formula."
+        },
+        {
+          "path": "tests/bayesian_explanation_evidence.rs",
+          "justification": "8 tests: Bayesian explanation determinism and contributor terms."
+        },
+        {
+          "path": "tests/explanation_calibration_replay.rs",
+          "justification": "10 tests: explanation calibration replay across risk levels."
+        },
+        {
+          "path": "tests/runtime_risk_quantile_evidence.rs",
+          "justification": "6 tests: quantile evidence with budget enforcement."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-3tb30",
+      "title": "SEC-3.4: Enforcement state machine \u2014 allow/harden/prompt/deny/terminate with hysteresis",
+      "acceptance_criteria": "State transitions, hysteresis logic, and edge cases covered by deterministic tests.",
+      "unit_tests": [
+        {
+          "path": "tests/enforcement_state_machine_sec34.rs",
+          "justification": "16 tests: state transitions, hysteresis, and edge-case enforcement paths."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-3i9da",
+      "title": "SEC-3.5: Hash-chained decision ledger and offline threshold calibration",
+      "acceptance_criteria": "Ledger chain integrity, calibration, and replay covered by deterministic tests.",
+      "unit_tests": [
+        {
+          "path": "tests/ledger_calibration_sec35.rs",
+          "justification": "15 tests: hash chain integrity, calibration thresholds, and offline replay."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-b1d7o",
+      "title": "SEC-4.1: Per-extension resource quotas (CPU, memory, hostcalls, subprocess budget)",
+      "acceptance_criteria": "Quota enforcement, budget tracking, and limit violations covered by policy tests.",
+      "unit_tests": [
+        {
+          "path": "tests/capability_policy_scoped.rs",
+          "justification": "75 tests: scoped quota enforcement across capability profiles."
+        },
+        {
+          "path": "tests/security_budgets.rs",
+          "justification": "19 tests: security budget threshold enforcement and evidence emission."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-wzzp4",
+      "title": "SEC-4.2: Capability-scoped filesystem/network allowlists with least-privilege defaults",
+      "acceptance_criteria": "Filesystem and network allowlist enforcement, escape prevention, and policy resolution covered by tests.",
+      "unit_tests": [
+        {
+          "path": "tests/capability_policy_scoped.rs",
+          "justification": "75 tests: capability-scoped allowlists and least-privilege defaults."
+        },
+        {
+          "path": "tests/security_fs_escape.rs",
+          "justification": "40 tests: filesystem escape prevention and sandbox confinement."
+        },
+        {
+          "path": "tests/security_http_policy.rs",
+          "justification": "28 tests: network allowlist enforcement and HTTP policy guards."
+        },
+        {
+          "path": "tests/capability_denial_matrix.rs",
+          "justification": "26 tests: denial matrix and policy interaction validation."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-zh0hj",
+      "title": "SEC-4.3: Exec and secret mediation hardening (command policy + secret broker)",
+      "acceptance_criteria": "Command mediation, secret broker, and policy-driven exec control covered by integration tests.",
+      "unit_tests": [
+        {
+          "path": "tests/exec_mediation_integration.rs",
+          "justification": "68 tests: command policy enforcement, secret broker mediation, and hardening paths."
+        },
+        {
+          "path": "tests/adversarial_extensions.rs",
+          "justification": "45 tests: adversarial extension scenarios targeting mediation bypass."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-2vbax",
+      "title": "SEC-4.4: Policy profile hardening and explicit dangerous-capability opt-in semantics",
+      "acceptance_criteria": "Policy profiles, hardening modes, and opt-in semantics covered by unit tests.",
+      "unit_tests": [
+        {
+          "path": "tests/policy_profile_hardening.rs",
+          "justification": "36 tests: policy profile hardening modes and dangerous-capability opt-in."
+        },
+        {
+          "path": "tests/capability_policy_model.rs",
+          "justification": "34 tests: policy model precedence and hardening integration."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-qudx1",
+      "title": "SEC-5.1: Security control center and real-time runtime alerts with reason codes",
+      "acceptance_criteria": "Alert generation, severity classification, and reason codes covered by integration tests.",
+      "unit_tests": [
+        {
+          "path": "tests/security_alert_integration.rs",
+          "justification": "30 tests: alert generation, severity, category, and reason code validation."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-ww5br",
+      "title": "SEC-5.2: Trust onboarding wizard and emergency kill-switch workflow",
+      "acceptance_criteria": "Onboarding wizard steps, kill-switch activation, and recovery covered by unit tests.",
+      "unit_tests": [
+        {
+          "path": "tests/trust_onboarding_killswitch_sec52.rs",
+          "justification": "13 tests: onboarding wizard steps, kill-switch activation, and recovery paths."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-11mqo",
+      "title": "SEC-5.3: Incident evidence bundle export and forensic replay UX",
+      "acceptance_criteria": "Bundle construction, filtering, redaction, hash integrity, and verification covered by tests.",
+      "unit_tests": [
+        {
+          "path": "tests/incident_evidence_bundle.rs",
+          "justification": "30 tests: bundle construction, filtering, redaction, deterministic hash, and verification."
+        },
+        {
+          "path": "tests/incident_evidence_bundle_sec53.rs",
+          "justification": "15 tests: bundle integration with real extension manager state."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    },
+    {
+      "id": "bd-8lppo",
+      "title": "SEC-7.2: Graduated enforcement rollout with rollback guards",
+      "acceptance_criteria": "Phased rollout state machine, rollback triggers, and operator-inspectable state covered by tests.",
+      "unit_tests": [
+        {
+          "path": "tests/graduated_enforcement_rollout.rs",
+          "justification": "45 tests: phase transitions, rollback triggers (FP/error rate/latency), window statistics, serde roundtrips, lifecycle scenarios, operator overrides."
+        }
+      ],
+      "e2e_scripts": [],
+      "evidence_logs": []
+    }
+  ]
+}

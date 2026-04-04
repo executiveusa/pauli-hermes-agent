@@ -1,0 +1,40 @@
+# Workflow: Production Deploy
+# Safe deployment pipeline with pre-flight checks.
+
+name: production-deploy
+description: Safe deployment to production (Vercel + VPS)
+steps:
+  - name: preflight
+    agent: hermes
+    prompt: "Run full test suite. Check all env vars are set. Verify git status is clean."
+    outputs: [preflight-report.md]
+
+  - name: version
+    agent: hermes
+    prompt: "Bump version in pyproject.toml. Update CHANGELOG.md. Apply release-law skill."
+    depends_on: [preflight]
+    outputs: [version-bump.md]
+
+  - name: deploy-frontend
+    agent: hermes
+    prompt: "Deploy dashboard to Vercel. Verify routes return 200."
+    depends_on: [version]
+    outputs: [vercel-deploy.md]
+
+  - name: deploy-backend
+    agent: hermes
+    prompt: "Deploy services to VPS via docker compose. Run health checks."
+    depends_on: [version]
+    outputs: [vps-deploy.md]
+
+  - name: verify
+    agent: hermes
+    prompt: "Run E2E tests against production. Check monitoring dashboards. Confirm no error spikes."
+    depends_on: [deploy-frontend, deploy-backend]
+    outputs: [verification-report.md]
+
+  - name: announce
+    agent: humanizer
+    prompt: "Draft release announcement. Apply copy-law skill."
+    depends_on: [verify]
+    outputs: [announcement.md]

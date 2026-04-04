@@ -1,0 +1,150 @@
+{
+  "schema": "pi.frankennode.multi_tier_execution_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.6",
+  "support_bead_id": "bd-3ar8v.7.6.3",
+  "support_bead_ids": [
+    "bd-3ar8v.7.6.1",
+    "bd-3ar8v.7.6.2",
+    "bd-3ar8v.7.6.3"
+  ],
+  "status": "active_blocking_policy",
+  "tier_contract": [
+    {
+      "tier_id": "tier_interp_baseline",
+      "kind": "interpreter",
+      "promotion_targets": [
+        "tier_superinstruction_fused"
+      ],
+      "eligible_workload_classes": [
+        "WL-extension-only-burst",
+        "WL-runtime-mixed-long-session",
+        "WL-policy-sensitive-capability-restricted"
+      ],
+      "required_guard_signals": [
+        "hotness_score",
+        "stability_score"
+      ]
+    },
+    {
+      "tier_id": "tier_superinstruction_fused",
+      "kind": "superinstruction",
+      "promotion_targets": [
+        "tier_trace_jit_guarded"
+      ],
+      "degrade_to": "tier_interp_baseline",
+      "eligible_workload_classes": [
+        "WL-extension-only-burst",
+        "WL-runtime-mixed-long-session",
+        "WL-io-heavy-hostcall-burst"
+      ],
+      "required_guard_signals": [
+        "hotness_score",
+        "payoff_estimate",
+        "stability_score"
+      ]
+    },
+    {
+      "tier_id": "tier_trace_jit_guarded",
+      "kind": "trace_jit",
+      "promotion_targets": [
+        "tier_trace_jit_guarded"
+      ],
+      "degrade_to": "tier_superinstruction_fused",
+      "eligible_workload_classes": [
+        "WL-extension-only-burst",
+        "WL-runtime-mixed-long-session"
+      ],
+      "required_guard_signals": [
+        "hotness_score",
+        "payoff_estimate",
+        "stability_score",
+        "compile_budget_available"
+      ],
+      "security_constraints": [
+        "requires_executable_memory_policy_allow",
+        "requires_kill_switch_monitoring"
+      ]
+    }
+  ],
+  "promotion_policy": {
+    "required_signals": [
+      "hotness_score",
+      "payoff_estimate",
+      "stability_score",
+      "compile_budget_available"
+    ],
+    "minimum_hotness_threshold": 0.75,
+    "minimum_stability_threshold": 0.8,
+    "compile_budget_window_ms": 150,
+    "fail_closed_on_missing_signals": true
+  },
+  "deoptimization_contract": {
+    "required_state_fields": [
+      "value_stack",
+      "call_stack",
+      "scope_chain",
+      "register_map",
+      "program_counter"
+    ],
+    "required_triggers": [
+      "guard_miss",
+      "exception_path",
+      "capability_policy_violation",
+      "trace_instability"
+    ],
+    "lossless_recovery_required": true,
+    "immediate_fallback_tier": "tier_interp_baseline"
+  },
+  "telemetry_contract": {
+    "required_fields": [
+      "run_id",
+      "correlation_id",
+      "tier_from",
+      "tier_to",
+      "reason",
+      "compile_cost_ns",
+      "hit_rate",
+      "deopt_count",
+      "timestamp_utc"
+    ],
+    "required_event_types": [
+      "tier_promotion",
+      "tier_demotion",
+      "tier_deopt",
+      "kill_switch_engaged"
+    ],
+    "required_regret_fields": [
+      "expected_speedup",
+      "realized_speedup",
+      "regret_score"
+    ]
+  },
+  "safety_contract": {
+    "executable_memory_policy": "explicit_allow_only",
+    "jit_kill_switch": {
+      "env_var": "FRANKEN_NODE_DISABLE_JIT",
+      "default": "off",
+      "must_hard_disable_trace_jit": true
+    },
+    "deterministic_fallback_on_policy_ambiguity": true,
+    "disallow_implicit_capability_escalation": true
+  },
+  "release_blockers": [
+    "missing tier contract entry",
+    "promotion required signal set incomplete",
+    "deoptimization state recovery contract incomplete",
+    "kill-switch hard-disable invariant missing"
+  ],
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.10",
+      "bd-3ar8v.7.11"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-mission-contract.json",
+      "docs/franken-node-claim-gating-contract.json",
+      "docs/franken-node-runtime-substrate-contract.json"
+    ]
+  }
+}

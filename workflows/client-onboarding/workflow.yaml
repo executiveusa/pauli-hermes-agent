@@ -1,0 +1,46 @@
+# Workflow: New Client Onboarding
+# 7-step pipeline for onboarding a new luxury client project.
+
+name: client-onboarding
+description: Full onboarding pipeline for a new luxury client project
+steps:
+  - name: brief
+    agent: hermes
+    prompt: "Gather project brief: client name, brand, objectives, timeline, budget, deliverables."
+    outputs: [brief.md]
+
+  - name: research
+    agent: hermes
+    prompt: "Research the client's brand, competitors, and industry. Store findings in Open Brain collection 'clients/{client_name}'."
+    depends_on: [brief]
+    outputs: [research.md]
+
+  - name: brand-setup
+    agent: darya
+    prompt: "Set up brand tokens: colors, typography, spacing, component variants. Apply brand-law skill."
+    depends_on: [research]
+    outputs: [brand-tokens.json]
+
+  - name: design
+    agent: darya
+    prompt: "Create initial design concepts based on brief and brand tokens. Apply design-law skill."
+    depends_on: [brand-setup]
+    outputs: [designs/]
+
+  - name: copy
+    agent: humanizer
+    prompt: "Write initial copy for all deliverables. Apply copy-law skill."
+    depends_on: [brief, research]
+    outputs: [copy/]
+
+  - name: build
+    agent: hermes
+    prompt: "Implement the designs and copy. Apply all law skills."
+    depends_on: [design, copy]
+    outputs: [build/]
+
+  - name: review-and-ship
+    agent: hermes
+    prompt: "Review against all law skills. Fix violations. Deploy. Apply release-law skill."
+    depends_on: [build]
+    outputs: [release-notes.md]

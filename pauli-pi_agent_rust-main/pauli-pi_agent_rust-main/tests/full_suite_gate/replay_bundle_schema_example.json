@@ -1,0 +1,50 @@
+{
+  "schema": "pi.e2e.replay_bundle.v1",
+  "generated_at": "2026-02-13T00:00:00Z",
+  "correlation_id": "test-correlation-001",
+  "source_summary_path": "tests/e2e_results/20260213T000000Z/summary.json",
+  "one_command_replay": "./scripts/e2e/run_all.sh --rerun-from tests/e2e_results/20260213T000000Z/summary.json",
+  "environment": {
+    "profile": "ci",
+    "shard_kind": "none",
+    "shard_index": null,
+    "shard_total": null,
+    "rustc_version": "rustc 1.83.0",
+    "cargo_target_dir": "target",
+    "vcr_mode": "playback",
+    "git_sha": "abc1234",
+    "git_branch": "main",
+    "os": "Linux x86_64"
+  },
+  "failed_suites": [
+    {
+      "suite": "e2e_tui",
+      "exit_code": 1,
+      "root_cause_class": "assertion_failure",
+      "runner_replay": "./scripts/e2e/run_all.sh --profile focused --skip-lint --suite e2e_tui",
+      "cargo_replay": "cargo test --test e2e_tui -- --nocapture",
+      "targeted_replay": "cargo test --test e2e_tui test_basic_chat -- --nocapture",
+      "digest_path": "tests/e2e_results/20260213T000000Z/e2e_tui/failure_digest.json"
+    }
+  ],
+  "failed_unit_targets": [
+    {
+      "target": "node_http_shim",
+      "exit_code": 101,
+      "cargo_replay": "cargo test --test node_http_shim -- --nocapture"
+    }
+  ],
+  "failed_gates": [
+    {
+      "gate_id": "cross_platform",
+      "gate_name": "Cross-platform matrix validation",
+      "reproduce_command": "cargo test --test ci_cross_platform_matrix -- cross_platform_matrix --nocapture --exact"
+    }
+  ],
+  "summary": {
+    "total_failed_suites": 1,
+    "total_failed_units": 1,
+    "total_failed_gates": 1,
+    "all_commands_reference_valid_targets": true
+  }
+}

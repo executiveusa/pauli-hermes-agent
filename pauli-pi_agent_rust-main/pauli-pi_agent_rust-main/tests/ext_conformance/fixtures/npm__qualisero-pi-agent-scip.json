@@ -1,0 +1,40 @@
+{
+  "extension": {
+    "id": "npm/qualisero-pi-agent-scip",
+    "source": { "path": "npm/qualisero-pi-agent-scip/dist/index.d.ts" }
+  },
+  "scenarios": [
+    {
+      "id": "scn-npm-qualisero-scip-reg",
+      "kind": "registration",
+      "summary": "Validates extension loads with no registrations (type declaration entry)",
+      "expect": {
+        "tool_count": 0
+      }
+    },
+    {
+      "id": "scn-npm-qualisero-scip-evt-pos",
+      "kind": "event",
+      "summary": "Extension handles session_start event gracefully",
+      "event_name": "session_start",
+      "input": {
+        "session_id": "test-session"
+      },
+      "expect": {
+        "no_error": true
+      }
+    },
+    {
+      "id": "scn-npm-qualisero-scip-tool-neg",
+      "kind": "tool",
+      "summary": "Invoking a nonexistent tool returns error",
+      "tool_name": "nonexistent_tool",
+      "input": {
+        "arguments": {}
+      },
+      "expect": {
+        "is_error": true
+      }
+    }
+  ]
+}

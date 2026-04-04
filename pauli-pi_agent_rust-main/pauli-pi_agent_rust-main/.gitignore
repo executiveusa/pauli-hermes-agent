@@ -1,0 +1,200 @@
+/target/
+target-*/
+target_*/
+.tmp/
+a.out
+rustc-ice-*.txt
+*.snap.new
+
+# bv (beads viewer) local config and caches
+.bv/
+
+# br local history backups and quarantine
+.beads/.br_history/
+.beads/.br_history_quarantine/
+
+# local Pi agent config (may contain API keys)
+.pi/
+
+# generated test artifacts
+tests/ext_conformance/artifacts/entry-point-scan.json
+tests/ext_conformance/reports/*
+# committed baselines
+!tests/ext_conformance/reports/CONFORMANCE_REPORT.md
+!tests/ext_conformance/reports/conformance_baseline.json
+!tests/ext_conformance/reports/conformance_summary.json
+!tests/ext_conformance/reports/COMPATIBILITY_SUMMARY.md
+!tests/ext_conformance/reports/gate/
+!tests/ext_conformance/reports/gate/must_pass_gate_verdict.json
+!tests/ext_conformance/reports/gate/must_pass_events.jsonl
+!tests/ext_conformance/reports/gate/must_pass_gate_report.md
+
+# sqlite databases and WAL/SHM artifacts
+storage.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.sqlite3-journal
+
+# Agent probe/scratch files and temp directories
+.codex_space_probe
+.space_probe_bytes
+.tmp-*/
+.tmp-*
+.tmp_*
+.white_deer_target/
+tmp_*/
+tmp_link
+tmp_probe*
+_tmp-*/
+_tmp_*/
+
+# Per-agent cargo home directories (Codex/concurrent agents)
+.cargo-home*/
+
+# Per-agent cargo target directories
+.cargo-target*/
+.target-*/
+.target_*/
+_target_*/
+_target-*/
+
+# Per-agent remote build directories created by rch
+.rch-target-*/
+
+# Benchmark result directories
+.bench*/
+
+# Fuzz build artifacts, corpus data, and run reports
+fuzz/corpus/
+fuzz/target/
+fuzz/reports/
+
+# Proptest regression artifacts
+proptest-regressions/
+*.proptest-regressions
+
+# Recovery backup files (from crash recovery)
+*.root_full_recovery
+*.empty_recovery
+
+# Session export snapshots
+pi-session-*.html
+
+# Patch/merge artifacts
+*.orig
+*.rej
+
+# E2E test run results (timestamped, ephemeral)
+tests/e2e_results/
+tests/evidence_bundle/
+tests/edit_repro.rs
+
+# Build artifacts (concurrent agent output)
+artifacts/
+release_artifacts/
+
+# Python bytecode caches
+__pycache__/
+*.pyc
+
+# Ephemeral agent progress trackers
+claude-upgrade-progress.json
+
+# Claude Code IDE config
+.claude/
+
+# Clippy/lint output logs
+clippy.log
+
+# Ephemeral agent scratch/repro/plan files
+repro_fuzzy.rs
+PLAN_TO_FIX_READ_TOOL.md
+scripts/skill-smoke.sh
+tests/conformance/test_read_streaming.rs
+
+# UBS scan output and agent debug artifacts
+ubs_*.txt
+ubs_*.json
+ubs_*.sarif
+criticals.txt
+unwraps.txt
+js_unwraps*.txt
+panic_grep*.txt
+rust-bug-scan.txt
+parse_*.py
+tests.log
+# Root-level scratch test files (agent-generated debug/repro harnesses)
+/test_*.rs
+
+# Agent debug diff/log files
+_ext_log.diff
+_recent_agent_commits.diff
+_ubs_findings.jsonl
+_ubs_summary.json
+ubs-scan.txt
+ubs-src-results.json
+findings.jsonl
+ubs_crit.jsonl
+
+# Agent-generated fix/debug scripts
+fix_fs.py
+fix_tests.py
+filter_panics.py
+
+# Scratch test binaries and source
+/test_mock*
+/print_env
+/print_env.rs
+src/bin/test_duration.rs
+src/bin/test_time.rs
+
+# Ephemeral test output and scratch binaries
+/test.jsonl
+/test_heal
+/test_heal.txt
+/ubs.jsonl
+
+# Codex cargo home (build cache)
+.codex-cargo-home/
+
+# Compiler artifacts
+*.rlib
+
+# Ephemeral patch/diff and scratch scripts
+/patch.diff
+/test_script.sh
+
+# UBS root-level scan artifacts
+/ubs.json
+/ubs.jsonl
+/ubs-report.txt
+/ubs_tools.jsonl
+/check.json
+
+# Agent-generated search/fix scripts
+/find_async_fs.py
+/fix_tools_write.rs
+
+# ACFS ephemeral patterns (auto-generated agent artifacts)
+core
+core.*
+cline.mcp.json
+codex.mcp.json
+cursor.mcp.json
+gemini.mcp.json
+opencode.json
+windsurf.mcp.json
+*.mcp.json.*.bak
+.opencode.json.*.bak
+.windsurf.mcp.json.*.bak
+.agent-mail-project-id
+.agent-mail.yaml
+*.sqlite3.bak
+*.sqlite3.corrupt*
+storage.sqlite3.corrupt-*
+storage.sqlite3-shm.corrupt-*
+storage.sqlite3-wal.corrupt-*
+.beads/*.corrupt*
+.beads/*.pre_repair_*
+.beads/*.repair_candidate_*
+.beads/*.bak-corrupt

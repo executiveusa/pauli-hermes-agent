@@ -1,0 +1,101 @@
+[package]
+name = "pi_agent_rust-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+arbitrary = { version = "1", features = ["derive"] }
+pi = { package = "pi_agent_rust", path = "..", default-features = false, features = ["fuzzing"] }
+futures = "0.3"
+serde_json = "1"
+tempfile = "3"
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+# Pin asupersync to the same git revision used by the main workspace
+[patch.crates-io]
+asupersync = { git = "https://github.com/Dicklesworthstone/asupersync.git", rev = "673cf66" }
+
+[build-dependencies]
+vergen-gix = { version = "=9.1.0" }
+vergen = { version = "=9.1.0" }
+
+[profile.release]
+debug = 1
+
+[[bin]]
+name = "fuzz_smoke"
+path = "fuzz_targets/fuzz_smoke.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_sse_parser"
+path = "fuzz_targets/fuzz_sse_parser.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_sse_stream"
+path = "fuzz_targets/fuzz_sse_stream.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_session_jsonl"
+path = "fuzz_targets/fuzz_session_jsonl.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_session_entry"
+path = "fuzz_targets/fuzz_session_entry.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_message_deser"
+path = "fuzz_targets/fuzz_message_deser.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_message_roundtrip"
+path = "fuzz_targets/fuzz_message_roundtrip.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_tool_paths"
+path = "fuzz_targets/fuzz_tool_paths.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_grep_pattern"
+path = "fuzz_targets/fuzz_grep_pattern.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_edit_match"
+path = "fuzz_targets/fuzz_edit_match.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_provider_event"
+path = "fuzz_targets/fuzz_provider_event.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_config"
+path = "fuzz_targets/fuzz_config.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_config_load"
+path = "fuzz_targets/fuzz_config_load.rs"
+doc = false
+
+[[bin]]
+name = "fuzz_extension_payload"
+path = "fuzz_targets/fuzz_extension_payload.rs"
+doc = false

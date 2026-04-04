@@ -1,0 +1,602 @@
+{
+  "version": "1.0",
+  "test_name": "anthropic_extended_thinking",
+  "recorded_at": "2026-02-05T03:43:56.804Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "X-API-Key",
+            "[REDACTED]"
+          ],
+          [
+            "anthropic-version",
+            "2023-06-01"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body": {
+          "max_tokens": 256,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "Compute 12 * 13 and reply with 'Result: 156'.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-4-20250514",
+          "stream": true,
+          "system": "You are a test harness model. Follow instructions precisely and deterministically.",
+          "temperature": 0.0,
+          "thinking": {
+            "budget_tokens": 8192,
+            "type": "enabled"
+          }
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "Date",
+            "Thu, 05 Feb 2026 03:39:25 GMT"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Content-Length",
+            "332"
+          ],
+          [
+            "Connection",
+            "keep-alive"
+          ],
+          [
+            "x-should-retry",
+            "false"
+          ],
+          [
+            "request-id",
+            "req_011CXpE6fmpzuNoci9pBBDPF"
+          ],
+          [
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          [
+            "anthropic-organization-id",
+            "2c19872b-debd-4294-9e6a-43d74c1afba3"
+          ],
+          [
+            "Server",
+            "cloudflare"
+          ],
+          [
+            "x-envoy-upstream-service-time",
+            "96"
+          ],
+          [
+            "cf-cache-status",
+            "DYNAMIC"
+          ],
+          [
+            "X-Robots-Tag",
+            "none"
+          ],
+          [
+            "Content-Security-Policy",
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          [
+            "CF-RAY",
+            "9c8f616b5cb0f159-ORD"
+          ]
+        ],
+        "body_chunks": [
+          "{\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"`temperature` may only be set to 1 when thinking is enabled. Please consult our documentation at https://docs.claude.com/en/docs/build-with-claude/extended-thinking#important-considerations-when-using-extended-thinking\"},\"request_id\":\"req_011CXpE6fmpzuNoci9pBBDPF\"}"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "X-API-Key",
+            "[REDACTED]"
+          ],
+          [
+            "anthropic-version",
+            "2023-06-01"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body": {
+          "max_tokens": 256,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "Compute 12 * 13 and reply with 'Result: 156'.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-4-20250514",
+          "stream": true,
+          "system": "You are a test harness model. Follow instructions precisely and deterministically.",
+          "temperature": 0.0,
+          "thinking": {
+            "budget_tokens": 8192,
+            "type": "enabled"
+          }
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "Date",
+            "Thu, 05 Feb 2026 03:41:04 GMT"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Content-Length",
+            "332"
+          ],
+          [
+            "Connection",
+            "keep-alive"
+          ],
+          [
+            "x-should-retry",
+            "false"
+          ],
+          [
+            "request-id",
+            "req_011CXpEDwFwDEH4iQz4vtXFu"
+          ],
+          [
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          [
+            "anthropic-organization-id",
+            "2c19872b-debd-4294-9e6a-43d74c1afba3"
+          ],
+          [
+            "Server",
+            "cloudflare"
+          ],
+          [
+            "x-envoy-upstream-service-time",
+            "58"
+          ],
+          [
+            "cf-cache-status",
+            "DYNAMIC"
+          ],
+          [
+            "X-Robots-Tag",
+            "none"
+          ],
+          [
+            "Content-Security-Policy",
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          [
+            "CF-RAY",
+            "9c8f63d37c4f1842-STL"
+          ]
+        ],
+        "body_chunks": [
+          "{\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"`temperature` may only be set to 1 when thinking is enabled. Please consult our documentation at https://docs.claude.com/en/docs/build-with-claude/extended-thinking#important-considerations-when-using-extended-thinking\"},\"request_id\":\"req_011CXpEDwFwDEH4iQz4vtXFu\"}"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "X-API-Key",
+            "[REDACTED]"
+          ],
+          [
+            "anthropic-version",
+            "2023-06-01"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body": {
+          "max_tokens": 256,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "Compute 12 * 13 and reply with 'Result: 156'.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-4-20250514",
+          "stream": true,
+          "system": "You are a test harness model. Follow instructions precisely and deterministically.",
+          "temperature": 1.0,
+          "thinking": {
+            "budget_tokens": 8192,
+            "type": "enabled"
+          }
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "Date",
+            "Thu, 05 Feb 2026 03:41:34 GMT"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Content-Length",
+            "312"
+          ],
+          [
+            "Connection",
+            "keep-alive"
+          ],
+          [
+            "x-should-retry",
+            "false"
+          ],
+          [
+            "request-id",
+            "req_011CXpEGC1kVsDmw7uRxsChk"
+          ],
+          [
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          [
+            "anthropic-organization-id",
+            "2c19872b-debd-4294-9e6a-43d74c1afba3"
+          ],
+          [
+            "Server",
+            "cloudflare"
+          ],
+          [
+            "x-envoy-upstream-service-time",
+            "65"
+          ],
+          [
+            "cf-cache-status",
+            "DYNAMIC"
+          ],
+          [
+            "X-Robots-Tag",
+            "none"
+          ],
+          [
+            "Content-Security-Policy",
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          [
+            "CF-RAY",
+            "9c8f64929d4a6a22-STL"
+          ]
+        ],
+        "body_chunks": [
+          "{\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"`max_tokens` must be greater than `thinking.budget_tokens`. Please consult our documentation at https://docs.claude.com/en/docs/build-with-claude/extended-thinking#max-tokens-and-context-window-size\"},\"request_id\":\"req_011CXpEGC1kVsDmw7uRxsChk\"}"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "X-API-Key",
+            "[REDACTED]"
+          ],
+          [
+            "anthropic-version",
+            "2023-06-01"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body": {
+          "max_tokens": 256,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "Compute 12 * 13 and reply with 'Result: 156'.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-4-20250514",
+          "stream": true,
+          "system": "You are a test harness model. Follow instructions precisely and deterministically.",
+          "temperature": 1.0,
+          "thinking": {
+            "budget_tokens": 64,
+            "type": "enabled"
+          }
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "Date",
+            "Thu, 05 Feb 2026 03:42:27 GMT"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Content-Length",
+            "191"
+          ],
+          [
+            "Connection",
+            "keep-alive"
+          ],
+          [
+            "x-should-retry",
+            "false"
+          ],
+          [
+            "request-id",
+            "req_011CXpEL82WD273jKHiE6FdZ"
+          ],
+          [
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          [
+            "anthropic-organization-id",
+            "2c19872b-debd-4294-9e6a-43d74c1afba3"
+          ],
+          [
+            "Server",
+            "cloudflare"
+          ],
+          [
+            "x-envoy-upstream-service-time",
+            "50"
+          ],
+          [
+            "cf-cache-status",
+            "DYNAMIC"
+          ],
+          [
+            "X-Robots-Tag",
+            "none"
+          ],
+          [
+            "Content-Security-Policy",
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          [
+            "CF-RAY",
+            "9c8f65dff80c1465-STL"
+          ]
+        ],
+        "body_chunks": [
+          "{\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"thinking.enabled.budget_tokens: Input should be greater than or equal to 1024\"},\"request_id\":\"req_011CXpEL82WD273jKHiE6FdZ\"}"
+        ]
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "X-API-Key",
+            "[REDACTED]"
+          ],
+          [
+            "anthropic-version",
+            "2023-06-01"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body": {
+          "max_tokens": 1280,
+          "messages": [
+            {
+              "content": [
+                {
+                  "text": "Compute 12 * 13 and reply with 'Result: 156'.",
+                  "type": "text"
+                }
+              ],
+              "role": "user"
+            }
+          ],
+          "model": "claude-sonnet-4-20250514",
+          "stream": true,
+          "system": "You are a test harness model. Follow instructions precisely and deterministically.",
+          "temperature": 1.0,
+          "thinking": {
+            "budget_tokens": 1024,
+            "type": "enabled"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "Date",
+            "Thu, 05 Feb 2026 03:43:55 GMT"
+          ],
+          [
+            "Content-Type",
+            "text/event-stream; charset=utf-8"
+          ],
+          [
+            "Transfer-Encoding",
+            "chunked"
+          ],
+          [
+            "Connection",
+            "keep-alive"
+          ],
+          [
+            "Cache-Control",
+            "no-cache"
+          ],
+          [
+            "request-id",
+            "req_011CXpESWei3bkx3wk9Fs7Ns"
+          ],
+          [
+            "strict-transport-security",
+            "max-age=31536000; includeSubDomains; preload"
+          ],
+          [
+            "anthropic-organization-id",
+            "2c19872b-debd-4294-9e6a-43d74c1afba3"
+          ],
+          [
+            "Server",
+            "cloudflare"
+          ],
+          [
+            "x-envoy-upstream-service-time",
+            "1401"
+          ],
+          [
+            "cf-cache-status",
+            "DYNAMIC"
+          ],
+          [
+            "X-Robots-Tag",
+            "none"
+          ],
+          [
+            "Content-Security-Policy",
+            "default-src 'none'; frame-ancestors 'none'"
+          ],
+          [
+            "CF-RAY",
+            "9c8f67fdbf62dd93-STL"
+          ]
+        ],
+        "body_chunks": [
+          "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-sonnet-4-20250514\",\"id\":\"msg_01JCM2Zdo3Jqps5zBFJVofew\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"stop_reason\":null,\"stop_sequence\":null,\"usage\":{\"input_tokens\":71,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"cache_creation\":{\"ephemeral_5m_input_tokens\":0,\"ephemeral_1h_input_tokens\":0},\"output_tokens\":2,\"service_tier\":\"standard\"}}          }\n\n",
+          "event: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"thinking\",\"thinking\":\"\",\"signature\":\"\"}   }\n\n",
+          "event: ping\ndata: {\"type\": \"ping\"}\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"The human\"}  }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" is asking me to compute 12 \"}            }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"* 13 and reply with a\"}            }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" specific\"}             }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" format\"}}\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\".\"}         }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"\\n\\nLet\"}    }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" me calculate\"}        }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\":\"}        }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" 12 * 13 =\"}  }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" 156\\n\\nThey\"}          }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" want me to reply with exactly\"}    }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\" \\\"\"}}\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"Result: 156\\\".\"}        }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"\"} }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"signature_delta\",\"signature\":\"EsYCCkYICxgCKkDI8yWRLhdZBoQGx1nbKqCsWy22CW5qrOvueagEuIocIRZq3FM0qZwVgHtnn1KXGM2jTfGo+NETjuAeybUUwL2oEgx4cKoecpRCyAhkXYcaDI5R6aU1LW6lfp5NXCIw0o/Nin5BbDsOrkV0Fy6J5bkg1FaqwR6dn8CWNo+fU4PxdP+F5nH462QWSAdEuoMlKq0B/B5EueeZcyL2/FpMpaNWtlwCMMIs708PO28dQa6oEsPK5uj+f31g9oNKCSVrNRilWFvKBX4mBDOhsRf2UONF6vSmzKzkbnGUw8v1qYi6gtGqLeLM9MPIyiw2+zM9agwOxt553F5jTpbzR1sldfJ4ehuZOeIyR3CSax7sJWc1+KXQGAqdizMoMtUntnRLAyHLkjNMcAn11aE5pZyPRB74rtKvl1avY1JJ9uczlHcYAQ==\"}}\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0             }\n\n",
+          "event: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"text\",\"text\":\"\"}       }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\"Result\"}               }\n\n",
+          "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"text_delta\",\"text\":\": 156\"}        }\n\n",
+          "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":1}\n\n",
+          "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null},\"usage\":{\"input_tokens\":71,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":65}}\n\n",
+          "event: message_stop\ndata: {\"type\":\"message_stop\" }\n\n"
+        ]
+      }
+    }
+  ]
+}

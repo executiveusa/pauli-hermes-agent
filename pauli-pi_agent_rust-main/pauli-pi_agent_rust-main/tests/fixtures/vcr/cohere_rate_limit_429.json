@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "test_name": "cohere_rate_limit_429",
+  "recorded_at": "2026-02-14T01:30:00.000Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.cohere.com/v2/chat",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "Authorization",
+            "[REDACTED]"
+          ]
+        ],
+        "body": {
+          "model": "command-r-plus",
+          "messages": [
+            {
+              "role": "user",
+              "content": "Trigger a rate limit."
+            }
+          ],
+          "stream": true
+        }
+      },
+      "response": {
+        "status": 429,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Retry-After",
+            "60"
+          ]
+        ],
+        "body_chunks": [
+          "{\"message\":\"rate limit exceeded\"}"
+        ]
+      }
+    }
+  ]
+}

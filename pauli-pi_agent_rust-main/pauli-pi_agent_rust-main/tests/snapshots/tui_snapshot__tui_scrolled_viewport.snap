@@ -1,0 +1,28 @@
+---
+source: tests/tui_snapshot.rs
+expression: view
+---
+  Pi (dummy/dummy-model)
+  ctrl+l: model  ctrl+p: next  ctrl+shift+p: prev  ctrl+o: tools  ctrl+t: thi...
+  resources: 0 skills, 0 prompts, 0 themes, 0 extensions
+
+  Assistant:
+
+    Assistant reply 9
+
+
+
+  You: User message 10
+
+  Assistant:
+
+    Assistant reply 10
+
+
+
+  [81%] ↑/↓ PgUp/PgDn to scroll
+
+  Enter: send  Shift+Enter: newline  Alt+Enter: multi-line  [thinking: off]
+  │ > Type a message... (/help, /exit)
+  │ >
+  │ >

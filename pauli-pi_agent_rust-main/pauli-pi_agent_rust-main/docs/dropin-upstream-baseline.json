@@ -1,0 +1,306 @@
+{
+  "schema": "pi.dropin.upstream_baseline.v1",
+  "bead_id": "bd-2ej25",
+  "captured_at_utc": "2026-02-14T19:08:00Z",
+  "upstream": {
+    "repo_url": "https://github.com/badlogic/pi-mono",
+    "local_snapshot_path": "legacy_pi_mono_code/pi-mono",
+    "commit": "10bca71fcfc2c4cb7bbbdb4110644a8c5aaef768",
+    "describe": "v0.51.0-8-g10bca71f",
+    "commit_timestamp": "2026-02-05T11:06:07-06:00",
+    "commit_subject": "Add exec override hook for extension runtime",
+    "monorepo_version": "0.0.3",
+    "coding_agent_package": {
+      "name": "@mariozechner/pi-coding-agent",
+      "version": "0.51.0"
+    }
+  },
+  "docs_snapshot": [
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/json.md",
+      "sha256": "e39daa81b8e7d745b120fd4435c6dbf1d517970ee34ebfe3177e354c892bcd5f"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/rpc.md",
+      "sha256": "129e1b5a7960e16385d63b71bb177c937421d99712de8a53fcd5703b459ff52b"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/session.md",
+      "sha256": "faef8a04b8d2f93502fdd4af38310cbed55cfc13294070c10508c0b39f6ad5c6"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/settings.md",
+      "sha256": "e37e225287a59c8c9f35c70125bb218f7f752ae32737dd227481cbf72fa6bc0d"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/sdk.md",
+      "sha256": "1547876bb22af929d0939090ec41805c60cf640f3c1d4a4e92b0ab35fe958d42"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/models.md",
+      "sha256": "406fba579b69498dec438a0e6c774924fc05971cb2d58b4dc5c7ec0fe6f3dd9f"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/providers.md",
+      "sha256": "d0a2da6030a282205780686065b12f13552dc3a5c724fc79295b153a8cfe7504"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/extensions.md",
+      "sha256": "4356d55b661889d0165e81f008056017af296e26d5bdd0590bec7054ac661f38"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/skills.md",
+      "sha256": "aad65e36fc7e4b29919720ac0a3019806ab5019c7384bb6d0e77513b1dc0fb0c"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/prompt-templates.md",
+      "sha256": "1711381eedba5141903b8cc5e9b6a6d36a417953e26dfd12fe1359b8a168fb4c"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/tui.md",
+      "sha256": "9c7df8d9bd83a6c5f1bc9b5a75eedb1b26bb38a1ba4616e8292e1e3487dd2b75"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/tree.md",
+      "sha256": "3b717ad23b519a67f7baa77c292e3ede0171815665ac7180157f5ea6a083487b"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/keybindings.md",
+      "sha256": "d67f45fabf3700302ea37508504dc3f47ad61145adbae5028dae7260ae067ed5"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/packages.md",
+      "sha256": "389e16b14fb26715364e4f7245474186f6baed3ed3299064ba24371357275f8c"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/development.md",
+      "sha256": "79ae864974d40f6ce72a8dee791c57efd4a4970be76eea1c9bb92c648a959394"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/compaction.md",
+      "sha256": "79da1c6e62938bcf3ec8b9d05b2ebe5a1fd0073b6cb4c133fc63ad78a6512889"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/custom-provider.md",
+      "sha256": "b302026da8131a70dc44000260e4c52acd555e19259935abf92d21a5e425530f"
+    }
+  ],
+  "source_manifest": [
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/main.ts",
+      "sha256": "16618170ebc1ab66b2cc3cdeec6ab5e8d8f5484b5898a26c53783aaebd2abc77"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/cli/args.ts",
+      "sha256": "3a3398c4bc20c3a434676e986bc556f7ea23a8d894e28488bfd085c548f7944f"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/sdk.ts",
+      "sha256": "9cc75d18ed9ec8e6627c6e1b9d3b4d8aa20e5e97f84560a1ca5e82f4c67287a5"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/settings-manager.ts",
+      "sha256": "7e6683fdb4dca987efc74ca907e19cf07a64827cbc4a0749b9a6f39a66e798fa"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/session-manager.ts",
+      "sha256": "86b83890c5e7ac78521911e8449ead311c738f20c24265012351b4cdeb0d0a06"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/modes/rpc/rpc-types.ts",
+      "sha256": "16d8d11e89c541cf619beaf614d0cbe0223e7d3f1019fa15123d6ac188e2a513"
+    },
+    {
+      "path": "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/tools/index.ts",
+      "sha256": "a41e5fb69f89b07b647b6d5d1a7c731a7e33f45c82b2e8fa5a4ffe20272ecfee"
+    }
+  ],
+  "api_surface_manifest": {
+    "execution_modes": [
+      "interactive",
+      "print:text",
+      "print:json",
+      "rpc",
+      "sdk:in-process"
+    ],
+    "cli_flags": [
+      "--help|-h",
+      "--version|-v",
+      "--provider",
+      "--model",
+      "--api-key",
+      "--system-prompt",
+      "--append-system-prompt",
+      "--mode",
+      "--print|-p",
+      "--continue|-c",
+      "--resume|-r",
+      "--session",
+      "--session-dir",
+      "--no-session",
+      "--models",
+      "--thinking",
+      "--no-tools",
+      "--tools",
+      "--extension|-e",
+      "--no-extensions",
+      "--skill",
+      "--no-skills",
+      "--prompt-template",
+      "--no-prompt-templates",
+      "--theme",
+      "--no-themes",
+      "--export",
+      "--list-models",
+      "--verbose"
+    ],
+    "cli_subcommands": [
+      "install",
+      "remove",
+      "update",
+      "list",
+      "config"
+    ],
+    "builtin_tools": [
+      "read",
+      "bash",
+      "edit",
+      "write",
+      "grep",
+      "find",
+      "ls"
+    ],
+    "rpc_commands": [
+      "prompt",
+      "steer",
+      "follow_up",
+      "abort",
+      "new_session",
+      "get_state",
+      "get_messages",
+      "set_model",
+      "cycle_model",
+      "get_available_models",
+      "set_thinking_level",
+      "cycle_thinking_level",
+      "set_steering_mode",
+      "set_follow_up_mode",
+      "compact",
+      "set_auto_compaction",
+      "set_auto_retry",
+      "abort_retry",
+      "bash",
+      "abort_bash",
+      "get_session_stats",
+      "export_html",
+      "switch_session",
+      "fork",
+      "get_fork_messages",
+      "get_last_assistant_text",
+      "set_session_name",
+      "get_commands"
+    ],
+    "json_event_types": [
+      "agent_start",
+      "agent_end",
+      "turn_start",
+      "turn_end",
+      "message_start",
+      "message_update",
+      "message_end",
+      "tool_execution_start",
+      "tool_execution_update",
+      "tool_execution_end",
+      "auto_compaction_start",
+      "auto_compaction_end",
+      "auto_retry_start",
+      "auto_retry_end"
+    ],
+    "session_entry_types": [
+      "message",
+      "model_change",
+      "thinking_level_change",
+      "compaction",
+      "branch_summary",
+      "custom",
+      "session_info"
+    ],
+    "config_knobs": [
+      "lastChangelogVersion",
+      "defaultProvider",
+      "defaultModel",
+      "defaultThinkingLevel",
+      "steeringMode",
+      "followUpMode",
+      "theme",
+      "compaction.enabled",
+      "compaction.reserveTokens",
+      "compaction.keepRecentTokens",
+      "branchSummary.reserveTokens",
+      "retry.enabled",
+      "retry.maxRetries",
+      "retry.baseDelayMs",
+      "retry.maxDelayMs",
+      "hideThinkingBlock",
+      "shellPath",
+      "quietStartup",
+      "shellCommandPrefix",
+      "collapseChangelog",
+      "packages",
+      "extensions",
+      "skills",
+      "prompts",
+      "themes",
+      "enableSkillCommands",
+      "terminal.showImages",
+      "terminal.clearOnShrink",
+      "images.autoResize",
+      "images.blockImages",
+      "enabledModels",
+      "doubleEscapeAction",
+      "thinkingBudgets.minimal",
+      "thinkingBudgets.low",
+      "thinkingBudgets.medium",
+      "thinkingBudgets.high",
+      "editorPaddingX",
+      "autocompleteMaxVisible",
+      "showHardwareCursor",
+      "markdown.codeBlockIndent"
+    ],
+    "environment_variables": [
+      "ANTHROPIC_API_KEY",
+      "ANTHROPIC_OAUTH_TOKEN",
+      "OPENAI_API_KEY",
+      "AZURE_OPENAI_API_KEY",
+      "AZURE_OPENAI_BASE_URL",
+      "AZURE_OPENAI_API_VERSION",
+      "GEMINI_API_KEY",
+      "GROQ_API_KEY",
+      "CEREBRAS_API_KEY",
+      "XAI_API_KEY",
+      "OPENROUTER_API_KEY",
+      "AI_GATEWAY_API_KEY",
+      "ZAI_API_KEY",
+      "MISTRAL_API_KEY",
+      "MINIMAX_API_KEY",
+      "KIMI_API_KEY",
+      "AWS_PROFILE",
+      "AWS_ACCESS_KEY_ID",
+      "AWS_SECRET_ACCESS_KEY",
+      "AWS_BEARER_TOKEN_BEDROCK",
+      "AWS_REGION",
+      "PI_PACKAGE_DIR",
+      "PI_SHARE_VIEWER_URL",
+      "PI_AI_ANTIGRAVITY_VERSION"
+    ]
+  },
+  "reproducibility": {
+    "commands": [
+      "git -C legacy_pi_mono_code/pi-mono rev-parse HEAD",
+      "git -C legacy_pi_mono_code/pi-mono describe --tags --always --dirty",
+      "git -C legacy_pi_mono_code/pi-mono show -s --format='%cI %H %D %s' HEAD",
+      "sha256sum legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/{json.md,rpc.md,session.md,settings.md,sdk.md,models.md,providers.md,extensions.md,skills.md,prompt-templates.md,tui.md,tree.md,keybindings.md,packages.md,development.md,compaction.md,custom-provider.md}",
+      "sha256sum legacy_pi_mono_code/pi-mono/packages/coding-agent/src/{main.ts,cli/args.ts,core/sdk.ts,core/settings-manager.ts,core/session-manager.ts,modes/rpc/rpc-types.ts,core/tools/index.ts}"
+    ]
+  }
+}

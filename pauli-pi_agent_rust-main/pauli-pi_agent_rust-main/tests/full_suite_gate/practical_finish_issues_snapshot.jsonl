@@ -1,0 +1,19 @@
+{"id":"bd-3ar8v","status":"in_progress","issue_type":"epic","title":"[PERF-3X] Reverse performance gap: Rust >=3x faster end-to-end","labels":["benchmark","perf-3x","perf-program","priority-critical"]}
+{"id":"bd-3ar8v.7","status":"in_progress","issue_type":"feature","title":"[Post-PERF-3X][Phase 6] Launch franken_node from certified Bun-killer runtime core","labels":["cross-project","franken-node","phase-6"]}
+{"id":"bd-3ar8v.7.1","status":"in_progress","issue_type":"task","title":"[FrankenNode] Define mission charter, drop-in boundaries, and claim-gating contract","labels":["claims","contracts","franken-node"]}
+{"id":"bd-3ar8v.7.1.1","status":"in_progress","issue_type":"task","title":"[FrankenNode][Support] Add mission claim contract artifact + fail-closed schema tests","labels":["claims","contracts","franken-node","phase-6","support"]}
+{"id":"bd-3ar8v.7.10","status":"open","issue_type":"task","title":"[FrankenNode] Build benchmark/resource gate suite versus Node and Bun across macro workloads","labels":["benchmarks","franken-node","gates"]}
+{"id":"bd-3ar8v.7.11","status":"open","issue_type":"task","title":"[FrankenNode] Build unified test certification stack (unit+e2e+conformance+security+perf)","labels":["certification","franken-node","testing"]}
+{"id":"bd-3ar8v.7.12","status":"open","issue_type":"task","title":"[FrankenNode] Declare practical-finish checkpoint and docs-last handoff","labels":["docs-last","franken-node","release"]}
+{"id":"bd-3ar8v.7.13","status":"open","issue_type":"task","title":"[FrankenNode] Integrate /dp/franken_node runtime crate into pi_agent_rust and retire duplicate runtime paths","labels":["franken-node","migration","pi-agent-rust-integration"]}
+{"id":"bd-3ar8v.7.14","status":"open","issue_type":"task","title":"[FrankenNode] Build migration assistant and compatibility doctor for Node/Bun users","labels":["franken-node","migration","ux"]}
+{"id":"bd-3ar8v.7.15","status":"open","issue_type":"task","title":"[FrankenNode] Implement shadow-canary dual-run rollout with automatic divergence rollback","labels":["franken-node","rollout","safety"]}
+{"id":"bd-3ar8v.7.16","status":"open","issue_type":"task","title":"[FrankenNode] Build compatibility remediation backlog generator from real package telemetry","labels":["franken-node","prioritization","telemetry"]}
+{"id":"bd-3ar8v.7.2","status":"open","issue_type":"task","title":"[FrankenNode] Extract reusable runtime kernel crates from pi_agent_rust core","labels":["architecture","crates","franken-node"]}
+{"id":"bd-3ar8v.7.3","status":"open","issue_type":"task","title":"[FrankenNode] Build Node/Bun semantic compatibility matrix and executable conformance harness","labels":["compatibility","conformance","franken-node"]}
+{"id":"bd-3ar8v.7.4","status":"open","issue_type":"task","title":"[FrankenNode] Implement package/ecosystem interoperability layer (CJS/ESM/npm)","labels":["ecosystem","franken-node","interop"]}
+{"id":"bd-3ar8v.7.5","status":"open","issue_type":"task","title":"[FrankenNode] Generalize extension-hosting architecture into full runtime execution substrate","labels":["franken-node","runtime-core","substrate"]}
+{"id":"bd-3ar8v.7.6","status":"open","issue_type":"task","title":"[FrankenNode] Productize multi-tier execution engine (interp/superinstruction/trace-JIT)","labels":["execution-engine","franken-node","jit"]}
+{"id":"bd-3ar8v.7.7","status":"open","issue_type":"task","title":"[FrankenNode] Implement event-loop and IO parity layer with deterministic fallback modes","labels":["event-loop","franken-node","io"]}
+{"id":"bd-3ar8v.7.8","status":"open","issue_type":"task","title":"[FrankenNode] Build security, policy, and sandbox model for general runtime workloads","labels":["franken-node","policy","security"]}
+{"id":"bd-3ar8v.7.9","status":"open","issue_type":"task","title":"[FrankenNode] Add deterministic replay and fault-forensics pipeline for runtime correctness","labels":["franken-node","reliability","replay"]}

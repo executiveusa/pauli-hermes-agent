@@ -1,0 +1,1629 @@
+{
+  "schema_version": "2.0",
+  "bead_id": "bd-3uqg.11.2",
+  "generated_at_utc": "2026-02-13T04:48:56Z",
+  "depends_on": [
+    "bd-3uqg.11.1"
+  ],
+  "source_matrix_ref": "docs/provider-baseline-audit.json",
+  "decision_buckets": {
+    "native-runtime-existing": "Provider is already routed through a dedicated native runtime path in src/providers/mod.rs.",
+    "promote-to-provider-specific-runtime": "Provider currently relies on compatibility routing but is promoted for provider-specific runtime path due strategic importance or semantic drift risk.",
+    "maintain-openai-compatible": "Provider remains on OpenAI-compatible path; no native path required now, but compatibility tests/logging are mandatory.",
+    "native-adapter-required": "Provider requires dedicated adapter/runtime implementation before considered complete.",
+    "deferred-with-rationale": "Provider is intentionally deferred with explicit rationale and must be tracked by follow-up beads.",
+    "alias-forwarder": "Alias ID should continue forwarding to canonical provider; no independent runtime path."
+  },
+  "summary": {
+    "provider_rows": 92,
+    "decision_counts": {
+      "alias-forwarder": 2,
+      "maintain-openai-compatible": 66,
+      "native-adapter-required": 2,
+      "native-runtime-existing": 12,
+      "promote-to-provider-specific-runtime": 10
+    },
+    "focus_provider_count": 7,
+    "undecided_count": 0
+  },
+  "entries": [
+    {
+      "provider_id": "kimi",
+      "canonical_id": "moonshotai",
+      "in_upstream_union": false,
+      "current_pi_status": "alias->oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "alias-forwarder",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "Marked high-priority by current provider-gap objective and user demand signal.",
+        "Current Pi support is via alias mapping to canonical provider; canonical path must remain deterministic.",
+        "Alias should not fork behavior; keep single canonical runtime path and coverage."
+      ],
+      "upstream_sources": [
+        "user-request-alias"
+      ],
+      "risk": "high"
+    },
+    {
+      "provider_id": "qwen",
+      "canonical_id": "alibaba",
+      "in_upstream_union": false,
+      "current_pi_status": "alias->oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "alias-forwarder",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "Marked high-priority by current provider-gap objective and user demand signal.",
+        "Current Pi support is via alias mapping to canonical provider; canonical path must remain deterministic.",
+        "Alias should not fork behavior; keep single canonical runtime path and coverage."
+      ],
+      "upstream_sources": [
+        "user-request-alias"
+      ],
+      "risk": "high"
+    },
+    {
+      "provider_id": "302ai",
+      "canonical_id": "302ai",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "abacus",
+      "canonical_id": "abacus",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "aihubmix",
+      "canonical_id": "aihubmix",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "alibaba-cn",
+      "canonical_id": "alibaba-cn",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "bailing",
+      "canonical_id": "bailing",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "baseten",
+      "canonical_id": "baseten",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "berget",
+      "canonical_id": "berget",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "chutes",
+      "canonical_id": "chutes",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "cortecs",
+      "canonical_id": "cortecs",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "deepinfra",
+      "canonical_id": "deepinfra",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "unknown",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "No reliable protocol assumption; requires explicit verification before implementation decision changes.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "deepseek",
+      "canonical_id": "deepseek",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "fastrouter",
+      "canonical_id": "fastrouter",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "fireworks-ai",
+      "canonical_id": "fireworks",
+      "in_upstream_union": true,
+      "current_pi_status": "alias->oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "Current Pi support is via alias mapping to canonical provider; canonical path must remain deterministic.",
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "firmware",
+      "canonical_id": "firmware",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "friendli",
+      "canonical_id": "friendli",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "github-models",
+      "canonical_id": "github-models",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "helicone",
+      "canonical_id": "helicone",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "huggingface",
+      "canonical_id": "huggingface",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "iflowcn",
+      "canonical_id": "iflowcn",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "inception",
+      "canonical_id": "inception",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "inference",
+      "canonical_id": "inference",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "io-net",
+      "canonical_id": "io-net",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "jiekou",
+      "canonical_id": "jiekou",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "kimi-for-coding",
+      "canonical_id": "kimi-for-coding",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "anthropic-messages",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "Anthropic message semantics require strict role/content normalization and stop-reason mapping.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "llama",
+      "canonical_id": "llama",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "lmstudio",
+      "canonical_id": "lmstudio",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "code-built-in",
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "lucidquery",
+      "canonical_id": "lucidquery",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "minimax",
+      "canonical_id": "minimax",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "anthropic-messages",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "Anthropic message semantics require strict role/content normalization and stop-reason mapping.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "minimax-cn",
+      "canonical_id": "minimax-cn",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "anthropic-messages",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "Anthropic message semantics require strict role/content normalization and stop-reason mapping.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "minimax-cn-coding-plan",
+      "canonical_id": "minimax-cn-coding-plan",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "anthropic-messages",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "Anthropic message semantics require strict role/content normalization and stop-reason mapping.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "minimax-coding-plan",
+      "canonical_id": "minimax-coding-plan",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "anthropic-messages",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "Anthropic message semantics require strict role/content normalization and stop-reason mapping.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "mistral",
+      "canonical_id": "mistral",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "moark",
+      "canonical_id": "moark",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "modelscope",
+      "canonical_id": "modelscope",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "moonshotai-cn",
+      "canonical_id": "moonshotai-cn",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "morph",
+      "canonical_id": "morph",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "nano-gpt",
+      "canonical_id": "nano-gpt",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "nebius",
+      "canonical_id": "nebius",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "nova",
+      "canonical_id": "nova",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "novita-ai",
+      "canonical_id": "novita-ai",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "nvidia",
+      "canonical_id": "nvidia",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "ollama",
+      "canonical_id": "ollama",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-responses",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "Responses-style API available; verify event ordering and tool invocation parity against OpenAI baseline.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "code-built-in"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "ollama-cloud",
+      "canonical_id": "ollama-cloud",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "ovhcloud",
+      "canonical_id": "ovhcloud",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "perplexity",
+      "canonical_id": "perplexity",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "unknown",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "No reliable protocol assumption; requires explicit verification before implementation decision changes.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "poe",
+      "canonical_id": "poe",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "privatemode-ai",
+      "canonical_id": "privatemode-ai",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "requesty",
+      "canonical_id": "requesty",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "scaleway",
+      "canonical_id": "scaleway",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "siliconflow",
+      "canonical_id": "siliconflow",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "siliconflow-cn",
+      "canonical_id": "siliconflow-cn",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "stackit",
+      "canonical_id": "stackit",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "submodel",
+      "canonical_id": "submodel",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "synthetic",
+      "canonical_id": "synthetic",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "togetherai",
+      "canonical_id": "togetherai",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "upstage",
+      "canonical_id": "upstage",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "venice",
+      "canonical_id": "venice",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "unknown",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "No reliable protocol assumption; requires explicit verification before implementation decision changes.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "vivgrid",
+      "canonical_id": "vivgrid",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "vultr",
+      "canonical_id": "vultr",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "wandb",
+      "canonical_id": "wandb",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "xai",
+      "canonical_id": "xai",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "xiaomi",
+      "canonical_id": "xiaomi",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "zai",
+      "canonical_id": "zai",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "zai-coding-plan",
+      "canonical_id": "zai-coding-plan",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "zhipuai",
+      "canonical_id": "zhipuai",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "zhipuai-coding-plan",
+      "canonical_id": "zhipuai-coding-plan",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "maintain-openai-compatible",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "OpenAI-compatible path is currently sufficient; retain with contract/e2e coverage and error-taxonomy checks."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "sap-ai-core",
+      "canonical_id": "sap-ai-core",
+      "in_upstream_union": true,
+      "current_pi_status": "native-adapter-required-unimplemented",
+      "expected_api_family": "unknown",
+      "route_decision": "native-adapter-required",
+      "compatibility_notes": "No reliable protocol assumption; requires explicit verification before implementation decision changes.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults.",
+        "Requires explicit adapter/runtime work before parity claims are valid."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "v0",
+      "canonical_id": "v0",
+      "in_upstream_union": true,
+      "current_pi_status": "native-adapter-required-unimplemented",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "native-adapter-required",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "Requires explicit adapter/runtime work before parity claims are valid."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "amazon-bedrock",
+      "canonical_id": "amazon-bedrock",
+      "in_upstream_union": true,
+      "current_pi_status": "native-implemented",
+      "expected_api_family": "bedrock-converse-stream",
+      "route_decision": "native-runtime-existing",
+      "compatibility_notes": "Bedrock Converse streaming and auth/profile semantics require adapter-specific handling.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "anthropic",
+      "canonical_id": "anthropic",
+      "in_upstream_union": true,
+      "current_pi_status": "native-implemented",
+      "expected_api_family": "anthropic-messages",
+      "route_decision": "native-runtime-existing",
+      "compatibility_notes": "Anthropic message semantics require strict role/content normalization and stop-reason mapping.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "azure",
+      "canonical_id": "azure-openai",
+      "in_upstream_union": true,
+      "current_pi_status": "alias->native-implemented",
+      "expected_api_family": "azure-openai",
+      "route_decision": "native-runtime-existing",
+      "compatibility_notes": "Azure deployment/resource/version semantics require dedicated runtime resolution logic.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults.",
+        "Current Pi support is via alias mapping to canonical provider; canonical path must remain deterministic."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "azure-cognitive-services",
+      "canonical_id": "azure-openai",
+      "in_upstream_union": true,
+      "current_pi_status": "alias->native-implemented",
+      "expected_api_family": "azure-openai",
+      "route_decision": "native-runtime-existing",
+      "compatibility_notes": "Azure deployment/resource/version semantics require dedicated runtime resolution logic.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults.",
+        "Current Pi support is via alias mapping to canonical provider; canonical path must remain deterministic."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "cohere",
+      "canonical_id": "cohere",
+      "in_upstream_union": true,
+      "current_pi_status": "native-implemented",
+      "expected_api_family": "cohere-chat",
+      "route_decision": "native-runtime-existing",
+      "compatibility_notes": "Cohere-specific request/response schema differs from OpenAI; normalization and usage mapping required.",
+      "rationale": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "github-copilot",
+      "canonical_id": "github-copilot",
+      "in_upstream_union": true,
+      "current_pi_status": "native-implemented",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "native-runtime-existing",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "github-copilot-enterprise",
+      "canonical_id": "github-copilot",
+      "in_upstream_union": true,
+      "current_pi_status": "alias->native-implemented",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "native-runtime-existing",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults.",
+        "Current Pi support is via alias mapping to canonical provider; canonical path must remain deterministic."
+      ],
+      "upstream_sources": [
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "gitlab",
+      "canonical_id": "gitlab",
+      "in_upstream_union": true,
+      "current_pi_status": "native-implemented",
+      "expected_api_family": "unknown",
+      "route_decision": "native-runtime-existing",
+      "compatibility_notes": "No reliable protocol assumption; requires explicit verification before implementation decision changes.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "google",
+      "canonical_id": "google",
+      "in_upstream_union": true,
+      "current_pi_status": "native-implemented",
+      "expected_api_family": "google-generative-ai",
+      "route_decision": "native-runtime-existing",
+      "compatibility_notes": "Google/Gemini payload semantics differ from OpenAI; tool/function and safety metadata handling must be explicit.",
+      "rationale": [],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "google-vertex",
+      "canonical_id": "google-vertex",
+      "in_upstream_union": true,
+      "current_pi_status": "native-implemented",
+      "expected_api_family": "google-vertex",
+      "route_decision": "native-runtime-existing",
+      "compatibility_notes": "Vertex routing requires project/location auth + publisher routing nuances.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "google-vertex-anthropic",
+      "canonical_id": "google-vertex",
+      "in_upstream_union": true,
+      "current_pi_status": "alias->native-implemented",
+      "expected_api_family": "unknown",
+      "route_decision": "native-runtime-existing",
+      "compatibility_notes": "No reliable protocol assumption; requires explicit verification before implementation decision changes.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults.",
+        "Current Pi support is via alias mapping to canonical provider; canonical path must remain deterministic."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "openai",
+      "canonical_id": "openai",
+      "in_upstream_union": true,
+      "current_pi_status": "native-implemented",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "native-runtime-existing",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults."
+      ],
+      "upstream_sources": [
+        "code-built-in",
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "low"
+    },
+    {
+      "provider_id": "alibaba",
+      "canonical_id": "alibaba",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "promote-to-provider-specific-runtime",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "Marked high-priority by current provider-gap objective and user demand signal.",
+        "Promotion chosen to reduce risk from provider-specific streaming/tool/auth behavior drift."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "high"
+    },
+    {
+      "provider_id": "cerebras",
+      "canonical_id": "cerebras",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "promote-to-provider-specific-runtime",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "Marked high-priority by current provider-gap objective and user demand signal.",
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults.",
+        "Promotion chosen to reduce risk from provider-specific streaming/tool/auth behavior drift."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "high"
+    },
+    {
+      "provider_id": "cloudflare-ai-gateway",
+      "canonical_id": "cloudflare-ai-gateway",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "promote-to-provider-specific-runtime",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults.",
+        "Promotion chosen to reduce risk from provider-specific streaming/tool/auth behavior drift."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "cloudflare-workers-ai",
+      "canonical_id": "cloudflare-workers-ai",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "promote-to-provider-specific-runtime",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults.",
+        "Promotion chosen to reduce risk from provider-specific streaming/tool/auth behavior drift."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "groq",
+      "canonical_id": "groq",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "promote-to-provider-specific-runtime",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "Marked high-priority by current provider-gap objective and user demand signal.",
+        "Promotion chosen to reduce risk from provider-specific streaming/tool/auth behavior drift."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "high"
+    },
+    {
+      "provider_id": "moonshotai",
+      "canonical_id": "moonshotai",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "promote-to-provider-specific-runtime",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "Marked high-priority by current provider-gap objective and user demand signal.",
+        "Promotion chosen to reduce risk from provider-specific streaming/tool/auth behavior drift."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-effective"
+      ],
+      "risk": "high"
+    },
+    {
+      "provider_id": "opencode",
+      "canonical_id": "opencode",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "promote-to-provider-specific-runtime",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults.",
+        "Promotion chosen to reduce risk from provider-specific streaming/tool/auth behavior drift."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "openrouter",
+      "canonical_id": "openrouter",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "openai-compatible",
+      "route_decision": "promote-to-provider-specific-runtime",
+      "compatibility_notes": "OpenAI-like wire format is available; risk remains for provider-specific stream chunking, tool-call envelopes, and error taxonomy drift.",
+      "rationale": [
+        "Marked high-priority by current provider-gap objective and user demand signal.",
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults.",
+        "Promotion chosen to reduce risk from provider-specific streaming/tool/auth behavior drift."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "high"
+    },
+    {
+      "provider_id": "vercel",
+      "canonical_id": "vercel",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "unknown",
+      "route_decision": "promote-to-provider-specific-runtime",
+      "compatibility_notes": "No reliable protocol assumption; requires explicit verification before implementation decision changes.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults.",
+        "Promotion chosen to reduce risk from provider-specific streaming/tool/auth behavior drift."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    },
+    {
+      "provider_id": "zenmux",
+      "canonical_id": "zenmux",
+      "in_upstream_union": true,
+      "current_pi_status": "oai-compatible-preset",
+      "expected_api_family": "anthropic-messages",
+      "route_decision": "promote-to-provider-specific-runtime",
+      "compatibility_notes": "Anthropic message semantics require strict role/content normalization and stop-reason mapping.",
+      "rationale": [
+        "opencode defines custom loader behavior, indicating provider-specific semantics beyond generic compatibility defaults.",
+        "Promotion chosen to reduce risk from provider-specific streaming/tool/auth behavior drift."
+      ],
+      "upstream_sources": [
+        "models.dev",
+        "opencode-custom-loader",
+        "opencode-effective"
+      ],
+      "risk": "medium"
+    }
+  ]
+}

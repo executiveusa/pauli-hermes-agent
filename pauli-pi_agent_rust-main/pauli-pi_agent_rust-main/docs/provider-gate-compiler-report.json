@@ -1,0 +1,93 @@
+{
+  "report_version": "1.0",
+  "bead_id": "bd-3uqg.10.2.1",
+  "generated_at_utc": "2026-02-13T23:52:00Z",
+  "generated_by": "TopazFalcon (Claude Opus 4.6)",
+  "description": "Compiler/lint/format gate suite execution with categorized outputs for provider expansion scope",
+  "environment": {
+    "rust_toolchain": "nightly (Rust 2024 edition)",
+    "cargo_target_dir": "/tmp/pi_target_topaz",
+    "platform": "linux x86_64",
+    "gate_scope": "full workspace (--all-targets)"
+  },
+  "gates": {
+    "cargo_check": {
+      "command": "CARGO_TARGET_DIR=/tmp/pi_target_topaz cargo check --all-targets",
+      "result": "PASS",
+      "exit_code": 0,
+      "timestamp_utc": "2026-02-13T23:37:50Z",
+      "duration_seconds": 1.15,
+      "errors": [],
+      "warnings": [],
+      "notes": "Clean compilation for lib, bin, tests, and benches"
+    },
+    "cargo_clippy": {
+      "command": "CARGO_TARGET_DIR=/tmp/pi_target_topaz cargo clippy --all-targets -- -D warnings",
+      "result": "PASS",
+      "exit_code": 0,
+      "timestamp_utc": "2026-02-13T23:50:00Z",
+      "duration_seconds": 118,
+      "errors": [],
+      "warnings": [],
+      "notes": "Clean after fixing one pre-existing visibility issue (see remediation below)"
+    },
+    "cargo_fmt": {
+      "command": "cargo fmt --check",
+      "result": "PASS",
+      "exit_code": 0,
+      "timestamp_utc": "2026-02-13T23:42:00Z",
+      "duration_seconds": 2,
+      "errors": [],
+      "notes": "All source files formatted correctly"
+    }
+  },
+  "remediation_applied": [
+    {
+      "category": "compile",
+      "file": "src/interactive/view.rs",
+      "line": 264,
+      "description": "build_conversation_content() had pub(super) visibility after modularization extraction (bd-21mwg), but benches/tui_perf.rs needs external access",
+      "fix": "Changed pub(super) to pub",
+      "owning_bead": "bd-21mwg",
+      "impact": "bench target could not compile",
+      "root_cause": "interactive.rs modularization moved method to view.rs submodule with restrictive visibility"
+    }
+  ],
+  "failure_categories": {
+    "compile": {
+      "count": 0,
+      "after_remediation": true,
+      "description": "No remaining compilation errors"
+    },
+    "lint": {
+      "count": 0,
+      "after_remediation": true,
+      "description": "No clippy warnings or errors with -D warnings"
+    },
+    "format": {
+      "count": 0,
+      "description": "No formatting violations"
+    },
+    "infra": {
+      "count": 1,
+      "description": "tmpfs (/dev/shm) at 100% capacity from 5 concurrent agent build dirs; mitigated by switching to /tmp filesystem target",
+      "entries": [
+        {
+          "issue": "ENOSPC on /dev/shm (20GB tmpfs full)",
+          "root_cause": "5 concurrent agents (claude_opus, codexgpt5, opus_agent, opus_main, topazfalcon) all using /dev/shm for build dirs",
+          "mitigation": "Switched to /tmp/pi_target_topaz filesystem target",
+          "recommendation": "Consider periodic cleanup of stale agent build dirs or increasing tmpfs size"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "gate_status": "ALL_PASS",
+    "total_errors_before_remediation": 1,
+    "total_errors_after_remediation": 0,
+    "code_defects": 0,
+    "environment_issues": 1,
+    "provider_specific_issues": 0,
+    "verdict": "Provider expansion scope passes all compiler/lint/format gates. Single pre-existing visibility issue from concurrent modularization (bd-21mwg) remediated inline."
+  }
+}

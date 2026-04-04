@@ -1,0 +1,3 @@
+[submodule "VisionClaw"]
+	path = VisionClaw
+	url = https://github.com/executiveusa/VisionClaw.git

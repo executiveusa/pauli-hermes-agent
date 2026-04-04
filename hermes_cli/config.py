@@ -667,32 +667,6 @@ OPTIONAL_ENV_VARS = {
         "category": "tool",
     },
 
-    # ── Open Brain (Supabase) ──
-    "SUPABASE_URL": {
-        "description": "Supabase REST API URL for Open Brain persistent memory",
-        "prompt": "Supabase URL (e.g. http://host:8001)",
-        "url": None,
-        "password": False,
-        "tools": ["brain_store", "brain_search", "brain_links", "brain_collections"],
-        "category": "tool",
-    },
-    "SUPABASE_KEY": {
-        "description": "Supabase anon key (JWT) for Open Brain",
-        "prompt": "Supabase anon key",
-        "url": None,
-        "password": True,
-        "tools": ["brain_store", "brain_search", "brain_links", "brain_collections"],
-        "category": "tool",
-    },
-    "SUPABASE_SERVICE_KEY": {
-        "description": "Supabase service-role key for admin operations (optional)",
-        "prompt": "Supabase service key (optional)",
-        "url": None,
-        "password": True,
-        "category": "tool",
-        "advanced": True,
-    },
-
     # ── Honcho ──
     "HONCHO_API_KEY": {
         "description": "Honcho API key for AI-native persistent memory",
@@ -706,24 +680,6 @@ OPTIONAL_ENV_VARS = {
         "description": "Base URL for self-hosted Honcho instances (no API key needed)",
         "prompt": "Honcho base URL (e.g. http://localhost:8000)",
         "category": "tool",
-    },
-
-    # ── Infisical (Secrets Management) ──
-    "INFISICAL_TOKEN": {
-        "description": "Infisical JWT token for centralized secrets management with hourly rotation",
-        "prompt": "Infisical API token (JWT)",
-        "url": "https://infisical.com/",
-        "password": True,
-        "tools": ["fetch_secret", "list_secrets", "rotate_secrets"],
-        "category": "tool",
-    },
-    "INFISICAL_API_URL": {
-        "description": "Infisical API base URL (default: https://api.infisical.com/api)",
-        "prompt": "Infisical API URL (optional, leave empty for default)",
-        "url": None,
-        "password": False,
-        "category": "tool",
-        "advanced": True,
     },
 
     # ── Messaging platforms ──

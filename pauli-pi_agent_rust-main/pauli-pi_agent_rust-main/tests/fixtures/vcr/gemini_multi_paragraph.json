@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "test_name": "gemini_multi_paragraph",
+  "recorded_at": "2026-02-06T21:00:00.000Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=test-key",
+        "headers": [
+          ["Content-Type", "application/json"],
+          ["Accept", "text/event-stream"]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          ["Content-Type", "text/event-stream"]
+        ],
+        "body_chunks": [
+          "data: {\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"text\":\"Paragraph 1.\"}]}}]}\n\n",
+          "data: {\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"text\":\"\\n\\nParagraph 2.\"}]},\"finishReason\":\"STOP\"}],\"usageMetadata\":{\"promptTokenCount\":35,\"candidatesTokenCount\":12,\"totalTokenCount\":47}}\n\n"
+        ]
+      }
+    }
+  ]
+}

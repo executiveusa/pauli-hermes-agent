@@ -1,0 +1,19 @@
+{
+  "schema": "pi.test.quarantine_report.v2",
+  "generated_at": "2026-02-10T06:43:11.746414+00:00",
+  "policy_version": "2026-02-10",
+  "today": "2026-02-10",
+  "max_quarantine_days": 14,
+  "retry_policy": {
+    "max_auto_retries": 1,
+    "retry_delay_seconds": 5,
+    "retry_scope": "failed-target-only",
+    "second_failure_policy": "deterministic-failure"
+  },
+  "active_count": 0,
+  "expiring_soon_count": 0,
+  "expired_count": 0,
+  "category_counts": {},
+  "entries": [],
+  "escalations": []
+}

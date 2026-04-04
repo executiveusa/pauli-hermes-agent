@@ -1,0 +1,1382 @@
+{
+  "bead_id": "bd-3uqg.9.1.1",
+  "description": "Canonical provider ID + alias table generated from PROVIDER_METADATA",
+  "providers": [
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "ANTHROPIC_API_KEY"
+      ],
+      "canonical_id": "anthropic",
+      "onboarding_mode": "built-in-native",
+      "routing": {
+        "api": "anthropic-messages",
+        "auth_header": false,
+        "base_url": "https://api.anthropic.com/v1/messages",
+        "context_window": 200000,
+        "max_tokens": 8192
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "OPENAI_API_KEY"
+      ],
+      "canonical_id": "openai",
+      "onboarding_mode": "built-in-native",
+      "routing": {
+        "api": "openai-responses",
+        "auth_header": true,
+        "base_url": "https://api.openai.com/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "codex",
+        "chatgpt-codex"
+      ],
+      "auth_env_keys": [],
+      "canonical_id": "openai-codex",
+      "onboarding_mode": "native-adapter-required"
+    },
+    {
+      "aliases": [
+        "gemini"
+      ],
+      "auth_env_keys": [
+        "GOOGLE_API_KEY",
+        "GEMINI_API_KEY"
+      ],
+      "canonical_id": "google",
+      "onboarding_mode": "built-in-native",
+      "routing": {
+        "api": "google-generative-ai",
+        "auth_header": false,
+        "base_url": "https://generativelanguage.googleapis.com/v1beta",
+        "context_window": 128000,
+        "max_tokens": 8192
+      }
+    },
+    {
+      "aliases": [
+        "gemini-cli"
+      ],
+      "auth_env_keys": [],
+      "canonical_id": "google-gemini-cli",
+      "onboarding_mode": "native-adapter-required"
+    },
+    {
+      "aliases": [
+        "antigravity"
+      ],
+      "auth_env_keys": [],
+      "canonical_id": "google-antigravity",
+      "onboarding_mode": "native-adapter-required"
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "COHERE_API_KEY"
+      ],
+      "canonical_id": "cohere",
+      "onboarding_mode": "built-in-native",
+      "routing": {
+        "api": "cohere-chat",
+        "auth_header": false,
+        "base_url": "https://api.cohere.com/v2",
+        "context_window": 128000,
+        "max_tokens": 8192
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "GROQ_API_KEY"
+      ],
+      "canonical_id": "groq",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.groq.com/openai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "deep-infra"
+      ],
+      "auth_env_keys": [
+        "DEEPINFRA_API_KEY"
+      ],
+      "canonical_id": "deepinfra",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.deepinfra.com/v1/openai",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "CEREBRAS_API_KEY"
+      ],
+      "canonical_id": "cerebras",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.cerebras.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "open-router"
+      ],
+      "auth_env_keys": [
+        "OPENROUTER_API_KEY"
+      ],
+      "canonical_id": "openrouter",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://openrouter.ai/api/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "mistralai"
+      ],
+      "auth_env_keys": [
+        "MISTRAL_API_KEY"
+      ],
+      "canonical_id": "mistral",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.mistral.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "moonshot",
+        "kimi"
+      ],
+      "auth_env_keys": [
+        "MOONSHOT_API_KEY",
+        "KIMI_API_KEY"
+      ],
+      "canonical_id": "moonshotai",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.moonshot.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "dashscope",
+        "qwen"
+      ],
+      "auth_env_keys": [
+        "DASHSCOPE_API_KEY",
+        "QWEN_API_KEY"
+      ],
+      "canonical_id": "alibaba",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "deep-seek"
+      ],
+      "auth_env_keys": [
+        "DEEPSEEK_API_KEY"
+      ],
+      "canonical_id": "deepseek",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.deepseek.com",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "fireworks-ai"
+      ],
+      "auth_env_keys": [
+        "FIREWORKS_API_KEY"
+      ],
+      "canonical_id": "fireworks",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.fireworks.ai/inference/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "together",
+        "together-ai"
+      ],
+      "auth_env_keys": [
+        "TOGETHER_API_KEY",
+        "TOGETHER_AI_API_KEY"
+      ],
+      "canonical_id": "togetherai",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.together.xyz/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "pplx"
+      ],
+      "auth_env_keys": [
+        "PERPLEXITY_API_KEY"
+      ],
+      "canonical_id": "perplexity",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.perplexity.ai",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "grok",
+        "x-ai"
+      ],
+      "auth_env_keys": [
+        "XAI_API_KEY"
+      ],
+      "canonical_id": "xai",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.x.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "302AI_API_KEY"
+      ],
+      "canonical_id": "302ai",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.302.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "ABACUS_API_KEY"
+      ],
+      "canonical_id": "abacus",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://routellm.abacus.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "AIHUBMIX_API_KEY"
+      ],
+      "canonical_id": "aihubmix",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://aihubmix.com/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "BAILING_API_TOKEN"
+      ],
+      "canonical_id": "bailing",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.tbox.cn/api/llm/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "BERGET_API_KEY"
+      ],
+      "canonical_id": "berget",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.berget.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "CHUTES_API_KEY"
+      ],
+      "canonical_id": "chutes",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://llm.chutes.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "CORTECS_API_KEY"
+      ],
+      "canonical_id": "cortecs",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.cortecs.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "FASTROUTER_API_KEY"
+      ],
+      "canonical_id": "fastrouter",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://go.fastrouter.ai/api/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "FIRMWARE_API_KEY"
+      ],
+      "canonical_id": "firmware",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://app.firmware.ai/api/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "FRIENDLI_TOKEN"
+      ],
+      "canonical_id": "friendli",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.friendli.ai/serverless/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "GITHUB_TOKEN"
+      ],
+      "canonical_id": "github-models",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://models.github.ai/inference",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "HELICONE_API_KEY"
+      ],
+      "canonical_id": "helicone",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://ai-gateway.helicone.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "hf",
+        "hugging-face"
+      ],
+      "auth_env_keys": [
+        "HF_TOKEN"
+      ],
+      "canonical_id": "huggingface",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://router.huggingface.co/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "IFLOW_API_KEY"
+      ],
+      "canonical_id": "iflowcn",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://apis.iflow.cn/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "INCEPTION_API_KEY"
+      ],
+      "canonical_id": "inception",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.inceptionlabs.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "INFERENCE_API_KEY"
+      ],
+      "canonical_id": "inference",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://inference.net/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "IOINTELLIGENCE_API_KEY"
+      ],
+      "canonical_id": "io-net",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.intelligence.io.solutions/api/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "JIEKOU_API_KEY"
+      ],
+      "canonical_id": "jiekou",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.jiekou.ai/openai",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "LUCIDQUERY_API_KEY"
+      ],
+      "canonical_id": "lucidquery",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://lucidquery.com/api/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "MOARK_API_KEY"
+      ],
+      "canonical_id": "moark",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://moark.com/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "MORPH_API_KEY"
+      ],
+      "canonical_id": "morph",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.morphllm.com/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "nanogpt"
+      ],
+      "auth_env_keys": [
+        "NANO_GPT_API_KEY"
+      ],
+      "canonical_id": "nano-gpt",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://nano-gpt.com/api/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "NOVA_API_KEY"
+      ],
+      "canonical_id": "nova",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.nova.amazon.com/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "novita"
+      ],
+      "auth_env_keys": [
+        "NOVITA_API_KEY"
+      ],
+      "canonical_id": "novita-ai",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.novita.ai/openai",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "nim",
+        "nvidia-nim"
+      ],
+      "auth_env_keys": [
+        "NVIDIA_API_KEY"
+      ],
+      "canonical_id": "nvidia",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://integrate.api.nvidia.com/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "POE_API_KEY"
+      ],
+      "canonical_id": "poe",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.poe.com/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "PRIVATEMODE_API_KEY"
+      ],
+      "canonical_id": "privatemode-ai",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "http://localhost:8080/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "REQUESTY_API_KEY"
+      ],
+      "canonical_id": "requesty",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://router.requesty.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "SUBMODEL_INSTAGEN_ACCESS_KEY"
+      ],
+      "canonical_id": "submodel",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://llm.submodel.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "SYNTHETIC_API_KEY"
+      ],
+      "canonical_id": "synthetic",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.synthetic.new/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "VIVGRID_API_KEY"
+      ],
+      "canonical_id": "vivgrid",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.vivgrid.com/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "VULTR_API_KEY"
+      ],
+      "canonical_id": "vultr",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.vultrinference.com/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "WANDB_API_KEY"
+      ],
+      "canonical_id": "wandb",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.inference.wandb.ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "XIAOMI_API_KEY"
+      ],
+      "canonical_id": "xiaomi",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.xiaomimimo.com/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "DASHSCOPE_API_KEY"
+      ],
+      "canonical_id": "alibaba-cn",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "kimi-coding",
+        "kimi-code"
+      ],
+      "auth_env_keys": [
+        "KIMI_API_KEY"
+      ],
+      "canonical_id": "kimi-for-coding",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "anthropic-messages",
+        "auth_header": false,
+        "base_url": "https://api.kimi.com/coding/v1/messages",
+        "context_window": 262144,
+        "max_tokens": 32768
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "MINIMAX_API_KEY"
+      ],
+      "canonical_id": "minimax",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "anthropic-messages",
+        "auth_header": false,
+        "base_url": "https://api.minimax.io/anthropic/v1/messages",
+        "context_window": 204800,
+        "max_tokens": 131072
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "MINIMAX_CN_API_KEY"
+      ],
+      "canonical_id": "minimax-cn",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "anthropic-messages",
+        "auth_header": false,
+        "base_url": "https://api.minimaxi.com/anthropic/v1/messages",
+        "context_window": 204800,
+        "max_tokens": 131072
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "MINIMAX_API_KEY"
+      ],
+      "canonical_id": "minimax-coding-plan",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "anthropic-messages",
+        "auth_header": false,
+        "base_url": "https://api.minimax.io/anthropic/v1/messages",
+        "context_window": 204800,
+        "max_tokens": 131072
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "MINIMAX_CN_API_KEY"
+      ],
+      "canonical_id": "minimax-cn-coding-plan",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "anthropic-messages",
+        "auth_header": false,
+        "base_url": "https://api.minimaxi.com/anthropic/v1/messages",
+        "context_window": 204800,
+        "max_tokens": 131072
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "MODELSCOPE_API_KEY"
+      ],
+      "canonical_id": "modelscope",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api-inference.modelscope.cn/v1",
+        "context_window": 131072,
+        "max_tokens": 98304
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "MOONSHOT_API_KEY"
+      ],
+      "canonical_id": "moonshotai-cn",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.moonshot.cn/v1",
+        "context_window": 262144,
+        "max_tokens": 262144
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "NEBIUS_API_KEY"
+      ],
+      "canonical_id": "nebius",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.tokenfactory.nebius.com/v1",
+        "context_window": 128000,
+        "max_tokens": 8192
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "OVHCLOUD_API_KEY"
+      ],
+      "canonical_id": "ovhcloud",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+        "context_window": 32768,
+        "max_tokens": 32768
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "SCALEWAY_API_KEY"
+      ],
+      "canonical_id": "scaleway",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.scaleway.ai/v1",
+        "context_window": 260000,
+        "max_tokens": 8192
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "STACKIT_API_KEY"
+      ],
+      "canonical_id": "stackit",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.openai-compat.model-serving.eu01.onstackit.cloud/v1",
+        "context_window": 128000,
+        "max_tokens": 8192
+      }
+    },
+    {
+      "aliases": [
+        "silicon-flow"
+      ],
+      "auth_env_keys": [
+        "SILICONFLOW_API_KEY"
+      ],
+      "canonical_id": "siliconflow",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.siliconflow.com/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "SILICONFLOW_CN_API_KEY"
+      ],
+      "canonical_id": "siliconflow-cn",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.siliconflow.cn/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "UPSTAGE_API_KEY"
+      ],
+      "canonical_id": "upstage",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.upstage.ai/v1/solar",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "VENICE_API_KEY"
+      ],
+      "canonical_id": "venice",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.venice.ai/api/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "ZHIPU_API_KEY"
+      ],
+      "canonical_id": "zai",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.z.ai/api/paas/v4",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "ZHIPU_API_KEY"
+      ],
+      "canonical_id": "zai-coding-plan",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.z.ai/api/coding/paas/v4",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "zhipu",
+        "glm"
+      ],
+      "auth_env_keys": [
+        "ZHIPU_API_KEY"
+      ],
+      "canonical_id": "zhipuai",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://open.bigmodel.cn/api/paas/v4",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "ZHIPU_API_KEY"
+      ],
+      "canonical_id": "zhipuai-coding-plan",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://open.bigmodel.cn/api/coding/paas/v4",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "BASETEN_API_KEY"
+      ],
+      "canonical_id": "baseten",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://inference.baseten.co/v1",
+        "context_window": 262144,
+        "max_tokens": 65536
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "LLAMA_API_KEY"
+      ],
+      "canonical_id": "llama",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.llama.com/compat/v1",
+        "context_window": 128000,
+        "max_tokens": 4096
+      }
+    },
+    {
+      "aliases": [
+        "lm-studio"
+      ],
+      "auth_env_keys": [
+        "LMSTUDIO_API_KEY"
+      ],
+      "canonical_id": "lmstudio",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "http://127.0.0.1:1234/v1",
+        "context_window": 131072,
+        "max_tokens": 32768
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [],
+      "canonical_id": "ollama",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": false,
+        "base_url": "http://127.0.0.1:11434/v1",
+        "context_window": 131072,
+        "max_tokens": 32768
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "OLLAMA_API_KEY"
+      ],
+      "canonical_id": "ollama-cloud",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://ollama.com/v1",
+        "context_window": 262144,
+        "max_tokens": 131072
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "OPENCODE_API_KEY"
+      ],
+      "canonical_id": "opencode",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://opencode.ai/zen/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "vercel-ai-gateway"
+      ],
+      "auth_env_keys": [
+        "AI_GATEWAY_API_KEY"
+      ],
+      "canonical_id": "vercel",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://ai-gateway.vercel.sh/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "ZENMUX_API_KEY"
+      ],
+      "canonical_id": "zenmux",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "anthropic-messages",
+        "auth_header": false,
+        "base_url": "https://zenmux.ai/api/anthropic/v1/messages",
+        "context_window": 200000,
+        "max_tokens": 8192
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "CLOUDFLARE_API_TOKEN"
+      ],
+      "canonical_id": "cloudflare-ai-gateway",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}/openai",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "CLOUDFLARE_API_TOKEN"
+      ],
+      "canonical_id": "cloudflare-workers-ai",
+      "onboarding_mode": "oai-compatible-preset",
+      "routing": {
+        "api": "openai-completions",
+        "auth_header": true,
+        "base_url": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1",
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    },
+    {
+      "aliases": [
+        "vertexai",
+        "google-vertex-anthropic"
+      ],
+      "auth_env_keys": [
+        "GOOGLE_CLOUD_API_KEY",
+        "VERTEX_API_KEY"
+      ],
+      "canonical_id": "google-vertex",
+      "onboarding_mode": "built-in-native",
+      "routing": {
+        "api": "google-vertex",
+        "auth_header": true,
+        "base_url": "",
+        "context_window": 1000000,
+        "max_tokens": 8192
+      }
+    },
+    {
+      "aliases": [
+        "bedrock"
+      ],
+      "auth_env_keys": [
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_SESSION_TOKEN",
+        "AWS_BEARER_TOKEN_BEDROCK",
+        "AWS_PROFILE",
+        "AWS_REGION"
+      ],
+      "canonical_id": "amazon-bedrock",
+      "onboarding_mode": "native-adapter-required",
+      "routing": {
+        "api": "bedrock-converse-stream",
+        "auth_header": false,
+        "base_url": "",
+        "context_window": 200000,
+        "max_tokens": 8192
+      }
+    },
+    {
+      "aliases": [
+        "sap"
+      ],
+      "auth_env_keys": [
+        "AICORE_SERVICE_KEY",
+        "SAP_AI_CORE_CLIENT_ID",
+        "SAP_AI_CORE_CLIENT_SECRET",
+        "SAP_AI_CORE_TOKEN_URL",
+        "SAP_AI_CORE_SERVICE_URL"
+      ],
+      "canonical_id": "sap-ai-core",
+      "onboarding_mode": "native-adapter-required"
+    },
+    {
+      "aliases": [],
+      "auth_env_keys": [
+        "V0_API_KEY"
+      ],
+      "canonical_id": "v0",
+      "onboarding_mode": "native-adapter-required"
+    },
+    {
+      "aliases": [
+        "azure",
+        "azure-cognitive-services",
+        "azure-openai-responses"
+      ],
+      "auth_env_keys": [
+        "AZURE_OPENAI_API_KEY"
+      ],
+      "canonical_id": "azure-openai",
+      "onboarding_mode": "native-adapter-required"
+    },
+    {
+      "aliases": [
+        "copilot",
+        "github-copilot-enterprise"
+      ],
+      "auth_env_keys": [
+        "GITHUB_COPILOT_API_KEY",
+        "GITHUB_TOKEN"
+      ],
+      "canonical_id": "github-copilot",
+      "onboarding_mode": "native-adapter-required"
+    },
+    {
+      "aliases": [
+        "gitlab-duo"
+      ],
+      "auth_env_keys": [
+        "GITLAB_TOKEN",
+        "GITLAB_API_KEY"
+      ],
+      "canonical_id": "gitlab",
+      "onboarding_mode": "native-adapter-required"
+    }
+  ],
+  "schema_version": "1.0",
+  "total_aliases": 42,
+  "total_providers": 90
+}

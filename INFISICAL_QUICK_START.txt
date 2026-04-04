@@ -1,0 +1,122 @@
+# Infisical Integration - Quick Reference Card
+
+## Your Credentials
+
+```
+Organization ID:  bfdc227f-410f-4b15-a0d6-63d1c99472d2
+Auth Method:      JWT Bearer Token
+API Endpoint:     https://api.infisical.com/api
+Token Status:     ✅ Valid (expires 1775808587)
+```
+
+---
+
+## One-Command Setup
+
+```bash
+# 1. SSH to VPS
+ssh root@31.220.58.212
+
+# 2. Create .env (copy-paste your token)
+cat > /workspace/hermes-agent/.env << 'EOF'
+INFISICAL_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoTWV0aG9kIjoiZ29vZ2xlIiwiYXV0aFRva2VuVHlwZSI6ImFjY2Vzc1Rva2VuIiwidXNlcklkIjoiZmE2MWI3YTYtNWVlYi00NDM5LTk3MWItMTNkYTY0MDkwYjJkIiwidG9rZW5WZXJzaW9uSWQiOiI5NGU4NmMwYi1hMDlkLTRmNGYtOTg1YS02MjNlYWRlYzc0NjIiLCJhY2Nlc3NWZXJzaW9uIjoxLCJvcmdhbml6YXRpb25JZCI6ImJkZmMyMjdmLTQxMGYtNGIxNS1hMGQ2LTYzZDFjOTk0NzJkMiIsImlhdCI6MTc3NTAyMTg3OCwiZXhwIjoxNzc1ODg1ODc4fQ.98JNTeKB9ELK11jnNYKhYXw8LBZ4rY7bdGtYNLTD_Qc
+EOF
+
+# 3. Start backend
+cd /workspace/hermes-agent
+docker compose up -d
+
+# 4. Verify
+curl http://localhost:8642/health
+# Should return: {"status": "ok", "platform": "hermes-agent"}
+```
+
+---
+
+## Test Commands
+
+```bash
+# Fetch a secret (after populating in Infisical workspace)
+curl http://localhost:8642/v1/secrets/anthropic-api-key
+
+# List all secrets
+curl http://localhost:8642/v1/cache-status
+
+# Rotate cache
+curl -X POST http://localhost:8642/v1/rotate-secrets
+```
+
+---
+
+## Agent Commands
+
+```
+# In Hermes agent console or chat:
+
+# Fetch a single secret
+/tool fetch_secret --secret-path anthropic-api-key
+
+# List all secrets
+/tool list_secrets
+
+# Check cache status
+/tool get_cache_status
+
+# Rotate cache (clear)
+/tool rotate_secrets
+```
+
+---
+
+## Add Secrets to Infisical
+
+Log into https://infisical.com/ → Your Workspace → Production Environment
+
+Add these secrets (copy the paths exactly):
+
+```
+anthropic-api-key
+open-router-api-key
+supabase/url
+supabase/key
+supabase/service-key
+cloudflare-token
+mercury2-api-token
+```
+
+---
+
+## Files Changed
+
+**New:** `tools/infisical_tool.py` (350 lines)
+**New:** `INFISICAL_SETUP.md` (setup guide)
+**New:** `INFISICAL_DEPLOYMENT.md` (deployment guide)
+**New:** `scripts/test-infisical.sh` (test script)
+
+**Modified:** 
+- `hermes_cli/config.py` (+20 lines)
+- `model_tools.py` (+1 line import)
+- `toolsets.py` (+5 lines)
+- `gateway/platforms/api_server.py` (+100 lines)
+
+---
+
+## Status
+
+✅ **Infisical tool created**
+✅ **Tools registered in toolsets**
+✅ **API endpoints added to gateway**
+✅ **Environment variables configured**
+✅ **Setup guide created**
+✅ **Test script provided**
+
+➡️ **Next: SSH to VPS and deploy** (5 minutes)
+
+---
+
+## Support Links
+
+- [Full Setup Guide](INFISICAL_SETUP.md)
+- [Deployment Guide](INFISICAL_DEPLOYMENT.md)
+- [Infisical Docs](https://infisical.com/docs/)
+- [Token Management](https://infisical.com/docs/guides/service-tokens)

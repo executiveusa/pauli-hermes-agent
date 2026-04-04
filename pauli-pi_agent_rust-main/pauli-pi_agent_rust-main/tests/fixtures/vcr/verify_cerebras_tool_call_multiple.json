@@ -1,0 +1,38 @@
+{
+  "version": "1.0",
+  "test_name": "verify_cerebras_tool_call_multiple",
+  "recorded_at": "2026-02-13T09:15:39.355Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.cerebras.ai/v1/chat/completions",
+        "headers": [
+          [
+            "Authorization",
+            "Bearer [REDACTED]"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "Content-Type",
+            "text/event-stream"
+          ]
+        ],
+        "body_chunks": [
+          "data: {\"choices\":[{\"delta\":{\"role\":\"assistant\",\"tool_calls\":[{\"function\":{\"arguments\":\"\",\"name\":\"add\"},\"id\":\"call_verify_add_0\",\"index\":0,\"type\":\"function\"},{\"function\":{\"arguments\":\"\",\"name\":\"echo\"},\"id\":\"call_verify_echo_1\",\"index\":1,\"type\":\"function\"}]},\"finish_reason\":null,\"index\":0}],\"created\":1738875600,\"id\":\"chatcmpl-verify-003\",\"model\":\"llama-3.3-70b\",\"object\":\"chat.completion.chunk\"}\n\n",
+          "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"function\":{\"arguments\":\"{\\\"a\\\":2,\\\"b\\\":2}\"},\"index\":0},{\"function\":{\"arguments\":\"{\\\"text\\\":\\\"verification test\\\"}\"},\"index\":1}]},\"finish_reason\":null,\"index\":0}],\"created\":1738875600,\"id\":\"chatcmpl-verify-003\",\"model\":\"llama-3.3-70b\",\"object\":\"chat.completion.chunk\"}\n\n",
+          "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"tool_calls\",\"index\":0}],\"created\":1738875600,\"id\":\"chatcmpl-verify-003\",\"model\":\"llama-3.3-70b\",\"object\":\"chat.completion.chunk\",\"usage\":{\"completion_tokens\":18,\"prompt_tokens\":36,\"total_tokens\":54}}\n\n",
+          "data: [DONE]\n\n"
+        ]
+      }
+    }
+  ]
+}

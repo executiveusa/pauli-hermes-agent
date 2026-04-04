@@ -1,0 +1,302 @@
+{
+  "schema": "pi.provider_capability_profile.v1",
+  "schema_version": "1.0",
+  "bead_id": "bd-3uqg.11.6.1",
+  "provider_id": "cerebras",
+  "canonical_provider_id": "cerebras",
+  "verified_at_utc": "2026-02-13T08:50:00Z",
+  "source_snapshot": [
+    {
+      "label": "Cerebras Inference API Overview",
+      "url": "https://inference-docs.cerebras.ai/",
+      "key_points": [
+        "OpenAI-compatible API on Wafer-Scale Engine hardware",
+        "Fastest tokens/sec for large models",
+        "Python and Node.js SDKs available"
+      ]
+    },
+    {
+      "label": "Cerebras Chat Completions API Reference",
+      "url": "https://inference-docs.cerebras.ai/api-reference/chat-completions",
+      "key_points": [
+        "POST /v1/chat/completions",
+        "SSE streaming with data:[DONE] termination",
+        "Usage and time_info in final chunk only when streaming",
+        "Standard OpenAI-compatible request/response format"
+      ]
+    },
+    {
+      "label": "Cerebras Tool Calling",
+      "url": "https://inference-docs.cerebras.ai/capabilities/tool-use",
+      "key_points": [
+        "Tool use supported on gpt-oss-120b, qwen-3-32b, zai-glm-4.7",
+        "parallel_tool_calls default true",
+        "Strict mode available with additionalProperties:false requirement",
+        "Standard OpenAI function calling format"
+      ]
+    },
+    {
+      "label": "Cerebras Streaming",
+      "url": "https://inference-docs.cerebras.ai/capabilities/streaming",
+      "key_points": [
+        "SSE protocol with delta content chunks",
+        "Usage and time_info only in final chunk",
+        "Standard OpenAI streaming format"
+      ]
+    },
+    {
+      "label": "Cerebras Error Codes",
+      "url": "https://inference-docs.cerebras.ai/support/error",
+      "key_points": [
+        "HTTP status taxonomy: 400/401/402/403/404/422/429/500/503",
+        "SDK auto-retries: 2 retries for 429 and 500+ errors",
+        "Default 1-minute timeout, configurable"
+      ]
+    },
+    {
+      "label": "Cerebras Rate Limits",
+      "url": "https://inference-docs.cerebras.ai/support/rate-limits",
+      "key_points": [
+        "Token bucketing algorithm (continuous replenishment)",
+        "x-ratelimit-* headers with requests-day and tokens-minute dimensions",
+        "429 semantics with retry guidance"
+      ]
+    },
+    {
+      "label": "Cerebras Supported Models",
+      "url": "https://inference-docs.cerebras.ai/",
+      "key_points": [
+        "Llama 3.1 8B, Llama 3.3 70B",
+        "GPT-OSS 120B (reasoning-focused)",
+        "Qwen 3 235B Instruct, Qwen 3 32B",
+        "Z.ai GLM 4.7 (coding + reasoning)"
+      ]
+    }
+  ],
+  "endpoint_profile": {
+    "base_url": "https://api.cerebras.ai/v1",
+    "primary_chat_endpoint": "/chat/completions",
+    "completions_endpoint": "/completions",
+    "models_endpoint": "/models",
+    "responses_api": {
+      "supported": false,
+      "status": "not_available",
+      "notes": "Cerebras does not offer an OpenAI Responses API equivalent"
+    }
+  },
+  "openai_compatibility_contract": {
+    "compatible": true,
+    "unsupported_chat_fields": [],
+    "n_parameter": {
+      "min": 1,
+      "max": 1,
+      "non_1_behavior": "unknown — assume 400 response like other OAI-compatible providers"
+    },
+    "temperature_behavior": {
+      "input_zero_behavior": "standard",
+      "recommended_range": "0 to 2"
+    },
+    "additional_capabilities": [
+      "structured_outputs",
+      "prompt_caching",
+      "predicted_outputs",
+      "reasoning_cepo",
+      "batch_api",
+      "service_tiers"
+    ]
+  },
+  "streaming_contract": {
+    "protocol": "server_sent_events",
+    "stream_parameter_default": false,
+    "termination_marker": "data: [DONE]",
+    "usage_in_final_chunk_only": true,
+    "time_info_in_final_chunk_only": true,
+    "pi_normalization_expectations": [
+      "Map delta chunks into StreamEvent::TextDelta/ToolCallDelta consistently",
+      "Treat terminal SSE marker as Done unless provider emits explicit error event",
+      "Extract usage from final chunk for token accounting"
+    ]
+  },
+  "tool_calling_contract": {
+    "supported": true,
+    "supported_models": [
+      "gpt-oss-120b",
+      "qwen-3-32b",
+      "zai-glm-4.7"
+    ],
+    "tool_choice_modes": [
+      "auto",
+      "none",
+      "required",
+      "function_name_object"
+    ],
+    "parallel_tool_calls_default": true,
+    "strict_mode": {
+      "supported": true,
+      "requirement": "Set strict:true in function definition, requires additionalProperties:false on all schema objects"
+    },
+    "constraint_violation_behavior": "400 Bad Request when tool schema constraints are not satisfied",
+    "pi_normalization_expectations": [
+      "Preserve tool call ordering and argument fragments under streaming",
+      "Map forced-tool and required-tool failures into actionable diagnostics",
+      "Handle parallel_tool_calls=true by default — iterate all tool_calls in response"
+    ]
+  },
+  "usage_and_metrics": {
+    "usage_fields": [
+      "prompt_tokens",
+      "completion_tokens",
+      "total_tokens"
+    ],
+    "cache_fields": [
+      "cached"
+    ],
+    "time_info_fields": [
+      "queue_time",
+      "prompt_time",
+      "completion_time",
+      "total_time"
+    ],
+    "system_fingerprint": true,
+    "notes": "time_info provides hardware-level performance metrics unique to Cerebras WSE; cached field tracks prompt cache token hits"
+  },
+  "error_and_rate_limit_profile": {
+    "http_errors_documented": [
+      400,
+      401,
+      402,
+      403,
+      404,
+      422,
+      429,
+      500,
+      503
+    ],
+    "rate_limit_status_code": 429,
+    "rate_limit_algorithm": "token_bucketing",
+    "rate_limit_dimensions": {
+      "requests": "per-day",
+      "tokens": "per-minute"
+    },
+    "rate_limit_headers": [
+      "x-ratelimit-limit-requests-day",
+      "x-ratelimit-limit-tokens-minute",
+      "x-ratelimit-remaining-requests-day",
+      "x-ratelimit-remaining-tokens-minute",
+      "x-ratelimit-reset-requests-day",
+      "x-ratelimit-reset-tokens-minute"
+    ],
+    "auto_retry": {
+      "sdk_default_retries": 2,
+      "retryable_codes": [429, 500, 503],
+      "default_timeout_seconds": 60
+    },
+    "pi_expectations": [
+      "Classify 429 as rate-limit diagnostic with retry guidance from x-ratelimit-reset-* headers",
+      "Classify 401 as auth diagnostic with CEREBRAS_API_KEY remediation",
+      "Classify 402 as billing diagnostic (insufficient account balance)",
+      "Use token bucketing awareness: capacity replenishes continuously, not at fixed intervals"
+    ]
+  },
+  "model_lineup": {
+    "current_models": [
+      {
+        "model_id": "llama-3.1-8b",
+        "description": "Llama 3.1 8B — speed-optimized, fastest inference",
+        "context_window": 128000,
+        "tool_calling": false,
+        "reasoning": false
+      },
+      {
+        "model_id": "llama-3.3-70b",
+        "description": "Llama 3.3 70B — enhanced performance, general purpose",
+        "context_window": 128000,
+        "tool_calling": false,
+        "reasoning": false
+      },
+      {
+        "model_id": "gpt-oss-120b",
+        "description": "GPT-OSS 120B — reasoning-focused, tool use supported",
+        "context_window": 128000,
+        "tool_calling": true,
+        "reasoning": true
+      },
+      {
+        "model_id": "qwen-3-235b-a22b",
+        "description": "Qwen 3 235B Instruct — multilingual, MoE architecture",
+        "context_window": 128000,
+        "tool_calling": false,
+        "reasoning": false
+      },
+      {
+        "model_id": "qwen-3-32b",
+        "description": "Qwen 3 32B — hybrid reasoning, tool use supported",
+        "context_window": 128000,
+        "tool_calling": true,
+        "reasoning": true
+      },
+      {
+        "model_id": "zai-glm-4.7",
+        "description": "Z.ai GLM 4.7 — coding + reasoning specialist, tool use supported",
+        "context_window": 128000,
+        "tool_calling": true,
+        "reasoning": true
+      }
+    ],
+    "notes": "Model lineup is focused — fewer models than Groq/OpenRouter, but optimized for WSE hardware throughput"
+  },
+  "differentiators": {
+    "hardware": "Wafer-Scale Engine (WSE) — custom silicon for high-throughput inference",
+    "latency": "Extremely fast tokens/sec, competitive TTFT for large models",
+    "unique_features": [
+      "Prompt caching (store and reuse processed prompts)",
+      "CePO: Cerebras Planning & Optimization for enhanced reasoning",
+      "Predicted outputs (reduce latency with known response prefixes)",
+      "Batch API (async workloads at half cost)",
+      "Service tiers for request prioritization"
+    ]
+  },
+  "implementation_decisions_for_pi": [
+    {
+      "decision_id": "cerebras-spec-001",
+      "decision": "Keep Cerebras on OpenAI-compatible routing with base_url https://api.cerebras.ai/v1 and chat-completions path normalization.",
+      "rationale": "API is fully OpenAI-compatible. Legacy upstream and existing provider_metadata.rs already use openai-completions routing.",
+      "downstream_bead": "bd-3uqg.11.6.3"
+    },
+    {
+      "decision_id": "cerebras-spec-002",
+      "decision": "Auth uses CEREBRAS_API_KEY env var with Bearer token header. No fallback keys needed.",
+      "rationale": "Single canonical env var, already registered in auth.rs and provider_metadata.rs. No secondary/legacy key names.",
+      "downstream_bead": "bd-3uqg.11.6.2"
+    },
+    {
+      "decision_id": "cerebras-spec-003",
+      "decision": "Rate limit headers use non-standard dimension suffixes (-requests-day, -tokens-minute) vs OpenAI's (-requests, -tokens). Pi must parse both formats.",
+      "rationale": "Cerebras rate limit headers differ from OpenAI standard (which uses x-ratelimit-limit-requests). Pi's rate limit parser should handle both naming conventions.",
+      "downstream_bead": "bd-3uqg.11.6.3"
+    },
+    {
+      "decision_id": "cerebras-spec-004",
+      "decision": "Expose Cerebras time_info metrics (queue_time, prompt_time, completion_time, total_time) in diagnostics when available.",
+      "rationale": "These hardware-level metrics are unique to Cerebras WSE and useful for performance debugging. Extract from final streaming chunk alongside usage.",
+      "downstream_bead": "bd-3uqg.11.6.5"
+    },
+    {
+      "decision_id": "cerebras-spec-005",
+      "decision": "Tool calling support should be gated per-model: only gpt-oss-120b, qwen-3-32b, and zai-glm-4.7 currently support tool use. Llama models do not.",
+      "rationale": "Unlike Groq where most models support tools, Cerebras has selective tool support. Model registry entries must flag this correctly.",
+      "downstream_bead": "bd-3uqg.11.6.4"
+    },
+    {
+      "decision_id": "cerebras-spec-006",
+      "decision": "Register prompt_caching, structured_outputs, and predicted_outputs as advanced capabilities for future feature flags.",
+      "rationale": "These Cerebras-specific features go beyond basic OpenAI compatibility. Not required for initial onboarding but should be tracked.",
+      "downstream_bead": "bd-3uqg.11.6.3"
+    }
+  ],
+  "downstream_beads_unblocked": [
+    "bd-3uqg.11.6.2",
+    "bd-3uqg.11.6.3",
+    "bd-3uqg.11.6.4"
+  ]
+}

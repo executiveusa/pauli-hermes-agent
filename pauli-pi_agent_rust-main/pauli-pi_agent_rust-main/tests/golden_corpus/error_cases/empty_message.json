@@ -1,0 +1,29 @@
+{
+  "schema": "pi.golden_corpus.v1",
+  "scenario": "error_empty_message",
+  "surface": "error_cases",
+  "description": "Print mode with empty string message and invalid API key: exits non-zero without panic",
+  "cli_args": [
+    "-p",
+    "--provider", "anthropic",
+    "--model", "claude-sonnet-4-5",
+    "--api-key", "test-key",
+    "--no-tools",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--thinking", "off",
+    ""
+  ],
+  "stdin": null,
+  "env_overrides": {},
+  "cassette": null,
+  "expected": {
+    "exit_code_nonzero": true,
+    "stdout_contains": [],
+    "stdout_not_contains": [],
+    "stderr_not_contains": ["panic"],
+    "no_session_files": true
+  }
+}

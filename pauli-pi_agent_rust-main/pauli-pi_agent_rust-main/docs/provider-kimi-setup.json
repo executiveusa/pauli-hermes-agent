@@ -1,0 +1,123 @@
+{
+  "schema": "pi.provider_setup_guide.v1",
+  "bead_id": "bd-3uqg.11.8.7",
+  "provider_id": "moonshotai",
+  "canonical_provider_id": "moonshotai",
+  "last_verified_utc": "2026-02-13T10:00:00Z",
+
+  "quick_start": {
+    "description": "Kimi (Moonshot AI) provides three distinct Pi entries: moonshotai (global), moonshotai-cn (China), and kimi-for-coding (Anthropic messages API). Keys are NOT interchangeable between .ai and .cn endpoints.",
+    "auth_env": "MOONSHOT_API_KEY",
+    "base_url": "https://api.moonshot.ai/v1",
+    "api_type": "openai-completions (global/CN) | anthropic-messages (kimi-for-coding)",
+    "minimal_config": {
+      "steps": [
+        "1. Get an API key from https://platform.moonshot.cn/console/api-keys",
+        "2. Export: export MOONSHOT_API_KEY=sk-...",
+        "3. Run: pi --provider moonshotai --model moonshot-v1-128k"
+      ],
+      "example_env": {
+        "MOONSHOT_API_KEY": "sk-your_api_key_here"
+      }
+    },
+    "advanced_config": {
+      "description": "Use kimi-for-coding with Anthropic messages API, or use the auto-context model.",
+      "example_env": {
+        "MOONSHOT_API_KEY": "sk-your_global_key",
+        "KIMI_API_KEY": "sk-your_kimi_coding_key"
+      },
+      "example_cli_options": [
+        "pi --provider moonshotai --model moonshot-v1-auto  # Auto-selects 8k/32k/128k based on input",
+        "pi --provider kimi-for-coding --model kimi-k2.5    # Uses Anthropic messages API",
+        "pi --provider moonshotai-cn --model moonshot-v1-128k  # China endpoint"
+      ],
+      "notes": [
+        "moonshot-v1-auto optimizes cost by selecting context window based on input length.",
+        "kimi-for-coding uses anthropic-messages API format, NOT openai-completions.",
+        "China keys (.cn) CANNOT be used with global endpoint (.ai) and vice versa.",
+        "KIMI_API_KEY is only used as fallback for moonshotai (global); not for moonshotai-cn."
+      ]
+    }
+  },
+
+  "caveats": [
+    {
+      "id": "kimi-cav-001",
+      "severity": "critical",
+      "summary": "Keys NOT interchangeable between .ai and .cn endpoints",
+      "detail": "API keys registered in China require the .cn endpoint. Global keys require the .ai endpoint. Using the wrong key with the wrong endpoint returns 401.",
+      "test_evidence": "docs/provider-kimi-capability-profile.json spec-002"
+    },
+    {
+      "id": "kimi-cav-002",
+      "severity": "warning",
+      "summary": "kimi-for-coding uses Anthropic messages API",
+      "detail": "The kimi-for-coding provider entry uses anthropic-messages API format, NOT openai-completions. This affects tool calling format and request/response structure.",
+      "test_evidence": "docs/provider-kimi-capability-profile.json spec-003"
+    },
+    {
+      "id": "kimi-cav-003",
+      "severity": "info",
+      "summary": "Temperature range narrower than OpenAI",
+      "detail": "Kimi accepts temperature 0 to 1 (OpenAI accepts 0 to 2). Values > 1 will be rejected.",
+      "test_evidence": "docs/provider-kimi-capability-profile.json"
+    },
+    {
+      "id": "kimi-cav-004",
+      "severity": "info",
+      "summary": "Tool choice limited to auto/none",
+      "detail": "Only tool_choice auto and none are supported. required and function_name_object are not available.",
+      "test_evidence": "docs/provider-kimi-capability-profile.json spec-004"
+    },
+    {
+      "id": "kimi-cav-005",
+      "severity": "info",
+      "summary": "Parallel tool calls default false",
+      "detail": "Unlike Groq/Cerebras, parallel_tool_calls defaults to false for Kimi.",
+      "test_evidence": "docs/provider-kimi-capability-profile.json"
+    }
+  ],
+
+  "troubleshooting": [
+    {
+      "symptom": "HTTP 401 Invalid API key",
+      "cause": "Key/endpoint mismatch or key not set",
+      "fix": "Verify key and endpoint match: .ai keys for moonshotai, .cn keys for moonshotai-cn, kimi keys for kimi-for-coding.",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_error_auth_all_families, tests/fixtures/vcr/verify_moonshotai_error_auth_401.json"
+    },
+    {
+      "symptom": "HTTP 429 Too many requests",
+      "cause": "Rate limit tier exceeded",
+      "fix": "Rate limits are tier-based by cumulative account recharge ($1=Tier0 to $3000=Tier5). Upgrade tier for higher limits. Check retry-after header.",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_error_rate_limit_all_families"
+    },
+    {
+      "symptom": "Unexpected response format from kimi-for-coding",
+      "cause": "Provider uses Anthropic messages API, not OpenAI",
+      "fix": "kimi-for-coding routes through AnthropicProvider internally. Ensure you're using the correct provider ID.",
+      "test_evidence": "tests/provider_factory.rs wave_b1 tests"
+    },
+    {
+      "symptom": "MOONSHOT_API_KEY fallback not working for moonshotai-cn",
+      "cause": "KIMI_API_KEY fallback only configured for moonshotai (global)",
+      "fix": "For moonshotai-cn, only MOONSHOT_API_KEY is checked. Set it with a China-registered key.",
+      "test_evidence": "src/auth.rs::test_resolve_api_key_kimi_uses_kimi_env_fallback"
+    }
+  ],
+
+  "test_coverage": {
+    "unit_contract": {
+      "file": "tests/provider_factory.rs",
+      "test_count": 144,
+      "scenarios": ["factory presets", "routing", "auth header", "wave_b1 family coherence"]
+    },
+    "vcr_fixtures": {
+      "directory": "tests/fixtures/vcr/",
+      "scenarios": ["verify_moonshotai_simple_text", "verify_moonshotai_unicode_text", "verify_moonshotai_tool_call_single", "verify_moonshotai_error_auth_401", "verify_moonshotai-cn_simple_text", "verify_kimi-for-coding_simple_text"]
+    },
+    "e2e": {
+      "file": "tests/e2e_provider_scenarios.rs",
+      "scenarios": ["simple_text", "tool_call", "error_auth", "error_rate_limit", "schema_drift", "wave_preset", "determinism", "event_ordering", "request_body_stability", "comprehensive_report"]
+    }
+  }
+}

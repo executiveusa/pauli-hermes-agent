@@ -1,0 +1,335 @@
+# Test Suite Classification
+#
+# Every test file in tests/ must be listed in exactly one suite.
+# CI enforces this via the suite classification guard.
+#
+# Suites:
+#   unit - Pure logic, no mocks/fixtures/VCR/network
+#   vcr  - VCR cassettes, fixture files, or allowlisted stubs
+#   e2e  - Full system: real providers, network, or tmux
+#
+# See docs/testing-policy.md for full definitions and rules.
+# Test-double evidence baseline: docs/test_double_inventory.json (bd-1f42.8.1).
+
+[suite.unit]
+files = [
+    "agent_tools_coverage",
+    "bench_schema",
+    "branch_edge_failure_coverage",
+    "ci_artifact_retention",
+    "ci_strict_gates_validation",
+    "capability_denial_matrix",
+    "capability_policy_model",
+    "capability_policy_scoped",
+    "compaction",
+    "compaction_bug",
+    "config_edge_cases",
+    "crash_consistency",
+    "config_precedence",
+    "cross_surface_parity",
+    "e2e_artifact_retention_triage",
+    "e2e_replay_bundle_validation",
+    "error_types",
+    "franken_node_benchmark_resource_gate_contract",
+    "franken_node_claim_contract",
+    "franken_node_compat_harness",
+    "franken_node_compatibility_doctor_contract",
+    "franken_node_kernel_extraction_boundary_manifest",
+    "franken_node_multi_tier_execution_contract",
+    "franken_node_package_interop_contract",
+    "franken_node_runtime_substrate_contract",
+    "franken_node_security_sandbox_contract",
+    "franken_node_semantic_compat_contract",
+    "franken_node_shadow_canary_rollout_contract",
+    "franken_node_remediation_backlog_contract",
+    "franken_node_unified_test_certification_contract",
+    "franken_node_runtime_integration_contract",
+    "franken_node_practical_finish_contract",
+    "franken_node_event_loop_io_parity_contract",
+    "franken_node_deterministic_replay_contract",
+    "franken_node_migration_assistant_contract",
+    "fuzz_regression",
+    "fuzz_regression_generated",
+    "hostcall_queue_ebr",
+    "hostcall_queue_loom",
+    "hostcall_s3_fifo_policy",
+    "extension_scoring",
+    "extension_scoring_ope",
+    "extensions_auth_error_coverage",
+    "mock_spec_schema",
+    "mock_spec_validation",
+    "model_selector_cycling",
+    "model_serialization",
+    "non_mock_compliance_gate",
+    "non_mock_rubric_gate",
+    "perf_budgets",
+    "perf_comparison",
+    "phase3_cross_module_integration",
+    "phase3_security_invariants",
+    "perf_regression",
+    "performance_comparison",
+    "provider_backward_lock",
+    "provider_closure_truth_table",
+    "provider_discrepancy_classification",
+    "provider_registry_guardrails",
+    "provider_session_coverage",
+    "provider_unit_checklist",
+    "qa_docs_policy_validation",
+    "resource_edge_cases",
+    "scheduler_repro",
+    "accuracy_performance_sec63",
+    "baseline_modeling",
+    "baseline_modeling_evidence",
+    "bayesian_explanation_evidence",
+    "enforcement_state_machine_sec34",
+    "explanation_calibration_replay",
+    "incident_evidence_bundle",
+    "incident_evidence_bundle_sec53",
+    "install_time_security_scanner",
+    "interactive_commands_unit",
+    "json_mode_parity",
+    "ledger_calibration_sec35",
+    "policy_profile_hardening",
+    "risk_scorer_golden_fixtures",
+    "runtime_risk_quantile_evidence",
+    "runtime_risk_quantile_validation",
+    "sec_compatibility_conformance",
+    "sec_traceability_matrix",
+    "security_alert_integration",
+    "security_budgets",
+    "security_conformance_benign",
+    "session_conformance",
+    "session_store_v2",
+    "trust_onboarding_killswitch_sec52",
+    "validate_e2e_artifact_schema",
+    "vcr_parity_validation",
+    "edit_empty_string_repro",
+    "sdk_api",
+    "sdk_unit",
+]
+
+[suite.vcr]
+files = [
+    "agent_loop_reliability",
+    "agent_loop_vcr",
+    "auth_oauth_refresh_vcr",
+    "bench_scenario_runner",
+    "capability_prompt",
+    "ci_cross_platform_matrix",
+    "ci_evidence_bundle",
+    "ci_full_suite_gate",
+    "e2e_golden_transcript_diff",
+    "e2e_replay_bundles",
+    "conformance_comparator",
+    "conformance_regression_gate",
+    "conformance_fixtures",
+    "counting_taxonomy_contract",
+    "conformance_mock",
+    "conformance_report",
+    "error_handling",
+    "event_dispatch_latency",
+    "event_loop_conformance",
+    "ext_bench_harness",
+    "ext_conformance",
+    "ext_conformance_artifacts",
+    "ext_conformance_diff",
+    "ext_conformance_fixture_schema",
+    "ext_conformance_generated",
+    "ext_conformance_guard",
+    "ext_conformance_matrix",
+    "ext_conformance_negative",
+    "ext_conformance_scenarios",
+    "ext_conformance_selector",
+    "ext_conformance_shapes",
+    "ext_entry_scan",
+    "ext_inclusion_list",
+    "ext_load_time_benchmark",
+    "ext_memory_stress",
+    "ext_preflight_analyzer",
+    "ext_proptest",
+    "ext_provenance_verification",
+    "ext_random_trials",
+    "ext_risk_review",
+    "extension_auto_repair_integration",
+    "extension_code_search",
+    "extension_license",
+    "extension_tiered_corpus",
+    "extension_validation",
+    "extensions_auto_repair_unit",
+    "extensions_concurrent_correctness",
+    "extensions_event_cancellation",
+    "extensions_event_wiring",
+    "extensions_fs_shim",
+    "extensions_manifest",
+    "extensions_message_session",
+    "extensions_policy_negative",
+    "extensions_process_shim",
+    "extensions_provider_oauth",
+    "extensions_provider_streaming",
+    "extensions_registration",
+    "extensions_repair_events",
+    "extensions_reliability",
+    "extensions_stress",
+    "graduated_rollout_integration_sec72",
+    "adversarial_extensions",
+    "exec_mediation_integration",
+    "extension_lockfile_provenance",
+    "graduated_enforcement_rollout",
+    "extension_trust_promotion",
+    "extensions_url_shim",
+    "http_client",
+    "interactive_extension_ui",
+    "js_runtime_ordering",
+    "lab_runtime_extensions",
+    "main_cli_selection",
+    "model_registry",
+    "node_buffer_shim",
+    "node_bun_api_matrix",
+    "node_child_process_shim",
+    "node_crypto_shim",
+    "node_events_shim",
+    "node_fs_shim",
+    "node_http_shim",
+    "node_shim_integration",
+    "npm_module_stubs",
+    "package_manager",
+    "perf_baseline_variance",
+    "perf_bench_harness",
+    "pi_connector_shims",
+    "provider_contract",
+    "provider_error_paths",
+    "provider_factory",
+    "provider_metadata_comprehensive",
+    "provider_native_contract",
+    "provider_native_verify",
+    "provider_smoke_matrix",
+    "vcr_redaction_scan",
+    "provider_streaming",
+    "qa_certification_dossier",
+    "repro_config_error",
+    "repro_edit_encoding",
+    "reproduction_truncate",
+    "reproduce_bom_bug",
+    "reproduce_edit_whitespace",
+    "repro_sse_flush",
+    "release_evidence_gate",
+    "release_readiness",
+    "repro_sse_newline",
+    "resource_loader",
+    "rpc_edge_cases",
+    "rpc_mode",
+    "rpc_protocol",
+    "rpc_session_connector",
+    "security_fs_escape",
+    "security_http_policy",
+    "session_connector_conformance",
+    "session_index_tests",
+    "session_picker",
+    "session_store_v2_contract",
+    "sdk_integration",
+    "session_sqlite",
+    "sse_strict_compliance",
+    "streaming_hostcall",
+    "traceability_staleness",
+    "tools_conformance",
+    "tools_hardened",
+    "tui_snapshot",
+    "tui_state",
+]
+
+[suite.e2e]
+files = [
+    "e2e_agent_loop",
+    "e2e_auto_repair",
+    "e2e_cli",
+    "e2e_cross_provider_parity",
+    "e2e_golden_corpus",
+    "e2e_extension_registration",
+    "e2e_failure_injection_recovery",
+    "e2e_golden_path",
+    "e2e_high_risk_workflows",
+    "e2e_interruption_resume_replay",
+    "e2e_library_integration",
+    "e2e_live",
+    "e2e_live_harness",
+    "e2e_message_session_control",
+    "e2e_provider_failure_injection",
+    "e2e_provider_scenarios",
+    "e2e_provider_streaming",
+    "e2e_rpc",
+    "e2e_runtime_risk_telemetry",
+    "e2e_session_persistence",
+    "e2e_soak_stability",
+    "e2e_tools",
+    "e2e_ts_extension_loading",
+    "e2e_tui",
+    "e2e_tui_features",
+    "e2e_tui_perf",
+    "extensions_oco_heterogeneous",
+    "fault_injection_persistence",
+    "e2e_ollama_live",
+    "e2e_security_scenario_sec66",
+    "e2e_security_scenarios",
+    "perf_e2e",
+    "e2e_workflow_preflight",
+    "provider_live_verify",
+]
+
+# Quarantine: flaky tests with tracked expiry and ownership.
+# See docs/testing-policy.md "Flaky-Test Quarantine and Escalation Policy" for rules.
+#
+# Each entry: [quarantine.<test_stem>]
+#   category     = "FLAKE-TIMING" | "FLAKE-ENV" | "FLAKE-NET" | "FLAKE-RES" | "FLAKE-EXT" | "FLAKE-LOGIC"
+#   owner        = "<AgentName or person>"
+#   quarantined  = "YYYY-MM-DD"
+#   expires      = "YYYY-MM-DD"
+#   bead         = "bd-XXXX"
+#   evidence     = "<CI run URL or artifact path>"
+#   repro        = "<exact reproduction command>"
+#   reason       = "<brief description of non-determinism>"
+#   remove_when  = "<objective condition for removing quarantine>"
+#
+# Example:
+# [quarantine.example_flaky_test]
+# category = "FLAKE-TIMING"
+# owner = "TopazFalcon"
+# quarantined = "2026-02-10"
+# expires = "2026-02-17"
+# bead = "bd-XXXX"
+# evidence = "https://ci.example.com/run/12345"
+# repro = "cargo test example_flaky_test -- --nocapture"
+# reason = "Intermittent timeout on CI due to thread scheduling variance"
+# remove_when = "Two consecutive green CI runs for this test on Linux/macOS/Windows"
+
+# ─── Waivers: temporary CI gate bypasses with enforced lifecycle ─────────
+#
+# Waivers allow a specific CI gate to be temporarily bypassed. Every waiver
+# MUST have a linked bead, owner, expiry, and measurable removal plan.
+# Expired waivers fail CI — they must be renewed or the underlying issue fixed.
+#
+# Each entry: [waiver.<gate_id>]
+#   gate_id      = Must match a SubGate.id in ci_full_suite_gate.rs
+#   owner        = "<AgentName or person responsible for removal>"
+#   created      = "YYYY-MM-DD"
+#   expires      = "YYYY-MM-DD"   (max 30 days from created)
+#   bead         = "bd-XXXX"      (linked issue tracking the fix)
+#   reason       = "<why this gate is waived>"
+#   scope        = "full" | "preflight" | "both"  (which lane is affected)
+#   remove_when  = "<objective measurable condition for removing waiver>"
+#
+# Rules:
+#   - Max waiver duration: 30 days (must renew or fix)
+#   - Expired waivers cause CI failure (waiver_lifecycle gate)
+#   - Each waiver must have ALL required fields
+#   - Waivers expiring within 3 days trigger warnings
+#   - Only gates listed in ci_full_suite_gate.rs can be waived
+#
+# Example:
+# [waiver.ext_must_pass]
+# owner = "TopazForest"
+# created = "2026-02-10"
+# expires = "2026-02-24"
+# bead = "bd-1f42.4.4"
+# reason = "Extension conformance suite blocked by upstream QuickJS bug"
+# scope = "both"
+# remove_when = "QuickJS bug fix merged and all 208 extensions pass"

@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "test_name": "verify_gemini_error_auth_401",
+  "recorded_at": "2026-02-10T17:41:16.138Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ]
+        ]
+      },
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body_chunks": [
+          "{\"error\":{\"code\":401,\"message\":\"Simulated error 401\",\"status\":\"UNAUTHENTICATED\"}}"
+        ]
+      }
+    }
+  ]
+}

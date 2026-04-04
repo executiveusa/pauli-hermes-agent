@@ -1,0 +1,46 @@
+name: Publish Any Commit
+permissions:
+  contents: read
+on:
+  pull_request:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "!**"
+
+jobs:
+  pkg-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run examples:build
+      - run: |
+          npx pkg-pr-new publish \
+            . \
+            ./examples/basic-server-preact \
+            ./examples/basic-server-react \
+            ./examples/basic-server-solid \
+            ./examples/basic-server-svelte \
+            ./examples/basic-server-vanillajs \
+            ./examples/basic-server-vue \
+            ./examples/budget-allocator-server \
+            ./examples/cohort-heatmap-server \
+            ./examples/customer-segmentation-server \
+            ./examples/debug-server \
+            ./examples/map-server \
+            ./examples/pdf-server \
+            ./examples/scenario-modeler-server \
+            ./examples/shadertoy-server \
+            ./examples/sheet-music-server \
+            ./examples/system-monitor-server \
+            ./examples/threejs-server \
+            ./examples/transcript-server \
+            ./examples/video-resource-server \
+            ./examples/wiki-explorer-server

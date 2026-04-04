@@ -1,0 +1,518 @@
+{
+  "schema": "pi.sec.traceability_matrix.v1",
+  "generated_at": "2026-02-14T11:50:00Z",
+  "version": "1.0.0",
+  "description": "Machine-readable traceability matrix mapping SEC implementation beads to unit and integration test targets.",
+  "beads": [
+    {
+      "bead_id": "bd-f0huc",
+      "sec_id": "SEC-2.1",
+      "title": "Extension manifest v2: explicit capabilities, behavioral intents, and trust metadata",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "capability_manifest_*",
+        "count": 12,
+        "categories": ["success", "edge-case"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/ext_preflight_analyzer.rs",
+          "count": 7,
+          "categories": ["success", "failure"]
+        },
+        {
+          "file": "tests/e2e_workflow_preflight.rs",
+          "count": 16,
+          "categories": ["success", "failure", "edge-case"]
+        }
+      ],
+      "total_test_count": 35
+    },
+    {
+      "bead_id": "bd-3br2a",
+      "sec_id": "SEC-2.2",
+      "title": "Deterministic extension lockfile and provenance verification pipeline",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "lockfile_*, provenance_*",
+        "count": 8,
+        "categories": ["success", "failure"]
+      },
+      "integration_tests": [],
+      "total_test_count": 8
+    },
+    {
+      "bead_id": "bd-21vng",
+      "sec_id": "SEC-2.3",
+      "title": "Install-time static scanner with deterministic risk classifier",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "install_risk_*, classify_*",
+        "count": 15,
+        "categories": ["success", "failure", "edge-case"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/install_time_security_scanner.rs",
+          "count": 49,
+          "categories": ["success", "failure", "edge-case", "determinism"]
+        }
+      ],
+      "total_test_count": 64
+    },
+    {
+      "bead_id": "bd-21nj4",
+      "sec_id": "SEC-2.4",
+      "title": "Quarantine-to-trust promotion workflow for unknown/high-risk extensions",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extension_preflight.rs",
+        "test_prefix": "trust_*, promote_*",
+        "count": 10,
+        "categories": ["success", "failure"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/extension_trust_promotion.rs",
+          "count": 37,
+          "categories": ["success", "failure", "edge-case"]
+        }
+      ],
+      "total_test_count": 47
+    },
+    {
+      "bead_id": "bd-2a9ll",
+      "sec_id": "SEC-3.1",
+      "title": "Runtime hostcall telemetry schema and feature extraction pipeline",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "runtime_hostcall_*, feature_extract_*",
+        "count": 20,
+        "categories": ["success", "edge-case"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/e2e_runtime_risk_telemetry.rs",
+          "count": 1,
+          "categories": ["success"]
+        }
+      ],
+      "total_test_count": 21
+    },
+    {
+      "bead_id": "bd-153pv",
+      "sec_id": "SEC-3.2",
+      "title": "Baseline modeling with robust statistics and Markov transition profiles",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "runtime_risk_baseline_*, markov_*",
+        "count": 15,
+        "categories": ["success", "edge-case", "determinism"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/runtime_risk_quantile_validation.rs",
+          "count": 8,
+          "categories": ["success", "determinism"]
+        },
+        {
+          "file": "tests/runtime_risk_quantile_evidence.rs",
+          "count": 6,
+          "categories": ["success", "determinism"]
+        }
+      ],
+      "total_test_count": 29
+    },
+    {
+      "bead_id": "bd-3f1ab",
+      "sec_id": "SEC-3.3",
+      "title": "Online deterministic risk scorer with explainable reason codes",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "runtime_risk_score_*, risk_explain_*",
+        "count": 30,
+        "categories": ["success", "failure", "edge-case", "determinism"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/risk_scorer_golden_fixtures.rs",
+          "count": 7,
+          "categories": ["determinism"]
+        },
+        {
+          "file": "tests/accuracy_performance_sec63.rs",
+          "count": 10,
+          "categories": ["success", "performance"]
+        }
+      ],
+      "total_test_count": 47
+    },
+    {
+      "bead_id": "bd-3tb30",
+      "sec_id": "SEC-3.4",
+      "title": "Enforcement state machine: allow/harden/prompt/deny/terminate with hysteresis",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "enforcement_*, score_band_*",
+        "count": 29,
+        "categories": ["success", "failure", "edge-case", "determinism", "anti-flapping"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/enforcement_state_machine_sec34.rs",
+          "count": 16,
+          "categories": ["success", "determinism", "edge-case"]
+        }
+      ],
+      "total_test_count": 45,
+      "assertion_details": {
+        "state_ordering": 1,
+        "display_impl": 1,
+        "risk_action_mapping": 2,
+        "score_band_classification": 5,
+        "escalation": 3,
+        "de_escalation": 3,
+        "hysteresis_anti_flapping": 3,
+        "terminal_state": 1,
+        "cooldown": 2,
+        "serde_roundtrip": 4,
+        "deterministic_sequence": 2,
+        "profile_comparison": 1,
+        "custom_config": 1
+      }
+    },
+    {
+      "bead_id": "bd-3i9da",
+      "sec_id": "SEC-3.5",
+      "title": "Hash-chained decision ledger and offline threshold calibration",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "ledger_*, hash_chain_*, calibrat_*",
+        "count": 25,
+        "categories": ["success", "failure", "determinism", "tamper-detection"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/ledger_calibration_sec35.rs",
+          "count": 15,
+          "categories": ["success", "determinism", "tamper-detection"]
+        }
+      ],
+      "total_test_count": 40
+    },
+    {
+      "bead_id": "bd-b1d7o",
+      "sec_id": "SEC-4.1",
+      "title": "Per-extension resource quotas (CPU, memory, hostcalls, subprocess budget)",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "quota_*",
+        "count": 20,
+        "categories": ["success", "failure", "edge-case"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/security_budgets.rs",
+          "count": 19,
+          "categories": ["success", "failure"]
+        }
+      ],
+      "total_test_count": 39
+    },
+    {
+      "bead_id": "bd-wzzp4",
+      "sec_id": "SEC-4.2",
+      "title": "Capability-scoped filesystem/network allowlists with least-privilege defaults",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "fs_connector_*, capability_*",
+        "count": 25,
+        "categories": ["success", "failure", "edge-case"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/security_fs_escape.rs",
+          "count": 40,
+          "categories": ["success", "failure", "path-traversal"]
+        },
+        {
+          "file": "tests/security_http_policy.rs",
+          "count": 28,
+          "categories": ["success", "failure"]
+        },
+        {
+          "file": "tests/capability_policy_scoped.rs",
+          "count": 75,
+          "categories": ["success", "failure", "edge-case"]
+        },
+        {
+          "file": "tests/capability_denial_matrix.rs",
+          "count": 26,
+          "categories": ["success", "failure"]
+        }
+      ],
+      "total_test_count": 194
+    },
+    {
+      "bead_id": "bd-zh0hj",
+      "sec_id": "SEC-4.3",
+      "title": "Exec and secret mediation hardening (command policy + secret broker)",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "exec_mediat_*, secret_broker_*, dangerous_command_*",
+        "count": 20,
+        "categories": ["success", "failure", "edge-case"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/exec_mediation_integration.rs",
+          "count": 68,
+          "categories": ["success", "failure", "edge-case"]
+        }
+      ],
+      "total_test_count": 88
+    },
+    {
+      "bead_id": "bd-2vbax",
+      "sec_id": "SEC-4.4",
+      "title": "Policy profile hardening and explicit dangerous-capability opt-in semantics",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "explain_effective_*, dangerous_*, profile_transition_*",
+        "count": 16,
+        "categories": ["success", "edge-case", "serde"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/policy_profile_hardening.rs",
+          "count": 36,
+          "categories": ["success", "failure", "edge-case"]
+        }
+      ],
+      "config_tests": {
+        "file": "src/config.rs",
+        "test_prefix": "dangerous_opt_in_*, profile_downgrade_*, profile_upgrade_*, explain_policy_*",
+        "count": 7,
+        "categories": ["success", "edge-case"]
+      },
+      "total_test_count": 59,
+      "assertion_details": {
+        "policy_explanation": 6,
+        "dangerous_capability_gating": 4,
+        "profile_transition_check": 2,
+        "audit_trail": 1,
+        "config_integration": 7
+      }
+    },
+    {
+      "bead_id": "bd-qudx1",
+      "sec_id": "SEC-5.1",
+      "title": "Security control center and real-time runtime alerts with reason codes",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "alert_*, sha256_short_*, emit_*, query_*",
+        "count": 21,
+        "categories": ["success", "edge-case", "serde", "filtering"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/security_alert_integration.rs",
+          "count": 30,
+          "categories": ["success", "failure", "edge-case"]
+        }
+      ],
+      "total_test_count": 51,
+      "assertion_details": {
+        "factory_methods": 8,
+        "action_mapping": 2,
+        "serde_roundtrip": 2,
+        "filter_queries": 3,
+        "severity_counts": 2,
+        "category_counts": 1,
+        "hash_determinism": 2,
+        "emit_tracing": 1
+      }
+    },
+    {
+      "bead_id": "bd-ww5br",
+      "sec_id": "SEC-5.2",
+      "title": "Trust onboarding wizard and emergency kill-switch workflow",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "kill_switch_*, lift_kill_switch_*, trust_*, promote_trust_*, is_killed_*, full_trust_*, multiple_ext_*",
+        "count": 27,
+        "categories": ["success", "failure", "edge-case", "lifecycle", "audit"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/trust_onboarding_killswitch_sec52.rs",
+          "count": 13,
+          "categories": ["success", "failure", "edge-case", "hostcall-gating"]
+        }
+      ],
+      "total_test_count": 40,
+      "assertion_details": {
+        "kill_switch_activation": 4,
+        "kill_switch_deactivation": 4,
+        "kill_switch_idempotency": 1,
+        "quarantine_integration": 2,
+        "alert_emission": 3,
+        "audit_trail": 3,
+        "trust_onboarding_accept": 2,
+        "trust_onboarding_reject": 2,
+        "trust_promotion": 3,
+        "full_lifecycle": 1,
+        "multi_extension_independence": 1,
+        "display_impl": 1
+      }
+    },
+    {
+      "bead_id": "bd-11mqo",
+      "sec_id": "SEC-5.3",
+      "title": "Incident evidence bundle export and forensic replay UX",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "incident_bundle_*, export_incident_*",
+        "count": 5,
+        "categories": ["success", "determinism"]
+      },
+      "integration_tests": [
+        {
+          "file": "tests/incident_evidence_bundle.rs",
+          "count": 30,
+          "categories": ["success", "failure", "determinism", "redaction"]
+        },
+        {
+          "file": "tests/incident_evidence_bundle_sec53.rs",
+          "count": 13,
+          "categories": ["success", "failure", "determinism", "serde"]
+        }
+      ],
+      "total_test_count": 48
+    },
+    {
+      "bead_id": "bd-2teqs",
+      "sec_id": "SEC-7.1",
+      "title": "Shadow-mode rollout with score-only telemetry dashboards",
+      "status": "closed",
+      "unit_tests": {
+        "file": "src/extensions.rs",
+        "test_prefix": "shadow_mode_*",
+        "count": 3,
+        "categories": ["success", "failure"]
+      },
+      "integration_tests": [],
+      "total_test_count": 3
+    },
+    {
+      "bead_id": "bd-1a2cu",
+      "sec_id": "SEC-6.4",
+      "title": "Compatibility conformance + CI security quality gates",
+      "status": "closed",
+      "unit_tests": {
+        "file": null,
+        "test_prefix": null,
+        "count": 0,
+        "categories": []
+      },
+      "integration_tests": [
+        {
+          "file": "tests/sec_compatibility_conformance.rs",
+          "count": 31,
+          "categories": ["success", "conformance", "regression", "serde"]
+        }
+      ],
+      "total_test_count": 31,
+      "assertion_details": {
+        "benign_capability_compatibility": 5,
+        "dangerous_capability_gating": 4,
+        "deny_cap_precedence": 4,
+        "profile_transition": 5,
+        "trust_lifecycle": 6,
+        "kill_switch_alerts": 2,
+        "waiver_validation": 2,
+        "compatibility_scanner": 2,
+        "serde_roundtrip": 3,
+        "cross_profile_matrix": 4,
+        "regression_guards": 5,
+        "ci_gate_artifact": 1
+      }
+    }
+  ],
+  "cross_cutting_test_files": [
+    {
+      "file": "tests/capability_policy_model.rs",
+      "count": 34,
+      "covers": ["SEC-4.2", "SEC-4.4"],
+      "categories": ["success", "failure", "edge-case"]
+    },
+    {
+      "file": "tests/capability_prompt.rs",
+      "count": 46,
+      "covers": ["SEC-4.2", "SEC-4.3"],
+      "categories": ["success", "failure"]
+    },
+    {
+      "file": "tests/extensions_policy_negative.rs",
+      "count": 38,
+      "covers": ["SEC-4.2", "SEC-4.3", "SEC-4.4"],
+      "categories": ["failure", "denial"]
+    },
+    {
+      "file": "tests/e2e_high_risk_workflows.rs",
+      "count": 23,
+      "covers": ["SEC-3.3", "SEC-3.4", "SEC-5.1"],
+      "categories": ["success", "failure", "edge-case"]
+    },
+    {
+      "file": "tests/qa_docs_policy_validation.rs",
+      "count": 61,
+      "covers": ["SEC-4.2", "SEC-4.3", "SEC-4.4"],
+      "categories": ["success", "validation"]
+    }
+  ],
+  "summary": {
+    "total_sec_beads": 18,
+    "beads_with_unit_tests": 17,
+    "beads_with_integration_tests": 16,
+    "total_unit_tests": 301,
+    "total_integration_tests": 652,
+    "total_cross_cutting_tests": 202,
+    "grand_total": 1155,
+    "coverage_categories": [
+      "success (happy path)",
+      "failure (expected errors)",
+      "edge-case (boundary conditions)",
+      "determinism (reproducibility)",
+      "serde (serialization roundtrip)",
+      "anti-flapping (hysteresis)",
+      "tamper-detection (integrity)",
+      "path-traversal (filesystem security)",
+      "hostcall-gating (trust enforcement)",
+      "audit (provenance trail)",
+      "lifecycle (state transitions)",
+      "redaction (privacy controls)"
+    ]
+  },
+  "maintenance_notes": {
+    "test_naming_convention": "Tests use SEC bead ID in file names where possible (e.g., _sec34, _sec52, _sec53)",
+    "fixture_ownership": "Golden fixture files owned by SEC-3.3 (risk_scorer_golden_fixtures.rs)",
+    "drift_prevention": "New SEC behaviors MUST add corresponding test targets to this matrix",
+    "update_trigger": "Matrix must be updated when: (1) new SEC bead implemented, (2) test added/removed, (3) behavior changed"
+  }
+}

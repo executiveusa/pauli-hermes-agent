@@ -1,0 +1,30 @@
+{
+  "schema": "pi.golden_corpus.v1",
+  "scenario": "json_mode_stdin_whitespace_header_only",
+  "surface": "json_mode_stdin",
+  "description": "JSON mode stdin edge case: whitespace-only stdin is trimmed away and emits only session header",
+  "cli_args": [
+    "--mode", "json",
+    "--provider", "anthropic",
+    "--model", "claude-sonnet-4-5",
+    "--api-key", "test-vcr-key",
+    "--no-tools",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--thinking", "off"
+  ],
+  "stdin": "   \n\t\n",
+  "env_overrides": {},
+  "cassette": null,
+  "expected": {
+    "exit_code": 0,
+    "stdout_contains": [],
+    "stdout_not_contains": [],
+    "stderr_not_contains": ["error", "panic"],
+    "no_session_files": true,
+    "json_line_count": 1,
+    "json_session_header": true
+  }
+}

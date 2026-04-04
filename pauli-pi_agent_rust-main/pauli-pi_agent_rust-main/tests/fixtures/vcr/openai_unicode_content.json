@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "test_name": "openai_unicode_content",
+  "recorded_at": "2026-02-06T21:00:00.000Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "headers": [
+          ["Authorization", "[REDACTED]"],
+          ["Content-Type", "application/json"],
+          ["Accept", "text/event-stream"]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          ["Content-Type", "text/event-stream"]
+        ],
+        "body_chunks": [
+          "data: {\"id\":\"chatcmpl-vcr003\",\"object\":\"chat.completion.chunk\",\"created\":1738875600,\"model\":\"gpt-4o-mini\",\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\",\"content\":\"\"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-vcr003\",\"object\":\"chat.completion.chunk\",\"created\":1738875600,\"model\":\"gpt-4o-mini\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\\ud83d\\ude00 \"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-vcr003\",\"object\":\"chat.completion.chunk\",\"created\":1738875600,\"model\":\"gpt-4o-mini\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\\u4f60\\u597d\"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-vcr003\",\"object\":\"chat.completion.chunk\",\"created\":1738875600,\"model\":\"gpt-4o-mini\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\" \\u05e9\\u05dc\\u05d5\\u05dd\"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-vcr003\",\"object\":\"chat.completion.chunk\",\"created\":1738875600,\"model\":\"gpt-4o-mini\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":25,\"completion_tokens\":10,\"total_tokens\":35}}\n\n",
+          "data: [DONE]\n\n"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema": "pi.golden_corpus.v1",
+  "scenario": "error_invalid_model",
+  "surface": "error_cases",
+  "description": "Error: invalid/unknown model ID should produce a clear error",
+  "cli_args": [
+    "-p",
+    "--provider", "anthropic",
+    "--model", "nonexistent-model-xyz",
+    "--api-key", "test-key",
+    "--no-tools",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--thinking", "off",
+    "Hello"
+  ],
+  "stdin": null,
+  "env_overrides": {},
+  "cassette": null,
+  "expected": {
+    "exit_code_nonzero": true,
+    "stdout_contains": [],
+    "stdout_not_contains": [],
+    "stderr_not_contains": ["panic"],
+    "no_session_files": true
+  }
+}

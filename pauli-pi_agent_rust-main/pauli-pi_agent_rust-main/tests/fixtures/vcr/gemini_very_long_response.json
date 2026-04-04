@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "test_name": "gemini_very_long_response",
+  "recorded_at": "2026-02-06T21:00:00.000Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=test-key",
+        "headers": [
+          ["Content-Type", "application/json"],
+          ["Accept", "text/event-stream"]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          ["Content-Type", "text/event-stream"]
+        ],
+        "body_chunks": [
+          "data: {\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"text\":\"1. Rust is a systems programming language\"}]}}]}\n\n",
+          "data: {\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"text\":\" developed by Mozilla.\\n2. It focuses on safety\"}]}}]}\n\n",
+          "data: {\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"text\":\", speed, and concurrency.\\n3. Rust prevents memory\"}]}}]}\n\n",
+          "data: {\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"text\":\" leaks through its ownership system.\\n4. The language has zero\"}]}}]}\n\n",
+          "data: {\"candidates\":[{\"content\":{\"role\":\"model\",\"parts\":[{\"text\":\"-cost abstractions.\\n5. Rust compiles to native machine\"}]},\"finishReason\":\"MAX_TOKENS\"}],\"usageMetadata\":{\"promptTokenCount\":30,\"candidatesTokenCount\":64,\"totalTokenCount\":94}}\n\n"
+        ]
+      }
+    }
+  ]
+}

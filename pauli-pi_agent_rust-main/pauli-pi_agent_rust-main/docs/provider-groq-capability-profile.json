@@ -1,0 +1,206 @@
+{
+  "schema": "pi.provider_capability_profile.v1",
+  "schema_version": "1.0",
+  "bead_id": "bd-3uqg.11.5.1",
+  "provider_id": "groq",
+  "canonical_provider_id": "groq",
+  "verified_at_utc": "2026-02-13T05:10:00Z",
+  "source_snapshot": [
+    {
+      "label": "Groq OpenAI Compatibility",
+      "url": "https://console.groq.com/docs/openai",
+      "key_points": [
+        "OpenAI client compatibility with base_url https://api.groq.com/openai/v1",
+        "Unsupported OpenAI fields list",
+        "temperature=0 normalization behavior"
+      ]
+    },
+    {
+      "label": "Groq API Reference",
+      "url": "https://console.groq.com/docs/api-reference",
+      "key_points": [
+        "POST /openai/v1/chat/completions",
+        "SSE streaming contract and data:[DONE] termination",
+        "n is constrained to 1",
+        "parallel_tool_calls and tool_choice parameter surfaces",
+        "usage fields and Groq-specific metadata"
+      ]
+    },
+    {
+      "label": "Groq Local Tool Calling",
+      "url": "https://console.groq.com/docs/tool-use/local-tool-calling",
+      "key_points": [
+        "tool_choice behavior and 400 error outcomes when constraints are violated",
+        "streaming tool-use examples"
+      ]
+    },
+    {
+      "label": "Groq Responses API",
+      "url": "https://console.groq.com/docs/responses-api",
+      "key_points": [
+        "OpenAI Responses compatibility (beta)",
+        "unsupported response fields",
+        "Groq-Beta inference-metrics header"
+      ]
+    },
+    {
+      "label": "Groq Error Codes",
+      "url": "https://console.groq.com/docs/errors",
+      "key_points": [
+        "HTTP status/error taxonomy including 429 and custom 498/499"
+      ]
+    },
+    {
+      "label": "Groq Rate Limits",
+      "url": "https://console.groq.com/docs/rate-limits",
+      "key_points": [
+        "429 semantics and retry-after",
+        "x-ratelimit-* response headers"
+      ]
+    }
+  ],
+  "endpoint_profile": {
+    "base_url": "https://api.groq.com/openai/v1",
+    "primary_chat_endpoint": "/chat/completions",
+    "responses_api": {
+      "supported": true,
+      "status": "beta",
+      "unsupported_fields": [
+        "previous_response_id",
+        "store",
+        "truncation",
+        "include",
+        "safety_identifier",
+        "prompt_cache_key",
+        "prompt"
+      ]
+    }
+  },
+  "openai_compatibility_contract": {
+    "compatible": true,
+    "unsupported_chat_fields": [
+      "logprobs",
+      "logit_bias",
+      "top_logprobs",
+      "messages[].name"
+    ],
+    "n_parameter": {
+      "min": 1,
+      "max": 1,
+      "non_1_behavior": "400 response"
+    },
+    "temperature_behavior": {
+      "input_zero_behavior": "normalized_to_1e-8",
+      "recommended_range": ">0 and <=2"
+    }
+  },
+  "streaming_contract": {
+    "protocol": "server_sent_events",
+    "stream_parameter_default": false,
+    "termination_marker": "data: [DONE]",
+    "pi_normalization_expectations": [
+      "Map delta chunks into StreamEvent::TextDelta/ToolCallDelta consistently",
+      "Treat terminal SSE marker as Done unless provider emits explicit error event"
+    ]
+  },
+  "tool_calling_contract": {
+    "supported": true,
+    "tool_choice_modes": [
+      "auto",
+      "none",
+      "required",
+      "function_name_object"
+    ],
+    "parallel_tool_calls_default": true,
+    "constraint_violation_behavior": "400 Bad Request when tool_choice constraints are not satisfied",
+    "pi_normalization_expectations": [
+      "Preserve tool call ordering and argument fragments under streaming",
+      "Map forced-tool and required-tool failures into actionable auth/request diagnostics"
+    ]
+  },
+  "usage_and_metrics": {
+    "usage_fields": [
+      "prompt_tokens",
+      "completion_tokens",
+      "total_tokens",
+      "queue_time",
+      "prompt_time",
+      "completion_time",
+      "total_time"
+    ],
+    "responses_usage_fields": [
+      "input_tokens",
+      "output_tokens",
+      "total_tokens"
+    ],
+    "optional_inference_metrics_header": "Groq-Beta: inference-metrics",
+    "optional_inference_metadata_fields": [
+      "completion_time",
+      "prompt_time",
+      "queue_time",
+      "total_time"
+    ]
+  },
+  "error_and_rate_limit_profile": {
+    "http_errors_documented": [
+      400,
+      401,
+      403,
+      404,
+      413,
+      422,
+      424,
+      429,
+      498,
+      499,
+      500,
+      502,
+      503
+    ],
+    "rate_limit_status_code": 429,
+    "rate_limit_headers": [
+      "retry-after",
+      "x-ratelimit-limit-requests",
+      "x-ratelimit-limit-tokens",
+      "x-ratelimit-remaining-requests",
+      "x-ratelimit-remaining-tokens",
+      "x-ratelimit-reset-requests",
+      "x-ratelimit-reset-tokens"
+    ],
+    "pi_expectations": [
+      "Ensure 429 is classified as rate-limit diagnostic with retry guidance",
+      "Ensure 401 remains auth diagnostic with GROQ_API_KEY remediation"
+    ]
+  },
+  "implementation_decisions_for_pi": [
+    {
+      "decision_id": "groq-spec-001",
+      "decision": "Keep Groq on OpenAI-compatible routing base_url https://api.groq.com/openai/v1 with chat-completions path normalization.",
+      "rationale": "Official docs and API reference confirm primary chat endpoint and compatibility contract.",
+      "downstream_bead": "bd-3uqg.11.5.3"
+    },
+    {
+      "decision_id": "groq-spec-002",
+      "decision": "Treat n>1 and unsupported OpenAI fields as request-shaping incompatibilities expected to return 400.",
+      "rationale": "Compatibility docs explicitly call out unsupported fields and n constraint.",
+      "downstream_bead": "bd-3uqg.11.5.3"
+    },
+    {
+      "decision_id": "groq-spec-003",
+      "decision": "Require conformance coverage for tool_choice modes and streaming tool-call normalization under parallel_tool_calls=true.",
+      "rationale": "Tool-calling docs specify mode-specific error behavior and streaming support.",
+      "downstream_bead": "bd-3uqg.11.5.5"
+    },
+    {
+      "decision_id": "groq-spec-004",
+      "decision": "Expose Groq usage/timing metrics in diagnostics when available, but keep core token accounting stable without optional headers.",
+      "rationale": "Inference metrics header is optional; base usage fields remain present without it.",
+      "downstream_bead": "bd-3uqg.11.5.6"
+    }
+  ],
+  "downstream_beads_unblocked": [
+    "bd-3uqg.11.5.2",
+    "bd-3uqg.11.5.3",
+    "bd-3uqg.11.5.4"
+  ]
+}

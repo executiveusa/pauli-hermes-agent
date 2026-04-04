@@ -1,0 +1,338 @@
+{
+  "schema": "pi.qa.provider_discrepancy_ledger.v1",
+  "bead": "bd-3uqg.12.1.1",
+  "generated_at": "2026-02-14T00:40:00Z",
+  "generated_by": "CopperBrook (Claude Opus 4.6)",
+  "methodology": {
+    "description": "Normalized discrepancy ledger synthesized from 4 upstream audit beads. Each finding is classified by root-cause and user-impact severity.",
+    "source_beads": [
+      {
+        "id": "bd-3uqg.14.3.1",
+        "title": "Upstream provider-id parity reconciliation",
+        "author": "TopazFalcon",
+        "artifact": "docs/provider-parity-reconciliation-report.json"
+      },
+      {
+        "id": "bd-3uqg.14.3.2",
+        "title": "Provider test-matrix validation",
+        "author": "CopperBrook",
+        "artifact": "bead comments (no standalone file)"
+      },
+      {
+        "id": "bd-3uqg.14.3.3",
+        "title": "Structured log/artifact schema validation",
+        "author": "OpusAgent",
+        "artifact": "docs/provider_e2e_artifact_contract.json"
+      },
+      {
+        "id": "bd-3uqg.14.3.4",
+        "title": "User-visible provider discoverability",
+        "author": "CopperBrook + TopazFalcon",
+        "artifact": "bead comments (6 gaps + 6 mitigations)"
+      }
+    ],
+    "root_cause_taxonomy": {
+      "missing_implementation": "Code feature not present; requires new code to resolve",
+      "alias_mismatch": "Naming divergence between Pi and upstream/user expectations",
+      "test_evidence_gap": "Test fixture or assertion missing for claimed behavior",
+      "docs_mismatch": "Documentation absent or inconsistent with reality",
+      "logging_schema_drift": "Log/artifact schemas incomplete, inconsistent, or unenforced"
+    },
+    "severity_levels": {
+      "critical": "Users cannot use a provider or core feature",
+      "high": "Users likely to hit confusion or failure in common workflows",
+      "medium": "Users may hit issues in less common workflows",
+      "low": "Cosmetic or minor issues unlikely to affect most users",
+      "info": "Informational observation with no direct user impact"
+    }
+  },
+
+  "summary": {
+    "total_discrepancies": 19,
+    "by_severity": {
+      "critical": 0,
+      "high": 3,
+      "medium": 6,
+      "low": 8,
+      "info": 2
+    },
+    "by_root_cause": {
+      "missing_implementation": 5,
+      "alias_mismatch": 3,
+      "test_evidence_gap": 4,
+      "docs_mismatch": 3,
+      "logging_schema_drift": 4
+    },
+    "by_remediation_status": {
+      "fixed": 5,
+      "partially_fixed": 2,
+      "open": 12
+    }
+  },
+
+  "discrepancies": [
+    {
+      "id": "DISC-001",
+      "title": "Naming divergence: Pi 'fireworks' vs upstream 'fireworks-ai'",
+      "source_bead": "bd-3uqg.14.3.1",
+      "root_cause": "alias_mismatch",
+      "severity": "low",
+      "user_impact": "Users typing 'fireworks-ai' (upstream convention) resolve correctly via alias. No functional breakage.",
+      "evidence": "docs/provider-parity-reconciliation-report.json → naming_discrepancies[0]",
+      "remediation_status": "open",
+      "remediation_note": "Consider migrating Pi canonical to 'fireworks-ai' per deprecation policy. Low priority since alias resolution works.",
+      "affected_providers": ["fireworks"]
+    },
+    {
+      "id": "DISC-002",
+      "title": "Naming divergence: Pi 'azure-openai' vs upstream 'azure'",
+      "source_bead": "bd-3uqg.14.3.1",
+      "root_cause": "alias_mismatch",
+      "severity": "low",
+      "user_impact": "Users typing 'azure' resolve correctly via alias. No functional breakage.",
+      "evidence": "docs/provider-parity-reconciliation-report.json → naming_discrepancies[1]",
+      "remediation_status": "open",
+      "remediation_note": "Consider migrating Pi canonical to 'azure' per deprecation policy. Low priority since alias resolution works.",
+      "affected_providers": ["azure-openai"]
+    },
+    {
+      "id": "DISC-003",
+      "title": "78 of 88 providers had no aliases for common user names",
+      "source_bead": "bd-3uqg.14.3.4",
+      "root_cause": "alias_mismatch",
+      "severity": "high",
+      "user_impact": "Users typing common provider names (together, grok, hf, nim, pplx, etc.) got 'provider not found' errors despite the provider being fully implemented.",
+      "evidence": "bd-3uqg.14.3.4 comments: Gap 1, src/provider_metadata.rs alias fields",
+      "remediation_status": "partially_fixed",
+      "remediation_note": "14 new aliases added across 10 high-traffic providers in bd-tuh3g (CopperBrook). Additional aliases added by concurrent agent (nanogpt, novita, zhipu, glm). 64+ providers still have no aliases but most have self-explanatory IDs.",
+      "remediation_beads": ["bd-tuh3g"],
+      "affected_providers": ["togetherai", "xai", "huggingface", "nvidia", "lmstudio", "deepseek", "perplexity", "deepinfra", "mistral", "siliconflow"]
+    },
+    {
+      "id": "DISC-004",
+      "title": "No --list-providers CLI command",
+      "source_bead": "bd-3uqg.14.3.4",
+      "root_cause": "missing_implementation",
+      "severity": "high",
+      "user_impact": "Users had no way to discover available providers, their aliases, or required auth env keys from the CLI.",
+      "evidence": "bd-3uqg.14.3.4 comments: Gap 3",
+      "remediation_status": "fixed",
+      "remediation_note": "Implemented in bd-3gsk0 (CopperBrook). Displays table of all 88 providers with canonical ID, aliases, auth env keys, and API type.",
+      "remediation_beads": ["bd-3gsk0"],
+      "affected_providers": ["all"]
+    },
+    {
+      "id": "DISC-005",
+      "title": "Model selector did not search provider aliases",
+      "source_bead": "bd-3uqg.14.3.4",
+      "root_cause": "missing_implementation",
+      "severity": "high",
+      "user_impact": "Users typing alias names (e.g., 'grok', 'together', 'hf') in the interactive model selector got no results, even though the provider existed.",
+      "evidence": "src/model_selector.rs:matches_query() only searched canonical provider ID",
+      "remediation_status": "fixed",
+      "remediation_note": "Implemented in bd-1gi21 (CopperBrook). matches_query() now checks provider_metadata() aliases.",
+      "remediation_beads": ["bd-1gi21"],
+      "affected_providers": ["all providers with aliases"]
+    },
+    {
+      "id": "DISC-006",
+      "title": "Generic 'Provider not implemented' error with no suggestions",
+      "source_bead": "bd-3uqg.14.3.4",
+      "root_cause": "missing_implementation",
+      "severity": "medium",
+      "user_impact": "Users who mistyped a provider name got an unhelpful error with no guidance on similar valid providers.",
+      "evidence": "src/providers/mod.rs:146-149, bd-3uqg.14.3.4 comments: Gap 6",
+      "remediation_status": "fixed",
+      "remediation_note": "Implemented in bd-1fgjj (CopperBrook). suggest_similar_providers() provides 'Did you mean: X?' suggestions using prefix/substring matching.",
+      "remediation_beads": ["bd-1fgjj"],
+      "affected_providers": ["all"]
+    },
+    {
+      "id": "DISC-007",
+      "title": "No display_name field on ProviderMetadata",
+      "source_bead": "bd-3uqg.14.3.4",
+      "root_cause": "missing_implementation",
+      "severity": "medium",
+      "user_impact": "Users see cryptic IDs like '302ai', 'xai', 'moonshotai' in model listings and selector instead of human-friendly names like 'Together AI', 'Grok (xAI)'.",
+      "evidence": "src/provider_metadata.rs: ProviderMetadata struct has no display_name field",
+      "remediation_status": "open",
+      "remediation_note": "Requires adding display_name: Option<&'static str> to ProviderMetadata struct and populating for all 88 providers. Medium effort.",
+      "affected_providers": ["all"]
+    },
+    {
+      "id": "DISC-008",
+      "title": "First-time setup only recognizes 3 providers",
+      "source_bead": "bd-3uqg.14.3.4",
+      "root_cause": "missing_implementation",
+      "severity": "medium",
+      "user_impact": "Interactive onboarding only offers Anthropic, OpenAI, Google. Users of other providers (Groq, Cohere, DeepSeek, etc.) get no setup guidance.",
+      "evidence": "src/main.rs:1526-1542 PROVIDER_CHOICES array has 3 entries",
+      "remediation_status": "open",
+      "remediation_note": "Expand PROVIDER_CHOICES to include at least groq, cohere, deepseek, mistral. Or add 'Other' option with provider search.",
+      "affected_providers": ["all except anthropic, openai, google"]
+    },
+    {
+      "id": "DISC-009",
+      "title": "Bedrock missing 2 error-scenario VCR cassettes",
+      "source_bead": "bd-3uqg.14.3.2",
+      "root_cause": "test_evidence_gap",
+      "severity": "low",
+      "user_impact": "No direct user impact. Error handling paths for Bedrock are untested by VCR replay, but are covered by unit-level assertion tests.",
+      "evidence": "bd-3uqg.14.3.2 comments: Deviation 1. AWS uses different error signaling format.",
+      "remediation_status": "open",
+      "remediation_note": "Record Bedrock error cassettes for auth_failure and rate_limit scenarios. Requires AWS test credentials.",
+      "affected_providers": ["amazon-bedrock"]
+    },
+    {
+      "id": "DISC-010",
+      "title": "GitLab missing tool_call VCR cassette",
+      "source_bead": "bd-3uqg.14.3.2",
+      "root_cause": "test_evidence_gap",
+      "severity": "low",
+      "user_impact": "No direct user impact. GitLab API doesn't support standard tool-call format, so this is an API limitation, not a missing test.",
+      "evidence": "bd-3uqg.14.3.2 comments: Deviation 2",
+      "remediation_status": "open",
+      "remediation_note": "Document GitLab tool-call limitation. Consider adding negative test asserting graceful degradation.",
+      "affected_providers": ["gitlab"]
+    },
+    {
+      "id": "DISC-011",
+      "title": "10 provider_factory tests fail due to missing pi_runtime.json VCR cassette",
+      "source_bead": "bd-3uqg.14.3.2",
+      "root_cause": "test_evidence_gap",
+      "severity": "low",
+      "user_impact": "No direct user impact. Infrastructure issue in test harness, not a provider behavior gap.",
+      "evidence": "bd-3uqg.14.3.2 comments: Deviation 3",
+      "remediation_status": "open",
+      "remediation_note": "Create pi_runtime.json VCR cassette or mock the runtime config lookup in factory tests.",
+      "affected_providers": ["multiple (test infra)"]
+    },
+    {
+      "id": "DISC-012",
+      "title": "CI correlation ID not propagated to JSONL records",
+      "source_bead": "bd-3uqg.14.3.3",
+      "root_cause": "logging_schema_drift",
+      "severity": "low",
+      "user_impact": "Cross-CI-run correlation requires manual matching. Does not affect test execution or provider behavior.",
+      "evidence": "docs/provider_e2e_artifact_contract.json → gaps_identified[0] (GAP-1)",
+      "remediation_status": "open",
+      "remediation_note": "Add optional ci_correlation_id field to pi.test.log.v2 context. Inject from CI_CORRELATION_ID env var.",
+      "affected_providers": ["none (test infra)"]
+    },
+    {
+      "id": "DISC-013",
+      "title": "No per-provider artifact redaction scan",
+      "source_bead": "bd-3uqg.14.3.3",
+      "root_cause": "logging_schema_drift",
+      "severity": "medium",
+      "user_impact": "Potential for unredacted API keys in provider e2e output artifacts. Redaction functions exist and are unit-tested but are not applied to actual provider output.",
+      "evidence": "docs/provider_e2e_artifact_contract.json → gaps_identified[1] (GAP-2)",
+      "remediation_status": "open",
+      "remediation_note": "Add integration test that runs find_unredacted_keys() on provider test JSONL fixtures post-execution.",
+      "affected_providers": ["all providers with live test runs"]
+    },
+    {
+      "id": "DISC-014",
+      "title": "Artifact-index paths not cross-validated",
+      "source_bead": "bd-3uqg.14.3.3",
+      "root_cause": "logging_schema_drift",
+      "severity": "low",
+      "user_impact": "Artifact-index.jsonl may reference paths that don't exist. No direct user impact (internal tooling).",
+      "evidence": "docs/provider_e2e_artifact_contract.json → gaps_identified[2] (GAP-3)",
+      "remediation_status": "open",
+      "remediation_note": "Add cross-reference check in evidence contract validation that artifact paths exist.",
+      "affected_providers": ["none (test infra)"]
+    },
+    {
+      "id": "DISC-015",
+      "title": "No formal evidence_contract JSON schema",
+      "source_bead": "bd-3uqg.14.3.3",
+      "root_cause": "logging_schema_drift",
+      "severity": "low",
+      "user_impact": "No direct user impact. evidence_contract.json referenced in CI policy but lacks formal schema definition.",
+      "evidence": "docs/provider_e2e_artifact_contract.json → gaps_identified[3] (GAP-4)",
+      "remediation_status": "open",
+      "remediation_note": "Define pi.qa.evidence_contract.v1 schema with required fields.",
+      "affected_providers": ["none (test infra)"]
+    },
+    {
+      "id": "DISC-016",
+      "title": "V1 log schema deprecation not enforced",
+      "source_bead": "bd-3uqg.14.3.3",
+      "root_cause": "test_evidence_gap",
+      "severity": "low",
+      "user_impact": "No direct user impact. New tests could use deprecated v1 schema without warning.",
+      "evidence": "docs/provider_e2e_artifact_contract.json → gaps_identified[4] (GAP-5)",
+      "remediation_status": "open",
+      "remediation_note": "Add lint or CI check that new test files emit pi.test.log.v2 only.",
+      "affected_providers": ["none (test infra)"]
+    },
+    {
+      "id": "DISC-017",
+      "title": "No provider-name crosswalk documentation",
+      "source_bead": "bd-3uqg.14.3.4",
+      "root_cause": "docs_mismatch",
+      "severity": "medium",
+      "user_impact": "Users have no reference table showing canonical IDs, aliases, common brand names, and auth env keys in one place.",
+      "evidence": "bd-3uqg.14.3.4 comments: M6 recommendation",
+      "remediation_status": "partially_fixed",
+      "remediation_note": "--list-providers (bd-3gsk0) provides runtime discovery. A static docs/providers.md or README table would complement it for offline reference.",
+      "affected_providers": ["all"]
+    },
+    {
+      "id": "DISC-018",
+      "title": "CLI --provider help text only mentions 3 providers",
+      "source_bead": "bd-3uqg.14.3.4",
+      "root_cause": "docs_mismatch",
+      "severity": "medium",
+      "user_impact": "Users reading --help see 'e.g., anthropic, openai, google' and may not realize 85+ other providers are available.",
+      "evidence": "src/cli.rs --provider arg help text, TopazFalcon audit Gap 3",
+      "remediation_status": "open",
+      "remediation_note": "Update --provider help text to mention --list-providers for full list. Add note about alias support.",
+      "affected_providers": ["all"]
+    },
+    {
+      "id": "DISC-019",
+      "title": "--list-models only shows providers with API keys set",
+      "source_bead": "bd-3uqg.14.3.4",
+      "root_cause": "docs_mismatch",
+      "severity": "info",
+      "user_impact": "Users see only configured providers in --list-models, which is intentional but may confuse users who expect to see all available providers.",
+      "evidence": "TopazFalcon audit Gap 1: registry.get_available() filters by api_key.is_some()",
+      "remediation_status": "open",
+      "remediation_note": "Consider adding a note in --list-models output: 'Showing X of 88 providers. Run --list-providers to see all.'",
+      "affected_providers": ["all"]
+    }
+  ],
+
+  "priority_matrix": {
+    "description": "Discrepancies grouped by remediation priority for downstream bead creation",
+    "p0_immediate": {
+      "description": "Already fixed in this sprint",
+      "items": ["DISC-004", "DISC-005", "DISC-006"]
+    },
+    "p1_high_value": {
+      "description": "High user impact, actionable code changes",
+      "items": ["DISC-003", "DISC-007", "DISC-008", "DISC-013", "DISC-018"]
+    },
+    "p2_medium_value": {
+      "description": "Infrastructure/docs improvements",
+      "items": ["DISC-009", "DISC-010", "DISC-011", "DISC-017"]
+    },
+    "p3_low_value": {
+      "description": "Nice-to-have or informational",
+      "items": ["DISC-001", "DISC-002", "DISC-012", "DISC-014", "DISC-015", "DISC-016", "DISC-019"]
+    }
+  },
+
+  "cross_references": {
+    "remediation_beads_created": [
+      {"bead": "bd-tuh3g", "fixes": ["DISC-003"], "status": "closed"},
+      {"bead": "bd-1gi21", "fixes": ["DISC-005"], "status": "closed"},
+      {"bead": "bd-1fgjj", "fixes": ["DISC-006"], "status": "closed"},
+      {"bead": "bd-3gsk0", "fixes": ["DISC-004"], "status": "closed"}
+    ],
+    "downstream_bead": "bd-3uqg.12.1.2",
+    "downstream_action": "Materialize remediation beads for all open P1/P2 discrepancies"
+  }
+}

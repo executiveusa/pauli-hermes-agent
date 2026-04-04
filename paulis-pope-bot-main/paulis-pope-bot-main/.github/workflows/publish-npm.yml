@@ -1,0 +1,37 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+
+      - name: Detect release channel
+        id: channel
+        run: |
+          TAG=$(node -p "
+            const v = require('./package.json').version;
+            const pre = v.split('-')[1];
+            pre ? pre.replace(/[^a-zA-Z].*/g, '') || 'pre' : 'latest'
+          ")
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Publishing $(node -p "require('./package.json').version") to dist-tag: $TAG"
+
+      - run: npm publish --tag ${{ steps.channel.outputs.tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

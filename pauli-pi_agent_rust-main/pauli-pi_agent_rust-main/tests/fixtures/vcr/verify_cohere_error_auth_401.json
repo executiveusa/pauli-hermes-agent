@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "test_name": "verify_cohere_error_auth_401",
+  "recorded_at": "2026-02-10T17:36:16.045Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.cohere.com/v2/chat",
+        "headers": [
+          [
+            "Authorization",
+            "Bearer [REDACTED]"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ]
+      },
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body_chunks": [
+          "{\"message\":\"Simulated error 401\"}"
+        ]
+      }
+    }
+  ]
+}

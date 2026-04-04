@@ -1,0 +1,486 @@
+{
+  "schema": "pi.e2e.scenario_matrix.v2",
+  "bead_id": "bd-1f42.8.5.1",
+  "updated_at": "2026-02-13",
+  "source_inputs": [
+    "tests/suite_classification.toml",
+    "scripts/e2e/run_all.sh",
+    "docs/testing-policy.md"
+  ],
+  "ux_sli_matrix_ref": "docs/perf_sli_matrix.json",
+  "ci_policy": {
+    "consumed_by": [
+      "scripts/check_traceability_matrix.py",
+      "tests/ci_full_suite_gate.rs",
+      "tests/vcr_parity_validation.rs"
+    ],
+    "allowed_statuses": [
+      "covered",
+      "waived",
+      "planned"
+    ],
+    "allowed_vcr_modes": [
+      "vcr-only",
+      "dual-mode",
+      "live-only"
+    ],
+    "required_suite_artifacts": [
+      "output.log",
+      "result.json",
+      "test-log.jsonl",
+      "artifact-index.jsonl"
+    ],
+    "required_run_artifacts": [
+      "summary.json",
+      "environment.json",
+      "evidence_contract.json"
+    ],
+    "min_e2e_suite_matrix_coverage_pct": 100,
+    "live_budget_policy": {
+      "max_live_api_calls_per_suite": 50,
+      "max_live_cost_usd_per_suite": 1.00,
+      "rate_limit_delay_ms": 500,
+      "credential_env_prefix": "PI_E2E_",
+      "skip_env_var": "PI_SKIP_LIVE_E2E"
+    }
+  },
+  "rows": [
+    {
+      "workflow_id": "wf-cli-onboarding-and-slash-commands",
+      "workflow_class": "success_path",
+      "workflow_title": "First-run CLI onboarding and slash-command control flow",
+      "status": "covered",
+      "vcr_mode": "vcr-only",
+      "vcr_mode_rationale": "All CLI onboarding flows use VCR playback for deterministic provider responses. No live API calls needed.",
+      "owner": "bd-1f42.8.5.2",
+      "provider_families": [
+        "core-runtime",
+        "provider-routing"
+      ],
+      "suite_ids": [
+        "e2e_cli",
+        "e2e_golden_path"
+      ],
+      "test_paths": [
+        "tests/e2e_cli.rs",
+        "tests/e2e_golden_path.rs"
+      ],
+      "sli_ids": [
+        "sli.cli.first_response_ms",
+        "sli.provider.first_token_ms"
+      ],
+      "expected_artifacts": [
+        "output.log",
+        "result.json",
+        "test-log.jsonl",
+        "artifact-index.jsonl",
+        "summary.json",
+        "environment.json",
+        "evidence_contract.json"
+      ],
+      "replay_command": "./scripts/e2e/run_all.sh --profile ci --suite e2e_cli --suite e2e_golden_path"
+    },
+    {
+      "workflow_id": "wf-agent-loop-and-tool-roundtrip",
+      "workflow_class": "success_path",
+      "workflow_title": "Core agent orchestration and built-in tool execution round trips",
+      "status": "covered",
+      "vcr_mode": "vcr-only",
+      "vcr_mode_rationale": "Agent loop and tool execution are fully deterministic via VCR cassettes. Tool side-effects (file I/O, bash) use temp directories.",
+      "owner": "bd-1f42.8.5.2",
+      "provider_families": [
+        "core-runtime",
+        "tooling"
+      ],
+      "suite_ids": [
+        "e2e_agent_loop",
+        "e2e_tools"
+      ],
+      "test_paths": [
+        "tests/e2e_agent_loop.rs",
+        "tests/e2e_tools.rs"
+      ],
+      "sli_ids": [
+        "sli.agent.turn_completion_ms",
+        "sli.cli.first_response_ms"
+      ],
+      "expected_artifacts": [
+        "output.log",
+        "result.json",
+        "test-log.jsonl",
+        "artifact-index.jsonl",
+        "summary.json",
+        "environment.json",
+        "evidence_contract.json"
+      ],
+      "replay_command": "./scripts/e2e/run_all.sh --profile ci --suite e2e_agent_loop --suite e2e_tools"
+    },
+    {
+      "workflow_id": "wf-provider-streaming-and-deterministic-parity",
+      "workflow_class": "success_path",
+      "workflow_title": "Deterministic multi-provider streaming/event-ordering and parity checks",
+      "status": "covered",
+      "vcr_mode": "vcr-only",
+      "vcr_mode_rationale": "Provider streaming scenarios use VCR cassettes for each provider family. SSE chunk ordering is preserved in cassette body_chunks.",
+      "owner": "bd-1f42.8.5.2",
+      "provider_families": [
+        "provider-native",
+        "provider-openai-compatible"
+      ],
+      "suite_ids": [
+        "e2e_provider_scenarios",
+        "e2e_provider_streaming"
+      ],
+      "test_paths": [
+        "tests/e2e_provider_scenarios.rs",
+        "tests/e2e_provider_streaming.rs"
+      ],
+      "sli_ids": [
+        "sli.provider.first_token_ms",
+        "sli.provider.stream_jitter_p95_ms"
+      ],
+      "expected_artifacts": [
+        "output.log",
+        "result.json",
+        "test-log.jsonl",
+        "artifact-index.jsonl",
+        "summary.json",
+        "environment.json",
+        "evidence_contract.json"
+      ],
+      "replay_command": "./scripts/e2e/run_all.sh --profile ci --suite e2e_provider_scenarios --suite e2e_provider_streaming"
+    },
+    {
+      "workflow_id": "wf-extension-registration-and-ts-loading",
+      "workflow_class": "success_path",
+      "workflow_title": "Extension registration lifecycle and TypeScript extension loading",
+      "status": "covered",
+      "vcr_mode": "vcr-only",
+      "vcr_mode_rationale": "Extension registration and TS loading are local QuickJS operations with no network calls. VCR used only for provider interactions within extension tests.",
+      "owner": "bd-1f42.8.5.2",
+      "provider_families": [
+        "extensions",
+        "quickjs"
+      ],
+      "suite_ids": [
+        "e2e_extension_registration",
+        "e2e_ts_extension_loading"
+      ],
+      "test_paths": [
+        "tests/e2e_extension_registration.rs",
+        "tests/e2e_ts_extension_loading.rs"
+      ],
+      "sli_ids": [
+        "sli.extension.action_latency_ms",
+        "sli.agent.turn_completion_ms"
+      ],
+      "expected_artifacts": [
+        "output.log",
+        "result.json",
+        "test-log.jsonl",
+        "artifact-index.jsonl",
+        "summary.json",
+        "environment.json",
+        "evidence_contract.json"
+      ],
+      "replay_command": "./scripts/e2e/run_all.sh --profile ci --suite e2e_extension_registration --suite e2e_ts_extension_loading"
+    },
+    {
+      "workflow_id": "wf-session-control-persistence-recovery",
+      "workflow_class": "recovery_path",
+      "workflow_title": "Message/session control operations and persistence/replay resilience",
+      "status": "covered",
+      "vcr_mode": "vcr-only",
+      "vcr_mode_rationale": "Session persistence and recovery tests use local file I/O with VCR for any provider roundtrips. No live credentials required.",
+      "owner": "bd-1f42.8.5.2",
+      "provider_families": [
+        "session",
+        "extensions"
+      ],
+      "suite_ids": [
+        "e2e_message_session_control",
+        "e2e_session_persistence"
+      ],
+      "test_paths": [
+        "tests/e2e_message_session_control.rs",
+        "tests/e2e_session_persistence.rs"
+      ],
+      "sli_ids": [
+        "sli.session.resume_ready_ms",
+        "sli.recovery.time_to_stable_ms"
+      ],
+      "expected_artifacts": [
+        "output.log",
+        "result.json",
+        "test-log.jsonl",
+        "artifact-index.jsonl",
+        "summary.json",
+        "environment.json",
+        "evidence_contract.json"
+      ],
+      "replay_command": "./scripts/e2e/run_all.sh --profile ci --suite e2e_message_session_control --suite e2e_session_persistence"
+    },
+    {
+      "workflow_id": "wf-rpc-endpoint-integration",
+      "workflow_class": "success_path",
+      "workflow_title": "End-to-end RPC command/protocol coverage",
+      "status": "covered",
+      "vcr_mode": "vcr-only",
+      "vcr_mode_rationale": "RPC endpoint tests use VCR cassettes for provider responses. The RPC protocol itself is tested locally via JSON-RPC message exchange.",
+      "owner": "bd-1f42.8.5.2",
+      "provider_families": [
+        "rpc",
+        "provider-openai-compatible"
+      ],
+      "suite_ids": [
+        "e2e_rpc"
+      ],
+      "test_paths": [
+        "tests/e2e_rpc.rs"
+      ],
+      "sli_ids": [
+        "sli.rpc.roundtrip_ms",
+        "sli.agent.turn_completion_ms"
+      ],
+      "expected_artifacts": [
+        "output.log",
+        "result.json",
+        "test-log.jsonl",
+        "artifact-index.jsonl",
+        "summary.json",
+        "environment.json",
+        "evidence_contract.json"
+      ],
+      "replay_command": "./scripts/e2e/run_all.sh --profile ci --suite e2e_rpc"
+    },
+    {
+      "workflow_id": "wf-tui-interactive-journeys",
+      "workflow_class": "success_path",
+      "workflow_title": "Interactive TUI journey scripts via tmux capture",
+      "status": "covered",
+      "vcr_mode": "vcr-only",
+      "vcr_mode_rationale": "TUI tests use tmux scripting with VCR playback for provider responses. UI rendering is deterministic with PI_TEST_MODE=1.",
+      "owner": "bd-1f42.8.5.2",
+      "provider_families": [
+        "tui",
+        "provider-openai-compatible"
+      ],
+      "suite_ids": [
+        "e2e_tui"
+      ],
+      "test_paths": [
+        "tests/e2e_tui.rs"
+      ],
+      "sli_ids": [
+        "sli.tui.input_to_render_ms",
+        "sli.provider.first_token_ms"
+      ],
+      "expected_artifacts": [
+        "output.log",
+        "result.json",
+        "test-log.jsonl",
+        "artifact-index.jsonl",
+        "summary.json",
+        "environment.json",
+        "evidence_contract.json"
+      ],
+      "replay_command": "./scripts/e2e/run_all.sh --profile ci --suite e2e_tui"
+    },
+    {
+      "workflow_id": "wf-library-runtime-integration",
+      "workflow_class": "success_path",
+      "workflow_title": "Library integration checks for markdown/render/runtime wiring",
+      "status": "covered",
+      "vcr_mode": "vcr-only",
+      "vcr_mode_rationale": "Library integration tests are local-only (markdown rendering, bubbletea runtime wiring). No network calls.",
+      "owner": "bd-1f42.8.5.2",
+      "provider_families": [
+        "tui",
+        "extensions"
+      ],
+      "suite_ids": [
+        "e2e_library_integration"
+      ],
+      "test_paths": [
+        "tests/e2e_library_integration.rs"
+      ],
+      "sli_ids": [
+        "sli.tui.input_to_render_ms",
+        "sli.extension.action_latency_ms"
+      ],
+      "expected_artifacts": [
+        "output.log",
+        "result.json",
+        "test-log.jsonl",
+        "artifact-index.jsonl",
+        "summary.json",
+        "environment.json",
+        "evidence_contract.json"
+      ],
+      "replay_command": "./scripts/e2e/run_all.sh --profile ci --suite e2e_library_integration"
+    },
+    {
+      "workflow_id": "wf-preflight-policy-and-auto-repair",
+      "workflow_class": "recovery_path",
+      "workflow_title": "Workflow preflight/policy escalation plus extension auto-repair diagnostics",
+      "status": "covered",
+      "vcr_mode": "vcr-only",
+      "vcr_mode_rationale": "Preflight checks and auto-repair are local policy-engine operations. VCR used for any diagnostic round-trips to providers.",
+      "owner": "bd-1f42.8.5.2",
+      "provider_families": [
+        "extensions",
+        "policy"
+      ],
+      "suite_ids": [
+        "e2e_workflow_preflight",
+        "e2e_auto_repair"
+      ],
+      "test_paths": [
+        "tests/e2e_workflow_preflight.rs",
+        "tests/e2e_auto_repair.rs"
+      ],
+      "sli_ids": [
+        "sli.policy.preflight_decision_ms",
+        "sli.recovery.time_to_stable_ms"
+      ],
+      "expected_artifacts": [
+        "output.log",
+        "result.json",
+        "test-log.jsonl",
+        "artifact-index.jsonl",
+        "summary.json",
+        "environment.json",
+        "evidence_contract.json"
+      ],
+      "replay_command": "./scripts/e2e/run_all.sh --profile ci --suite e2e_workflow_preflight --suite e2e_auto_repair"
+    },
+    {
+      "workflow_id": "wf-live-provider-parity-and-auth",
+      "workflow_class": "live_boundary",
+      "workflow_title": "Live-provider parity/auth smoke workflows (credential and network gated)",
+      "status": "waived",
+      "vcr_mode": "live-only",
+      "vcr_mode_rationale": "These suites exercise real provider APIs to validate parity between VCR-recorded and live behavior. By definition they cannot use VCR playback.",
+      "live_skip_policy": {
+        "skip_reason": "Requires live provider credentials and network access; non-blocking in default CI.",
+        "skip_env_var": "PI_SKIP_LIVE_E2E",
+        "required_credentials": [
+          "ANTHROPIC_API_KEY",
+          "OPENAI_API_KEY"
+        ],
+        "budget_controls": {
+          "max_api_calls": 50,
+          "max_cost_usd": 1.00,
+          "rate_limit_delay_ms": 500,
+          "timeout_per_test_secs": 60
+        },
+        "ci_gate_behavior": "skip_with_warning"
+      },
+      "owner": "bd-1f42.8.5.3",
+      "provider_families": [
+        "provider-native",
+        "provider-openai-compatible"
+      ],
+      "suite_ids": [
+        "e2e_live",
+        "e2e_live_harness",
+        "e2e_cross_provider_parity",
+        "provider_live_verify"
+      ],
+      "test_paths": [
+        "tests/e2e_live.rs",
+        "tests/e2e_live_harness.rs",
+        "tests/e2e_cross_provider_parity.rs",
+        "tests/provider_live_verify.rs"
+      ],
+      "sli_ids": [
+        "sli.live.auth_success_rate_pct",
+        "sli.provider.first_token_ms"
+      ],
+      "expected_artifacts": [
+        "output.log",
+        "result.json",
+        "test-log.jsonl",
+        "artifact-index.jsonl",
+        "summary.json",
+        "environment.json",
+        "evidence_contract.json"
+      ],
+      "waiver_reason": "These suites require live credentials/network and remain non-blocking in default CI; deterministic parity boundaries are enforced separately.",
+      "waiver_issue_id": "bd-1f42.8.5.3",
+      "replay_command": "PI_E2E_TESTS=1 ./scripts/e2e/run_all.sh --profile full --suite e2e_live --suite e2e_live_harness --suite e2e_cross_provider_parity --suite provider_live_verify"
+    },
+    {
+      "workflow_id": "wf-failure-injection-and-recovery-pack",
+      "workflow_class": "failure_recovery",
+      "workflow_title": "Failure injection scenarios for retry/backoff/recovery guarantees",
+      "status": "covered",
+      "vcr_mode": "vcr-only",
+      "vcr_mode_rationale": "Failure injection uses crafted VCR cassettes with error status codes (401, 429, 500) and malformed responses. No live APIs needed for error-path validation.",
+      "owner": "bd-1f42.8.5.4",
+      "provider_families": [
+        "all"
+      ],
+      "suite_ids": [
+        "e2e_failure_injection_recovery",
+        "e2e_high_risk_workflows"
+      ],
+      "test_paths": [
+        "tests/e2e_failure_injection_recovery.rs",
+        "tests/e2e_high_risk_workflows.rs"
+      ],
+      "sli_ids": [
+        "sli.recovery.time_to_stable_ms",
+        "sli.provider.stream_jitter_p95_ms"
+      ],
+      "expected_artifacts": [
+        "output.log",
+        "result.json",
+        "test-log.jsonl",
+        "artifact-index.jsonl",
+        "summary.json",
+        "environment.json",
+        "evidence_contract.json"
+      ],
+      "replay_command": "./scripts/e2e/run_all.sh --profile ci --suite e2e_failure_injection_recovery --suite e2e_high_risk_workflows"
+    },
+    {
+      "workflow_id": "wf-interruption-resume-replay-pack",
+      "workflow_class": "interruption_resume",
+      "workflow_title": "Interrupt/resume/replay continuity scenarios with deterministic rerun pointers",
+      "status": "covered",
+      "vcr_mode": "dual-mode",
+      "vcr_mode_rationale": "Interruption/resume tests use in-process deterministic providers for CI. Dual-mode allows periodic live validation of signal handling and session recovery.",
+      "dual_mode_policy": {
+        "default_ci_mode": "vcr",
+        "live_trigger_env": "PI_E2E_LIVE_INTERRUPTION=1",
+        "live_frequency": "weekly-scheduled",
+        "parity_check": "VCR replay must produce identical session state as live interrupted+resumed session"
+      },
+      "owner": "bd-1f42.8.5.5",
+      "provider_families": [
+        "all"
+      ],
+      "suite_ids": [
+        "e2e_interruption_resume_replay"
+      ],
+      "test_paths": [
+        "tests/e2e_interruption_resume_replay.rs"
+      ],
+      "sli_ids": [
+        "sli.resume.replay_integrity_pct",
+        "sli.session.resume_ready_ms"
+      ],
+      "expected_artifacts": [
+        "output.log",
+        "result.json",
+        "test-log.jsonl",
+        "artifact-index.jsonl",
+        "summary.json",
+        "environment.json",
+        "evidence_contract.json"
+      ],
+      "replay_command": "./scripts/e2e/run_all.sh --profile ci --suite e2e_interruption_resume_replay"
+    }
+  ]
+}

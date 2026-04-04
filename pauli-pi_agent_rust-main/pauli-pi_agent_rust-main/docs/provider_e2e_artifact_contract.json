@@ -1,0 +1,296 @@
+{
+  "schema": "pi.qa.provider_e2e_artifact_contract.v1",
+  "bead": "bd-3uqg.14.3.3",
+  "generated_at": "2026-02-13",
+  "description": "Defines enforceable structured logging and artifact requirements for provider e2e workflows. Each claim must be backed by executable validation in tests/validate_e2e_artifact_schema.rs.",
+  "jsonl_schemas": {
+    "pi.test.log.v1": {
+      "required_fields": ["schema", "type", "seq", "ts", "t_ms", "level", "category", "message"],
+      "field_types": {
+        "schema": "string",
+        "type": "string",
+        "seq": "number",
+        "ts": "string (ISO-8601)",
+        "t_ms": "number",
+        "level": "string (info|warn|error|debug)",
+        "category": "string",
+        "message": "string"
+      },
+      "status": "deprecated",
+      "migration_note": "All new tests must use pi.test.log.v2. V1 accepted for backward compat only."
+    },
+    "pi.test.log.v2": {
+      "required_fields": ["schema", "type", "trace_id", "seq", "ts", "t_ms", "level", "category", "message"],
+      "optional_fields": ["span_id", "parent_span_id", "context"],
+      "field_types": {
+        "schema": "string",
+        "type": "string",
+        "trace_id": "string (32-char hex)",
+        "seq": "number (monotonic)",
+        "ts": "string (ISO-8601)",
+        "t_ms": "number (ms since logger start)",
+        "level": "string (info|warn|error|debug)",
+        "category": "string",
+        "message": "string",
+        "span_id": "string (span-N format)",
+        "parent_span_id": "string (span-N format)",
+        "context": "object (key-value pairs)"
+      },
+      "status": "current",
+      "validation": "tests/common/logging.rs::validate_jsonl_line()"
+    },
+    "pi.test.artifact.v1": {
+      "required_fields": ["schema", "type", "seq", "ts", "t_ms", "name", "path"],
+      "optional_fields": ["size_bytes", "sha256"],
+      "field_types": {
+        "schema": "string",
+        "type": "string (artifact)",
+        "seq": "number",
+        "ts": "string (ISO-8601)",
+        "t_ms": "number",
+        "name": "string (logical artifact name)",
+        "path": "string (file path)",
+        "size_bytes": "number",
+        "sha256": "string (64-char hex)"
+      },
+      "status": "current",
+      "validation": "tests/common/logging.rs::validate_jsonl_line()"
+    }
+  },
+  "correlation_model": {
+    "trace_id": {
+      "scope": "per-TestLogger instance (= per test function)",
+      "format": "32-char lowercase hex (SHA256-based)",
+      "generation": "tests/common/logging.rs::generate_trace_id()",
+      "propagation": "All JSONL records from the same logger share a trace_id",
+      "validation": "tests/common/logging.rs::test: trace_id_appears_in_jsonl_output"
+    },
+    "span_id": {
+      "scope": "per-operation within a test (setup, action, verify phases)",
+      "format": "span-N (monotonic sequence)",
+      "nesting": "parent_span_id links child spans to parent",
+      "validation": "tests/common/logging.rs::test: nested_spans_set_parent_span_id"
+    },
+    "ci_correlation_id": {
+      "scope": "per-CI run (set via CI_CORRELATION_ID env var)",
+      "propagation_gap": "NOT currently injected into TestLogger trace context",
+      "enforcement": "scripts/e2e/run_all.sh accepts $CORRELATION_ID",
+      "recommendation": "Add CI_CORRELATION_ID to JSONL metadata for cross-run tracing"
+    }
+  },
+  "redaction_policy": {
+    "sensitive_keys": [
+      "api_key", "api-key", "authorization", "bearer", "cookie",
+      "credential", "password", "private_key", "secret", "token"
+    ],
+    "redaction_value": "[REDACTED]",
+    "enforcement_layers": [
+      {
+        "layer": "context_logging",
+        "function": "redact_context()",
+        "scope": "All key-value context pairs in info_ctx/warn_ctx/error_ctx"
+      },
+      {
+        "layer": "deep_json",
+        "function": "redact_json_value()",
+        "scope": "Recursive descent through any serde_json::Value"
+      },
+      {
+        "layer": "leak_detection",
+        "function": "find_unredacted_keys()",
+        "scope": "Post-hoc scan returning paths to unredacted sensitive keys"
+      },
+      {
+        "layer": "header_redaction",
+        "function": "redact_sensitive_header_pairs()",
+        "scope": "HTTP headers in LiveProviderRun artifacts"
+      }
+    ],
+    "validation": [
+      "tests/common/logging.rs::test: test_redaction",
+      "tests/common/logging.rs::test: find_unredacted_keys_detects_leaks",
+      "tests/common/logging.rs::test: redact_json_value_nested_object",
+      "tests/e2e_artifact_retention_triage.rs::test: log_redacts_api_keys",
+      "tests/e2e_artifact_retention_triage.rs::test: log_redacts_authorization_headers"
+    ]
+  },
+  "per_suite_artifacts": {
+    "description": "Each e2e suite run must produce these artifacts",
+    "required": [
+      {
+        "name": "output.log",
+        "format": "text",
+        "content": "stdout+stderr capture of test execution"
+      },
+      {
+        "name": "result.json",
+        "format": "json",
+        "content": "Test pass/fail summary with exit code"
+      },
+      {
+        "name": "test-log.jsonl",
+        "format": "jsonl",
+        "schema": "pi.test.log.v2",
+        "content": "Structured test log with trace_id correlation"
+      },
+      {
+        "name": "artifact-index.jsonl",
+        "format": "jsonl",
+        "schema": "pi.test.artifact.v1",
+        "content": "Index of all artifacts produced, with SHA256 and size"
+      }
+    ],
+    "enforcement": "docs/e2e_scenario_matrix.json::ci_policy.required_suite_artifacts"
+  },
+  "per_run_artifacts": {
+    "description": "Each full e2e run must produce these aggregate artifacts",
+    "required": [
+      {
+        "name": "summary.json",
+        "format": "json",
+        "content": "Aggregate pass/fail counts, timing, suite list"
+      },
+      {
+        "name": "environment.json",
+        "format": "json",
+        "content": "Rust toolchain, OS, git SHA, VCR mode, shard info"
+      },
+      {
+        "name": "evidence_contract.json",
+        "format": "json",
+        "content": "Audit trail linking test results to artifact locations"
+      }
+    ],
+    "enforcement": "docs/e2e_scenario_matrix.json::ci_policy.required_run_artifacts"
+  },
+  "failure_diagnostics": {
+    "failure_digest": {
+      "schema_name": "pi.e2e.failure_digest.v1",
+      "required_fields": [
+        "schema", "suite", "root_cause_class",
+        "impacted_scenario_ids", "first_failing_assertion",
+        "remediation_pointer"
+      ],
+      "root_cause_taxonomy": [
+        "timeout", "assertion_failure", "permission_denied",
+        "network_io", "missing_file", "panic"
+      ],
+      "remediation_pointer_fields": [
+        "replay_command",
+        "suite_replay_command",
+        "targeted_test_replay_command"
+      ],
+      "validation": "tests/ci_artifact_retention.rs::test: failure_digest_schema_has_required_fields"
+    },
+    "replay_bundle": {
+      "schema_name": "pi.e2e.replay_bundle.v1",
+      "required_fields": [
+        "schema", "generated_at", "correlation_id",
+        "source_summary_path", "one_command_replay",
+        "environment", "failed_suites", "failed_gates", "summary"
+      ],
+      "environment_fields": [
+        "profile", "shard_kind", "shard_index", "shard_total",
+        "rustc_version", "cargo_target_dir", "vcr_mode",
+        "git_sha", "git_branch", "os"
+      ],
+      "validation": [
+        "tests/ci_artifact_retention.rs::test: replay_bundle_artifact_exists_and_valid",
+        "tests/e2e_replay_bundles.rs",
+        "tests/e2e_replay_bundle_validation.rs"
+      ]
+    }
+  },
+  "provider_specific_requirements": {
+    "description": "Per-provider artifact field requirements for LiveProviderRun JSONL",
+    "common_fields": [
+      "provider", "model", "api", "status", "elapsed_ms",
+      "event_count", "text_chars", "stop_reason", "usage",
+      "attempts", "execution_mode", "trace_origin"
+    ],
+    "provider_variants": {
+      "anthropic": {
+        "additional_fields": ["thinking_chars"],
+        "api_value": "messages",
+        "credential_source": "ANTHROPIC_API_KEY"
+      },
+      "openai": {
+        "additional_fields": [],
+        "api_value": "chat/completions",
+        "credential_source": "OPENAI_API_KEY"
+      },
+      "openai_responses": {
+        "additional_fields": [],
+        "api_value": "responses",
+        "credential_source": "OPENAI_API_KEY"
+      },
+      "google": {
+        "additional_fields": [],
+        "api_value": "generateContent",
+        "credential_source": "GOOGLE_API_KEY"
+      },
+      "cohere": {
+        "additional_fields": [],
+        "api_value": "chat",
+        "credential_source": "COHERE_API_KEY"
+      },
+      "azure": {
+        "additional_fields": ["resource_name", "deployment_id"],
+        "api_value": "chat/completions",
+        "credential_source": "AZURE_OPENAI_API_KEY"
+      }
+    }
+  },
+  "gaps_identified": [
+    {
+      "id": "GAP-1",
+      "title": "CI correlation ID not propagated to JSONL records",
+      "severity": "low",
+      "status": "resolved",
+      "resolved_by": "bd-2w6ts",
+      "resolution": "Added ci_correlation_id as optional field in pi.test.log.v2 schema. TestLogger reads CI_CORRELATION_ID env var and injects into every JSONL record. Validation in tests/common/logging.rs.",
+      "description": "CI_CORRELATION_ID is accepted by run_all.sh but not injected into TestLogger trace context. Cross-run correlation requires manual matching.",
+      "recommendation": "Add optional ci_correlation_id field to pi.test.log.v2 context"
+    },
+    {
+      "id": "GAP-2",
+      "title": "No per-provider artifact redaction scan",
+      "severity": "medium",
+      "status": "resolved",
+      "resolved_by": "bd-2vlau",
+      "resolution": "Created tests/vcr_redaction_scan.rs scanning all 279 VCR cassettes for unredacted secrets across anthropic, openai, azure, gemini providers. Fixed 7 violations found during initial scan.",
+      "description": "Redaction functions exist and are unit-tested, but no test scans actual provider e2e output artifacts for unredacted secrets.",
+      "recommendation": "Add test that runs find_unredacted_keys() on provider test JSONL fixtures"
+    },
+    {
+      "id": "GAP-3",
+      "title": "Artifact-index path existence not cross-validated",
+      "severity": "low",
+      "status": "resolved",
+      "resolved_by": "bd-z5vt4",
+      "resolution": "Added validate_artifact_index_paths() in tests/common/logging.rs and 5 integration tests in validate_e2e_artifact_schema.rs covering path existence checks, relative paths, and missing path detection.",
+      "description": "artifact-index.jsonl records paths but nothing validates those paths actually exist in the artifact directory.",
+      "recommendation": "Add optional cross-reference check in evidence contract validation"
+    },
+    {
+      "id": "GAP-4",
+      "title": "No formal evidence_contract JSON schema document",
+      "severity": "low",
+      "status": "resolved",
+      "resolved_by": "bd-7rs2j",
+      "resolution": "Created docs/evidence-contract-schema.json defining pi.qa.evidence_contract.v1 with required/optional fields, suite_entry/failure_digest definitions, and cross-reference validation tests.",
+      "description": "evidence_contract.json is referenced in ci_policy but has no formal schema defining required fields.",
+      "recommendation": "Define pi.qa.evidence_contract.v1 schema with required fields"
+    },
+    {
+      "id": "GAP-5",
+      "title": "V1 schema deprecation not enforced",
+      "severity": "low",
+      "status": "resolved",
+      "resolved_by": "bd-38m8w",
+      "resolution": "Added validate_jsonl_line_v2_only() and validate_jsonl_v2_only() in tests/common/logging.rs that reject pi.test.log.v1 records. 5 unit tests and 6 integration tests enforce v2-only for new test code.",
+      "description": "pi.test.log.v1 is accepted by validator but all new tests should use v2. No enforcement prevents v1 usage in new tests.",
+      "recommendation": "Add lint or CI check that new test files emit v2 only"
+    }
+  ]
+}

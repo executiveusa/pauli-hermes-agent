@@ -1,0 +1,136 @@
+{
+  "schema_version": "1.0",
+  "document": "docs/security/invariants.md",
+  "last_updated": "2026-02-14",
+  "issue_id": "bd-2ezm9",
+  "policy_precedence": {
+    "order": [
+      "extension_deny",
+      "deny_caps",
+      "extension_allow",
+      "default_caps",
+      "mode_fallback"
+    ],
+    "mode_fallback": {
+      "strict": "deny_unlisted",
+      "prompt": "prompt_unlisted",
+      "permissive": "allow_unlisted"
+    }
+  },
+  "cross_layer_order": [
+    "required_capability_derivation",
+    "static_policy",
+    "prompt_cache_or_user_decision",
+    "runtime_risk",
+    "connector_dispatch",
+    "logging_and_ledger"
+  ],
+  "invariants": [
+    {
+      "id": "INV-001",
+      "statement": "Required capability is derived from canonical hostcall shape, not trusted from caller declaration.",
+      "tests": [
+        "src/extensions.rs::required_capability_for_host_call_maps_tools_and_fs_ops",
+        "tests/extensions_policy_negative.rs::hostcall_exec_maps_to_exec_capability",
+        "src/extensions.rs::protocol_adapter_capability_mismatch_returns_invalid_request"
+      ]
+    },
+    {
+      "id": "INV-002",
+      "statement": "Malformed or unsupported hostcalls fail closed with invalid_request before execution.",
+      "tests": [
+        "tests/capability_policy_scoped.rs::empty_call_id_returns_invalid_request",
+        "tests/capability_policy_scoped.rs::non_object_params_returns_invalid_request",
+        "src/extensions.rs::shared_dispatch_unsupported_method_returns_invalid_request"
+      ]
+    },
+    {
+      "id": "INV-003",
+      "statement": "Static policy precedence order is deterministic and layer-stable.",
+      "tests": [
+        "tests/capability_policy_scoped.rs::scoped_deny_wins_over_scoped_allow_for_same_cap",
+        "tests/capability_policy_scoped.rs::scoped_allow_cannot_bypass_global_deny_caps",
+        "tests/extensions_policy_negative.rs::deny_caps_override_default_caps"
+      ]
+    },
+    {
+      "id": "INV-004",
+      "statement": "Global deny list cannot be bypassed by per-extension allow or permissive mode.",
+      "tests": [
+        "tests/capability_policy_scoped.rs::scoped_allow_cannot_bypass_global_deny_caps",
+        "tests/extensions_policy_negative.rs::deny_caps_override_permissive_mode"
+      ]
+    },
+    {
+      "id": "INV-005",
+      "statement": "Extension-scoped allow/deny rules apply only to the matching extension identity.",
+      "tests": [
+        "src/extensions.rs::shared_dispatch_per_extension_deny_does_not_affect_other_extensions",
+        "tests/capability_policy_scoped.rs::multiple_extensions_independent_scoping"
+      ]
+    },
+    {
+      "id": "INV-006",
+      "statement": "Unknown policy profile names resolve to safe fail-closed behavior.",
+      "tests": [
+        "src/config.rs::extension_policy_metadata_unknown_profile_falls_back_to_safe",
+        "tests/config_edge_cases.rs::extension_policy_unknown_profile_falls_back_to_safe",
+        "tests/config_edge_cases.rs::extension_policy_default_permissive_toggle_false_restores_safe"
+      ]
+    },
+    {
+      "id": "INV-007",
+      "statement": "Dangerous capabilities are denied by default unless explicit operator opt-in is configured.",
+      "tests": [
+        "tests/extensions_policy_negative.rs::deny_caps_exec_denied_in_all_modes",
+        "tests/extensions_policy_negative.rs::deny_caps_env_denied_in_all_modes",
+        "tests/capability_policy_scoped.rs::allow_dangerous_removes_exec_env_from_deny_caps"
+      ]
+    },
+    {
+      "id": "INV-008",
+      "statement": "Prompt-required decisions fail closed when manager/UI path is unavailable.",
+      "tests": [
+        "tests/capability_policy_scoped.rs::dispatch_prompt_without_manager_falls_to_deny",
+        "tests/capability_policy_scoped.rs::dispatch_prompt_with_manager_but_no_ui_sender",
+        "src/extensions.rs::shared_dispatch_ui_without_manager_returns_denied"
+      ]
+    },
+    {
+      "id": "INV-009",
+      "statement": "Runtime risk executes only after policy allow and can only preserve/tighten access.",
+      "tests": [
+        "src/extensions.rs::shared_dispatch_runtime_risk_disabled_is_isomorphic",
+        "src/extensions.rs::shared_dispatch_runtime_risk_hardens_exec_calls",
+        "src/extensions.rs::shared_dispatch_runtime_risk_quarantines_repeated_unsafe_attempts"
+      ]
+    },
+    {
+      "id": "INV-010",
+      "statement": "Runtime risk ledger is tamper-evident and replay-verifiable, including after truncation.",
+      "tests": [
+        "src/extensions.rs::shared_dispatch_runtime_risk_ledger_is_tamper_evident",
+        "src/extensions.rs::shared_dispatch_runtime_risk_ledger_replay_reconstructs_decision_path",
+        "src/extensions.rs::shared_dispatch_runtime_risk_ledger_verifies_after_ring_buffer_truncation"
+      ]
+    },
+    {
+      "id": "INV-011",
+      "statement": "Sensitive env access requires both name filtering and policy approval.",
+      "tests": [
+        "src/extensions_js.rs::pijs_env_get_honors_allowlist",
+        "src/extensions.rs::wasm_host_env_requires_allowlist",
+        "src/extensions.rs::wasm_host_env_denied_by_policy_even_when_allowlisted"
+      ]
+    },
+    {
+      "id": "INV-012",
+      "statement": "Security logs use deterministic hashes/reason codes and redact raw parameters.",
+      "tests": [
+        "src/extensions.rs::hostcall_params_hash_is_stable_for_key_ordering",
+        "src/extensions.rs::hostcall_ledger_start_redacts_params_and_includes_hash",
+        "src/extensions.rs::js_hostcall_prompt_policy_caches_user_allow_and_never_logs_raw_params"
+      ]
+    }
+  ]
+}

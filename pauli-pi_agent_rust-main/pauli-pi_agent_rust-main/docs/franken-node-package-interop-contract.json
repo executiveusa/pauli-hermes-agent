@@ -1,0 +1,169 @@
+{
+  "schema": "pi.frankennode.package_interop_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.4",
+  "support_bead_id": "bd-3ar8v.7.4.1",
+  "support_bead_ids": [
+    "bd-3ar8v.7.4.1",
+    "bd-3ar8v.7.4.6"
+  ],
+  "status": "active_blocking_policy",
+  "effective_date_utc": "2026-02-17T08:02:00Z",
+  "scope": {
+    "target_project_root": "/dp/franken_node",
+    "module_systems": [
+      "cjs",
+      "esm",
+      "dual-mode"
+    ],
+    "interop_objective": "Package resolution and mode interoperability must be deterministic, diagnosable, and explicitly tied to strict claim-tier promotion gates."
+  },
+  "scenario_taxonomy": [
+    {
+      "scenario_id": "SCN-package-exports-condition-priority",
+      "module_system": "esm",
+      "criticality": "high",
+      "required_signals": [
+        "package.exports condition order",
+        "default-condition fallback",
+        "subpath export resolution"
+      ]
+    },
+    {
+      "scenario_id": "SCN-cjs-esm-entrypoint-bridging",
+      "module_system": "dual-mode",
+      "criticality": "high",
+      "required_signals": [
+        "require/import bridge behavior",
+        "module namespace shape consistency",
+        "interop warning diagnostics"
+      ]
+    },
+    {
+      "scenario_id": "SCN-npm-workspace-lockfile-resolution",
+      "module_system": "npm",
+      "criticality": "high",
+      "required_signals": [
+        "workspace package boundary resolution",
+        "lockfile source pin consistency",
+        "install graph determinism"
+      ]
+    },
+    {
+      "scenario_id": "SCN-peer-dependency-constraint-evaluation",
+      "module_system": "npm",
+      "criticality": "medium",
+      "required_signals": [
+        "peer requirement mismatch diagnostics",
+        "strict vs permissive fallback mode",
+        "hoist/flatten decision traceability"
+      ]
+    },
+    {
+      "scenario_id": "SCN-conditional-main-module-field-fallback",
+      "module_system": "cjs",
+      "criticality": "medium",
+      "required_signals": [
+        "type/main/module interpretation",
+        "legacy main fallback behavior",
+        "fallback reason code emission"
+      ]
+    }
+  ],
+  "package_metadata_interpretation": {
+    "required_package_json_fields": [
+      "name",
+      "version",
+      "type",
+      "main",
+      "module",
+      "exports"
+    ],
+    "conditional_exports_priority": [
+      "node",
+      "import",
+      "require",
+      "default"
+    ],
+    "enforce_explicit_type_for_dual_mode_packages": true,
+    "fallback_on_missing_exports": "hard_fail_with_diag",
+    "peer_dependency_policy": {
+      "missing_peer_strategy": "report_and_fail",
+      "invalid_range_strategy": "hard_fail"
+    }
+  },
+  "resolution_engine_policy": {
+    "mode_matrix": [
+      {
+        "mode_id": "esm_entrypoint",
+        "resolver_profile": "node16-esm",
+        "allow_cjs_bridge": false
+      },
+      {
+        "mode_id": "cjs_entrypoint",
+        "resolver_profile": "node16-cjs",
+        "allow_esm_bridge": false
+      },
+      {
+        "mode_id": "dual_mode_package",
+        "resolver_profile": "conditional-exports",
+        "require_type_field": true
+      }
+    ],
+    "deterministic_fallback_diagnostics": {
+      "failure_policy": "hard_fail",
+      "required_diag_codes": [
+        "interop.missing_exports",
+        "interop.unsupported_condition_order",
+        "interop.peer_dependency_mismatch",
+        "interop.lockfile_graph_nondeterminism"
+      ],
+      "required_log_fields": [
+        "run_id",
+        "scenario_id",
+        "package_name",
+        "package_version",
+        "module_system",
+        "diag_code",
+        "decision",
+        "reason",
+        "timestamp_utc"
+      ]
+    },
+    "unsupported_edge_policy": {
+      "require_explicit_unsupported_entries": true,
+      "unsupported_verdict": "UNSUPPORTED",
+      "silent_omission_policy": "hard_fail"
+    }
+  },
+  "claim_tier_linkage": {
+    "strict_tier_id": "full_runtime_replacement",
+    "required_beads": [
+      "bd-3ar8v.7.2",
+      "bd-3ar8v.7.3",
+      "bd-3ar8v.7.4"
+    ],
+    "required_artifacts": [
+      "docs/franken-node-mission-contract.json",
+      "docs/franken-node-semantic-compatibility-matrix-contract.json",
+      "docs/franken-node-package-interop-contract.json"
+    ],
+    "required_check_ids": [
+      "claim_integrity.franken_node_phase6_runtime_beads_declared",
+      "claim_integrity.franken_node_strict_replacement_dropin_certified",
+      "claim_integrity.franken_node_strict_tier_required_evidence"
+    ]
+  },
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.5",
+      "bd-3ar8v.7.10",
+      "bd-3ar8v.7.11",
+      "bd-3ar8v.7.14"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-semantic-compatibility-matrix-contract.json",
+      "docs/franken-node-mission-contract.json"
+    ]
+  }
+}

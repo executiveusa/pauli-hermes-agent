@@ -1,0 +1,199 @@
+{
+  "schema": "pi.frankennode.compatibility_doctor_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.14",
+  "support_bead_id": "bd-3ar8v.7.14.1",
+  "support_bead_ids": [
+    "bd-3ar8v.7.14.1"
+  ],
+  "status": "active_blocking_policy",
+  "doctor_scope": {
+    "supported_project_types": [
+      "node",
+      "bun",
+      "hybrid"
+    ],
+    "fail_closed_on_unknown_signals": true,
+    "require_machine_readable_diagnostics": true
+  },
+  "incompatibility_taxonomy": [
+    {
+      "class_id": "PKG-unsupported-native-addon",
+      "category": "package",
+      "severity": "high",
+      "blocker_category": "package_incompatibility",
+      "required_signals": [
+        "binding_gyp_present",
+        "native_binary_without_prebuild"
+      ],
+      "remediation_template_id": "REM-build-rs-or-napi"
+    },
+    {
+      "class_id": "PKG-unresolved-peer-dependency",
+      "category": "package",
+      "severity": "medium",
+      "blocker_category": "dependency_graph",
+      "required_signals": [
+        "peer_dependency_missing",
+        "peer_version_range_conflict"
+      ],
+      "remediation_template_id": "REM-align-peer-ranges"
+    },
+    {
+      "class_id": "RUNTIME-node-api-gap",
+      "category": "runtime_api",
+      "severity": "high",
+      "blocker_category": "runtime_semantics",
+      "required_signals": [
+        "unsupported_builtin_api",
+        "unsupported_module_loader_hook"
+      ],
+      "remediation_template_id": "REM-shim-or-fallback-runtime"
+    },
+    {
+      "class_id": "SEMANTIC-event-loop-ordering-drift",
+      "category": "semantic",
+      "severity": "high",
+      "blocker_category": "behavioral_drift",
+      "required_signals": [
+        "timer_ordering_mismatch",
+        "microtask_queue_ordering_mismatch"
+      ],
+      "remediation_template_id": "REM-enable-conservative-loop-mode"
+    },
+    {
+      "class_id": "TOOLING-lockfile-nondeterminism",
+      "category": "tooling",
+      "severity": "medium",
+      "blocker_category": "determinism",
+      "required_signals": [
+        "lockfile_graph_instability",
+        "workspace_resolution_drift"
+      ],
+      "remediation_template_id": "REM-normalize-lockfile-and-workspace"
+    }
+  ],
+  "diagnostic_contract": {
+    "required_fields": [
+      "run_id",
+      "correlation_id",
+      "project_root",
+      "rule_id",
+      "class_id",
+      "severity",
+      "blocker_category",
+      "readiness_score_delta",
+      "suggested_fix_id",
+      "suggested_fix_rationale",
+      "evidence_refs"
+    ],
+    "required_root_cause_classes": [
+      "package",
+      "runtime_api",
+      "semantic",
+      "tooling"
+    ],
+    "fail_closed_on_missing_fields": true,
+    "emit_json_schema": "pi.frankennode.compatibility_doctor_diagnostic.v1"
+  },
+  "readiness_scoring": {
+    "range": [
+      0,
+      100
+    ],
+    "weights": [
+      {
+        "metric": "package_compatibility",
+        "weight": 0.25
+      },
+      {
+        "metric": "runtime_api_coverage",
+        "weight": 0.25
+      },
+      {
+        "metric": "semantic_parity",
+        "weight": 0.2
+      },
+      {
+        "metric": "tooling_determinism",
+        "weight": 0.15
+      },
+      {
+        "metric": "migration_effort",
+        "weight": 0.15
+      }
+    ],
+    "score_fields": [
+      "project_score",
+      "score_breakdown",
+      "blocking_classes",
+      "confidence"
+    ],
+    "fail_closed_on_weight_drift": true
+  },
+  "remediation_contract": {
+    "required_fields": [
+      "suggested_fix_id",
+      "title",
+      "rationale",
+      "estimated_effort",
+      "automation_level",
+      "commands",
+      "docs_links"
+    ],
+    "require_rule_hit_evidence": true,
+    "require_fix_rationale": true,
+    "export_schema": "pi.frankennode.compatibility_remediation_plan.v1"
+  },
+  "workflow_contract": {
+    "stages": [
+      "scan_project",
+      "classify_incompatibilities",
+      "score_readiness",
+      "generate_remediation_plan",
+      "export_diagnostic_bundle"
+    ],
+    "required_artifacts": [
+      "tests/e2e_results/<run>/franken_node_compatibility_doctor_report.json",
+      "tests/e2e_results/<run>/franken_node_compatibility_diagnostics.jsonl",
+      "tests/e2e_results/<run>/franken_node_migration_plan.json"
+    ],
+    "bundle_schema": "pi.frankennode.compatibility_doctor_bundle.v1"
+  },
+  "structured_logging_contract": {
+    "required_fields": [
+      "run_id",
+      "correlation_id",
+      "event_type",
+      "rule_id",
+      "class_id",
+      "blocker_category",
+      "readiness_score_before",
+      "readiness_score_after",
+      "suggested_fix_id",
+      "timestamp_utc"
+    ],
+    "required_event_types": [
+      "doctor.scan_started",
+      "doctor.rule_hit",
+      "doctor.score_updated",
+      "doctor.remediation_emitted",
+      "doctor.bundle_exported"
+    ],
+    "fail_closed_on_missing_correlation": true
+  },
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.16",
+      "bd-3ar8v.7.13",
+      "bd-3ar8v.7.11",
+      "bd-3ar8v.7.10"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-mission-contract.json",
+      "docs/franken-node-claim-gating-contract.json",
+      "docs/franken-node-semantic-compatibility-matrix-contract.json",
+      "docs/franken-node-package-interop-contract.json"
+    ]
+  }
+}

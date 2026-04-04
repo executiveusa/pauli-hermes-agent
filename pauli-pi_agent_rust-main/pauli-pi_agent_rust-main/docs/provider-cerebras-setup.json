@@ -1,0 +1,110 @@
+{
+  "schema": "pi.provider_setup_guide.v1",
+  "bead_id": "bd-3uqg.11.6.7",
+  "provider_id": "cerebras",
+  "canonical_provider_id": "cerebras",
+  "last_verified_utc": "2026-02-13T10:00:00Z",
+
+  "quick_start": {
+    "description": "Cerebras uses the OpenAI-compatible Chat Completions API backed by Cerebras WSE (Wafer-Scale Engine) hardware for ultra-low-latency inference.",
+    "auth_env": "CEREBRAS_API_KEY",
+    "base_url": "https://api.cerebras.ai/v1",
+    "api_type": "openai-completions",
+    "minimal_config": {
+      "steps": [
+        "1. Get an API key from https://cloud.cerebras.ai/",
+        "2. Export: export CEREBRAS_API_KEY=csk-...",
+        "3. Run: pi --provider cerebras --model llama-3.3-70b"
+      ],
+      "example_env": {
+        "CEREBRAS_API_KEY": "csk-your_api_key_here"
+      }
+    },
+    "advanced_config": {
+      "description": "Use tool-calling capable models with WSE timing metrics.",
+      "example_env": {
+        "CEREBRAS_API_KEY": "csk-your_api_key_here"
+      },
+      "example_cli": "pi --provider cerebras --model qwen-3-32b",
+      "notes": [
+        "Tool calling only available on gpt-oss-120b, qwen-3-32b, zai-glm-4.7.",
+        "WSE hardware provides unique time_info fields: queue_time, prompt_time, completion_time, total_time.",
+        "Usage + time_info only in final streaming chunk."
+      ]
+    }
+  },
+
+  "caveats": [
+    {
+      "id": "cerebras-cav-001",
+      "severity": "warning",
+      "summary": "Tool calling only on 3 specific models",
+      "detail": "Tool calling is only supported on gpt-oss-120b, qwen-3-32b, and zai-glm-4.7. Other models will return errors if tools are provided.",
+      "test_evidence": "docs/provider-cerebras-capability-profile.json spec-004"
+    },
+    {
+      "id": "cerebras-cav-002",
+      "severity": "info",
+      "summary": "n parameter constrained to 1",
+      "detail": "Cerebras constrains n to 1. Pi does not set n > 1 so this is transparent.",
+      "test_evidence": "docs/provider-cerebras-capability-profile.json spec-002"
+    },
+    {
+      "id": "cerebras-cav-003",
+      "severity": "info",
+      "summary": "Non-standard rate limit headers",
+      "detail": "Cerebras uses per-day and per-minute dimensions: x-ratelimit-limit-requests-day, x-ratelimit-limit-tokens-minute (not the standard OpenAI header names).",
+      "test_evidence": "docs/provider-cerebras-capability-profile.json spec-005"
+    },
+    {
+      "id": "cerebras-cav-004",
+      "severity": "info",
+      "summary": "WSE time_info fields unique to hardware",
+      "detail": "Final streaming chunk includes time_info with queue_time, prompt_time, completion_time, total_time. These reflect WSE hardware pipeline stages.",
+      "test_evidence": "docs/provider-cerebras-capability-profile.json spec-006"
+    }
+  ],
+
+  "troubleshooting": [
+    {
+      "symptom": "HTTP 401 Invalid API key",
+      "cause": "CEREBRAS_API_KEY not set or invalid",
+      "fix": "Verify key at https://cloud.cerebras.ai/. Re-export: export CEREBRAS_API_KEY=csk-...",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_error_auth_all_families, tests/fixtures/vcr/verify_cerebras_error_auth_401.json"
+    },
+    {
+      "symptom": "HTTP 429 Rate limit exceeded",
+      "cause": "Requests-per-day or tokens-per-minute limit hit",
+      "fix": "Check x-ratelimit-remaining-requests-day and x-ratelimit-remaining-tokens-minute headers. SDK auto-retries 2x for 429/500/503.",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_error_rate_limit_all_families"
+    },
+    {
+      "symptom": "Tool call errors on non-supported model",
+      "cause": "Model does not support tool calling",
+      "fix": "Switch to gpt-oss-120b, qwen-3-32b, or zai-glm-4.7 for tool-calling tasks.",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_tool_call_all_families"
+    },
+    {
+      "symptom": "Provider not found for 'cerebras'",
+      "cause": "Model not recognized in registry",
+      "fix": "Use ad-hoc model syntax: pi --provider cerebras --model <model-id>. Model lineup is small (6 models).",
+      "test_evidence": "tests/provider_factory.rs (wave presets)"
+    }
+  ],
+
+  "test_coverage": {
+    "unit_contract": {
+      "file": "tests/provider_factory.rs",
+      "test_count": 144,
+      "scenarios": ["factory presets", "routing", "auth header", "compat config"]
+    },
+    "vcr_fixtures": {
+      "directory": "tests/fixtures/vcr/",
+      "scenarios": ["verify_cerebras_simple_text", "verify_cerebras_unicode_text", "verify_cerebras_tool_call_single", "verify_cerebras_tool_call_multiple", "verify_cerebras_error_auth_401", "verify_cerebras_error_bad_request_400", "verify_cerebras_error_rate_limit_429"]
+    },
+    "e2e": {
+      "file": "tests/e2e_provider_scenarios.rs",
+      "scenarios": ["simple_text", "tool_call", "error_auth", "error_rate_limit", "schema_drift", "wave_preset", "determinism", "event_ordering", "request_body_stability", "comprehensive_report"]
+    }
+  }
+}

@@ -1,0 +1,463 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Pi Extension Mock Specification",
+  "description": "Shared mock specification for deterministic extension conformance testing. Both TS (pi-mono) and Rust (pi_agent_rust) runtimes consume this format to produce identical hostcall responses.",
+  "type": "object",
+  "required": ["schema", "extension_id"],
+  "properties": {
+    "schema": { "type": "string", "enum": ["pi.ext.mock_spec.v1"] },
+    "extension_id": {
+      "type": "string",
+      "description": "Extension under test. Must match the extension's registered ID."
+    },
+    "description": { "type": "string" },
+    "session": { "$ref": "#/$defs/session_mock" },
+    "http": { "$ref": "#/$defs/http_mock" },
+    "exec": { "$ref": "#/$defs/exec_mock" },
+    "tools": { "$ref": "#/$defs/tools_mock" },
+    "ui": { "$ref": "#/$defs/ui_mock" },
+    "events": { "$ref": "#/$defs/events_mock" },
+    "model": { "$ref": "#/$defs/model_mock" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "session_mock": {
+      "type": "object",
+      "description": "Pre-seeded session state returned by pi.session() calls.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Session name returned by getName / getSessionName.",
+          "default": "test-session"
+        },
+        "file": {
+          "type": "string",
+          "description": "Session file path returned by getFile.",
+          "default": "/tmp/test-session.jsonl"
+        },
+        "state": {
+          "type": "object",
+          "description": "Full state object returned by getState. Keys: sessionName, sessionFile, plus any extension-defined state.",
+          "additionalProperties": true
+        },
+        "messages": {
+          "type": "array",
+          "description": "Pre-seeded messages returned by getMessages.",
+          "items": { "$ref": "#/$defs/session_message" }
+        },
+        "entries": {
+          "type": "array",
+          "description": "Pre-seeded entries returned by getEntries.",
+          "items": { "type": "object", "additionalProperties": true }
+        },
+        "branch": {
+          "type": "array",
+          "description": "Pre-seeded branch entries returned by getBranch.",
+          "items": { "type": "object", "additionalProperties": true }
+        },
+        "accept_mutations": {
+          "type": "boolean",
+          "description": "If true, setName/appendMessage/appendEntry/setLabel calls succeed silently. If false, they return errors.",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "session_message": {
+      "type": "object",
+      "required": ["role"],
+      "properties": {
+        "id": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "assistant"] },
+        "content": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "array",
+              "items": { "$ref": "#/$defs/content_block" }
+            }
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "content_block": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["text", "tool_use", "tool_result"] },
+        "text": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "http_mock": {
+      "type": "object",
+      "description": "HTTP mock rules. Matched in order; first match wins.",
+      "properties": {
+        "rules": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/http_rule" }
+        },
+        "default_response": {
+          "$ref": "#/$defs/http_response",
+          "description": "Response when no rule matches."
+        }
+      },
+      "additionalProperties": false
+    },
+    "http_rule": {
+      "type": "object",
+      "required": ["match", "response"],
+      "properties": {
+        "match": { "$ref": "#/$defs/http_match" },
+        "response": { "$ref": "#/$defs/http_response" },
+        "times": {
+          "type": "integer",
+          "description": "Max times this rule matches (0 = unlimited).",
+          "default": 0,
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "http_match": {
+      "type": "object",
+      "anyOf": [
+        { "required": ["url_exact"] },
+        { "required": ["url_prefix"] },
+        { "required": ["url_pattern"] },
+        { "required": ["headers"] },
+        { "required": ["body_contains"] }
+      ],
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "HTTP method (GET, POST, etc.). Omit to match any method.",
+          "enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
+        },
+        "url_exact": {
+          "type": "string",
+          "description": "Exact URL match."
+        },
+        "url_prefix": {
+          "type": "string",
+          "description": "URL prefix match."
+        },
+        "url_pattern": {
+          "type": "string",
+          "description": "Regex pattern for URL matching."
+        },
+        "headers": {
+          "type": "object",
+          "description": "Required request headers (all must be present).",
+          "additionalProperties": { "type": "string" }
+        },
+        "body_contains": {
+          "type": "string",
+          "description": "Request body must contain this string."
+        }
+      },
+      "additionalProperties": false
+    },
+    "http_response": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "integer",
+          "description": "HTTP status code.",
+          "minimum": 100,
+          "maximum": 599
+        },
+        "headers": {
+          "type": "object",
+          "description": "Response headers.",
+          "additionalProperties": { "type": "string" }
+        },
+        "body": {
+          "type": "string",
+          "description": "Response body (text). Mutually exclusive with body_json."
+        },
+        "body_json": {
+          "type": "object",
+          "description": "Response body as JSON (serialized automatically). Mutually exclusive with body.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "exec_mock": {
+      "type": "object",
+      "description": "Shell execution mock rules. Matched in order; first match wins.",
+      "properties": {
+        "rules": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/exec_rule" }
+        },
+        "default_result": {
+          "$ref": "#/$defs/exec_result",
+          "description": "Result when no rule matches."
+        }
+      },
+      "additionalProperties": false
+    },
+    "exec_rule": {
+      "type": "object",
+      "required": ["match", "result"],
+      "properties": {
+        "match": { "$ref": "#/$defs/exec_match" },
+        "result": { "$ref": "#/$defs/exec_result" },
+        "times": {
+          "type": "integer",
+          "description": "Max times this rule matches (0 = unlimited).",
+          "default": 0,
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "exec_match": {
+      "type": "object",
+      "anyOf": [
+        { "required": ["cmd_exact"] },
+        { "required": ["cmd_prefix"] },
+        { "required": ["cmd_pattern"] }
+      ],
+      "properties": {
+        "cmd_exact": {
+          "type": "string",
+          "description": "Exact command match."
+        },
+        "cmd_prefix": {
+          "type": "string",
+          "description": "Command prefix match."
+        },
+        "cmd_pattern": {
+          "type": "string",
+          "description": "Regex pattern for command matching."
+        },
+        "args_contain": {
+          "type": "array",
+          "description": "All listed args must appear in the args array.",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "exec_result": {
+      "type": "object",
+      "properties": {
+        "stdout": { "type": "string", "default": "" },
+        "stderr": { "type": "string", "default": "" },
+        "code": {
+          "type": "integer",
+          "description": "Exit code.",
+          "default": 0
+        },
+        "killed": {
+          "type": "boolean",
+          "description": "Whether the process was killed (e.g. timeout).",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "tools_mock": {
+      "type": "object",
+      "description": "Mock for tool-related hostcalls (pi.tool()).",
+      "properties": {
+        "active_tools": {
+          "type": "array",
+          "description": "Initial set of active tool names returned by getActiveTools.",
+          "items": { "type": "string" }
+        },
+        "all_tools": {
+          "type": "array",
+          "description": "Complete tool list returned by getAllTools.",
+          "items": { "$ref": "#/$defs/tool_definition" }
+        },
+        "invocations": {
+          "type": "array",
+          "description": "Mock responses for pi.tool() invocations. Matched by tool name.",
+          "items": { "$ref": "#/$defs/tool_invocation_rule" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "tool_definition": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "input_schema": {
+          "type": "object",
+          "description": "JSON Schema for the tool's input.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "tool_invocation_rule": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Tool name to match."
+        },
+        "input_match": {
+          "type": "object",
+          "description": "If provided, the invocation input must be a superset of this object.",
+          "additionalProperties": true
+        },
+        "result": {
+          "type": "object",
+          "description": "Tool result to return.",
+          "additionalProperties": true
+        },
+        "error": {
+          "type": "string",
+          "description": "If set, return this as an error instead of a result."
+        },
+        "times": {
+          "type": "integer",
+          "default": 0,
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "ui_mock": {
+      "type": "object",
+      "description": "UI operation mock. Instead of rendering, captures all UI calls as structured events.",
+      "properties": {
+        "capture": {
+          "type": "boolean",
+          "description": "If true, all pi.ui() calls are captured to an event log.",
+          "default": true
+        },
+        "responses": {
+          "type": "object",
+          "description": "Canned responses for specific UI operations. Key = operation name.",
+          "additionalProperties": true
+        },
+        "confirm_default": {
+          "type": "boolean",
+          "description": "Default response for showConfirm dialogs.",
+          "default": true
+        },
+        "dialog_default": {
+          "type": "string",
+          "description": "Default text response for showDialog prompts.",
+          "default": ""
+        }
+      },
+      "additionalProperties": false
+    },
+    "events_mock": {
+      "type": "object",
+      "description": "Event payloads to fire during test execution.",
+      "properties": {
+        "fire_sequence": {
+          "type": "array",
+          "description": "Ordered list of events to fire.",
+          "items": { "$ref": "#/$defs/event_fire" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_fire": {
+      "type": "object",
+      "required": ["event"],
+      "properties": {
+        "event": {
+          "type": "string",
+          "description": "Event name matching ExtensionEvent types.",
+          "enum": [
+            "tool_call",
+            "tool_result",
+            "turn_start",
+            "turn_end",
+            "before_agent_start",
+            "input",
+            "context",
+            "resources_discover",
+            "user_bash",
+            "session_before_compact",
+            "session_before_tree"
+          ]
+        },
+        "payload": {
+          "type": "object",
+          "description": "Event payload. Structure depends on event type.",
+          "additionalProperties": true
+        },
+        "expected_response": {
+          "type": "object",
+          "description": "Expected handler return value for assertions (optional).",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "model_mock": {
+      "type": "object",
+      "description": "Model and thinking level state for model/thinking APIs.",
+      "properties": {
+        "current": {
+          "type": "object",
+          "description": "Current model selection.",
+          "properties": {
+            "provider": { "type": "string" },
+            "model_id": { "type": "string" },
+            "name": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        "thinking_level": {
+          "type": "string",
+          "description": "Current thinking level.",
+          "enum": ["off", "low", "medium", "high"],
+          "default": "off"
+        },
+        "available_models": {
+          "type": "array",
+          "description": "List of available models for registry queries.",
+          "items": {
+            "type": "object",
+            "required": ["provider", "id", "name"],
+            "properties": {
+              "provider": { "type": "string" },
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "reasoning": { "type": "boolean", "default": false },
+              "input": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": ["text"]
+              },
+              "context_window": { "type": "integer" },
+              "max_tokens": { "type": "integer" },
+              "cost": {
+                "type": "object",
+                "properties": {
+                  "input": { "type": "number" },
+                  "output": { "type": "number" }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "accept_mutations": {
+          "type": "boolean",
+          "description": "If true, setModel/setThinkingLevel calls succeed. If false, they return errors.",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

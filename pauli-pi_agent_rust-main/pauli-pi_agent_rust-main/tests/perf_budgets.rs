@@ -1,0 +1,2451 @@
+//! Performance budget definitions and enforcement tests (bd-1fc4).
+//!
+//! Centralizes all performance budgets for the Pi Agent Rust runtime. Each budget
+//! has an explicit threshold, measurement methodology, and CI enforcement path.
+//!
+//! Budgets are validated against actual benchmark data when available.
+//! Run with: `cargo test --test perf_budgets -- --nocapture`
+
+#![allow(
+    clippy::cast_precision_loss,
+    clippy::cast_possible_truncation,
+    clippy::unreadable_literal
+)]
+
+use pi::perf_build::BINARY_SIZE_RELEASE_BUDGET_MB;
+use serde::Serialize;
+use serde_json::{Value, json};
+use std::fmt::Write as _;
+use std::path::{Path, PathBuf};
+use std::time::SystemTime;
+
+// ─── Budget Definitions ──────────────────────────────────────────────────────
+
+/// A single performance budget with threshold and measurement context.
+#[derive(Debug, Clone, Serialize)]
+struct Budget {
+    /// Human-readable name.
+    name: &'static str,
+    /// Category (startup, extension, tool, memory, binary).
+    category: &'static str,
+    /// The metric being measured (e.g., "p95 latency", "RSS").
+    metric: &'static str,
+    /// Unit of measurement (ms, us, MB, count).
+    unit: &'static str,
+    /// Budget threshold (must not exceed this value).
+    threshold: f64,
+    /// Measurement methodology.
+    methodology: &'static str,
+    /// Whether this budget is enforced in CI.
+    ci_enforced: bool,
+}
+
+/// All performance budgets for the Pi Agent Rust runtime.
+const BUDGETS: &[Budget] = &[
+    // ── Startup ──────────────────────────────────────────────────────────
+    Budget {
+        name: "startup_version_p95",
+        category: "startup",
+        metric: "p95 latency",
+        unit: "ms",
+        threshold: 100.0,
+        methodology: "hyperfine: `pi --version` (10 runs, 3 warmup)",
+        ci_enforced: true,
+    },
+    Budget {
+        name: "startup_full_agent_p95",
+        category: "startup",
+        metric: "p95 latency",
+        unit: "ms",
+        threshold: 200.0,
+        methodology: "hyperfine: `pi --print '.'` with full init (10 runs, 3 warmup)",
+        ci_enforced: false, // Requires API key or VCR
+    },
+    // ── Extension Loading ────────────────────────────────────────────────
+    Budget {
+        name: "ext_cold_load_simple_p95",
+        category: "extension",
+        metric: "p95 cold load time",
+        unit: "ms",
+        threshold: 5.0,
+        methodology: "criterion: load_init_cold for simple single-file extensions (10 samples)",
+        ci_enforced: true,
+    },
+    Budget {
+        name: "ext_cold_load_complex_p95",
+        category: "extension",
+        metric: "p95 cold load time",
+        unit: "ms",
+        threshold: 50.0,
+        methodology: "criterion: load_init_cold for multi-registration extensions (10 samples)",
+        ci_enforced: false,
+    },
+    Budget {
+        name: "ext_load_60_total",
+        category: "extension",
+        metric: "total load time (60 official extensions)",
+        unit: "ms",
+        threshold: 10000.0, // 10 seconds total for all 60
+        methodology: "conformance runner: sequential load of all 60 official extensions",
+        ci_enforced: false,
+    },
+    // ── Tool Call ─────────────────────────────────────────────────────────
+    Budget {
+        name: "tool_call_latency_p99",
+        category: "tool_call",
+        metric: "p99 per-call latency",
+        unit: "us",
+        threshold: 200.0,
+        methodology: "pijs_workload: 2000 iterations x 1 tool call, perf profile",
+        ci_enforced: true,
+    },
+    Budget {
+        name: "tool_call_throughput_min",
+        category: "tool_call",
+        metric: "minimum calls/sec",
+        unit: "calls/sec",
+        threshold: 5000.0, // Must exceed 5k calls/sec
+        methodology: "pijs_workload: 2000 iterations x 10 tool calls, perf profile",
+        ci_enforced: true,
+    },
+    // ── Event Dispatch ───────────────────────────────────────────────────
+    Budget {
+        name: "event_dispatch_p99",
+        category: "event_dispatch",
+        metric: "p99 dispatch latency",
+        unit: "us",
+        threshold: 5000.0, // 5ms
+        methodology: "criterion: event_hook dispatch for before_agent_start (100 samples)",
+        ci_enforced: false,
+    },
+    // ── Policy Evaluation ────────────────────────────────────────────────
+    Budget {
+        name: "policy_eval_p99",
+        category: "policy",
+        metric: "p99 evaluation time",
+        unit: "ns",
+        threshold: 500.0,
+        methodology: "criterion: ext_policy/evaluate with various modes and capabilities",
+        ci_enforced: true,
+    },
+    // ── Memory ───────────────────────────────────────────────────────────
+    Budget {
+        name: "idle_memory_rss",
+        category: "memory",
+        metric: "RSS at idle",
+        unit: "MB",
+        threshold: 50.0,
+        methodology: "sysinfo: measure RSS after startup, before any user input",
+        ci_enforced: true,
+    },
+    Budget {
+        name: "sustained_load_rss_growth",
+        category: "memory",
+        metric: "RSS growth under 30s sustained load",
+        unit: "percent",
+        threshold: 5.0,
+        methodology: "stress test: 15 extensions, 50 events/sec for 30 seconds",
+        ci_enforced: false,
+    },
+    // ── Binary Size ──────────────────────────────────────────────────────
+    Budget {
+        name: "binary_size_release",
+        category: "binary",
+        metric: "release binary size",
+        unit: "MB",
+        threshold: BINARY_SIZE_RELEASE_BUDGET_MB,
+        methodology: "ls -la target/release/pi (stripped)",
+        ci_enforced: true,
+    },
+    // ── Protocol Parsing ─────────────────────────────────────────────────
+    Budget {
+        name: "protocol_parse_p99",
+        category: "protocol",
+        metric: "p99 parse+validate time",
+        unit: "us",
+        threshold: 50.0,
+        methodology: "criterion: ext_protocol/parse_and_validate for host_call and log messages",
+        ci_enforced: true,
+    },
+];
+
+const DEFAULT_MAX_ARTIFACT_AGE_HOURS: f64 = 24.0;
+const BUN_KILLER_MAX_RUST_VS_BUN_RATIO: f64 = 0.33;
+
+// ─── Data Readers ────────────────────────────────────────────────────────────
+
+fn project_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+}
+
+fn read_json_file(path: &Path) -> Option<Value> {
+    let content = std::fs::read_to_string(path).ok()?;
+    serde_json::from_str(&content).ok()
+}
+
+fn read_jsonl_file(path: &Path) -> Vec<Value> {
+    let Ok(content) = std::fs::read_to_string(path) else {
+        return Vec::new();
+    };
+    content
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .filter_map(|line| serde_json::from_str(line).ok())
+        .collect()
+}
+
+fn load_perf_sli_matrix() -> Value {
+    let path = project_root().join("docs/perf_sli_matrix.json");
+    read_json_file(&path).unwrap_or_else(|| panic!("failed to parse {}", path.display()))
+}
+
+/// Measurement result for a budget check.
+#[derive(Debug, Clone, Serialize)]
+struct BudgetResult {
+    budget_name: String,
+    category: String,
+    threshold: f64,
+    unit: String,
+    actual: Option<f64>,
+    status: String, // "PASS", "FAIL", "NO_DATA"
+    source: String,
+    ci_enforced: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    failure_reason: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct DataContractFailure {
+    contract_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    budget_name: Option<String>,
+    detail: String,
+    remediation: String,
+}
+
+fn perf_strict_mode() -> bool {
+    std::env::var("PI_PERF_STRICT").is_ok_and(|v| v == "1")
+}
+
+fn max_artifact_age_hours() -> f64 {
+    std::env::var("PI_PERF_MAX_ARTIFACT_AGE_HOURS")
+        .ok()
+        .and_then(|raw| raw.parse::<f64>().ok())
+        .filter(|hours| *hours > 0.0)
+        .unwrap_or(DEFAULT_MAX_ARTIFACT_AGE_HOURS)
+}
+
+fn classify_budget_status(budget: &Budget, actual: Option<f64>, strict: bool) -> &'static str {
+    match actual {
+        Some(val) => {
+            if budget.name == "tool_call_throughput_min" {
+                if val >= budget.threshold {
+                    "PASS"
+                } else {
+                    "FAIL"
+                }
+            } else if val <= budget.threshold {
+                "PASS"
+            } else {
+                "FAIL"
+            }
+        }
+        None if budget.ci_enforced && strict => "FAIL",
+        None => "NO_DATA",
+    }
+}
+
+fn artifact_age_hours(path: &Path) -> Option<f64> {
+    let modified = std::fs::metadata(path).ok()?.modified().ok()?;
+    let elapsed = SystemTime::now().duration_since(modified).ok()?;
+    Some(elapsed.as_secs_f64() / 3600.0)
+}
+
+fn format_path_list(paths: &[PathBuf]) -> String {
+    paths
+        .iter()
+        .map(|p| p.display().to_string())
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+fn evaluate_artifact_contract(paths: &[PathBuf], max_age_hours: f64) -> Option<String> {
+    if paths.is_empty() {
+        return Some("no artifact paths configured".to_string());
+    }
+
+    let existing: Vec<&PathBuf> = paths.iter().filter(|p| p.exists()).collect();
+    if existing.is_empty() {
+        return Some(format!(
+            "missing artifacts; expected one of [{}]",
+            format_path_list(paths)
+        ));
+    }
+
+    let mut fresh_found = false;
+    let mut stale_details = Vec::new();
+    for path in existing {
+        match artifact_age_hours(path) {
+            Some(age_hours) if age_hours <= max_age_hours => {
+                fresh_found = true;
+            }
+            Some(age_hours) => {
+                stale_details.push(format!("{} ({age_hours:.2}h old)", path.display()));
+            }
+            None => {
+                stale_details.push(format!("{} (mtime unavailable)", path.display()));
+            }
+        }
+    }
+
+    if fresh_found {
+        None
+    } else {
+        Some(format!(
+            "all candidate artifacts are stale/invalid (>{max_age_hours:.2}h): {}",
+            stale_details.join(", ")
+        ))
+    }
+}
+
+fn budget_artifact_candidates(root: &Path, budget_name: &str) -> Vec<PathBuf> {
+    match budget_name {
+        "tool_call_latency_p99" | "tool_call_throughput_min" => pijs_workload_candidate_paths()
+            .iter()
+            .map(|relative| root.join(relative))
+            .collect(),
+        "ext_cold_load_simple_p95" => {
+            vec![
+                root.join("target/criterion/ext_load_init/load_init_cold/hello/new/estimates.json"),
+            ]
+        }
+        "startup_version_p95" => {
+            vec![root.join("target/criterion/startup/version/warm/new/estimates.json")]
+        }
+        "policy_eval_p99" => {
+            collect_estimate_json_files(&root.join("target/criterion/ext_policy/evaluate"))
+        }
+        "binary_size_release" => binary_size_candidate_paths(root),
+        "protocol_parse_p99" => collect_estimate_json_files(
+            &root.join("target/criterion/ext_protocol/parse_and_validate"),
+        ),
+        _ => Vec::new(),
+    }
+}
+
+fn binary_size_release_override() -> Option<PathBuf> {
+    std::env::var("PERF_RELEASE_BINARY_PATH")
+        .ok()
+        .map(|path| path.trim().to_owned())
+        .filter(|path| !path.is_empty())
+        .map(PathBuf::from)
+}
+
+fn build_binary_size_candidate_paths(
+    target_dir: &Path,
+    release_binary_override: Option<PathBuf>,
+    detected_profile: &str,
+) -> Vec<PathBuf> {
+    let normalized_profile = detected_profile.trim();
+    let mut paths = Vec::with_capacity(4);
+    if let Some(path) = release_binary_override {
+        paths.push(path);
+    }
+    paths.push(target_dir.join("release/pi"));
+    if !normalized_profile.is_empty() && !normalized_profile.eq_ignore_ascii_case("debug") {
+        paths.push(target_dir.join(normalized_profile).join("pi"));
+    }
+    paths.push(target_dir.join("perf/pi"));
+
+    let mut dedup = std::collections::HashSet::new();
+    paths.retain(|path| dedup.insert(path.clone()));
+    paths
+}
+
+fn binary_size_candidate_paths(root: &Path) -> Vec<PathBuf> {
+    let target_dir = root.join("target");
+    let detected_profile = pi::perf_build::detect_build_profile();
+    let release_binary_override = binary_size_release_override();
+    build_binary_size_candidate_paths(&target_dir, release_binary_override, &detected_profile)
+}
+
+fn collect_estimate_json_files(base: &Path) -> Vec<PathBuf> {
+    let mut files = Vec::new();
+    let Ok(entries) = std::fs::read_dir(base) else {
+        return vec![base.to_path_buf()];
+    };
+    for entry in entries.flatten() {
+        files.push(entry.path().join("new/estimates.json"));
+    }
+    if files.is_empty() {
+        files.push(base.to_path_buf());
+    }
+    files
+}
+
+fn extension_stratification_candidates(root: &Path) -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+    if let Ok(path) = std::env::var("PERF_EXTENSION_STRATIFICATION_JSON") {
+        let trimmed = path.trim();
+        if !trimmed.is_empty() {
+            paths.push(PathBuf::from(trimmed));
+        }
+    }
+    if let Ok(dir) = std::env::var("PERF_EVIDENCE_DIR") {
+        let trimmed = dir.trim();
+        if !trimmed.is_empty() {
+            paths.push(PathBuf::from(trimmed).join("extension_benchmark_stratification.json"));
+        }
+    }
+    paths.push(root.join("target/perf/extension_benchmark_stratification.json"));
+    paths.push(root.join("tests/perf/reports/extension_benchmark_stratification.json"));
+    paths
+}
+
+fn phase1_matrix_validation_candidates(root: &Path) -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+    if let Ok(path) = std::env::var("PERF_PHASE1_MATRIX_VALIDATION_JSON") {
+        let trimmed = path.trim();
+        if !trimmed.is_empty() {
+            paths.push(PathBuf::from(trimmed));
+        }
+    }
+    if let Ok(dir) = std::env::var("PERF_EVIDENCE_DIR") {
+        let trimmed = dir.trim();
+        if !trimmed.is_empty() {
+            paths.push(PathBuf::from(trimmed).join("results/phase1_matrix_validation.json"));
+        }
+    }
+    paths.push(root.join("target/perf/results/phase1_matrix_validation.json"));
+    paths.push(root.join("tests/perf/reports/phase1_matrix_validation.json"));
+    paths
+}
+
+fn first_existing_path(paths: &[PathBuf]) -> Option<PathBuf> {
+    paths.iter().find(|p| p.exists()).cloned()
+}
+
+fn is_positive_finite_metric(value: Option<f64>) -> bool {
+    value.is_some_and(|v| v.is_finite() && v > 0.0)
+}
+
+fn metric_state(value: Option<f64>) -> &'static str {
+    match value {
+        Some(v) if v.is_finite() && v > 0.0 => "valid",
+        Some(v) if !v.is_finite() => "non_finite",
+        Some(_) => "non_positive",
+        None => "missing_or_non_numeric",
+    }
+}
+
+const fn required_bool_state(value: Option<bool>) -> &'static str {
+    match value {
+        Some(true) => "true",
+        Some(false) => "false",
+        None => "missing_or_non_boolean",
+    }
+}
+
+fn collect_full_e2e_rows(payload: &Value) -> Vec<&Value> {
+    payload
+        .get("layers")
+        .and_then(Value::as_array)
+        .map_or_else(Vec::new, |rows| {
+            rows.iter()
+                .filter(|row| {
+                    row.get("layer_id").and_then(Value::as_str) == Some("full_e2e_long_session")
+                })
+                .collect::<Vec<_>>()
+        })
+}
+
+fn duplicate_full_e2e_failure(path: &Path, full_e2e_count: usize) -> Option<DataContractFailure> {
+    (full_e2e_count > 1).then(|| DataContractFailure {
+        contract_id: "missing_required_e2e_or_ratio_outputs".to_string(),
+        budget_name: None,
+        detail: format!(
+            "duplicate full_e2e_long_session layers found (count={full_e2e_count}) in {}",
+            path.display()
+        ),
+        remediation:
+            "Emit exactly one full_e2e_long_session layer in extension_benchmark_stratification."
+                .to_string(),
+    })
+}
+
+fn required_e2e_metric_failure(
+    path: &Path,
+    full_e2e: Option<&Value>,
+) -> Option<DataContractFailure> {
+    let absolute_value = full_e2e
+        .and_then(|row| row.pointer("/absolute_metrics/value"))
+        .and_then(Value::as_f64);
+    let node_ratio_value = full_e2e
+        .and_then(|row| row.pointer("/relative_metrics/rust_vs_node_ratio"))
+        .and_then(Value::as_f64);
+    let bun_ratio_value = full_e2e
+        .and_then(|row| row.pointer("/relative_metrics/rust_vs_bun_ratio"))
+        .and_then(Value::as_f64);
+
+    let absolute_valid = is_positive_finite_metric(absolute_value);
+    let node_ratio_valid = is_positive_finite_metric(node_ratio_value);
+    let bun_ratio_valid = is_positive_finite_metric(bun_ratio_value);
+
+    (!absolute_valid || !node_ratio_valid || !bun_ratio_valid).then(|| DataContractFailure {
+        contract_id: "missing_required_e2e_or_ratio_outputs".to_string(),
+        budget_name: None,
+        detail: format!(
+            "full_e2e_long_session evidence has invalid required values (absolute_metrics.value={}, rust_vs_node_ratio={}, rust_vs_bun_ratio={}) in {}",
+            metric_state(absolute_value),
+            metric_state(node_ratio_value),
+            metric_state(bun_ratio_value),
+            path.display()
+        ),
+        remediation:
+            "Emit full_e2e_long_session absolute latency and Rust-vs-Node/Bun ratios as finite positive numbers."
+                .to_string(),
+    })
+}
+
+fn bun_killer_ratio_release_gate_failure(
+    path: &Path,
+    full_e2e: Option<&Value>,
+) -> Option<DataContractFailure> {
+    let bun_ratio_value = full_e2e
+        .and_then(|row| row.pointer("/relative_metrics/rust_vs_bun_ratio"))
+        .and_then(Value::as_f64);
+    let bun_ratio_value = bun_ratio_value?;
+    if !is_positive_finite_metric(Some(bun_ratio_value)) {
+        // Non-positive/non-finite values are handled by required_e2e_metric_failure.
+        return None;
+    }
+    (bun_ratio_value > BUN_KILLER_MAX_RUST_VS_BUN_RATIO).then(|| DataContractFailure {
+        contract_id: "bun_killer_ratio_release_gate".to_string(),
+        budget_name: None,
+        detail: format!(
+            "full_e2e_long_session rust_vs_bun_ratio={bun_ratio_value:.6} exceeds Bun-killer release gate <= {:.2} in {}",
+            BUN_KILLER_MAX_RUST_VS_BUN_RATIO,
+            path.display()
+        ),
+        remediation: format!(
+            "Reduce full_e2e_long_session rust_vs_bun_ratio to <= {BUN_KILLER_MAX_RUST_VS_BUN_RATIO:.2} before release promotion."
+        ),
+    })
+}
+
+fn claim_integrity_guard_failure(path: &Path, payload: &Value) -> Option<DataContractFailure> {
+    let global_claim_valid = payload
+        .pointer("/claim_integrity/cherry_pick_guard/global_claim_valid")
+        .and_then(Value::as_bool);
+    let full_e2e_layer_coverage = payload
+        .pointer("/claim_integrity/cherry_pick_guard/layer_coverage/full_e2e_long_session")
+        .and_then(Value::as_bool);
+
+    (global_claim_valid != Some(true) || full_e2e_layer_coverage != Some(true)).then(|| {
+        DataContractFailure {
+            contract_id: "invalid_claim_integrity_guard".to_string(),
+            budget_name: None,
+            detail: format!(
+                "claim_integrity.cherry_pick_guard requires global_claim_valid=true and layer_coverage.full_e2e_long_session=true (global_claim_valid={}, full_e2e_layer_coverage={}) in {}",
+                required_bool_state(global_claim_valid),
+                required_bool_state(full_e2e_layer_coverage),
+                path.display()
+            ),
+            remediation:
+                "Emit claim_integrity.cherry_pick_guard.global_claim_valid=true and layer_coverage.full_e2e_long_session=true for valid global claims."
+                    .to_string(),
+        }
+    })
+}
+
+fn microbench_only_claim_failure(path: &Path, payload: &Value) -> Option<DataContractFailure> {
+    let invalidity_reasons = payload
+        .pointer("/claim_integrity/cherry_pick_guard/invalidity_reasons")
+        .and_then(Value::as_array)
+        .map_or_else(Vec::new, |arr| {
+            arr.iter()
+                .filter_map(Value::as_str)
+                .map(ToString::to_string)
+                .collect::<Vec<_>>()
+        });
+
+    invalidity_reasons
+        .iter()
+        .any(|reason| reason == "microbench_only_claim")
+        .then(|| DataContractFailure {
+            contract_id: "microbench_only_claim".to_string(),
+            budget_name: None,
+            detail: format!(
+                "claim_integrity.cherry_pick_guard.invalidity_reasons contains microbench_only_claim in {}",
+                path.display()
+            ),
+            remediation: "Provide full E2E matrix evidence before making global performance claims."
+                .to_string(),
+        })
+}
+
+#[allow(clippy::too_many_lines)]
+fn evaluate_phase1_weighted_attribution_contract(
+    root: &Path,
+    max_age_hours: f64,
+) -> Vec<DataContractFailure> {
+    let mut failures = Vec::new();
+    let candidates = phase1_matrix_validation_candidates(root);
+    if let Some(detail) = evaluate_artifact_contract(&candidates, max_age_hours) {
+        failures.push(DataContractFailure {
+            contract_id: "missing_or_stale_phase1_matrix_validation_evidence".to_string(),
+            budget_name: None,
+            detail,
+            remediation: "Generate fresh phase1_matrix_validation.json in the current perf run."
+                .to_string(),
+        });
+        return failures;
+    }
+
+    let Some(path) = first_existing_path(&candidates) else {
+        failures.push(DataContractFailure {
+            contract_id: "invalid_phase1_matrix_validation_contract".to_string(),
+            budget_name: None,
+            detail: "phase1 matrix validation artifact not found".to_string(),
+            remediation: "Emit phase1_matrix_validation.json before evaluating perf budgets."
+                .to_string(),
+        });
+        return failures;
+    };
+
+    let Some(payload) = read_json_file(&path) else {
+        failures.push(DataContractFailure {
+            contract_id: "invalid_phase1_matrix_validation_contract".to_string(),
+            budget_name: None,
+            detail: format!("failed to parse JSON at {}", path.display()),
+            remediation: "Write valid JSON for phase1_matrix_validation artifact.".to_string(),
+        });
+        return failures;
+    };
+
+    let matrix_schema = payload.get("schema").and_then(Value::as_str);
+    if matrix_schema != Some("pi.perf.phase1_matrix_validation.v1") {
+        failures.push(DataContractFailure {
+            contract_id: "invalid_phase1_matrix_validation_contract".to_string(),
+            budget_name: None,
+            detail: format!(
+                "phase1 matrix schema must be pi.perf.phase1_matrix_validation.v1 (observed={}) in {}",
+                matrix_schema.unwrap_or("missing_or_non_string"),
+                path.display()
+            ),
+            remediation:
+                "Set phase1_matrix_validation.schema to pi.perf.phase1_matrix_validation.v1."
+                    .to_string(),
+        });
+    }
+
+    let Some(weighted) = payload
+        .get("weighted_bottleneck_attribution")
+        .and_then(Value::as_object)
+    else {
+        failures.push(DataContractFailure {
+            contract_id: "invalid_weighted_bottleneck_attribution_contract".to_string(),
+            budget_name: None,
+            detail: format!(
+                "phase1_matrix_validation.weighted_bottleneck_attribution must be an object in {}",
+                path.display()
+            ),
+            remediation:
+                "Emit weighted_bottleneck_attribution object with schema/status/lineage and outputs."
+                    .to_string(),
+        });
+        return failures;
+    };
+
+    let weighted_schema = weighted.get("schema").and_then(Value::as_str);
+    if weighted_schema != Some("pi.perf.phase1_weighted_bottleneck_attribution.v1") {
+        failures.push(DataContractFailure {
+            contract_id: "invalid_weighted_bottleneck_attribution_contract".to_string(),
+            budget_name: None,
+            detail: format!(
+                "weighted_bottleneck_attribution.schema must be pi.perf.phase1_weighted_bottleneck_attribution.v1 (observed={}) in {}",
+                weighted_schema.unwrap_or("missing_or_non_string"),
+                path.display()
+            ),
+            remediation:
+                "Set weighted_bottleneck_attribution.schema to pi.perf.phase1_weighted_bottleneck_attribution.v1."
+                    .to_string(),
+        });
+    }
+
+    let weighted_status = weighted.get("status").and_then(Value::as_str);
+    if !matches!(weighted_status, Some("computed" | "missing")) {
+        failures.push(DataContractFailure {
+            contract_id: "invalid_weighted_bottleneck_attribution_contract".to_string(),
+            budget_name: None,
+            detail: format!(
+                "weighted_bottleneck_attribution.status must be one of computed/missing (observed={}) in {}",
+                weighted_status.unwrap_or("missing_or_non_string"),
+                path.display()
+            ),
+            remediation:
+                "Set weighted_bottleneck_attribution.status to computed or missing.".to_string(),
+        });
+    }
+
+    let per_scale = weighted.get("per_scale").and_then(Value::as_array);
+    if per_scale.is_none() {
+        failures.push(DataContractFailure {
+            contract_id: "invalid_weighted_bottleneck_attribution_contract".to_string(),
+            budget_name: None,
+            detail: format!(
+                "weighted_bottleneck_attribution.per_scale must be an array in {}",
+                path.display()
+            ),
+            remediation:
+                "Emit weighted_bottleneck_attribution.per_scale as an array (empty only when status=missing)."
+                    .to_string(),
+        });
+    }
+
+    let global_ranking = weighted.get("global_ranking").and_then(Value::as_array);
+    if global_ranking.is_none() {
+        failures.push(DataContractFailure {
+            contract_id: "invalid_weighted_bottleneck_attribution_contract".to_string(),
+            budget_name: None,
+            detail: format!(
+                "weighted_bottleneck_attribution.global_ranking must be an array in {}",
+                path.display()
+            ),
+            remediation:
+                "Emit weighted_bottleneck_attribution.global_ranking as an array (empty only when status=missing)."
+                    .to_string(),
+        });
+    }
+
+    let Some(lineage) = weighted.get("lineage").and_then(Value::as_object) else {
+        failures.push(DataContractFailure {
+            contract_id: "invalid_weighted_bottleneck_attribution_contract".to_string(),
+            budget_name: None,
+            detail: format!(
+                "weighted_bottleneck_attribution.lineage must be an object in {}",
+                path.display()
+            ),
+            remediation:
+                "Emit weighted_bottleneck_attribution.lineage with source_cell_count and valid_cell_count."
+                    .to_string(),
+        });
+        return failures;
+    };
+
+    let source_cell_count = lineage.get("source_cell_count").and_then(Value::as_u64);
+    let valid_cell_count = lineage.get("valid_cell_count").and_then(Value::as_u64);
+
+    if source_cell_count.is_none() || valid_cell_count.is_none() {
+        failures.push(DataContractFailure {
+            contract_id: "invalid_weighted_bottleneck_attribution_contract".to_string(),
+            budget_name: None,
+            detail: format!(
+                "weighted_bottleneck_attribution.lineage requires integer source_cell_count and valid_cell_count in {}",
+                path.display()
+            ),
+            remediation:
+                "Emit integer lineage.source_cell_count and lineage.valid_cell_count.".to_string(),
+        });
+        return failures;
+    }
+
+    let source_cell_count = source_cell_count.unwrap_or_default();
+    let valid_cell_count = valid_cell_count.unwrap_or_default();
+    if valid_cell_count > source_cell_count {
+        failures.push(DataContractFailure {
+            contract_id: "invalid_weighted_bottleneck_attribution_contract".to_string(),
+            budget_name: None,
+            detail: format!(
+                "weighted_bottleneck_attribution.lineage.valid_cell_count ({valid_cell_count}) must be <= source_cell_count ({source_cell_count}) in {}",
+                path.display()
+            ),
+            remediation:
+                "Correct weighted_bottleneck_attribution.lineage counts to preserve valid<=source."
+                    .to_string(),
+        });
+    }
+
+    if let Some(matrix_cells) = payload.get("matrix_cells").and_then(Value::as_array) {
+        let observed_source = matrix_cells.len() as u64;
+        if source_cell_count != observed_source {
+            failures.push(DataContractFailure {
+                contract_id: "invalid_weighted_bottleneck_attribution_contract".to_string(),
+                budget_name: None,
+                detail: format!(
+                    "weighted_bottleneck_attribution.lineage.source_cell_count ({source_cell_count}) must equal phase1_matrix_validation.matrix_cells length ({observed_source}) in {}",
+                    path.display()
+                ),
+                remediation:
+                    "Align weighted_bottleneck_attribution.lineage.source_cell_count with matrix_cells length."
+                        .to_string(),
+            });
+        }
+    }
+
+    let per_scale_len = per_scale.map_or(0, Vec::len);
+    let global_ranking_len = global_ranking.map_or(0, Vec::len);
+    match weighted_status {
+        Some("missing") => {
+            if valid_cell_count != 0 || per_scale_len != 0 || global_ranking_len != 0 {
+                failures.push(DataContractFailure {
+                    contract_id: "invalid_weighted_bottleneck_attribution_contract".to_string(),
+                    budget_name: None,
+                    detail: format!(
+                        "weighted_bottleneck_attribution.status=missing requires lineage.valid_cell_count=0 and empty per_scale/global_ranking (observed valid_cell_count={valid_cell_count}, per_scale={per_scale_len}, global_ranking={global_ranking_len}) in {}",
+                        path.display()
+                    ),
+                    remediation:
+                        "When status=missing, set lineage.valid_cell_count=0 and emit empty per_scale/global_ranking arrays."
+                            .to_string(),
+                });
+            }
+        }
+        Some("computed") => {
+            if valid_cell_count == 0 || per_scale_len == 0 || global_ranking_len == 0 {
+                failures.push(DataContractFailure {
+                    contract_id: "invalid_weighted_bottleneck_attribution_contract".to_string(),
+                    budget_name: None,
+                    detail: format!(
+                        "weighted_bottleneck_attribution.status=computed requires lineage.valid_cell_count>0 and non-empty per_scale/global_ranking (observed valid_cell_count={valid_cell_count}, per_scale={per_scale_len}, global_ranking={global_ranking_len}) in {}",
+                        path.display()
+                    ),
+                    remediation:
+                        "When status=computed, ensure lineage.valid_cell_count>0 with populated per_scale/global_ranking outputs."
+                            .to_string(),
+                });
+            }
+        }
+        _ => {}
+    }
+
+    failures
+}
+
+fn evaluate_required_e2e_ratio_contract(
+    root: &Path,
+    max_age_hours: f64,
+) -> Vec<DataContractFailure> {
+    let mut failures = Vec::new();
+    let candidates = extension_stratification_candidates(root);
+    if let Some(detail) = evaluate_artifact_contract(&candidates, max_age_hours) {
+        failures.push(DataContractFailure {
+            contract_id: "missing_or_stale_e2e_matrix_evidence".to_string(),
+            budget_name: None,
+            detail,
+            remediation:
+                "Generate fresh extension_benchmark_stratification.json in the current perf run."
+                    .to_string(),
+        });
+        return failures;
+    }
+
+    let Some(path) = first_existing_path(&candidates) else {
+        failures.push(DataContractFailure {
+            contract_id: "missing_required_e2e_or_ratio_outputs".to_string(),
+            budget_name: None,
+            detail: "extension benchmark stratification artifact not found".to_string(),
+            remediation:
+                "Emit extension_benchmark_stratification.json before evaluating perf budgets."
+                    .to_string(),
+        });
+        return failures;
+    };
+
+    let Some(payload) = read_json_file(&path) else {
+        failures.push(DataContractFailure {
+            contract_id: "invalid_e2e_matrix_evidence".to_string(),
+            budget_name: None,
+            detail: format!("failed to parse JSON at {}", path.display()),
+            remediation: "Write valid JSON for extension_benchmark_stratification artifact."
+                .to_string(),
+        });
+        return failures;
+    };
+
+    let full_e2e_rows = collect_full_e2e_rows(&payload);
+    if let Some(failure) = duplicate_full_e2e_failure(&path, full_e2e_rows.len()) {
+        failures.push(failure);
+    }
+    if let Some(failure) = required_e2e_metric_failure(&path, full_e2e_rows.first().copied()) {
+        failures.push(failure);
+    }
+    if let Some(failure) =
+        bun_killer_ratio_release_gate_failure(&path, full_e2e_rows.first().copied())
+    {
+        failures.push(failure);
+    }
+    if let Some(failure) = claim_integrity_guard_failure(&path, &payload) {
+        failures.push(failure);
+    }
+    if let Some(failure) = microbench_only_claim_failure(&path, &payload) {
+        failures.push(failure);
+    }
+
+    failures
+}
+
+fn collect_data_contract_failures(root: &Path) -> Vec<DataContractFailure> {
+    let max_age_hours = max_artifact_age_hours();
+    let mut failures = Vec::new();
+
+    for budget in BUDGETS.iter().filter(|budget| budget.ci_enforced) {
+        let candidates = budget_artifact_candidates(root, budget.name);
+        if candidates.is_empty() {
+            continue;
+        }
+        if let Some(detail) = evaluate_artifact_contract(&candidates, max_age_hours) {
+            failures.push(DataContractFailure {
+                contract_id: "missing_or_stale_budget_artifact".to_string(),
+                budget_name: Some(budget.name.to_string()),
+                detail,
+                remediation: "Regenerate benchmark artifacts in the same CI/perf run before evaluating budgets."
+                    .to_string(),
+            });
+        }
+    }
+
+    failures.extend(evaluate_required_e2e_ratio_contract(root, max_age_hours));
+    failures.extend(evaluate_phase1_weighted_attribution_contract(
+        root,
+        max_age_hours,
+    ));
+    failures
+}
+
+fn check_budget(budget: &Budget) -> BudgetResult {
+    let root = project_root();
+    let strict = perf_strict_mode();
+
+    // Try to find actual measurement for this budget
+    let (actual, source) = match budget.name {
+        "tool_call_latency_p99" => read_pijs_workload_latency(&root),
+        "tool_call_throughput_min" => read_pijs_workload_throughput(&root),
+        "ext_cold_load_simple_p95" => read_criterion_load_time(&root, "hello"),
+        "ext_cold_load_complex_p95" => read_criterion_load_time(&root, "pirate"),
+        "ext_load_60_total" => read_total_load_time(&root),
+        "sustained_load_rss_growth" => read_stress_rss_growth(&root),
+        "startup_version_p95" => read_criterion_startup(&root, "version"),
+        "startup_full_agent_p95" => read_criterion_startup(&root, "help"),
+        "event_dispatch_p99" => read_scenario_runner_per_call(&root, "event_dispatch"),
+        "policy_eval_p99" => read_criterion_policy_eval(&root),
+        "idle_memory_rss" => read_idle_memory_rss(),
+        "binary_size_release" => read_binary_size(&root),
+        "protocol_parse_p99" => read_criterion_protocol_parse(&root),
+        _ => (None, "no data source configured".to_string()),
+    };
+
+    let status = classify_budget_status(budget, actual, strict);
+    let failure_reason = if status == "FAIL" && actual.is_none() && budget.ci_enforced && strict {
+        Some("missing_measurement_data".to_string())
+    } else {
+        None
+    };
+
+    BudgetResult {
+        budget_name: budget.name.to_string(),
+        category: budget.category.to_string(),
+        threshold: budget.threshold,
+        unit: budget.unit.to_string(),
+        actual,
+        status: status.to_string(),
+        source,
+        ci_enforced: budget.ci_enforced,
+        failure_reason,
+    }
+}
+
+fn read_pijs_workload_latency(root: &Path) -> (Option<f64>, String) {
+    let (events, source) = read_pijs_workload_events(root);
+    for event in &events {
+        if event
+            .get("tool_calls_per_iteration")
+            .and_then(Value::as_u64)
+            == Some(1)
+        {
+            if let Some(us) = event.get("per_call_us").and_then(Value::as_f64) {
+                return (Some(us), source);
+            }
+        }
+    }
+    (None, "no pijs_workload data".to_string())
+}
+
+fn read_pijs_workload_throughput(root: &Path) -> (Option<f64>, String) {
+    let (events, source) = read_pijs_workload_events(root);
+    for event in &events {
+        if event
+            .get("tool_calls_per_iteration")
+            .and_then(Value::as_u64)
+            == Some(10)
+        {
+            if let Some(cps) = event.get("calls_per_sec").and_then(Value::as_f64) {
+                return (Some(cps), source);
+            }
+        }
+    }
+    (None, "no pijs_workload data".to_string())
+}
+
+fn read_pijs_workload_events(root: &Path) -> (Vec<Value>, String) {
+    for relative_path in pijs_workload_candidate_paths() {
+        let full_path = root.join(relative_path);
+        let events = read_jsonl_file(&full_path);
+        if !events.is_empty() {
+            return (events, relative_path.to_string());
+        }
+    }
+    (Vec::new(), "no pijs_workload data".to_string())
+}
+
+const fn pijs_workload_candidate_paths() -> &'static [&'static str] {
+    &[
+        "target/perf/perf/pijs_workload_perf.jsonl",
+        "target/perf/release/pijs_workload_release.jsonl",
+        "target/perf/debug/pijs_workload_debug.jsonl",
+        "target/perf/pijs_workload.jsonl",
+    ]
+}
+
+fn read_criterion_load_time(root: &Path, ext: &str) -> (Option<f64>, String) {
+    // Criterion stores results in target/criterion/<group>/<bench>/new/estimates.json
+    let path = root.join(format!(
+        "target/criterion/ext_load_init/load_init_cold/{ext}/new/estimates.json"
+    ));
+    if let Some(estimates) = read_json_file(&path) {
+        if let Some(mean_ns) = estimates
+            .get("mean")
+            .and_then(|m| m.get("point_estimate"))
+            .and_then(Value::as_f64)
+        {
+            let ms = mean_ns / 1_000_000.0;
+            return (
+                Some(ms),
+                format!("criterion: ext_load_init/load_init_cold/{ext}"),
+            );
+        }
+    }
+    (None, format!("no criterion data for {ext}"))
+}
+
+fn read_total_load_time(root: &Path) -> (Option<f64>, String) {
+    let path = root.join("tests/ext_conformance/reports/load_time_benchmark.json");
+    if let Some(report) = read_json_file(&path) {
+        if let Some(results) = report.get("results").and_then(Value::as_array) {
+            let total_ms: f64 = results
+                .iter()
+                .filter_map(|r| {
+                    r.get("rust")
+                        .and_then(|rust| rust.get("load_time_ms"))
+                        .and_then(Value::as_f64)
+                })
+                .sum();
+            return (
+                Some(total_ms),
+                "load_time_benchmark.json (sum of Rust load times)".to_string(),
+            );
+        }
+    }
+    (None, "no load time benchmark data".to_string())
+}
+
+fn read_stress_rss_growth(root: &Path) -> (Option<f64>, String) {
+    let candidate_paths = [
+        (
+            "target/perf/stress_triage.json",
+            "target/perf/stress_triage.json",
+        ),
+        (
+            "tests/perf/reports/stress_triage.json",
+            "tests/perf/reports/stress_triage.json",
+        ),
+    ];
+
+    for (relative_path, source) in candidate_paths {
+        let path = root.join(relative_path);
+        if let Some(triage) = read_json_file(&path) {
+            let pct = triage
+                .get("rss_growth_pct")
+                .and_then(Value::as_f64)
+                .or_else(|| {
+                    triage
+                        .get("results")
+                        .and_then(|results| results.get("rss"))
+                        .and_then(|rss| rss.get("growth_pct"))
+                        .and_then(Value::as_f64)
+                });
+
+            if let Some(value) = pct {
+                let normalized_percent = if value <= 1.0 { value * 100.0 } else { value };
+                return (Some(normalized_percent), source.to_string());
+            }
+        }
+    }
+    (None, "no stress test data".to_string())
+}
+
+// ─── New Data Readers (bd-20s9) ──────────────────────────────────────────────
+
+fn read_criterion_startup(root: &Path, subcommand: &str) -> (Option<f64>, String) {
+    // Criterion stores startup benchmarks at target/criterion/startup/<subcommand>/warm/new/estimates.json
+    let path = root.join(format!(
+        "target/criterion/startup/{subcommand}/warm/new/estimates.json"
+    ));
+    if let Some(estimates) = read_json_file(&path) {
+        if let Some(mean_ns) = estimates
+            .get("mean")
+            .and_then(|m| m.get("point_estimate"))
+            .and_then(Value::as_f64)
+        {
+            let ms = mean_ns / 1_000_000.0;
+            return (Some(ms), format!("criterion: startup/{subcommand}/warm"));
+        }
+    }
+    (None, format!("no criterion data for startup/{subcommand}"))
+}
+
+fn read_scenario_runner_per_call(root: &Path, scenario: &str) -> (Option<f64>, String) {
+    // Read from target/perf/scenario_runner.jsonl
+    let path = root.join("target/perf/scenario_runner.jsonl");
+    let events = read_jsonl_file(&path);
+    // Find the worst (max) per_call_us across all extensions for this scenario.
+    let mut max_us: Option<f64> = None;
+    for event in &events {
+        if event.get("scenario").and_then(Value::as_str) == Some(scenario) {
+            if let Some(us) = event.get("per_call_us").and_then(Value::as_f64) {
+                max_us = Some(max_us.map_or(us, |prev: f64| prev.max(us)));
+            }
+        }
+    }
+    max_us.map_or_else(
+        || (None, format!("no scenario_runner data for {scenario}")),
+        |us| (Some(us), "target/perf/scenario_runner.jsonl".to_string()),
+    )
+}
+
+fn read_criterion_policy_eval(root: &Path) -> (Option<f64>, String) {
+    // Policy eval benchmarks: target/criterion/ext_policy/evaluate/*/new/estimates.json
+    // Take the worst (max) across all policy variants, convert ns → ns.
+    let base = root.join("target/criterion/ext_policy/evaluate");
+    let mut max_ns: Option<f64> = None;
+    if let Ok(entries) = std::fs::read_dir(&base) {
+        for entry in entries.flatten() {
+            let path = entry.path().join("new/estimates.json");
+            if let Some(estimates) = read_json_file(&path) {
+                if let Some(mean_ns) = estimates
+                    .get("mean")
+                    .and_then(|m| m.get("point_estimate"))
+                    .and_then(Value::as_f64)
+                {
+                    max_ns = Some(max_ns.map_or(mean_ns, |prev: f64| prev.max(mean_ns)));
+                }
+            }
+        }
+    }
+    max_ns.map_or_else(
+        || (None, "no criterion data for policy eval".to_string()),
+        |ns| (Some(ns), "criterion: ext_policy/evaluate (max)".to_string()),
+    )
+}
+
+fn read_idle_memory_rss() -> (Option<f64>, String) {
+    // Measure the current process RSS as a proxy for idle memory.
+    // This runs during test, so it's an approximation.
+    let pid = sysinfo::Pid::from_u32(std::process::id());
+    let mut system = sysinfo::System::new();
+    system.refresh_processes_specifics(
+        sysinfo::ProcessesToUpdate::Some(&[pid]),
+        true,
+        sysinfo::ProcessRefreshKind::nothing().with_memory(),
+    );
+    system.process(pid).map_or_else(
+        || (None, "could not read process RSS".to_string()),
+        |p| {
+            let rss_mb = p.memory() as f64 / 1024.0 / 1024.0;
+            (Some(rss_mb), "sysinfo: current process RSS".to_string())
+        },
+    )
+}
+
+fn read_binary_size(root: &Path) -> (Option<f64>, String) {
+    for path in binary_size_candidate_paths(root) {
+        if let Ok(meta) = std::fs::metadata(&path) {
+            let size_mb = meta.len() as f64 / 1024.0 / 1024.0;
+            let source = path
+                .strip_prefix(root)
+                .map_or_else(|_| path.display().to_string(), |p| p.display().to_string());
+            return (Some(size_mb), source);
+        }
+    }
+    (None, "no candidate pi binary found".to_string())
+}
+
+fn read_criterion_protocol_parse(root: &Path) -> (Option<f64>, String) {
+    // Protocol parse: target/criterion/ext_protocol/parse_and_validate/*/new/estimates.json
+    // Take the worst (max) across variants, convert ns → us.
+    let base = root.join("target/criterion/ext_protocol/parse_and_validate");
+    let mut max_us: Option<f64> = None;
+    if let Ok(entries) = std::fs::read_dir(&base) {
+        for entry in entries.flatten() {
+            let path = entry.path().join("new/estimates.json");
+            if let Some(estimates) = read_json_file(&path) {
+                if let Some(mean_ns) = estimates
+                    .get("mean")
+                    .and_then(|m| m.get("point_estimate"))
+                    .and_then(Value::as_f64)
+                {
+                    let us = mean_ns / 1000.0;
+                    max_us = Some(max_us.map_or(us, |prev: f64| prev.max(us)));
+                }
+            }
+        }
+    }
+    max_us.map_or_else(
+        || (None, "no criterion data for protocol parse".to_string()),
+        |us| {
+            (
+                Some(us),
+                "criterion: ext_protocol/parse_and_validate (max)".to_string(),
+            )
+        },
+    )
+}
+
+// ─── Tests ───────────────────────────────────────────────────────────────────
+
+#[test]
+fn budget_definitions_are_valid() {
+    for budget in BUDGETS {
+        assert!(!budget.name.is_empty(), "budget name must not be empty");
+        assert!(
+            !budget.category.is_empty(),
+            "budget category must not be empty"
+        );
+        assert!(budget.threshold > 0.0, "budget threshold must be positive");
+        assert!(!budget.unit.is_empty(), "budget unit must not be empty");
+        assert!(
+            !budget.methodology.is_empty(),
+            "budget methodology must not be empty"
+        );
+    }
+    eprintln!("[budgets] {} budgets defined", BUDGETS.len());
+}
+
+#[test]
+fn budget_names_are_unique() {
+    let mut seen = std::collections::HashSet::new();
+    for budget in BUDGETS {
+        assert!(
+            seen.insert(budget.name),
+            "duplicate budget name: {}",
+            budget.name
+        );
+    }
+}
+
+#[test]
+fn ci_enforced_budgets_have_data_sources() {
+    // CI-enforced budgets should have measurement data available
+    let ci_budgets: Vec<_> = BUDGETS.iter().filter(|b| b.ci_enforced).collect();
+    eprintln!(
+        "[budgets] {} CI-enforced budgets out of {} total",
+        ci_budgets.len(),
+        BUDGETS.len()
+    );
+    for budget in &ci_budgets {
+        eprintln!(
+            "  {} ({}): {} {} {}",
+            budget.name, budget.category, budget.threshold, budget.unit, budget.methodology
+        );
+    }
+    assert!(
+        ci_budgets.len() >= 5,
+        "should have at least 5 CI-enforced budgets"
+    );
+}
+
+#[test]
+fn ci_enforced_budgets_fail_on_regression_or_missing_data() {
+    let strict = perf_strict_mode();
+    let root = project_root();
+
+    let mut checked_with_data = 0usize;
+    let mut checked_without_data = 0usize;
+    let mut regressions = Vec::new();
+    let mut no_data_budgets = Vec::new();
+    let mut missing_data_failures = Vec::new();
+
+    for budget in BUDGETS.iter().filter(|budget| budget.ci_enforced) {
+        let result = check_budget(budget);
+        match result.status.as_str() {
+            "PASS" => {
+                if result.actual.is_some() {
+                    checked_with_data += 1;
+                }
+            }
+            "FAIL" => {
+                if let Some(actual) = result.actual {
+                    checked_with_data += 1;
+                    regressions.push(format!(
+                        "{}: actual={actual:.3}{} threshold={:.3}{} source={}",
+                        budget.name, budget.unit, budget.threshold, budget.unit, result.source
+                    ));
+                } else {
+                    checked_without_data += 1;
+                    missing_data_failures.push(format!(
+                        "{}: FAIL (missing measurement data; source={})",
+                        budget.name, result.source
+                    ));
+                }
+            }
+            _ => {
+                checked_without_data += 1;
+                no_data_budgets.push(format!(
+                    "{}: NO_DATA (source={})",
+                    budget.name, result.source
+                ));
+            }
+        }
+    }
+
+    let data_contract_failures = collect_data_contract_failures(&root);
+
+    eprintln!(
+        "[budget] CI-enforced: with_data={checked_with_data}, without_data={checked_without_data}, strict={strict}"
+    );
+    if !no_data_budgets.is_empty() {
+        eprintln!(
+            "[budget] CI-enforced budgets with NO_DATA:\n  {}",
+            no_data_budgets.join("\n  ")
+        );
+    }
+    if !missing_data_failures.is_empty() {
+        eprintln!(
+            "[budget] CI-enforced budgets failing due to missing data:\n  {}",
+            missing_data_failures.join("\n  ")
+        );
+    }
+    if !data_contract_failures.is_empty() {
+        let formatted = data_contract_failures
+            .iter()
+            .map(|failure| {
+                let budget_name = failure
+                    .budget_name
+                    .as_deref()
+                    .map_or_else(|| "<global>".to_string(), ToString::to_string);
+                format!(
+                    "{} [{}]: {}",
+                    failure.contract_id, budget_name, failure.detail
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n  ");
+        eprintln!("[budget] Data contract failures:\n  {formatted}");
+    }
+
+    assert!(
+        regressions.is_empty(),
+        "CI budget regressions detected:\n{}",
+        regressions.join("\n")
+    );
+
+    if strict {
+        assert!(
+            missing_data_failures.is_empty(),
+            "CI-enforced budgets missing measurement data must fail closed:\n{}",
+            missing_data_failures.join("\n")
+        );
+        assert!(
+            data_contract_failures.is_empty(),
+            "CI-enforced data-contract violations detected:\n{}",
+            data_contract_failures
+                .iter()
+                .map(|failure| format!(
+                    "{} [{}]: {}",
+                    failure.contract_id,
+                    failure.budget_name.as_deref().unwrap_or("<global>"),
+                    failure.detail
+                ))
+                .collect::<Vec<_>>()
+                .join("\n")
+        );
+    }
+}
+
+#[test]
+fn check_tool_call_budget() {
+    let budget = BUDGETS
+        .iter()
+        .find(|b| b.name == "tool_call_latency_p99")
+        .expect("tool_call_latency_p99 budget should exist");
+
+    let result = check_budget(budget);
+    eprintln!(
+        "[budget] {}: actual={:?} {} (threshold={} {}), status={}",
+        result.budget_name,
+        result.actual,
+        result.unit,
+        result.threshold,
+        result.unit,
+        result.status
+    );
+
+    if let Some(actual) = result.actual {
+        assert!(
+            actual <= budget.threshold,
+            "tool call latency {actual}us exceeds budget {}us",
+            budget.threshold
+        );
+    }
+}
+
+#[test]
+fn check_tool_call_throughput_budget() {
+    let budget = BUDGETS
+        .iter()
+        .find(|b| b.name == "tool_call_throughput_min")
+        .expect("tool_call_throughput_min budget should exist");
+
+    let result = check_budget(budget);
+    eprintln!(
+        "[budget] {}: actual={:?} {} (threshold={} {}), status={}",
+        result.budget_name,
+        result.actual,
+        result.unit,
+        result.threshold,
+        result.unit,
+        result.status
+    );
+
+    if let Some(actual) = result.actual {
+        assert!(
+            actual >= budget.threshold,
+            "tool call throughput {actual} calls/sec below budget {} calls/sec",
+            budget.threshold
+        );
+    }
+}
+
+#[test]
+fn pijs_workload_profile_field_is_present_when_data_exists() {
+    let root = project_root();
+    let (events, source) = read_pijs_workload_events(&root);
+    if events.is_empty() {
+        eprintln!("[budget] No pijs_workload data — skipping profile field check");
+        return;
+    }
+
+    for event in &events {
+        let profile = event
+            .get("build_profile")
+            .and_then(Value::as_str)
+            .unwrap_or("");
+        assert!(
+            !profile.trim().is_empty(),
+            "pijs_workload event missing non-empty build_profile in {source}: {event}"
+        );
+    }
+}
+
+#[test]
+fn pijs_workload_reader_prefers_profile_labeled_artifact_path() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let profile_dir = tmp.path().join("target/perf/perf");
+    std::fs::create_dir_all(&profile_dir).expect("create profile perf dir");
+    let path = profile_dir.join("pijs_workload_perf.jsonl");
+    let payload = json!({
+        "schema": "pi.perf.workload.v1",
+        "tool": "pijs_workload",
+        "scenario": "tool_call_roundtrip",
+        "iterations": 200,
+        "tool_calls_per_iteration": 1,
+        "total_calls": 200,
+        "elapsed_ms": 10,
+        "per_call_us": 50.0,
+        "calls_per_sec": 20000.0,
+        "build_profile": "perf"
+    });
+    std::fs::write(
+        &path,
+        format!("{}\n", serde_json::to_string(&payload).unwrap_or_default()),
+    )
+    .expect("write pijs workload profile artifact");
+
+    let (latency, source) = read_pijs_workload_latency(tmp.path());
+    assert_eq!(latency, Some(50.0));
+    assert_eq!(source, "target/perf/perf/pijs_workload_perf.jsonl");
+}
+
+#[test]
+fn check_extension_load_budget() {
+    let budget = BUDGETS
+        .iter()
+        .find(|b| b.name == "ext_cold_load_simple_p95")
+        .expect("ext_cold_load_simple_p95 budget should exist");
+
+    let result = check_budget(budget);
+    eprintln!(
+        "[budget] {}: actual={:?} {} (threshold={} {}), status={}",
+        result.budget_name,
+        result.actual,
+        result.unit,
+        result.threshold,
+        result.unit,
+        result.status
+    );
+
+    if let Some(actual) = result.actual {
+        assert!(
+            actual <= budget.threshold,
+            "extension cold load {actual}ms exceeds budget {}ms",
+            budget.threshold
+        );
+    }
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn generate_budget_report() {
+    let root = project_root();
+    let results: Vec<BudgetResult> = BUDGETS.iter().map(check_budget).collect();
+    let data_contract_failures = collect_data_contract_failures(&root);
+    let reports_dir = root.join("tests/perf/reports");
+    let _ = std::fs::create_dir_all(&reports_dir);
+
+    // ── Write JSONL ──
+    let jsonl_path = reports_dir.join("budget_events.jsonl");
+    let jsonl: String = results
+        .iter()
+        .map(|r| serde_json::to_string(r).unwrap_or_default())
+        .collect::<Vec<_>>()
+        .join("\n");
+    std::fs::write(&jsonl_path, format!("{jsonl}\n")).expect("write budget_events.jsonl");
+
+    // ── Write summary JSON ──
+    let pass_count = results.iter().filter(|r| r.status == "PASS").count();
+    let fail_count = results.iter().filter(|r| r.status == "FAIL").count();
+    let no_data_count = results.iter().filter(|r| r.status == "NO_DATA").count();
+    let ci_enforced_count = BUDGETS.iter().filter(|b| b.ci_enforced).count();
+    let ci_results: Vec<_> = results.iter().filter(|result| result.ci_enforced).collect();
+    let ci_with_data_count = ci_results
+        .iter()
+        .filter(|result| result.actual.is_some())
+        .count();
+    let ci_fail_count = ci_results
+        .iter()
+        .filter(|result| result.status == "FAIL")
+        .count();
+    let ci_no_data_count = ci_results
+        .iter()
+        .filter(|result| result.status == "NO_DATA")
+        .count();
+    let data_contract_failures_count = data_contract_failures.len();
+
+    let summary = json!({
+        "schema": "pi.perf.budget_summary.v1",
+        "generated_at": chrono::Utc::now().to_rfc3339(),
+        "total_budgets": BUDGETS.len(),
+        "ci_enforced": ci_enforced_count,
+        "ci_with_data": ci_with_data_count,
+        "ci_fail": ci_fail_count,
+        "ci_no_data": ci_no_data_count,
+        "pass": pass_count,
+        "fail": fail_count,
+        "no_data": no_data_count,
+        "data_contract_failures_count": data_contract_failures_count,
+        "failing_data_contracts": data_contract_failures.iter().map(|failure| json!({
+            "contract_id": failure.contract_id,
+            "budget_name": failure.budget_name,
+            "detail": failure.detail,
+            "remediation": failure.remediation,
+        })).collect::<Vec<_>>(),
+        "budgets": BUDGETS.iter().map(|b| json!({
+            "name": b.name,
+            "category": b.category,
+            "metric": b.metric,
+            "unit": b.unit,
+            "threshold": b.threshold,
+            "ci_enforced": b.ci_enforced,
+            "methodology": b.methodology,
+        })).collect::<Vec<_>>(),
+    });
+
+    let summary_path = reports_dir.join("budget_summary.json");
+    std::fs::write(
+        &summary_path,
+        serde_json::to_string_pretty(&summary).unwrap_or_default(),
+    )
+    .expect("write budget_summary.json");
+
+    // ── Write Markdown ──
+    let mut md = String::with_capacity(8 * 1024);
+
+    md.push_str("# Performance Budgets\n\n");
+    let _ = writeln!(
+        md,
+        "> Generated: {}\n",
+        chrono::Utc::now().format("%Y-%m-%dT%H:%M:%SZ")
+    );
+
+    md.push_str("## Summary\n\n");
+    md.push_str("| Metric | Value |\n");
+    md.push_str("|---|---|\n");
+    let _ = writeln!(md, "| Total budgets | {} |", BUDGETS.len());
+    let _ = writeln!(md, "| CI-enforced | {ci_enforced_count} |");
+    let _ = writeln!(md, "| CI-enforced with data | {ci_with_data_count} |");
+    let _ = writeln!(md, "| CI-enforced FAIL | {ci_fail_count} |");
+    let _ = writeln!(md, "| CI-enforced NO_DATA | {ci_no_data_count} |");
+    let _ = writeln!(md, "| PASS | {pass_count} |");
+    let _ = writeln!(md, "| FAIL | {fail_count} |");
+    let _ = writeln!(md, "| No data | {no_data_count} |\n");
+    let _ = writeln!(
+        md,
+        "| Failing data contracts | {data_contract_failures_count} |\n"
+    );
+
+    // Group by category
+    let categories = [
+        "startup",
+        "extension",
+        "tool_call",
+        "event_dispatch",
+        "policy",
+        "memory",
+        "binary",
+        "protocol",
+    ];
+
+    for cat in &categories {
+        let cat_budgets: Vec<_> = BUDGETS.iter().filter(|b| b.category == *cat).collect();
+        if cat_budgets.is_empty() {
+            continue;
+        }
+
+        let _ = writeln!(md, "## {}\n", capitalize(cat));
+        md.push_str("| Budget | Metric | Threshold | Actual | Status | CI |\n");
+        md.push_str("|---|---|---|---|---|---|\n");
+
+        for budget in &cat_budgets {
+            let result = results
+                .iter()
+                .find(|r| r.budget_name == budget.name)
+                .unwrap();
+            let actual_str = result
+                .actual
+                .map_or_else(|| "-".to_string(), |v| format_value(v, budget.unit));
+            let ci_str = if budget.ci_enforced { "Yes" } else { "No" };
+
+            let _ = writeln!(
+                md,
+                "| `{}` | {} | {} {} | {} | {} | {} |",
+                budget.name,
+                budget.metric,
+                budget.threshold,
+                budget.unit,
+                actual_str,
+                result.status,
+                ci_str,
+            );
+        }
+        md.push('\n');
+    }
+
+    md.push_str("## Failing Data Contracts\n\n");
+    if data_contract_failures.is_empty() {
+        md.push_str("- None\n\n");
+    } else {
+        for failure in &data_contract_failures {
+            let budget_label = failure.budget_name.as_deref().unwrap_or("global");
+            let _ = writeln!(
+                md,
+                "- `{}` (`{}`): {}",
+                failure.contract_id, budget_label, failure.detail
+            );
+            let _ = writeln!(md, "  - Remediation: {}", failure.remediation);
+        }
+        md.push('\n');
+    }
+
+    // Methodology
+    md.push_str("## Measurement Methodology\n\n");
+    for budget in BUDGETS {
+        let _ = writeln!(md, "- **`{}`**: {}", budget.name, budget.methodology);
+    }
+    md.push('\n');
+
+    md.push_str("## CI Enforcement\n\n");
+    md.push_str("CI-enforced budgets are checked on every PR. A budget violation ");
+    md.push_str("blocks the PR from merging. Non-CI budgets are informational and ");
+    md.push_str("checked in nightly runs.\n\n");
+    md.push_str("```bash\n");
+    md.push_str("# Run budget checks\n");
+    md.push_str("cargo test --test perf_budgets -- --nocapture\n\n");
+    md.push_str("# Generate full budget report\n");
+    md.push_str("cargo test --test perf_budgets generate_budget_report -- --nocapture\n");
+    md.push_str("```\n");
+
+    let md_path = reports_dir.join("PERF_BUDGETS.md");
+    std::fs::write(&md_path, &md).expect("write PERF_BUDGETS.md");
+
+    // Print summary
+    eprintln!("\n=== Performance Budget Report ===");
+    eprintln!("  Total: {}", BUDGETS.len());
+    eprintln!("  PASS:  {pass_count}");
+    eprintln!("  FAIL:  {fail_count}");
+    eprintln!("  N/A:   {no_data_count}");
+    eprintln!("  Data contract failures: {data_contract_failures_count}");
+    eprintln!("  Reports:");
+    eprintln!("    {}", md_path.display());
+    eprintln!("    {}", summary_path.display());
+    eprintln!("    {}", jsonl_path.display());
+}
+
+fn capitalize(s: &str) -> String {
+    let mut chars = s.chars();
+    chars.next().map_or_else(String::new, |c| {
+        let upper: String = c.to_uppercase().collect();
+        let rest: String = chars.collect();
+        format!("{upper}{rest}")
+    })
+}
+
+fn format_value(val: f64, unit: &str) -> String {
+    match unit {
+        "ms" | "MB" | "percent" => format!("{val:.1}"),
+        "us" | "ns" | "calls/sec" => format!("{val:.0}"),
+        _ => format!("{val:.2}"),
+    }
+}
+
+#[test]
+fn classify_budget_status_promotes_ci_no_data_to_fail_under_strict() {
+    let budget = BUDGETS
+        .iter()
+        .find(|budget| budget.name == "tool_call_latency_p99")
+        .expect("tool_call_latency_p99 budget exists");
+    assert_eq!(classify_budget_status(budget, None, false), "NO_DATA");
+    assert_eq!(classify_budget_status(budget, None, true), "FAIL");
+}
+
+#[test]
+fn artifact_contract_flags_stale_evidence() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let artifact_path = tmp.path().join("artifact.json");
+    std::fs::write(&artifact_path, "{}\n").expect("write artifact");
+    std::thread::sleep(std::time::Duration::from_millis(25));
+
+    let violation = evaluate_artifact_contract(&[artifact_path], 0.000001)
+        .expect("stale artifact violation expected");
+    assert!(
+        violation.contains("stale/invalid"),
+        "expected stale violation text, got: {violation}"
+    );
+}
+
+#[test]
+fn binary_size_candidate_builder_defaults_to_release_then_perf() {
+    let target_dir = Path::new("/tmp/pi-agent-target");
+    let candidates = build_binary_size_candidate_paths(target_dir, None, "");
+    assert_eq!(
+        candidates,
+        vec![target_dir.join("release/pi"), target_dir.join("perf/pi")]
+    );
+}
+
+#[test]
+fn binary_size_candidate_builder_prefers_release_override_then_release_then_perf() {
+    let target_dir = Path::new("/tmp/pi-agent-target");
+    let override_path = target_dir.join("custom-release/pi");
+    let candidates = build_binary_size_candidate_paths(target_dir, Some(override_path.clone()), "");
+    assert_eq!(
+        candidates,
+        vec![
+            override_path,
+            target_dir.join("release/pi"),
+            target_dir.join("perf/pi"),
+        ]
+    );
+}
+
+#[test]
+fn binary_size_candidate_builder_includes_non_debug_profile_before_perf() {
+    let target_dir = Path::new("/tmp/pi-agent-target");
+    let candidates = build_binary_size_candidate_paths(target_dir, None, "bench-profile");
+    assert_eq!(
+        candidates,
+        vec![
+            target_dir.join("release/pi"),
+            target_dir.join("bench-profile/pi"),
+            target_dir.join("perf/pi"),
+        ]
+    );
+}
+
+#[test]
+fn binary_size_candidate_builder_ignores_debug_profile() {
+    let target_dir = Path::new("/tmp/pi-agent-target");
+    let candidates = build_binary_size_candidate_paths(target_dir, None, "debug");
+    assert_eq!(
+        candidates,
+        vec![target_dir.join("release/pi"), target_dir.join("perf/pi")]
+    );
+}
+
+#[test]
+fn binary_size_candidate_builder_ignores_debug_profile_case_insensitive() {
+    let target_dir = Path::new("/tmp/pi-agent-target");
+    let candidates = build_binary_size_candidate_paths(target_dir, None, "DeBuG");
+    assert_eq!(
+        candidates,
+        vec![target_dir.join("release/pi"), target_dir.join("perf/pi")]
+    );
+}
+
+#[test]
+fn binary_size_candidate_builder_ignores_padded_debug_profile_case_insensitive() {
+    let target_dir = Path::new("/tmp/pi-agent-target");
+    let candidates = build_binary_size_candidate_paths(target_dir, None, "  DeBuG\t");
+    assert_eq!(
+        candidates,
+        vec![target_dir.join("release/pi"), target_dir.join("perf/pi")]
+    );
+}
+
+#[test]
+fn binary_size_candidate_builder_dedups_perf_profile() {
+    let target_dir = Path::new("/tmp/pi-agent-target");
+    let candidates = build_binary_size_candidate_paths(target_dir, None, "perf");
+    assert_eq!(
+        candidates,
+        vec![target_dir.join("release/pi"), target_dir.join("perf/pi")]
+    );
+}
+
+#[test]
+fn binary_size_candidate_builder_dedups_release_profile() {
+    let target_dir = Path::new("/tmp/pi-agent-target");
+    let candidates = build_binary_size_candidate_paths(target_dir, None, "release");
+    assert_eq!(
+        candidates,
+        vec![target_dir.join("release/pi"), target_dir.join("perf/pi")]
+    );
+}
+
+#[test]
+fn binary_size_candidate_builder_dedups_override_matching_release() {
+    let target_dir = Path::new("/tmp/pi-agent-target");
+    let release = target_dir.join("release/pi");
+    let candidates =
+        build_binary_size_candidate_paths(target_dir, Some(release.clone()), "release");
+    assert_eq!(candidates, vec![release, target_dir.join("perf/pi")]);
+}
+
+#[test]
+fn binary_size_candidate_builder_ignores_whitespace_only_profile() {
+    let target_dir = Path::new("/tmp/pi-agent-target");
+    let candidates = build_binary_size_candidate_paths(target_dir, None, " \t ");
+    assert_eq!(
+        candidates,
+        vec![target_dir.join("release/pi"), target_dir.join("perf/pi")]
+    );
+}
+
+#[test]
+fn binary_size_candidate_builder_trims_profile_before_dedup() {
+    let target_dir = Path::new("/tmp/pi-agent-target");
+    let candidates = build_binary_size_candidate_paths(target_dir, None, " release ");
+    assert_eq!(
+        candidates,
+        vec![target_dir.join("release/pi"), target_dir.join("perf/pi")]
+    );
+}
+
+fn write_stratification_artifact(path: &Path, invalidity_reasons: &[&str], include_full_e2e: bool) {
+    let full_e2e_layer = include_full_e2e.then(|| {
+        json!({
+            "layer_id": "full_e2e_long_session",
+            "absolute_metrics": {"value": 120.0},
+            "relative_metrics": {"rust_vs_node_ratio": 1.8, "rust_vs_bun_ratio": 1.5}
+        })
+    });
+    write_stratification_artifact_with_full_e2e_layer(path, invalidity_reasons, full_e2e_layer);
+}
+
+fn write_stratification_artifact_with_full_e2e_layer(
+    path: &Path,
+    invalidity_reasons: &[&str],
+    full_e2e_layer: Option<Value>,
+) {
+    let full_e2e_layers = full_e2e_layer.into_iter().collect::<Vec<_>>();
+    write_stratification_artifact_with_claim_guard(
+        path,
+        invalidity_reasons,
+        &full_e2e_layers,
+        Some(true),
+        Some(!full_e2e_layers.is_empty()),
+    );
+}
+
+fn write_stratification_artifact_with_full_e2e_layers(
+    path: &Path,
+    invalidity_reasons: &[&str],
+    full_e2e_layers: &[Value],
+) {
+    write_stratification_artifact_with_claim_guard(
+        path,
+        invalidity_reasons,
+        full_e2e_layers,
+        Some(true),
+        Some(!full_e2e_layers.is_empty()),
+    );
+}
+
+fn write_stratification_artifact_with_claim_guard(
+    path: &Path,
+    invalidity_reasons: &[&str],
+    full_e2e_layers: &[Value],
+    global_claim_valid: Option<bool>,
+    full_e2e_layer_coverage: Option<bool>,
+) {
+    let mut layers = vec![
+        json!({
+            "layer_id": "cold_load_init",
+            "absolute_metrics": {"value": 10.0},
+            "relative_metrics": {"rust_vs_node_ratio": 2.1, "rust_vs_bun_ratio": 1.7}
+        }),
+        json!({
+            "layer_id": "per_call_dispatch_micro",
+            "absolute_metrics": {"value": 40.0},
+            "relative_metrics": {"rust_vs_node_ratio": 2.0, "rust_vs_bun_ratio": 1.6}
+        }),
+    ];
+    if !full_e2e_layers.is_empty() {
+        layers.extend(full_e2e_layers.iter().cloned());
+    }
+
+    let mut cherry_pick_guard = serde_json::Map::new();
+    cherry_pick_guard.insert(
+        "invalidity_reasons".to_string(),
+        Value::Array(
+            invalidity_reasons
+                .iter()
+                .map(|reason| Value::String((*reason).to_string()))
+                .collect(),
+        ),
+    );
+    if let Some(valid) = global_claim_valid {
+        cherry_pick_guard.insert("global_claim_valid".to_string(), Value::Bool(valid));
+    }
+    if let Some(covered) = full_e2e_layer_coverage {
+        let mut layer_coverage = serde_json::Map::new();
+        layer_coverage.insert("full_e2e_long_session".to_string(), Value::Bool(covered));
+        cherry_pick_guard.insert("layer_coverage".to_string(), Value::Object(layer_coverage));
+    }
+
+    let payload = json!({
+        "schema": "pi.perf.extension_benchmark_stratification.v1",
+        "generated_at": chrono::Utc::now().to_rfc3339(),
+        "layers": layers,
+        "claim_integrity": {
+            "cherry_pick_guard": Value::Object(cherry_pick_guard)
+        }
+    });
+    std::fs::write(
+        path,
+        serde_json::to_string_pretty(&payload).unwrap_or_default(),
+    )
+    .expect("write stratification artifact");
+}
+
+fn valid_weighted_bottleneck_attribution_fixture() -> Value {
+    json!({
+        "schema": "pi.perf.phase1_weighted_bottleneck_attribution.v1",
+        "status": "computed",
+        "weighting_policy": "session_messages",
+        "confidence_method": "weighted_normal_approx_95",
+        "per_scale": [
+            {
+                "session_messages": 100_000,
+                "partitions": [
+                    {
+                        "workload_partition": "matched-state",
+                        "present": true,
+                        "scenario_id": "matched-state/session_100000",
+                        "total_stage_ms": 117.0,
+                        "stage_pct": {
+                            "open_ms": 41.0,
+                            "append_ms": 31.0,
+                            "save_ms": 19.0,
+                            "index_ms": 9.0
+                        }
+                    },
+                    {
+                        "workload_partition": "realistic",
+                        "present": true,
+                        "scenario_id": "realistic/session_100000",
+                        "total_stage_ms": 105.0,
+                        "stage_pct": {
+                            "open_ms": 42.0,
+                            "append_ms": 30.0,
+                            "save_ms": 18.0,
+                            "index_ms": 10.0
+                        }
+                    }
+                ]
+            }
+        ],
+        "global_ranking": [
+            {
+                "stage": "open_ms",
+                "weighted_stage_ms": 9_200_000.0,
+                "weighted_contribution_pct": 41.4,
+                "mean_share_pct": 41.4,
+                "ci95_lower_pct": 40.8,
+                "ci95_upper_pct": 42.0,
+                "sample_size": 2
+            }
+        ],
+        "lineage": {
+            "source_stream": "phase1_matrix_validation.matrix_cells",
+            "source_cell_count": 2,
+            "valid_cell_count": 2
+        }
+    })
+}
+
+fn write_phase1_matrix_validation_artifact(path: &Path, weighted_bottleneck_attribution: &Value) {
+    let payload = json!({
+        "schema": "pi.perf.phase1_matrix_validation.v1",
+        "run_id": "20260217T000000Z",
+        "correlation_id": "abc123def456",
+        "matrix_cells": [
+            {
+                "workload_partition": "matched-state",
+                "session_messages": 100_000,
+                "scenario_id": "matched-state/session_100000",
+                "status": "pass",
+                "stage_attribution": {
+                    "open_ms": 48.0,
+                    "append_ms": 36.0,
+                    "save_ms": 22.0,
+                    "index_ms": 11.0,
+                    "total_stage_ms": 117.0
+                }
+            },
+            {
+                "workload_partition": "realistic",
+                "session_messages": 100_000,
+                "scenario_id": "realistic/session_100000",
+                "status": "pass",
+                "stage_attribution": {
+                    "open_ms": 44.0,
+                    "append_ms": 32.0,
+                    "save_ms": 19.0,
+                    "index_ms": 10.0,
+                    "total_stage_ms": 105.0
+                }
+            }
+        ],
+        "weighted_bottleneck_attribution": weighted_bottleneck_attribution
+    });
+    std::fs::write(
+        path,
+        serde_json::to_string_pretty(&payload).unwrap_or_default(),
+    )
+    .expect("write phase1 matrix artifact");
+}
+
+#[test]
+fn required_e2e_ratio_contract_fails_when_full_e2e_evidence_missing() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf");
+    std::fs::create_dir_all(&perf_dir).expect("create perf dir");
+    let artifact = perf_dir.join("extension_benchmark_stratification.json");
+    write_stratification_artifact(&artifact, &[], false);
+
+    let failures = evaluate_required_e2e_ratio_contract(tmp.path(), 24.0);
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contract_id == "missing_required_e2e_or_ratio_outputs"),
+        "expected missing_required_e2e_or_ratio_outputs failure, got: {failures:?}",
+    );
+}
+
+#[test]
+fn required_e2e_ratio_contract_flags_microbench_only_claim() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf");
+    std::fs::create_dir_all(&perf_dir).expect("create perf dir");
+    let artifact = perf_dir.join("extension_benchmark_stratification.json");
+    write_stratification_artifact(&artifact, &["microbench_only_claim"], true);
+
+    let failures = evaluate_required_e2e_ratio_contract(tmp.path(), 24.0);
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contract_id == "microbench_only_claim"),
+        "expected microbench_only_claim failure, got: {failures:?}",
+    );
+}
+
+#[test]
+fn required_e2e_ratio_contract_fails_when_full_e2e_values_non_positive() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf");
+    std::fs::create_dir_all(&perf_dir).expect("create perf dir");
+    let artifact = perf_dir.join("extension_benchmark_stratification.json");
+    let invalid_full_e2e = json!({
+        "layer_id": "full_e2e_long_session",
+        "absolute_metrics": {"value": 0.0},
+        "relative_metrics": {"rust_vs_node_ratio": -1.0, "rust_vs_bun_ratio": 1.5}
+    });
+    write_stratification_artifact_with_full_e2e_layer(&artifact, &[], Some(invalid_full_e2e));
+
+    let failures = evaluate_required_e2e_ratio_contract(tmp.path(), 24.0);
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contract_id == "missing_required_e2e_or_ratio_outputs"),
+        "expected missing_required_e2e_or_ratio_outputs failure, got: {failures:?}",
+    );
+}
+
+#[test]
+fn required_e2e_ratio_contract_fails_when_full_e2e_values_non_numeric() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf");
+    std::fs::create_dir_all(&perf_dir).expect("create perf dir");
+    let artifact = perf_dir.join("extension_benchmark_stratification.json");
+    let invalid_full_e2e = json!({
+        "layer_id": "full_e2e_long_session",
+        "absolute_metrics": {"value": "n/a"},
+        "relative_metrics": {"rust_vs_node_ratio": 1.8, "rust_vs_bun_ratio": null}
+    });
+    write_stratification_artifact_with_full_e2e_layer(&artifact, &[], Some(invalid_full_e2e));
+
+    let failures = evaluate_required_e2e_ratio_contract(tmp.path(), 24.0);
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contract_id == "missing_required_e2e_or_ratio_outputs"),
+        "expected missing_required_e2e_or_ratio_outputs failure, got: {failures:?}",
+    );
+}
+
+#[test]
+fn required_e2e_ratio_contract_fails_when_duplicate_full_e2e_layers_present() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf");
+    std::fs::create_dir_all(&perf_dir).expect("create perf dir");
+    let artifact = perf_dir.join("extension_benchmark_stratification.json");
+    let duplicate_layers = vec![
+        json!({
+            "layer_id": "full_e2e_long_session",
+            "absolute_metrics": {"value": 120.0},
+            "relative_metrics": {"rust_vs_node_ratio": 1.8, "rust_vs_bun_ratio": 1.5}
+        }),
+        json!({
+            "layer_id": "full_e2e_long_session",
+            "absolute_metrics": {"value": 130.0},
+            "relative_metrics": {"rust_vs_node_ratio": 1.7, "rust_vs_bun_ratio": 1.4}
+        }),
+    ];
+    write_stratification_artifact_with_full_e2e_layers(&artifact, &[], &duplicate_layers);
+
+    let failures = evaluate_required_e2e_ratio_contract(tmp.path(), 24.0);
+    assert!(
+        failures.iter().any(|failure| {
+            failure.contract_id == "missing_required_e2e_or_ratio_outputs"
+                && failure
+                    .detail
+                    .contains("duplicate full_e2e_long_session layers")
+        }),
+        "expected duplicate full_e2e_long_session failure, got: {failures:?}",
+    );
+}
+
+#[test]
+fn required_e2e_ratio_contract_fails_when_global_claim_valid_is_false() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf");
+    std::fs::create_dir_all(&perf_dir).expect("create perf dir");
+    let artifact = perf_dir.join("extension_benchmark_stratification.json");
+    let full_e2e_layers = vec![json!({
+        "layer_id": "full_e2e_long_session",
+        "absolute_metrics": {"value": 120.0},
+        "relative_metrics": {"rust_vs_node_ratio": 1.8, "rust_vs_bun_ratio": 1.5}
+    })];
+    write_stratification_artifact_with_claim_guard(
+        &artifact,
+        &[],
+        &full_e2e_layers,
+        Some(false),
+        Some(true),
+    );
+
+    let failures = evaluate_required_e2e_ratio_contract(tmp.path(), 24.0);
+    assert!(
+        failures.iter().any(|failure| {
+            failure.contract_id == "invalid_claim_integrity_guard"
+                && failure.detail.contains("global_claim_valid=false")
+        }),
+        "expected invalid_claim_integrity_guard failure for false global_claim_valid, got: {failures:?}",
+    );
+}
+
+#[test]
+fn required_e2e_ratio_contract_fails_when_layer_coverage_missing() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf");
+    std::fs::create_dir_all(&perf_dir).expect("create perf dir");
+    let artifact = perf_dir.join("extension_benchmark_stratification.json");
+    let full_e2e_layers = vec![json!({
+        "layer_id": "full_e2e_long_session",
+        "absolute_metrics": {"value": 120.0},
+        "relative_metrics": {"rust_vs_node_ratio": 1.8, "rust_vs_bun_ratio": 1.5}
+    })];
+    write_stratification_artifact_with_claim_guard(
+        &artifact,
+        &[],
+        &full_e2e_layers,
+        Some(true),
+        None,
+    );
+
+    let failures = evaluate_required_e2e_ratio_contract(tmp.path(), 24.0);
+    assert!(
+        failures.iter().any(|failure| {
+            failure.contract_id == "invalid_claim_integrity_guard"
+                && failure
+                    .detail
+                    .contains("full_e2e_layer_coverage=missing_or_non_boolean")
+        }),
+        "expected invalid_claim_integrity_guard failure for missing layer coverage, got: {failures:?}",
+    );
+}
+
+#[test]
+fn required_e2e_ratio_contract_fails_when_bun_killer_ratio_exceeds_threshold() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf");
+    std::fs::create_dir_all(&perf_dir).expect("create perf dir");
+    let artifact = perf_dir.join("extension_benchmark_stratification.json");
+    let full_e2e_layer = json!({
+        "layer_id": "full_e2e_long_session",
+        "absolute_metrics": {"value": 120.0},
+        "relative_metrics": {"rust_vs_node_ratio": 0.40, "rust_vs_bun_ratio": 0.34}
+    });
+    write_stratification_artifact_with_full_e2e_layer(&artifact, &[], Some(full_e2e_layer));
+
+    let failures = evaluate_required_e2e_ratio_contract(tmp.path(), 24.0);
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contract_id == "bun_killer_ratio_release_gate"),
+        "expected bun_killer_ratio_release_gate failure, got: {failures:?}",
+    );
+}
+
+#[test]
+fn required_e2e_ratio_contract_accepts_bun_killer_ratio_at_threshold() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf");
+    std::fs::create_dir_all(&perf_dir).expect("create perf dir");
+    let artifact = perf_dir.join("extension_benchmark_stratification.json");
+    let full_e2e_layer = json!({
+        "layer_id": "full_e2e_long_session",
+        "absolute_metrics": {"value": 120.0},
+        "relative_metrics": {"rust_vs_node_ratio": 0.30, "rust_vs_bun_ratio": 0.33}
+    });
+    write_stratification_artifact_with_full_e2e_layer(&artifact, &[], Some(full_e2e_layer));
+
+    let failures = evaluate_required_e2e_ratio_contract(tmp.path(), 24.0);
+    assert!(
+        !failures
+            .iter()
+            .any(|failure| failure.contract_id == "bun_killer_ratio_release_gate"),
+        "did not expect bun_killer_ratio_release_gate failure, got: {failures:?}",
+    );
+}
+
+#[test]
+fn phase1_weighted_contract_accepts_valid_artifact() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf/results");
+    std::fs::create_dir_all(&perf_dir).expect("create perf results dir");
+    let artifact = perf_dir.join("phase1_matrix_validation.json");
+    write_phase1_matrix_validation_artifact(
+        &artifact,
+        &valid_weighted_bottleneck_attribution_fixture(),
+    );
+
+    let failures = evaluate_phase1_weighted_attribution_contract(tmp.path(), 24.0);
+    assert!(
+        failures.is_empty(),
+        "did not expect weighted-attribution contract failures, got: {failures:?}",
+    );
+}
+
+#[test]
+fn phase1_weighted_contract_fails_when_object_missing() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf/results");
+    std::fs::create_dir_all(&perf_dir).expect("create perf results dir");
+    let artifact = perf_dir.join("phase1_matrix_validation.json");
+    write_phase1_matrix_validation_artifact(&artifact, &Value::Null);
+
+    let failures = evaluate_phase1_weighted_attribution_contract(tmp.path(), 24.0);
+    assert!(
+        failures.iter().any(|failure| {
+            failure.contract_id == "invalid_weighted_bottleneck_attribution_contract"
+                && failure.detail.contains("must be an object")
+        }),
+        "expected missing weighted-attribution object failure, got: {failures:?}",
+    );
+}
+
+#[test]
+fn phase1_weighted_contract_fails_when_schema_invalid() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf/results");
+    std::fs::create_dir_all(&perf_dir).expect("create perf results dir");
+    let artifact = perf_dir.join("phase1_matrix_validation.json");
+    let mut weighted = valid_weighted_bottleneck_attribution_fixture();
+    weighted["schema"] = json!("pi.perf.phase1_weighted_bottleneck_attribution.v0");
+    write_phase1_matrix_validation_artifact(&artifact, &weighted);
+
+    let failures = evaluate_phase1_weighted_attribution_contract(tmp.path(), 24.0);
+    assert!(
+        failures.iter().any(|failure| {
+            failure.contract_id == "invalid_weighted_bottleneck_attribution_contract"
+                && failure
+                    .detail
+                    .contains("schema must be pi.perf.phase1_weighted_bottleneck_attribution.v1")
+        }),
+        "expected invalid weighted schema failure, got: {failures:?}",
+    );
+}
+
+#[test]
+fn phase1_weighted_contract_fails_when_status_invalid() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf/results");
+    std::fs::create_dir_all(&perf_dir).expect("create perf results dir");
+    let artifact = perf_dir.join("phase1_matrix_validation.json");
+    let mut weighted = valid_weighted_bottleneck_attribution_fixture();
+    weighted["status"] = json!("partial");
+    write_phase1_matrix_validation_artifact(&artifact, &weighted);
+
+    let failures = evaluate_phase1_weighted_attribution_contract(tmp.path(), 24.0);
+    assert!(
+        failures.iter().any(|failure| {
+            failure.contract_id == "invalid_weighted_bottleneck_attribution_contract"
+                && failure
+                    .detail
+                    .contains("status must be one of computed/missing")
+        }),
+        "expected invalid weighted status failure, got: {failures:?}",
+    );
+}
+
+#[test]
+fn phase1_weighted_contract_fails_when_missing_status_coherence_breaks() {
+    let tmp = tempfile::tempdir().expect("create tempdir");
+    let perf_dir = tmp.path().join("target/perf/results");
+    std::fs::create_dir_all(&perf_dir).expect("create perf results dir");
+    let artifact = perf_dir.join("phase1_matrix_validation.json");
+    let mut weighted = valid_weighted_bottleneck_attribution_fixture();
+    weighted["status"] = json!("missing");
+    write_phase1_matrix_validation_artifact(&artifact, &weighted);
+
+    let failures = evaluate_phase1_weighted_attribution_contract(tmp.path(), 24.0);
+    assert!(
+        failures.iter().any(|failure| {
+            failure.contract_id == "invalid_weighted_bottleneck_attribution_contract"
+                && failure.detail.contains("status=missing requires")
+        }),
+        "expected missing-status coherence failure, got: {failures:?}",
+    );
+}
+
+#[test]
+fn perf_sli_matrix_defines_evidence_adjudication_contract() {
+    let perf = load_perf_sli_matrix();
+    let contract = perf["evidence_adjudication_contract"]
+        .as_object()
+        .expect("evidence_adjudication_contract must be object");
+
+    assert_eq!(
+        contract.get("schema").and_then(Value::as_str),
+        Some("pi.perf.evidence_adjudication_contract.v1"),
+        "evidence_adjudication_contract.schema must be versioned"
+    );
+
+    let required_inputs: Vec<&str> = contract["required_input_artifacts"]
+        .as_array()
+        .expect("required_input_artifacts must be an array")
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    for required in [
+        "summary_json",
+        "baseline_variance_confidence",
+        "extension_benchmark_stratification",
+        "phase1_matrix_validation",
+        "claim_integrity_scenario_cells",
+    ] {
+        assert!(
+            required_inputs.contains(&required),
+            "required_input_artifacts must include {required}"
+        );
+    }
+
+    let statuses: Vec<&str> = contract["allowed_verdict_statuses"]
+        .as_array()
+        .expect("allowed_verdict_statuses must be an array")
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    for status in ["resolved", "conflict", "stale", "non_canonical"] {
+        assert!(
+            statuses.contains(&status),
+            "allowed_verdict_statuses must include {status}"
+        );
+    }
+}
+
+#[test]
+fn perf_sli_matrix_adjudication_contract_is_fail_closed() {
+    let perf = load_perf_sli_matrix();
+    let contract = &perf["evidence_adjudication_contract"];
+
+    let reason_codes: Vec<&str> = contract["fail_closed_reason_codes"]
+        .as_array()
+        .expect("fail_closed_reason_codes must be an array")
+        .iter()
+        .filter_map(Value::as_str)
+        .collect();
+    for reason in [
+        "missing_input_artifact",
+        "stale_input_artifact",
+        "lineage_mismatch",
+        "confidence_conflict_unresolved",
+        "non_canonical_claim_source",
+    ] {
+        assert!(
+            reason_codes.contains(&reason),
+            "fail_closed_reason_codes must include {reason}"
+        );
+    }
+
+    assert!(
+        perf["ci_enforcement"]["fail_closed_conditions"]
+            .as_array()
+            .expect("ci_enforcement.fail_closed_conditions must be an array")
+            .iter()
+            .filter_map(Value::as_str)
+            .any(|condition| condition == "unresolved_conflicting_claims"),
+        "ci_enforcement.fail_closed_conditions must include unresolved_conflicting_claims"
+    );
+}

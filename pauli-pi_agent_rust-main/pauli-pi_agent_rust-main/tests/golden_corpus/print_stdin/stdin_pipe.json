@@ -1,0 +1,70 @@
+{
+  "schema": "pi.golden_corpus.v1",
+  "scenario": "print_stdin_pipe",
+  "surface": "print_stdin",
+  "description": "Print mode with stdin pipe: content piped to provider",
+  "cli_args": [
+    "--provider", "anthropic",
+    "--model", "claude-sonnet-4-5",
+    "--no-tools",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--thinking", "off",
+    "--system-prompt", "Echo test."
+  ],
+  "stdin": "Hello from stdin pipe content.\n",
+  "env_overrides": {},
+  "cassette": {
+    "version": "1.0",
+    "test_name": "golden_print_stdin_pipe",
+    "recorded_at": "2026-02-14T00:00:00.000Z",
+    "interactions": [
+      {
+        "request": {
+          "method": "POST",
+          "url": "https://api.anthropic.com/v1/messages",
+          "headers": [
+            ["Content-Type", "application/json"],
+            ["Accept", "text/event-stream"],
+            ["X-API-Key", "[REDACTED]"],
+            ["anthropic-version", "2023-06-01"],
+            ["Content-Type", "application/json"]
+          ],
+          "body": {
+            "model": "claude-sonnet-4-5",
+            "messages": [
+              {"role": "user", "content": [{"type": "text", "text": "Hello from stdin pipe content."}]}
+            ],
+            "system": "Echo test.\nCurrent date and time: <TIMESTAMP>\nCurrent working directory: <CWD>",
+            "max_tokens": 8192,
+            "stream": true
+          }
+        },
+        "response": {
+          "status": 200,
+          "headers": [
+            ["Content-Type", "text/event-stream; charset=utf-8"]
+          ],
+          "body_chunks": [
+            "event: message_start\ndata: {\"type\":\"message_start\",\"message\":{\"model\":\"claude-sonnet-4-5\",\"id\":\"msg_golden_stdin_001\",\"type\":\"message\",\"role\":\"assistant\",\"content\":[],\"stop_reason\":null,\"stop_sequence\":null,\"usage\":{\"input_tokens\":15,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":1,\"service_tier\":\"standard\"}}}\n\n",
+            "event: content_block_start\ndata: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\",\"text\":\"\"}}\n\n",
+            "event: ping\ndata: {\"type\": \"ping\"}\n\n",
+            "event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"Received your stdin.\"}}\n\n",
+            "event: content_block_stop\ndata: {\"type\":\"content_block_stop\",\"index\":0}\n\n",
+            "event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null},\"usage\":{\"input_tokens\":15,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":6}}\n\n",
+            "event: message_stop\ndata: {\"type\":\"message_stop\"}\n\n"
+          ]
+        }
+      }
+    ]
+  },
+  "expected": {
+    "exit_code": 0,
+    "stdout_contains": ["Received your stdin."],
+    "stdout_not_contains": [],
+    "stderr_not_contains": ["error", "panic"],
+    "no_session_files": true
+  }
+}

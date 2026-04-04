@@ -1,0 +1,246 @@
+{
+  "version": "1.0",
+  "provider": "anthropic",
+  "cases": [
+    {
+      "name": "text_basic",
+      "events": [
+        { "type": "message_start", "message": { "usage": { "input_tokens": 5 } } },
+        { "type": "content_block_start", "index": 0, "content_block": { "type": "text" } },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "text_delta", "text": "Hello " }
+        },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "text_delta", "text": "world" }
+        },
+        { "type": "content_block_stop", "index": 0 },
+        {
+          "type": "message_delta",
+          "delta": { "stop_reason": "end_turn" },
+          "usage": { "output_tokens": 2 }
+        },
+        { "type": "message_stop" }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "Hello " },
+        { "kind": "text_delta", "content_index": 0, "delta": "world" },
+        { "kind": "text_end", "content_index": 0, "content": "Hello world" },
+        { "kind": "done", "reason": "stop" }
+      ]
+    },
+    {
+      "name": "text_multi_chunk",
+      "events": [
+        { "type": "message_start", "message": { "usage": { "input_tokens": 10 } } },
+        { "type": "content_block_start", "index": 0, "content_block": { "type": "text" } },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "text_delta", "text": "First " }
+        },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "text_delta", "text": "second " }
+        },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "text_delta", "text": "third" }
+        },
+        { "type": "content_block_stop", "index": 0 },
+        {
+          "type": "message_delta",
+          "delta": { "stop_reason": "end_turn" },
+          "usage": { "output_tokens": 3 }
+        },
+        { "type": "message_stop" }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "First " },
+        { "kind": "text_delta", "content_index": 0, "delta": "second " },
+        { "kind": "text_delta", "content_index": 0, "delta": "third" },
+        { "kind": "text_end", "content_index": 0, "content": "First second third" },
+        { "kind": "done", "reason": "stop" }
+      ]
+    },
+    {
+      "name": "tool_call",
+      "events": [
+        { "type": "message_start", "message": { "usage": { "input_tokens": 20 } } },
+        { "type": "content_block_start", "index": 0, "content_block": { "type": "tool_use", "id": "toolu_001", "name": "read_file" } },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "input_json_delta", "partial_json": "{\"path\"" }
+        },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "input_json_delta", "partial_json": ": \"/tmp/test.txt\"}" }
+        },
+        { "type": "content_block_stop", "index": 0 },
+        {
+          "type": "message_delta",
+          "delta": { "stop_reason": "tool_use" },
+          "usage": { "output_tokens": 15 }
+        },
+        { "type": "message_stop" }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "done", "reason": "tool_use" }
+      ]
+    },
+    {
+      "name": "thinking_then_text",
+      "events": [
+        { "type": "message_start", "message": { "usage": { "input_tokens": 15 } } },
+        { "type": "content_block_start", "index": 0, "content_block": { "type": "thinking" } },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "thinking_delta", "thinking": "Let me " }
+        },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "thinking_delta", "thinking": "think about this." }
+        },
+        { "type": "content_block_stop", "index": 0 },
+        { "type": "content_block_start", "index": 1, "content_block": { "type": "text" } },
+        {
+          "type": "content_block_delta",
+          "index": 1,
+          "delta": { "type": "text_delta", "text": "The answer is 42." }
+        },
+        { "type": "content_block_stop", "index": 1 },
+        {
+          "type": "message_delta",
+          "delta": { "stop_reason": "end_turn" },
+          "usage": { "output_tokens": 10 }
+        },
+        { "type": "message_stop" }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "text_start", "content_index": 1 },
+        { "kind": "text_delta", "content_index": 1, "delta": "The answer is 42." },
+        { "kind": "text_end", "content_index": 1, "content": "The answer is 42." },
+        { "kind": "done", "reason": "stop" }
+      ]
+    },
+    {
+      "name": "max_tokens_finish",
+      "events": [
+        { "type": "message_start", "message": { "usage": { "input_tokens": 100 } } },
+        { "type": "content_block_start", "index": 0, "content_block": { "type": "text" } },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "text_delta", "text": "truncated output" }
+        },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "text_delta", "text": "..." }
+        },
+        { "type": "content_block_stop", "index": 0 },
+        {
+          "type": "message_delta",
+          "delta": { "stop_reason": "max_tokens" },
+          "usage": { "output_tokens": 4096 }
+        },
+        { "type": "message_stop" }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "truncated output" },
+        { "kind": "text_delta", "content_index": 0, "delta": "..." },
+        { "kind": "text_end", "content_index": 0, "content": "truncated output..." },
+        { "kind": "done", "reason": "length" }
+      ]
+    },
+    {
+      "name": "text_then_tool_call",
+      "events": [
+        { "type": "message_start", "message": { "usage": { "input_tokens": 25 } } },
+        { "type": "content_block_start", "index": 0, "content_block": { "type": "text" } },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "text_delta", "text": "Let me check." }
+        },
+        { "type": "content_block_stop", "index": 0 },
+        { "type": "content_block_start", "index": 1, "content_block": { "type": "tool_use", "id": "toolu_bash01", "name": "bash" } },
+        {
+          "type": "content_block_delta",
+          "index": 1,
+          "delta": { "type": "input_json_delta", "partial_json": "{\"command\"" }
+        },
+        {
+          "type": "content_block_delta",
+          "index": 1,
+          "delta": { "type": "input_json_delta", "partial_json": ": \"ls\"}" }
+        },
+        { "type": "content_block_stop", "index": 1 },
+        {
+          "type": "message_delta",
+          "delta": { "stop_reason": "tool_use" },
+          "usage": { "output_tokens": 20 }
+        },
+        { "type": "message_stop" }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "Let me check." },
+        { "kind": "text_end", "content_index": 0, "content": "Let me check." },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "other" },
+        { "kind": "done", "reason": "tool_use" }
+      ]
+    },
+    {
+      "name": "error_event",
+      "events": [
+        { "type": "message_start", "message": { "usage": { "input_tokens": 5 } } },
+        { "type": "content_block_start", "index": 0, "content_block": { "type": "text" } },
+        {
+          "type": "content_block_delta",
+          "index": 0,
+          "delta": { "type": "text_delta", "text": "partial" }
+        },
+        {
+          "type": "error",
+          "error": { "message": "overloaded" }
+        }
+      ],
+      "expected": [
+        { "kind": "start" },
+        { "kind": "text_start", "content_index": 0 },
+        { "kind": "text_delta", "content_index": 0, "delta": "partial" },
+        { "kind": "error", "reason": "error" }
+      ]
+    }
+  ]
+}

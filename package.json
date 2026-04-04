@@ -4,9 +4,6 @@
   "description": "An AI agent with advanced tool-calling capabilities, featuring a flexible toolsets system for organizing and managing tools.",
   "private": true,
   "scripts": {
-    "build": "node scripts/build-deploy.js",
-    "test:e2e": "npx playwright test",
-    "test:e2e:headed": "npx playwright test --headed",
     "postinstall": "echo '✅ Browser tools ready. Run: python run_agent.py --help'"
   },
   "repository": {
@@ -20,9 +17,6 @@
   "homepage": "https://github.com/NousResearch/Hermes-Agent#readme",
   "dependencies": {
     "agent-browser": "^0.13.0"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.44.0"
   },
   "engines": {
     "node": ">=18.0.0"

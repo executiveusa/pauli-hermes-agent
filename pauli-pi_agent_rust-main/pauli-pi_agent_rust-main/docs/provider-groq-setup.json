@@ -1,0 +1,102 @@
+{
+  "schema": "pi.provider_setup_guide.v1",
+  "bead_id": "bd-3uqg.11.5.7",
+  "provider_id": "groq",
+  "canonical_provider_id": "groq",
+  "last_verified_utc": "2026-02-13T10:00:00Z",
+
+  "quick_start": {
+    "description": "Groq uses the OpenAI-compatible Chat Completions API backed by Groq's LPU inference hardware.",
+    "auth_env": "GROQ_API_KEY",
+    "base_url": "https://api.groq.com/openai/v1",
+    "api_type": "openai-completions",
+    "minimal_config": {
+      "steps": [
+        "1. Get an API key from https://console.groq.com/keys",
+        "2. Export: export GROQ_API_KEY=gsk_...",
+        "3. Run: pi --provider groq --model llama-3.3-70b-versatile"
+      ],
+      "example_env": {
+        "GROQ_API_KEY": "gsk_your_api_key_here"
+      }
+    },
+    "advanced_config": {
+      "description": "Custom model selection with inference metrics.",
+      "example_env": {
+        "GROQ_API_KEY": "gsk_your_api_key_here"
+      },
+      "example_cli": "pi --provider groq --model deepseek-r1-distill-llama-70b",
+      "notes": [
+        "Add Groq-Beta: inference-metrics header for detailed timing (queue_time, prompt_time, completion_time).",
+        "Use llama-3.3-70b-versatile for general tasks; deepseek-r1-distill-llama-70b for code generation."
+      ]
+    }
+  },
+
+  "caveats": [
+    {
+      "id": "groq-cav-001",
+      "severity": "info",
+      "summary": "n parameter constrained to 1",
+      "detail": "Groq returns HTTP 400 if n > 1. Pi does not set n > 1 so this is transparent.",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_simple_text_all_families (OPENAI_COMPLETIONS family)"
+    },
+    {
+      "id": "groq-cav-002",
+      "severity": "info",
+      "summary": "temperature=0 normalized to 1e-8",
+      "detail": "Groq normalizes temperature=0 to 1e-8 server-side. Exact reproducibility requires seed parameter instead.",
+      "test_evidence": "docs/provider-groq-capability-profile.json spec-002"
+    },
+    {
+      "id": "groq-cav-003",
+      "severity": "warning",
+      "summary": "Unsupported OpenAI fields silently ignored",
+      "detail": "Fields logprobs, logit_bias, top_logprobs, and messages[].name are not supported and silently ignored.",
+      "test_evidence": "docs/provider-groq-capability-profile.json spec-003"
+    }
+  ],
+
+  "troubleshooting": [
+    {
+      "symptom": "HTTP 401 Invalid API key",
+      "cause": "GROQ_API_KEY not set or expired",
+      "fix": "Verify key at https://console.groq.com/keys. Re-export: export GROQ_API_KEY=gsk_...",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_error_auth_all_families, tests/fixtures/vcr/verify_groq_error_auth_401.json"
+    },
+    {
+      "symptom": "HTTP 429 Rate limit exceeded",
+      "cause": "Request or token rate limit hit",
+      "fix": "Check x-ratelimit-remaining-requests and x-ratelimit-remaining-tokens headers. Wait for x-ratelimit-reset-requests. Reduce request frequency or use a higher-tier plan.",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_error_rate_limit_all_families"
+    },
+    {
+      "symptom": "HTTP 400 on tool_choice=required",
+      "cause": "Tool choice constraint violation",
+      "fix": "Groq supports tool_choice auto/none/required/function_name_object. Ensure tool definitions are valid JSON Schema.",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_tool_call_all_families"
+    },
+    {
+      "symptom": "Provider not found for 'groq'",
+      "cause": "Model not recognized",
+      "fix": "Use ad-hoc model syntax: pi --provider groq --model <model-id>. Check available models at https://console.groq.com/docs/models.",
+      "test_evidence": "tests/provider_factory.rs (wave presets)"
+    }
+  ],
+
+  "test_coverage": {
+    "unit_contract": {
+      "file": "tests/provider_factory.rs",
+      "test_count": 144,
+      "scenarios": ["factory presets", "routing", "auth header", "compat config"]
+    },
+    "vcr_fixtures": {
+      "directory": "tests/fixtures/vcr/",
+      "scenarios": ["verify_groq_simple_text", "verify_groq_unicode_text", "verify_groq_tool_call_single", "verify_groq_tool_call_multiple", "verify_groq_error_auth_401", "verify_groq_error_bad_request_400", "verify_groq_error_rate_limit_429"]
+    },
+    "e2e": {
+      "file": "tests/e2e_provider_scenarios.rs",
+      "scenarios": ["simple_text", "tool_call", "error_auth", "error_rate_limit", "schema_drift", "wave_preset", "determinism", "event_ordering", "request_body_stability", "comprehensive_report"]
+    }
+  }
+}

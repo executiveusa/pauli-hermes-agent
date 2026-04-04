@@ -1,0 +1,57 @@
+{
+  "artifact_categories": [
+    {
+      "includes": [
+        "ext_conformance/**",
+        "e2e_results/**",
+        "quarantine_*"
+      ],
+      "name": "conformance-reports",
+      "retention_days": 30
+    },
+    {
+      "includes": [
+        "full_suite_gate/**",
+        "cross_platform_reports/**"
+      ],
+      "name": "provider-test-artifacts",
+      "retention_days": 30
+    },
+    {
+      "includes": [
+        "e2e_results/ci-shards/<shard>/"
+      ],
+      "name": "ci-shard-*",
+      "retention_days": 30
+    },
+    {
+      "includes": [
+        "llvm-cov-summary.txt",
+        "lcov.info",
+        "llvm-cov/html"
+      ],
+      "name": "coverage",
+      "retention_days": 90
+    }
+  ],
+  "bead": "bd-3uqg.8.11",
+  "ci_workflow": {
+    "artifact_upload_steps": 11,
+    "explicit_retention_30d": 3,
+    "test_path_references": 14
+  },
+  "documentation": {
+    "auth_troubleshooting": "docs/provider-auth-troubleshooting.md",
+    "ci_operator_runbook": "docs/ci-operator-runbook.md",
+    "qa_runbook": "docs/qa-runbook.md",
+    "testing_policy": "docs/testing-policy.md"
+  },
+  "generated_at": "2026-03-12T02:40:43.318968511+00:00",
+  "schema": "pi.ci.artifact_retention_report.v1",
+  "triage_artifacts": {
+    "evidence_contract": "tests/e2e_results/<ts>/evidence_contract.json",
+    "failure_digest": "tests/e2e_results/<ts>/<suite>/failure_digest.json",
+    "failure_timeline": "tests/e2e_results/<ts>/<suite>/failure_timeline.jsonl",
+    "replay_bundle": "tests/full_suite_gate/replay_bundle.json"
+  }
+}

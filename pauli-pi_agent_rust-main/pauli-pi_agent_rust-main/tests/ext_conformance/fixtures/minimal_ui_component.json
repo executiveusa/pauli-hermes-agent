@@ -1,0 +1,34 @@
+{
+  "extension": {
+    "id": "minimal_ui_component",
+    "source": {
+      "path": "tests/ext_conformance/artifacts/base_fixtures/minimal_ui_component/index.ts"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "scn-minimal-ui-component-001",
+      "kind": "registration",
+      "summary": "Registers a message renderer for test/plain content type"
+    },
+    {
+      "id": "scn-minimal-ui-component-pos-001",
+      "kind": "registration",
+      "summary": "Positive: UI component registers message renderer successfully",
+      "expect": {
+        "no_error": true,
+        "content_types": [
+          "test/plain"
+        ]
+      }
+    },
+    {
+      "id": "scn-minimal-ui-component-neg-001",
+      "kind": "registration",
+      "summary": "Negative: UI component registration fails with invalid content type",
+      "expect": {
+        "is_error": true
+      }
+    }
+  ]
+}

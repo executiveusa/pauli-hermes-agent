@@ -1,0 +1,2588 @@
+//! Conformance tests for built-in tools.
+//!
+//! These tests verify that the Rust tool implementations match the
+//! behavior of the original TypeScript implementations.
+
+mod common;
+
+use common::TestHarness;
+use pi::tools::Tool;
+use std::collections::BTreeMap;
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+
+mod read_tool {
+    use super::*;
+
+    #[test]
+    fn test_read_existing_file() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let test_file = temp_dir.path().join("test.txt");
+            std::fs::write(&test_file, "line1\nline2\nline3\nline4\nline5").unwrap();
+
+            let tool = pi::tools::ReadTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "path": test_file.to_string_lossy()
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            // Line numbers are right-aligned to 5 chars with arrow separator (cat -n style)
+            assert_eq!(
+                text,
+                "    1→line1\n    2→line2\n    3→line3\n    4→line4\n    5→line5"
+            );
+            assert!(result.details.is_none());
+        });
+    }
+
+    #[test]
+    fn test_read_with_offset_and_limit() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let test_file = temp_dir.path().join("test.txt");
+            std::fs::write(&test_file, "line1\nline2\nline3\nline4\nline5").unwrap();
+
+            let tool = pi::tools::ReadTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "path": test_file.to_string_lossy(),
+                "offset": 2,
+                "limit": 2
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("line2"));
+            assert!(text.contains("line3"));
+            assert!(text.contains("[2 more lines in file. Use offset=4 to continue.]"));
+            assert!(result.details.is_none());
+        });
+    }
+
+    #[test]
+    fn test_read_offset_beyond_eof_reports_error() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("read_offset_beyond_eof_reports_error");
+            let path = harness.create_file("tiny.txt", b"line1\nline2");
+            let tool = pi::tools::ReadTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy(),
+                "offset": 10
+            });
+
+            let err = tool
+                .execute("test-id", input, None)
+                .await
+                .expect_err("should error");
+            let message = err.to_string();
+            harness
+                .log()
+                .info_ctx("verify", "offset error message", |ctx| {
+                    ctx.push(("message".into(), message.clone()));
+                });
+            assert!(message.contains("Offset 10 is beyond end of file"));
+        });
+    }
+
+    #[test]
+    fn test_read_first_line_exceeds_limit_sets_truncation_details() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("read_first_line_exceeds_limit_sets_truncation_details");
+            let long_line = "a".repeat(pi::tools::DEFAULT_MAX_BYTES + 128);
+            let path = harness.create_file("huge.txt", long_line.as_bytes());
+            let tool = pi::tools::ReadTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy()
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed with truncation guidance");
+            let text = get_text_content(&result.content);
+            assert!(text.contains("exceeds 50.0KB limit"));
+            let details = result.details.expect("expected truncation details");
+            let truncation = details
+                .get("truncation")
+                .expect("expected truncation object");
+            assert_eq!(
+                truncation.get("firstLineExceedsLimit"),
+                Some(&serde_json::Value::Bool(true))
+            );
+        });
+    }
+
+    #[test]
+    fn test_read_truncation_sets_details_and_hint() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("read_truncation_sets_details_and_hint");
+            let total_lines = pi::tools::DEFAULT_MAX_LINES + 5;
+            let lines: Vec<String> = (1..=total_lines).map(|i| format!("line{i}")).collect();
+            let content = lines.join("\n");
+            let path = harness.create_file("big.txt", content.as_bytes());
+            let tool = pi::tools::ReadTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy()
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should truncate");
+            let text = get_text_content(&result.content);
+            let tail = text
+                .lines()
+                .rev()
+                .take(6)
+                .collect::<Vec<_>>()
+                .into_iter()
+                .rev()
+                .collect::<Vec<_>>()
+                .join("\n");
+            let expected_hint = format!(
+                "Showing lines 1-{} of {}",
+                pi::tools::DEFAULT_MAX_LINES,
+                total_lines
+            );
+            assert!(
+                text.contains(&expected_hint),
+                "expected hint not found.\nexpected: {expected_hint}\ntext tail:\n{tail}"
+            );
+            let expected_offset = format!("Use offset={}", pi::tools::DEFAULT_MAX_LINES + 1);
+            assert!(
+                text.contains(&expected_offset),
+                "expected offset not found.\nexpected: {expected_offset}\ntext tail:\n{tail}"
+            );
+            let details = result.details.expect("expected truncation details");
+            let truncation = details
+                .get("truncation")
+                .expect("expected truncation object");
+            assert_eq!(
+                truncation.get("truncatedBy"),
+                Some(&serde_json::Value::String("lines".to_string()))
+            );
+        });
+    }
+
+    #[test]
+    fn test_read_blocked_images_returns_error() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("read_blocked_images_returns_error");
+            let path = harness.create_file("image.png", b"\x89PNG\r\n\x1A\n");
+            let tool = pi::tools::ReadTool::with_settings(harness.temp_dir(), true, true);
+            let input = serde_json::json!({
+                "path": path.to_string_lossy()
+            });
+
+            let err = tool
+                .execute("test-id", input, None)
+                .await
+                .expect_err("should error");
+            let message = err.to_string();
+            harness
+                .log()
+                .info_ctx("verify", "blocked image error", |ctx| {
+                    ctx.push(("message".into(), message.clone()));
+                });
+            assert!(message.contains("Images are blocked by configuration"));
+        });
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_read_permission_denied_is_reported() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("read_permission_denied_is_reported");
+            let path = harness.create_file("secret.txt", b"top secret");
+            let mut perms = std::fs::metadata(&path).unwrap().permissions();
+            perms.set_mode(0o000);
+            std::fs::set_permissions(&path, perms).unwrap();
+
+            let tool = pi::tools::ReadTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy()
+            });
+
+            let err = tool
+                .execute("test-id", input, None)
+                .await
+                .expect_err("should error");
+            let message = err.to_string();
+            harness
+                .log()
+                .info_ctx("verify", "permission denied", |ctx| {
+                    ctx.push(("message".into(), message.clone()));
+                });
+            assert!(message.contains("Tool error: read:"));
+            assert!(message.to_lowercase().contains("permission"));
+        });
+    }
+
+    #[test]
+    fn test_read_nonexistent_file() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let tool = pi::tools::ReadTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "path": "/nonexistent/path/file.txt"
+            });
+
+            let result = tool.execute("test-id", input, None).await;
+            assert!(result.is_err());
+        });
+    }
+
+    #[test]
+    fn test_read_directory() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let tool = pi::tools::ReadTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "path": temp_dir.path().to_string_lossy()
+            });
+
+            let result = tool.execute("test-id", input, None).await;
+            assert!(result.is_err());
+        });
+    }
+}
+
+mod write_tool {
+    use super::*;
+
+    #[test]
+    fn test_write_new_file() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let test_file = temp_dir.path().join("new_file.txt");
+            let content = "Hello, World!\nLine 2";
+
+            let tool = pi::tools::WriteTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "path": test_file.to_string_lossy(),
+                "content": content
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            // Verify file was created
+            assert!(test_file.exists());
+            assert_eq!(std::fs::read_to_string(&test_file).unwrap(), content);
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("Successfully wrote 20 bytes"));
+            assert!(result.details.is_none());
+        });
+    }
+
+    #[test]
+    fn test_write_reports_utf16_byte_count() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("write_reports_utf16_byte_count");
+            let test_file = harness.temp_path("utf16.txt");
+            let content = "A😃";
+            let expected = content.encode_utf16().count();
+
+            let tool = pi::tools::WriteTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": test_file.to_string_lossy(),
+                "content": content
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains(&format!("Successfully wrote {expected} bytes")));
+            assert_eq!(std::fs::read_to_string(&test_file).unwrap(), content);
+        });
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_write_permission_denied_is_reported() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("write_permission_denied_is_reported");
+            let dir = harness.create_dir("readonly");
+            let mut perms = std::fs::metadata(&dir).unwrap().permissions();
+            perms.set_mode(0o500);
+            std::fs::set_permissions(&dir, perms).unwrap();
+
+            let tool = pi::tools::WriteTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": dir.join("file.txt").to_string_lossy(),
+                "content": "data"
+            });
+
+            let err = tool
+                .execute("test-id", input, None)
+                .await
+                .expect_err("should error");
+            let message = err.to_string();
+            harness
+                .log()
+                .info_ctx("verify", "write permission error", |ctx| {
+                    ctx.push(("message".into(), message.clone()));
+                });
+            assert!(message.contains("Tool error: write:"));
+        });
+    }
+
+    #[test]
+    fn test_write_creates_directories() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let test_file = temp_dir.path().join("nested/dir/file.txt");
+
+            let tool = pi::tools::WriteTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "path": test_file.to_string_lossy(),
+                "content": "content"
+            });
+
+            let result = tool.execute("test-id", input, None).await;
+            assert!(result.is_ok());
+            assert!(test_file.exists());
+        });
+    }
+}
+
+mod edit_tool {
+    use super::*;
+
+    #[test]
+    fn test_edit_replace_text() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let test_file = temp_dir.path().join("test.txt");
+            std::fs::write(&test_file, "Hello, World!\nHow are you?").unwrap();
+
+            let tool = pi::tools::EditTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "path": test_file.to_string_lossy(),
+                "oldText": "World",
+                "newText": "Rust"
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            // Verify file was edited
+            let content = std::fs::read_to_string(&test_file).unwrap();
+            assert!(content.contains("Rust"));
+            assert!(!content.contains("World"));
+
+            // Verify success message output
+            let text = get_text_content(&result.content);
+            assert!(text.contains("Successfully replaced text in"));
+            assert!(text.contains("test.txt"));
+            assert!(
+                result
+                    .details
+                    .as_ref()
+                    .is_some_and(|d| d.get("diff").is_some())
+            );
+        });
+    }
+
+    #[test]
+    fn test_edit_missing_file_reports_not_found() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("edit_missing_file_reports_not_found");
+            let tool = pi::tools::EditTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": "missing.txt",
+                "oldText": "old",
+                "newText": "new"
+            });
+
+            let err = tool
+                .execute("test-id", input, None)
+                .await
+                .expect_err("should error");
+            let message = err.to_string();
+            harness
+                .log()
+                .info_ctx("verify", "missing file error", |ctx| {
+                    ctx.push(("message".into(), message.clone()));
+                });
+            assert!(message.contains("File not found"));
+        });
+    }
+
+    #[test]
+    fn test_edit_text_not_found() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let test_file = temp_dir.path().join("test.txt");
+            std::fs::write(&test_file, "Hello, World!").unwrap();
+
+            let tool = pi::tools::EditTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "path": test_file.to_string_lossy(),
+                "oldText": "NotFound",
+                "newText": "New"
+            });
+
+            let result = tool.execute("test-id", input, None).await;
+            assert!(result.is_err());
+        });
+    }
+
+    #[test]
+    fn test_edit_multiple_occurrences() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let test_file = temp_dir.path().join("test.txt");
+            std::fs::write(&test_file, "Hello, Hello, Hello!").unwrap();
+
+            let tool = pi::tools::EditTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "path": test_file.to_string_lossy(),
+                "oldText": "Hello",
+                "newText": "Hi"
+            });
+
+            let err = tool
+                .execute("test-id", input, None)
+                .await
+                .expect_err("should error");
+            let message = err.to_string();
+            assert!(message.contains("Found 3 occurrences"));
+        });
+    }
+}
+
+mod bash_tool {
+    use super::*;
+
+    #[test]
+    fn test_bash_simple_command() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let tool = pi::tools::BashTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "command": "echo 'Hello, World!'"
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("Hello, World!"));
+            assert!(result.details.is_none());
+        });
+    }
+
+    #[test]
+    fn test_bash_timeout_is_reported() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("bash_timeout_is_reported");
+            let tool = pi::tools::BashTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "command": "sleep 2",
+                "timeout": 1
+            });
+
+            let err = tool
+                .execute("test-id", input, None)
+                .await
+                .expect_err("should timeout");
+            let message = err.to_string();
+            harness.log().info_ctx("verify", "timeout message", |ctx| {
+                ctx.push(("message".into(), message.clone()));
+            });
+            assert!(message.contains("Command timed out after 1 seconds"));
+        });
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_bash_truncation_sets_details() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("bash_truncation_sets_details");
+            let tool = pi::tools::BashTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "command": "head -c 60000 /dev/zero | tr '\\\\0' 'a'"
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("Full output:"));
+            let details = result.details.expect("expected details");
+            assert!(details.get("truncation").is_some());
+            assert!(details.get("fullOutputPath").is_some());
+        });
+    }
+
+    #[test]
+    fn test_bash_exit_code() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let tool = pi::tools::BashTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "command": "exit 42"
+            });
+
+            let err = tool
+                .execute("test-id", input, None)
+                .await
+                .expect_err("should error");
+            assert!(err.to_string().contains("Command exited with code 42"));
+        });
+    }
+
+    #[test]
+    fn test_bash_working_directory() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            std::fs::write(temp_dir.path().join("test.txt"), "content").unwrap();
+
+            let tool = pi::tools::BashTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "command": "ls test.txt"
+            });
+
+            let result = tool.execute("test-id", input, None).await;
+            assert!(result.is_ok());
+        });
+    }
+}
+
+mod grep_tool {
+    use super::*;
+
+    #[test]
+    fn test_grep_basic_pattern() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            std::fs::write(
+                temp_dir.path().join("test.txt"),
+                "hello world\ngoodbye world\nhello again",
+            )
+            .unwrap();
+
+            let tool = pi::tools::GrepTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "pattern": "hello"
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("hello world"));
+            assert!(text.contains("hello again"));
+            // Details are only present when limits/truncation occur
+        });
+    }
+
+    #[test]
+    fn test_grep_invalid_path_reports_error() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("grep_invalid_path_reports_error");
+            let tool = pi::tools::GrepTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "pattern": "needle",
+                "path": "missing_dir"
+            });
+
+            let err = tool
+                .execute("test-id", input, None)
+                .await
+                .expect_err("should error");
+            let message = err.to_string();
+            harness
+                .log()
+                .info_ctx("verify", "grep invalid path error", |ctx| {
+                    ctx.push(("message".into(), message.clone()));
+                });
+            assert!(message.contains("Cannot access path"));
+        });
+    }
+
+    #[test]
+    fn test_grep_case_insensitive() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            std::fs::write(temp_dir.path().join("test.txt"), "Hello World\nHELLO WORLD").unwrap();
+
+            let tool = pi::tools::GrepTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "pattern": "hello",
+                "ignoreCase": true
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("Hello World"));
+            assert!(text.contains("HELLO WORLD"));
+            // Details are only present when limits/truncation occur
+        });
+    }
+
+    #[test]
+    fn test_grep_limit_reached_sets_details() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("grep_limit_reached_sets_details");
+            harness.create_file("test.txt", b"match\nmatch\nmatch\n");
+            let tool = pi::tools::GrepTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "pattern": "match",
+                "limit": 1
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(
+                text.contains("matches limit reached"),
+                "expected grep output to include match-limit notice; got: {text:?}"
+            );
+            let details = result.details.expect("expected details");
+            assert_eq!(
+                details.get("matchLimitReached"),
+                Some(&serde_json::Value::Number(1u64.into()))
+            );
+        });
+    }
+
+    #[test]
+    fn test_grep_long_line_truncates_and_marks_details() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("grep_long_line_truncates_and_marks_details");
+            let long_line = format!("match {}", "a".repeat(600));
+            harness.create_file("long.txt", long_line.as_bytes());
+            let tool = pi::tools::GrepTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "pattern": "match"
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(
+                text.contains("... [truncated]"),
+                "expected grep output to include per-line truncation marker; got: {text:?}"
+            );
+            let details = result.details.expect("expected details");
+            assert_eq!(
+                details.get("linesTruncated"),
+                Some(&serde_json::Value::Bool(true))
+            );
+        });
+    }
+
+    #[test]
+    fn test_grep_no_matches() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            std::fs::write(temp_dir.path().join("test.txt"), "hello world").unwrap();
+
+            let tool = pi::tools::GrepTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "pattern": "notfound"
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("No matches found"));
+        });
+    }
+}
+
+mod find_tool {
+    use super::*;
+
+    #[test]
+    fn test_find_glob_pattern() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            std::fs::write(temp_dir.path().join("file1.txt"), "").unwrap();
+            std::fs::write(temp_dir.path().join("file2.txt"), "").unwrap();
+            std::fs::write(temp_dir.path().join("file.rs"), "").unwrap();
+
+            let tool = pi::tools::FindTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "pattern": "*.txt"
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("file1.txt"));
+            assert!(text.contains("file2.txt"));
+            assert!(!text.contains("file.rs"));
+            // Details are only present when limits/truncation occur
+        });
+    }
+
+    #[test]
+    fn test_find_invalid_path_reports_error() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("find_invalid_path_reports_error");
+            let tool = pi::tools::FindTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "pattern": "*.txt",
+                "path": "missing_dir"
+            });
+
+            let err = tool
+                .execute("test-id", input, None)
+                .await
+                .expect_err("should error");
+            let message = err.to_string();
+            harness
+                .log()
+                .info_ctx("verify", "find invalid path error", |ctx| {
+                    ctx.push(("message".into(), message.clone()));
+                });
+            assert!(message.contains("Path not found"));
+        });
+    }
+
+    #[test]
+    fn test_find_limit_reached_sets_details() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("find_limit_reached_sets_details");
+            harness.create_file("file1.txt", b"");
+            harness.create_file("file2.txt", b"");
+            let tool = pi::tools::FindTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "pattern": "*.txt",
+                "limit": 1
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("results limit reached"));
+            let details = result.details.expect("expected details");
+            assert_eq!(
+                details.get("resultLimitReached"),
+                Some(&serde_json::Value::Number(1u64.into()))
+            );
+        });
+    }
+
+    #[test]
+    fn test_find_no_matches() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            std::fs::write(temp_dir.path().join("file.txt"), "").unwrap();
+
+            let tool = pi::tools::FindTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "pattern": "*.rs"
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("No files found"));
+        });
+    }
+}
+
+mod ls_tool {
+    use super::*;
+
+    #[test]
+    fn test_ls_directory() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            std::fs::write(temp_dir.path().join("file.txt"), "content").unwrap();
+            std::fs::create_dir(temp_dir.path().join("subdir")).unwrap();
+
+            let tool = pi::tools::LsTool::new(temp_dir.path());
+            let input = serde_json::json!({});
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("file.txt"));
+            assert!(text.contains("subdir/"));
+            // Details are only present when limits/truncation occur
+        });
+    }
+
+    #[test]
+    fn test_ls_nonexistent_directory() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let tool = pi::tools::LsTool::new(temp_dir.path());
+            let input = serde_json::json!({
+                "path": "/nonexistent/directory"
+            });
+
+            let result = tool.execute("test-id", input, None).await;
+            assert!(result.is_err());
+        });
+    }
+
+    #[test]
+    fn test_ls_path_is_file_reports_error() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("ls_path_is_file_reports_error");
+            let path = harness.create_file("file.txt", b"content");
+            let tool = pi::tools::LsTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy()
+            });
+
+            let err = tool
+                .execute("test-id", input, None)
+                .await
+                .expect_err("should error");
+            let message = err.to_string();
+            assert!(message.contains("Not a directory"));
+        });
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_ls_permission_denied_is_reported() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("ls_permission_denied_is_reported");
+            let dir = harness.create_dir("locked");
+            let mut perms = std::fs::metadata(&dir).unwrap().permissions();
+            perms.set_mode(0o000);
+            std::fs::set_permissions(&dir, perms).unwrap();
+
+            let tool = pi::tools::LsTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": dir.to_string_lossy()
+            });
+
+            let err = tool
+                .execute("test-id", input, None)
+                .await
+                .expect_err("should error");
+            let message = err.to_string();
+            assert!(message.contains("Cannot read directory"));
+        });
+    }
+
+    #[test]
+    fn test_ls_limit_reached_sets_details() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("ls_limit_reached_sets_details");
+            harness.create_file("file1.txt", b"");
+            harness.create_file("file2.txt", b"");
+            let tool = pi::tools::LsTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "limit": 1
+            });
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("entries limit reached"));
+            let details = result.details.expect("expected details");
+            assert_eq!(
+                details.get("entryLimitReached"),
+                Some(&serde_json::Value::Number(1u64.into()))
+            );
+        });
+    }
+
+    #[test]
+    fn test_ls_empty_directory() {
+        asupersync::test_utils::run_test(|| async {
+            let temp_dir = tempfile::tempdir().unwrap();
+            let tool = pi::tools::LsTool::new(temp_dir.path());
+            let input = serde_json::json!({});
+
+            let result = tool
+                .execute("test-id", input, None)
+                .await
+                .expect("should succeed");
+
+            let text = get_text_content(&result.content);
+            assert!(text.contains("empty directory"));
+        });
+    }
+}
+
+// Helper function to extract text content from tool output
+fn get_text_content(content: &[pi::model::ContentBlock]) -> String {
+    content
+        .iter()
+        .filter_map(|block| {
+            if let pi::model::ContentBlock::Text(text) = block {
+                Some(text.text.clone())
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+// ---------------------------------------------------------------------------
+// E2E tool tests with artifact logging (bd-2xyv)
+// ---------------------------------------------------------------------------
+
+/// Check whether a binary is available on PATH.
+fn binary_available(name: &str) -> bool {
+    std::process::Command::new("which")
+        .arg(name)
+        .output()
+        .is_ok_and(|o| o.status.success())
+}
+
+const TOOL_DIAGNOSTIC_SCHEMA: &str = "pi.test.tool_diagnostic.v1";
+const TOOL_DIAGNOSTIC_MAX_SNAPSHOT_ENTRIES: usize = 256;
+const TOOL_ENV_ALLOWLIST: &[&str] = &[
+    "PATH",
+    "HOME",
+    "SHELL",
+    "USER",
+    "LANG",
+    "TERM",
+    "PWD",
+    "TMPDIR",
+    "PI_CODING_AGENT_DIR",
+    "PI_CONFIG_PATH",
+    "PI_SESSIONS_DIR",
+    "PI_PACKAGE_DIR",
+    "CARGO_TARGET_DIR",
+    "RUST_LOG",
+];
+static TOOL_DIAGNOSTIC_SEQUENCE: AtomicU64 = AtomicU64::new(1);
+
+#[derive(Debug, serde::Serialize)]
+struct WorkspaceEntry {
+    path: String,
+    kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    size_bytes: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    permissions_octal: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    read_error: Option<String>,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct WorkspaceSnapshot {
+    root: String,
+    total_entries: usize,
+    truncated: bool,
+    entries: Vec<WorkspaceEntry>,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct ToolTimingBreakdown {
+    tool_execute: u64,
+    workspace_snapshot: u64,
+    diagnostics_capture: u64,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct ToolExecutionDiagnostic {
+    schema: &'static str,
+    test: String,
+    tool_name: String,
+    tool_call_id: String,
+    cwd: String,
+    workspace_root: String,
+    captured_epoch_ms: u128,
+    timing_ms: ToolTimingBreakdown,
+    allowlisted_env: BTreeMap<String, String>,
+    command_transcript: serde_json::Value,
+    workspace_snapshot: WorkspaceSnapshot,
+}
+
+fn sanitize_artifact_component(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    for ch in value.chars() {
+        if ch.is_ascii_alphanumeric() || ch == '-' || ch == '_' {
+            out.push(ch);
+        } else {
+            out.push('_');
+        }
+    }
+    if out.is_empty() {
+        "unnamed".to_string()
+    } else {
+        out
+    }
+}
+
+#[cfg(unix)]
+fn permission_octal(metadata: &std::fs::Metadata) -> String {
+    format!("{:03o}", metadata.permissions().mode() & 0o777)
+}
+
+#[cfg(not(unix))]
+fn permission_octal(_metadata: &std::fs::Metadata) -> String {
+    "n/a".to_string()
+}
+
+fn collect_allowlisted_env() -> BTreeMap<String, String> {
+    let mut env = BTreeMap::new();
+    for key in TOOL_ENV_ALLOWLIST {
+        if let Ok(value) = std::env::var(key) {
+            env.insert((*key).to_string(), value);
+        }
+    }
+    env
+}
+
+fn collect_workspace_snapshot(workspace_root: &Path) -> WorkspaceSnapshot {
+    let mut entries = Vec::new();
+    let mut stack = vec![workspace_root.to_path_buf()];
+    let mut truncated = false;
+
+    while let Some(dir) = stack.pop() {
+        let read_dir = match std::fs::read_dir(&dir) {
+            Ok(read_dir) => read_dir,
+            Err(err) => {
+                let rel = dir
+                    .strip_prefix(workspace_root)
+                    .unwrap_or(dir.as_path())
+                    .display()
+                    .to_string();
+                entries.push(WorkspaceEntry {
+                    path: if rel.is_empty() { ".".to_string() } else { rel },
+                    kind: "unreadable".to_string(),
+                    size_bytes: None,
+                    permissions_octal: None,
+                    read_error: Some(err.to_string()),
+                });
+                if entries.len() >= TOOL_DIAGNOSTIC_MAX_SNAPSHOT_ENTRIES {
+                    truncated = true;
+                    break;
+                }
+                continue;
+            }
+        };
+
+        let mut dir_entries = read_dir
+            .filter_map(Result::ok)
+            .map(|entry| entry.path())
+            .collect::<Vec<_>>();
+        dir_entries.sort();
+
+        for path in dir_entries {
+            if entries.len() >= TOOL_DIAGNOSTIC_MAX_SNAPSHOT_ENTRIES {
+                truncated = true;
+                break;
+            }
+            let rel = path
+                .strip_prefix(workspace_root)
+                .unwrap_or(path.as_path())
+                .display()
+                .to_string();
+            let metadata = match std::fs::symlink_metadata(&path) {
+                Ok(metadata) => metadata,
+                Err(err) => {
+                    entries.push(WorkspaceEntry {
+                        path: rel,
+                        kind: "unknown".to_string(),
+                        size_bytes: None,
+                        permissions_octal: None,
+                        read_error: Some(err.to_string()),
+                    });
+                    continue;
+                }
+            };
+            let file_type = metadata.file_type();
+            let kind = if file_type.is_dir() {
+                "dir"
+            } else if file_type.is_file() {
+                "file"
+            } else if file_type.is_symlink() {
+                "symlink"
+            } else {
+                "other"
+            };
+            entries.push(WorkspaceEntry {
+                path: rel,
+                kind: kind.to_string(),
+                size_bytes: if file_type.is_file() {
+                    Some(metadata.len())
+                } else {
+                    None
+                },
+                permissions_octal: {
+                    #[cfg(unix)]
+                    {
+                        Some(permission_octal(&metadata))
+                    }
+                    #[cfg(not(unix))]
+                    {
+                        let _ = metadata;
+                        None
+                    }
+                },
+                read_error: None,
+            });
+            if file_type.is_dir() {
+                stack.push(path);
+            }
+        }
+        if truncated {
+            break;
+        }
+    }
+
+    WorkspaceSnapshot {
+        root: workspace_root.display().to_string(),
+        total_entries: entries.len(),
+        truncated,
+        entries,
+    }
+}
+
+fn tool_diagnostic_artifact_root() -> PathBuf {
+    std::env::var("TEST_TOOL_DIAGNOSTIC_DIR").map_or_else(
+        |_| {
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("target")
+                .join("test-artifacts")
+                .join("tool-diagnostics")
+        },
+        PathBuf::from,
+    )
+}
+
+fn tool_command_transcript(
+    input: &serde_json::Value,
+    result: &pi::PiResult<pi::tools::ToolOutput>,
+) -> serde_json::Value {
+    match result {
+        Ok(output) => serde_json::json!({
+            "input": input,
+            "outcome": "ok",
+            "output_text": get_text_content(&output.content),
+            "details": output.details.clone(),
+            "is_error": output.is_error
+        }),
+        Err(err) => serde_json::json!({
+            "input": input,
+            "outcome": "error",
+            "error": err.to_string()
+        }),
+    }
+}
+
+fn duration_millis_u64(duration: Duration) -> u64 {
+    u64::try_from(duration.as_millis()).unwrap_or(u64::MAX)
+}
+
+async fn execute_tool_with_diagnostics<T: Tool + ?Sized>(
+    harness: &TestHarness,
+    tool: &T,
+    tool_name: &str,
+    tool_call_id: &str,
+    input: serde_json::Value,
+) -> pi::PiResult<pi::tools::ToolOutput> {
+    let execute_started = Instant::now();
+    let result = tool.execute(tool_call_id, input.clone(), None).await;
+    log_tool_execution(
+        harness,
+        tool_name,
+        tool_call_id,
+        &input,
+        execute_started.elapsed(),
+        &result,
+    );
+    result
+}
+
+/// Log a tool execution with high-fidelity diagnostics artifact capture.
+#[allow(clippy::too_many_lines)]
+fn log_tool_execution(
+    harness: &TestHarness,
+    tool_name: &str,
+    tool_call_id: &str,
+    input: &serde_json::Value,
+    execute_elapsed: Duration,
+    result: &pi::PiResult<pi::tools::ToolOutput>,
+) {
+    let logger = harness.log();
+    let workspace_root = harness.temp_dir();
+    let snapshot_started = Instant::now();
+    let workspace_snapshot = collect_workspace_snapshot(workspace_root);
+    let workspace_snapshot_ms = duration_millis_u64(snapshot_started.elapsed());
+    let capture_elapsed = execute_elapsed.saturating_add(snapshot_started.elapsed());
+    let captured_epoch_ms = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis();
+    let diagnostic = ToolExecutionDiagnostic {
+        schema: TOOL_DIAGNOSTIC_SCHEMA,
+        test: harness.name().to_string(),
+        tool_name: tool_name.to_string(),
+        tool_call_id: tool_call_id.to_string(),
+        cwd: workspace_root.display().to_string(),
+        workspace_root: workspace_root.display().to_string(),
+        captured_epoch_ms,
+        timing_ms: ToolTimingBreakdown {
+            tool_execute: duration_millis_u64(execute_elapsed),
+            workspace_snapshot: workspace_snapshot_ms,
+            diagnostics_capture: duration_millis_u64(capture_elapsed),
+        },
+        allowlisted_env: collect_allowlisted_env(),
+        command_transcript: tool_command_transcript(input, result),
+        workspace_snapshot,
+    };
+
+    let test_component = sanitize_artifact_component(harness.name());
+    let sequence = TOOL_DIAGNOSTIC_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+    let artifact_name = format!(
+        "{sequence:05}-{}-{}.json",
+        sanitize_artifact_component(tool_name),
+        sanitize_artifact_component(tool_call_id)
+    );
+    let artifact_path = tool_diagnostic_artifact_root()
+        .join(test_component)
+        .join(artifact_name);
+
+    let artifact_write_result = (|| -> std::io::Result<()> {
+        if let Some(parent) = artifact_path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        let bytes = serde_json::to_vec_pretty(&diagnostic)
+            .map_err(|err| std::io::Error::other(err.to_string()))?;
+        std::fs::write(&artifact_path, bytes)
+    })();
+
+    match artifact_write_result {
+        Ok(()) => {
+            harness.record_artifact(format!("tool-diagnostic:{tool_call_id}"), &artifact_path);
+            logger.info_ctx("tool_diag", "wrote tool diagnostics artifact", |ctx| {
+                ctx.push(("tool_name".into(), tool_name.to_string()));
+                ctx.push(("tool_call_id".into(), tool_call_id.to_string()));
+                ctx.push(("artifact_path".into(), artifact_path.display().to_string()));
+                ctx.push((
+                    "execute_ms".into(),
+                    duration_millis_u64(execute_elapsed).to_string(),
+                ));
+                ctx.push((
+                    "workspace_snapshot_ms".into(),
+                    workspace_snapshot_ms.to_string(),
+                ));
+            });
+        }
+        Err(err) => {
+            logger.with_context(
+                common::logging::LogLevel::Warn,
+                "tool_diag",
+                "failed to write diagnostics artifact",
+                |ctx| {
+                    ctx.push(("tool_name".into(), tool_name.to_string()));
+                    ctx.push(("tool_call_id".into(), tool_call_id.to_string()));
+                    ctx.push(("artifact_path".into(), artifact_path.display().to_string()));
+                    ctx.push(("error".into(), err.to_string()));
+                },
+            );
+        }
+    }
+
+    match result {
+        Ok(output) => {
+            let text = get_text_content(&output.content);
+            logger.info_ctx("tool_exec", format!("{tool_name} succeeded"), |ctx| {
+                ctx.push(("tool_call_id".into(), tool_call_id.to_string()));
+                ctx.push(("input".into(), input.to_string()));
+                ctx.push(("output_text".into(), text));
+                ctx.push((
+                    "details".into(),
+                    output
+                        .details
+                        .as_ref()
+                        .map_or_else(|| "null".to_string(), |d: &serde_json::Value| d.to_string()),
+                ));
+                ctx.push(("is_error".into(), output.is_error.to_string()));
+                ctx.push((
+                    "execute_ms".into(),
+                    duration_millis_u64(execute_elapsed).to_string(),
+                ));
+            });
+        }
+        Err(e) => {
+            let err_str = e.to_string();
+            logger.info_ctx("tool_exec", format!("{tool_name} errored"), |ctx| {
+                ctx.push(("tool_call_id".into(), tool_call_id.to_string()));
+                ctx.push(("input".into(), input.to_string()));
+                ctx.push(("error".into(), err_str.clone()));
+                ctx.push((
+                    "execute_ms".into(),
+                    duration_millis_u64(execute_elapsed).to_string(),
+                ));
+            });
+        }
+    }
+}
+
+mod e2e_read {
+    use super::*;
+
+    #[test]
+    fn e2e_read_success_with_artifacts() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_read_success_with_artifacts");
+            let path = harness.create_file("sample.txt", b"alpha\nbeta\ngamma");
+            let tool = pi::tools::ReadTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy()
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "read", "read-001", input.clone())
+                    .await;
+
+            let output = result.expect("should succeed");
+            let text = get_text_content(&output.content);
+            assert!(text.contains("alpha"));
+            assert!(text.contains("gamma"));
+            assert!(!output.is_error);
+        });
+    }
+
+    #[test]
+    fn e2e_read_empty_file() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_read_empty_file");
+            let path = harness.create_file("empty.txt", b"");
+            let tool = pi::tools::ReadTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy()
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "read", "read-002", input.clone())
+                    .await;
+
+            let output = result.expect("should succeed");
+            let text = get_text_content(&output.content);
+            assert!(
+                text.contains("empty") || text.is_empty() || text.trim().is_empty(),
+                "empty file should produce empty or 'empty' message, got: {text}"
+            );
+        });
+    }
+
+    #[test]
+    fn e2e_read_missing_file_with_artifacts() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_read_missing_file_with_artifacts");
+            let tool = pi::tools::ReadTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": "/nonexistent/path/ghost.txt"
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "read", "read-003", input.clone())
+                    .await;
+
+            assert!(result.is_err());
+        });
+    }
+
+    #[test]
+    fn e2e_read_truncation_details_captured() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_read_truncation_details_captured");
+            let total_lines = pi::tools::DEFAULT_MAX_LINES + 10;
+            let mut content = String::new();
+            for i in 1..=total_lines {
+                content.push_str("line");
+                content.push_str(&i.to_string());
+                content.push('\n');
+            }
+            let path = harness.create_file("big.txt", content.as_bytes());
+            let tool = pi::tools::ReadTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy()
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "read", "read-004", input.clone())
+                    .await;
+
+            let output = result.expect("should truncate");
+            let details = output.details.expect("truncation details");
+            let truncation = details.get("truncation").expect("truncation object");
+            assert_eq!(
+                truncation.get("truncated"),
+                Some(&serde_json::Value::Bool(true))
+            );
+            assert_eq!(
+                truncation.get("truncatedBy"),
+                Some(&serde_json::Value::String("lines".to_string()))
+            );
+            assert!(
+                truncation
+                    .get("totalLines")
+                    .and_then(serde_json::Value::as_u64)
+                    .unwrap_or(0)
+                    >= total_lines as u64
+            );
+        });
+    }
+}
+
+mod e2e_write {
+    use super::*;
+
+    #[test]
+    fn e2e_write_new_file_with_artifacts() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_write_new_file_with_artifacts");
+            let path = harness.temp_path("output.txt");
+            let tool = pi::tools::WriteTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy(),
+                "content": "hello world\nline two"
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "write", "write-001", input.clone())
+                    .await;
+
+            let output = result.expect("should succeed");
+            assert!(!output.is_error);
+            assert!(path.exists());
+            let disk = std::fs::read_to_string(&path).unwrap();
+            assert_eq!(disk, "hello world\nline two");
+        });
+    }
+
+    #[test]
+    fn e2e_write_overwrite_existing() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_write_overwrite_existing");
+            let path = harness.create_file("existing.txt", b"old content");
+            let tool = pi::tools::WriteTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy(),
+                "content": "new content"
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "write", "write-002", input.clone())
+                    .await;
+
+            let output = result.expect("should succeed");
+            assert!(!output.is_error);
+            let disk = std::fs::read_to_string(&path).unwrap();
+            assert_eq!(disk, "new content");
+        });
+    }
+}
+
+mod e2e_edit {
+    use super::*;
+
+    #[test]
+    fn e2e_edit_success_with_artifacts() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_edit_success_with_artifacts");
+            let path = harness.create_file("code.rs", b"fn main() {\n    println!(\"old\");\n}\n");
+            let tool = pi::tools::EditTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy(),
+                "oldText": "\"old\"",
+                "newText": "\"new\""
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "edit", "edit-001", input.clone())
+                    .await;
+
+            let output = result.expect("should succeed");
+            assert!(!output.is_error);
+            let disk = std::fs::read_to_string(&path).unwrap();
+            assert!(disk.contains("\"new\""));
+            assert!(!disk.contains("\"old\""));
+
+            // Verify diff details are present
+            let details = output.details.expect("should have diff details");
+            assert!(details.get("diff").is_some());
+        });
+    }
+
+    #[test]
+    fn e2e_edit_text_not_found_with_artifacts() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_edit_text_not_found_with_artifacts");
+            let path = harness.create_file("stable.txt", b"content stays");
+            let tool = pi::tools::EditTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy(),
+                "oldText": "nonexistent needle",
+                "newText": "replacement"
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "edit", "edit-002", input.clone())
+                    .await;
+
+            assert!(result.is_err());
+            // File should not be modified
+            let disk = std::fs::read_to_string(&path).unwrap();
+            assert_eq!(disk, "content stays");
+        });
+    }
+}
+
+mod e2e_bash {
+    use super::*;
+
+    #[test]
+    fn e2e_bash_success_with_artifacts() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_bash_success_with_artifacts");
+            let tool = pi::tools::BashTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "command": "echo hello && echo world"
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "bash", "bash-001", input.clone())
+                    .await;
+
+            let output = result.expect("should succeed");
+            let text = get_text_content(&output.content);
+            assert!(text.contains("hello"));
+            assert!(text.contains("world"));
+        });
+    }
+
+    #[test]
+    fn e2e_bash_stderr_captured() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_bash_stderr_captured");
+            let tool = pi::tools::BashTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "command": "echo stdout_msg && echo stderr_msg >&2"
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "bash", "bash-002", input.clone())
+                    .await;
+
+            let output = result.expect("should succeed");
+            let text = get_text_content(&output.content);
+            // Both stdout and stderr should be captured
+            assert!(text.contains("stdout_msg"));
+            assert!(text.contains("stderr_msg"));
+        });
+    }
+
+    #[test]
+    fn e2e_bash_nonexistent_command() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_bash_nonexistent_command");
+            let tool = pi::tools::BashTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "command": "totally_nonexistent_binary_xyz_123"
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "bash", "bash-003", input.clone())
+                    .await;
+
+            // Should error with non-zero exit code (127 = command not found)
+            assert!(result.is_err(), "nonexistent command should fail");
+            let message = result.unwrap_err().to_string();
+            assert!(
+                message.contains("127") || message.contains("not found"),
+                "expected exit code 127 or 'not found' in: {message}"
+            );
+        });
+    }
+
+    #[test]
+    fn e2e_bash_timeout_with_artifacts() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_bash_timeout_with_artifacts");
+            let tool = pi::tools::BashTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "command": "sleep 10",
+                "timeout": 1
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "bash", "bash-004", input.clone())
+                    .await;
+
+            assert!(result.is_err());
+            let message = result.unwrap_err().to_string();
+            assert!(message.contains("timed out"));
+        });
+    }
+
+    #[test]
+    fn e2e_bash_diagnostic_artifact_contains_required_fields() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_bash_diagnostic_artifact_contains_required_fields");
+            let tool = pi::tools::BashTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "command": "echo diagnostic_probe"
+            });
+
+            let result = execute_tool_with_diagnostics(
+                &harness,
+                &tool,
+                "bash",
+                "bash-diag-001",
+                input.clone(),
+            )
+            .await;
+            let output = result.expect("diagnostic probe should succeed");
+            let text = get_text_content(&output.content);
+            assert!(text.contains("diagnostic_probe"));
+
+            let artifacts = harness.log().artifacts();
+            let diagnostic_artifact = artifacts
+                .iter()
+                .find(|entry| entry.name == "tool-diagnostic:bash-diag-001")
+                .expect("expected diagnostics artifact entry");
+            let diagnostic_body = std::fs::read_to_string(&diagnostic_artifact.path)
+                .expect("expected diagnostics artifact file to be readable");
+            let diagnostic_json: serde_json::Value =
+                serde_json::from_str(&diagnostic_body).expect("expected valid diagnostics JSON");
+
+            assert_eq!(
+                diagnostic_json.get("schema"),
+                Some(&serde_json::Value::String(
+                    TOOL_DIAGNOSTIC_SCHEMA.to_string()
+                ))
+            );
+            assert_eq!(
+                diagnostic_json.get("tool_call_id"),
+                Some(&serde_json::Value::String("bash-diag-001".to_string()))
+            );
+            assert!(diagnostic_json.get("command_transcript").is_some());
+            assert!(diagnostic_json.get("workspace_snapshot").is_some());
+            assert!(diagnostic_json.get("allowlisted_env").is_some());
+            assert!(diagnostic_json.get("timing_ms").is_some());
+            assert!(
+                diagnostic_json
+                    .pointer("/timing_ms/tool_execute")
+                    .and_then(serde_json::Value::as_u64)
+                    .is_some(),
+                "expected timing breakdown with tool_execute"
+            );
+            assert!(
+                diagnostic_json
+                    .pointer("/workspace_snapshot/entries")
+                    .and_then(serde_json::Value::as_array)
+                    .is_some(),
+                "expected workspace snapshot entries"
+            );
+        });
+    }
+}
+
+mod e2e_grep {
+    use super::*;
+
+    #[test]
+    fn e2e_grep_success_with_artifacts() {
+        if !binary_available("rg") {
+            eprintln!("SKIP: rg (ripgrep) not available on PATH");
+            return;
+        }
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_grep_success_with_artifacts");
+            harness.create_file("src/main.rs", b"fn main() {\n    println!(\"hello\");\n}\n");
+            harness.create_file(
+                "src/lib.rs",
+                b"pub fn greet() -> &'static str {\n    \"hello\"\n}\n",
+            );
+            harness.create_file(
+                "readme.md",
+                b"# Project\nNo hello here... actually hello.\n",
+            );
+
+            let tool = pi::tools::GrepTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "pattern": "hello"
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "grep", "grep-001", input.clone())
+                    .await;
+
+            let output = result.expect("should succeed");
+            let text = get_text_content(&output.content);
+            assert!(text.contains("hello"));
+        });
+    }
+
+    #[test]
+    fn e2e_grep_invalid_regex() {
+        if !binary_available("rg") {
+            eprintln!("SKIP: rg (ripgrep) not available on PATH");
+            return;
+        }
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_grep_invalid_regex");
+            harness.create_file("data.txt", b"some text");
+            let tool = pi::tools::GrepTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "pattern": "[invalid("
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "grep", "grep-002", input.clone())
+                    .await;
+
+            assert!(result.is_err(), "invalid regex should fail");
+        });
+    }
+
+    #[test]
+    fn e2e_grep_with_context_lines() {
+        if !binary_available("rg") {
+            eprintln!("SKIP: rg (ripgrep) not available on PATH");
+            return;
+        }
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_grep_with_context_lines");
+            harness.create_file("data.txt", b"line1\nline2\nTARGET\nline4\nline5");
+
+            let tool = pi::tools::GrepTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "pattern": "TARGET",
+                "context": 1
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "grep", "grep-003", input.clone())
+                    .await;
+
+            let output = result.expect("should succeed");
+            let text = get_text_content(&output.content);
+            assert!(text.contains("TARGET"), "should contain match: {text}");
+            // Context lines should include adjacent lines
+            assert!(
+                text.contains("line2") || text.contains("line4"),
+                "should contain context lines: {text}"
+            );
+        });
+    }
+}
+
+mod e2e_find {
+    use super::*;
+
+    #[test]
+    fn e2e_find_success_with_artifacts() {
+        if !binary_available("fd") {
+            eprintln!("SKIP: fd not available on PATH");
+            return;
+        }
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_find_success_with_artifacts");
+            harness.create_file("src/main.rs", b"");
+            harness.create_file("src/lib.rs", b"");
+            harness.create_file("tests/test.rs", b"");
+            harness.create_file("readme.md", b"");
+
+            let tool = pi::tools::FindTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "pattern": "*.rs"
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "find", "find-001", input.clone())
+                    .await;
+
+            let output = result.expect("should succeed");
+            let text = get_text_content(&output.content);
+            assert!(text.contains("main.rs"));
+            assert!(text.contains("lib.rs"));
+            assert!(text.contains("test.rs"));
+            assert!(!text.contains("readme.md"));
+        });
+    }
+
+    #[test]
+    fn e2e_find_invalid_path_with_artifacts() {
+        if !binary_available("fd") {
+            eprintln!("SKIP: fd not available on PATH");
+            return;
+        }
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_find_invalid_path_with_artifacts");
+            let tool = pi::tools::FindTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "pattern": "*.txt",
+                "path": "does_not_exist"
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "find", "find-002", input.clone())
+                    .await;
+
+            assert!(result.is_err());
+            let message = result.unwrap_err().to_string();
+            assert!(message.contains("Path not found"));
+        });
+    }
+}
+
+mod e2e_ls {
+    use super::*;
+
+    #[test]
+    fn e2e_ls_success_with_artifacts() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_ls_success_with_artifacts");
+            harness.create_file("alpha.txt", b"a");
+            harness.create_file("beta.txt", b"b");
+            harness.create_dir("subdir");
+
+            let tool = pi::tools::LsTool::new(harness.temp_dir());
+            let input = serde_json::json!({});
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "ls", "ls-001", input.clone()).await;
+
+            let output = result.expect("should succeed");
+            let text = get_text_content(&output.content);
+            assert!(text.contains("alpha.txt"));
+            assert!(text.contains("beta.txt"));
+            assert!(text.contains("subdir/"));
+        });
+    }
+
+    #[test]
+    fn e2e_ls_nonexistent_with_artifacts() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_ls_nonexistent_with_artifacts");
+            let tool = pi::tools::LsTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": "/no/such/directory"
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "ls", "ls-002", input.clone()).await;
+
+            assert!(result.is_err());
+        });
+    }
+
+    #[test]
+    fn e2e_ls_file_not_dir_with_artifacts() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_ls_file_not_dir_with_artifacts");
+            let path = harness.create_file("just_a_file.txt", b"contents");
+            let tool = pi::tools::LsTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "path": path.to_string_lossy()
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "ls", "ls-003", input.clone()).await;
+
+            assert!(result.is_err());
+            let message = result.unwrap_err().to_string();
+            assert!(message.contains("Not a directory"));
+        });
+    }
+
+    #[test]
+    fn e2e_ls_truncation_details_captured() {
+        asupersync::test_utils::run_test(|| async {
+            let harness = TestHarness::new("e2e_ls_truncation_details_captured");
+            // Create enough files to exceed limit=2
+            harness.create_file("a.txt", b"");
+            harness.create_file("b.txt", b"");
+            harness.create_file("c.txt", b"");
+
+            let tool = pi::tools::LsTool::new(harness.temp_dir());
+            let input = serde_json::json!({
+                "limit": 2
+            });
+
+            let result =
+                execute_tool_with_diagnostics(&harness, &tool, "ls", "ls-004", input.clone()).await;
+
+            let output = result.expect("should succeed");
+            let text = get_text_content(&output.content);
+            assert!(text.contains("entries limit reached"));
+            let details = output.details.expect("truncation details");
+            assert_eq!(
+                details.get("entryLimitReached"),
+                Some(&serde_json::Value::Number(2u64.into()))
+            );
+        });
+    }
+}
+
+/// Comprehensive E2E: exercise all 7 tools in a single test workspace with full artifact logging.
+#[test]
+#[allow(clippy::too_many_lines)]
+fn e2e_all_tools_roundtrip() {
+    asupersync::test_utils::run_test(|| async {
+        let harness = TestHarness::new("e2e_all_tools_roundtrip");
+        harness.section("Setup workspace");
+
+        // Write a file
+        let write_tool = pi::tools::WriteTool::new(harness.temp_dir());
+        let write_input = serde_json::json!({
+            "path": harness.temp_path("project/hello.rs").to_string_lossy().to_string(),
+            "content": "fn main() {\n    println!(\"Hello, world!\");\n}\n"
+        });
+        let result = execute_tool_with_diagnostics(
+            &harness,
+            &write_tool,
+            "write",
+            "rt-write",
+            write_input.clone(),
+        )
+        .await;
+        result.expect("write should succeed");
+
+        // Read the file back
+        harness.section("Read");
+        let read_tool = pi::tools::ReadTool::new(harness.temp_dir());
+        let read_input = serde_json::json!({
+            "path": harness.temp_path("project/hello.rs").to_string_lossy().to_string()
+        });
+        let result = execute_tool_with_diagnostics(
+            &harness,
+            &read_tool,
+            "read",
+            "rt-read",
+            read_input.clone(),
+        )
+        .await;
+        let output = result.expect("read should succeed");
+        let text = get_text_content(&output.content);
+        assert!(text.contains("Hello, world!"));
+
+        // Edit the file
+        harness.section("Edit");
+        let edit_tool = pi::tools::EditTool::new(harness.temp_dir());
+        let edit_input = serde_json::json!({
+            "path": harness.temp_path("project/hello.rs").to_string_lossy().to_string(),
+            "oldText": "Hello, world!",
+            "newText": "Hello, Rust!"
+        });
+        let result = execute_tool_with_diagnostics(
+            &harness,
+            &edit_tool,
+            "edit",
+            "rt-edit",
+            edit_input.clone(),
+        )
+        .await;
+        result.expect("edit should succeed");
+
+        // Verify edit with read
+        let result = read_tool
+            .execute("rt-read2", read_input.clone(), None)
+            .await;
+        let output = result.expect("read after edit should succeed");
+        let text = get_text_content(&output.content);
+        assert!(text.contains("Hello, Rust!"));
+        assert!(!text.contains("Hello, world!"));
+
+        // Ls the directory
+        harness.section("Ls");
+        let ls_tool = pi::tools::LsTool::new(harness.temp_dir());
+        let ls_input = serde_json::json!({
+            "path": harness.temp_path("project").to_string_lossy().to_string()
+        });
+        let result =
+            execute_tool_with_diagnostics(&harness, &ls_tool, "ls", "rt-ls", ls_input.clone())
+                .await;
+        let output = result.expect("ls should succeed");
+        let text = get_text_content(&output.content);
+        assert!(text.contains("hello.rs"));
+
+        // Bash
+        harness.section("Bash");
+        let bash_tool = pi::tools::BashTool::new(harness.temp_dir());
+        let bash_input = serde_json::json!({
+            "command": "wc -l project/hello.rs"
+        });
+        let result = execute_tool_with_diagnostics(
+            &harness,
+            &bash_tool,
+            "bash",
+            "rt-bash",
+            bash_input.clone(),
+        )
+        .await;
+        let output = result.expect("bash should succeed");
+        let text = get_text_content(&output.content);
+        // wc output should contain a number
+        assert!(text.chars().any(|c| c.is_ascii_digit()));
+
+        // Grep (if rg available)
+        if binary_available("rg") {
+            harness.section("Grep");
+            let grep_tool = pi::tools::GrepTool::new(harness.temp_dir());
+            let grep_input = serde_json::json!({
+                "pattern": "Rust"
+            });
+            let result = execute_tool_with_diagnostics(
+                &harness,
+                &grep_tool,
+                "grep",
+                "rt-grep",
+                grep_input.clone(),
+            )
+            .await;
+            let output = result.expect("grep should succeed");
+            let text = get_text_content(&output.content);
+            assert!(text.contains("Rust"));
+        } else {
+            harness
+                .log()
+                .warn("skip", "rg not available, skipping grep step");
+        }
+
+        // Find (if fd available)
+        if binary_available("fd") {
+            harness.section("Find");
+            let find_tool = pi::tools::FindTool::new(harness.temp_dir());
+            let find_input = serde_json::json!({
+                "pattern": "*.rs"
+            });
+            let result = execute_tool_with_diagnostics(
+                &harness,
+                &find_tool,
+                "find",
+                "rt-find",
+                find_input.clone(),
+            )
+            .await;
+            let output = result.expect("find should succeed");
+            let text = get_text_content(&output.content);
+            assert!(text.contains("hello.rs"));
+        } else {
+            harness
+                .log()
+                .warn("skip", "fd not available, skipping find step");
+        }
+
+        harness.section("Done");
+        harness
+            .log()
+            .info("summary", "All tool roundtrip steps passed");
+    });
+}
+
+// ============================================================================
+// Security abuse-case regression tests (bd-1f42.5.1)
+// ============================================================================
+// These tests document the security boundary of the tool layer.
+// Tools intentionally rely on agent-level trust (the LLM) rather than
+// tool-level sandboxing.  These tests verify current behaviour so that
+// any future tightening is deliberate, not accidental.
+
+mod security_path_traversal {
+    use super::*;
+
+    /// Read tool follows parent-directory traversal (`../`) – by design.
+    #[test]
+    fn read_parent_dir_traversal() {
+        asupersync::test_utils::run_test(|| async {
+            let parent = tempfile::tempdir().unwrap();
+            let child_dir = parent.path().join("child");
+            std::fs::create_dir_all(&child_dir).unwrap();
+            let secret = parent.path().join("secret.txt");
+            std::fs::write(&secret, "TOP_SECRET_DATA").unwrap();
+
+            let tool = pi::tools::ReadTool::new(&child_dir);
+            let input = serde_json::json!({
+                "path": "../secret.txt"
+            });
+            let result = tool.execute("sec-read-01", input, None).await;
+            let output = result.expect("read with ../ should succeed (by design)");
+            let text = get_text_content(&output.content);
+            assert!(
+                text.contains("TOP_SECRET_DATA"),
+                "parent traversal should reach file: {text}"
+            );
+        });
+    }
+
+    /// Write tool creates files outside CWD via `../` – by design.
+    #[test]
+    fn write_parent_dir_traversal() {
+        asupersync::test_utils::run_test(|| async {
+            let parent = tempfile::tempdir().unwrap();
+            let child_dir = parent.path().join("child");
+            std::fs::create_dir_all(&child_dir).unwrap();
+
+            let tool = pi::tools::WriteTool::new(&child_dir);
+            let escaped_path = child_dir.join("../escaped.txt");
+            let input = serde_json::json!({
+                "path": escaped_path.to_string_lossy(),
+                "content": "ESCAPED_CONTENT"
+            });
+            let result = tool.execute("sec-write-01", input, None).await;
+            result.expect("write with ../ should succeed (by design)");
+
+            let written = std::fs::read_to_string(parent.path().join("escaped.txt")).unwrap();
+            assert_eq!(written, "ESCAPED_CONTENT");
+        });
+    }
+
+    /// Edit tool operates on files outside CWD via `../` – by design.
+    #[test]
+    fn edit_parent_dir_traversal() {
+        asupersync::test_utils::run_test(|| async {
+            let parent = tempfile::tempdir().unwrap();
+            let child_dir = parent.path().join("child");
+            std::fs::create_dir_all(&child_dir).unwrap();
+            let target = parent.path().join("target.txt");
+            std::fs::write(&target, "ORIGINAL_CONTENT").unwrap();
+
+            let tool = pi::tools::EditTool::new(&child_dir);
+            let escaped_path = child_dir.join("../target.txt");
+            let input = serde_json::json!({
+                "path": escaped_path.to_string_lossy(),
+                "oldText": "ORIGINAL_CONTENT",
+                "newText": "MODIFIED_CONTENT"
+            });
+            let result = tool.execute("sec-edit-01", input, None).await;
+            result.expect("edit with ../ should succeed (by design)");
+
+            let content = std::fs::read_to_string(&target).unwrap();
+            assert_eq!(content, "MODIFIED_CONTENT");
+        });
+    }
+
+    /// Read tool allows absolute paths outside CWD – by design.
+    #[test]
+    fn read_absolute_path_outside_cwd() {
+        asupersync::test_utils::run_test(|| async {
+            let outside = tempfile::tempdir().unwrap();
+            let outside_file = outside.path().join("outside.txt");
+            std::fs::write(&outside_file, "OUTSIDE_DATA").unwrap();
+
+            let cwd = tempfile::tempdir().unwrap();
+            let tool = pi::tools::ReadTool::new(cwd.path());
+            let input = serde_json::json!({
+                "path": outside_file.to_string_lossy()
+            });
+            let result = tool.execute("sec-read-02", input, None).await;
+            let output = result.expect("absolute path outside CWD should work");
+            let text = get_text_content(&output.content);
+            assert!(text.contains("OUTSIDE_DATA"));
+        });
+    }
+
+    /// Read tool follows symlinks that point outside CWD – by design.
+    #[test]
+    #[cfg(unix)]
+    fn read_symlink_escape() {
+        asupersync::test_utils::run_test(|| async {
+            let outside = tempfile::tempdir().unwrap();
+            let secret = outside.path().join("secret.txt");
+            std::fs::write(&secret, "SYMLINK_SECRET").unwrap();
+
+            let cwd = tempfile::tempdir().unwrap();
+            let link = cwd.path().join("link.txt");
+            std::os::unix::fs::symlink(&secret, &link).unwrap();
+
+            let tool = pi::tools::ReadTool::new(cwd.path());
+            let input = serde_json::json!({
+                "path": link.to_string_lossy()
+            });
+            let result = tool.execute("sec-read-03", input, None).await;
+            let output = result.expect("symlink escape should succeed (by design)");
+            let text = get_text_content(&output.content);
+            assert!(text.contains("SYMLINK_SECRET"));
+        });
+    }
+
+    /// Write tool replaces symlinks with regular files (atomic rename).
+    /// This prevents symlink-following attacks: the original target is untouched.
+    #[test]
+    #[cfg(unix)]
+    fn write_replaces_symlink_with_regular_file() {
+        asupersync::test_utils::run_test(|| async {
+            let outside = tempfile::tempdir().unwrap();
+            let target = outside.path().join("target.txt");
+            std::fs::write(&target, "ORIGINAL").unwrap();
+
+            let cwd = tempfile::tempdir().unwrap();
+            let link = cwd.path().join("link.txt");
+            std::os::unix::fs::symlink(&target, &link).unwrap();
+
+            let tool = pi::tools::WriteTool::new(cwd.path());
+            let input = serde_json::json!({
+                "path": link.to_string_lossy(),
+                "content": "NEW_CONTENT"
+            });
+            let result = tool.execute("sec-write-02", input, None).await;
+            result.expect("write at symlink path should succeed");
+
+            // Atomic rename replaces the symlink with a regular file
+            assert!(
+                !link.symlink_metadata().unwrap().file_type().is_symlink(),
+                "symlink should be replaced by a regular file"
+            );
+            let link_content = std::fs::read_to_string(&link).unwrap();
+            assert_eq!(link_content, "NEW_CONTENT");
+
+            // Original target is untouched (safe against symlink attacks)
+            let target_content = std::fs::read_to_string(&target).unwrap();
+            assert_eq!(
+                target_content, "ORIGINAL",
+                "original symlink target should be untouched"
+            );
+        });
+    }
+}
+
+mod security_command_injection {
+    use super::*;
+
+    /// Bash tool's stdin is null – commands cannot read piped input.
+    #[test]
+    fn bash_stdin_is_null() {
+        asupersync::test_utils::run_test(|| async {
+            let cwd = tempfile::tempdir().unwrap();
+            let tool = pi::tools::BashTool::new(cwd.path());
+            let input = serde_json::json!({
+                "command": "read -t 1 line; echo \"got: $line\""
+            });
+            let result = tool.execute("sec-bash-01", input, None).await;
+            // read from null stdin should fail or produce empty
+            let output = result.expect("bash should succeed even with null stdin");
+            let text = get_text_content(&output.content);
+            assert!(
+                text.contains("got: ") || text.contains("got:"),
+                "stdin should be empty/null: {text}"
+            );
+            // The value after "got: " should be empty
+            assert!(
+                !text.contains("got: malicious"),
+                "stdin should not contain injected data"
+            );
+        });
+    }
+
+    /// Bash tool installs EXIT trap for cleanup.
+    #[test]
+    fn bash_has_exit_trap() {
+        asupersync::test_utils::run_test(|| async {
+            let cwd = tempfile::tempdir().unwrap();
+            let tool = pi::tools::BashTool::new(cwd.path());
+            let input = serde_json::json!({
+                "command": "trap -p EXIT"
+            });
+            let result = tool.execute("sec-bash-02", input, None).await;
+            let output = result.expect("trap -p should succeed");
+            let text = get_text_content(&output.content);
+            // Tool installs an EXIT trap
+            assert!(
+                text.contains("EXIT") || text.contains("exit"),
+                "expected EXIT trap to be set: {text}"
+            );
+        });
+    }
+
+    /// Bash tool executes shell metacharacters (;, &&, ||, pipes) – by design.
+    #[test]
+    fn bash_metacharacter_execution() {
+        asupersync::test_utils::run_test(|| async {
+            let cwd = tempfile::tempdir().unwrap();
+            let tool = pi::tools::BashTool::new(cwd.path());
+            let input = serde_json::json!({
+                "command": "echo A; echo B && echo C || echo D | cat"
+            });
+            let result = tool.execute("sec-bash-03", input, None).await;
+            let output = result.expect("metacharacters should execute");
+            let text = get_text_content(&output.content);
+            assert!(text.contains('A'), "semicolon chaining should work: {text}");
+            assert!(text.contains('B'), "echo B should execute: {text}");
+            assert!(text.contains('C'), "conditional && should work: {text}");
+        });
+    }
+
+    /// Bash tool executes command substitution – by design.
+    #[test]
+    fn bash_command_substitution() {
+        asupersync::test_utils::run_test(|| async {
+            let cwd = tempfile::tempdir().unwrap();
+            let tool = pi::tools::BashTool::new(cwd.path());
+            let input = serde_json::json!({
+                "command": "echo \"user: $(whoami)\""
+            });
+            let result = tool.execute("sec-bash-04", input, None).await;
+            let output = result.expect("command substitution should work");
+            let text = get_text_content(&output.content);
+            assert!(
+                text.contains("user: "),
+                "command substitution should execute: {text}"
+            );
+            // Should contain a real username, not the literal $(whoami)
+            assert!(
+                !text.contains("$(whoami)"),
+                "substitution should be expanded, not literal: {text}"
+            );
+        });
+    }
+}
+
+mod security_environment {
+    use super::*;
+
+    /// Bash tool inherits the parent process environment.
+    #[test]
+    fn bash_env_inheritance() {
+        asupersync::test_utils::run_test(|| async {
+            let cwd = tempfile::tempdir().unwrap();
+            let tool = pi::tools::BashTool::new(cwd.path());
+            // PATH must be inherited for any command to work
+            let input = serde_json::json!({
+                "command": "echo \"PATH=$PATH\""
+            });
+            let result = tool.execute("sec-env-01", input, None).await;
+            let output = result.expect("env should be accessible");
+            let text = get_text_content(&output.content);
+            assert!(
+                text.contains("PATH=/"),
+                "PATH should be inherited from parent: {text}"
+            );
+        });
+    }
+
+    /// Bash tool CWD matches the configured working directory.
+    #[test]
+    fn bash_cwd_matches_configured() {
+        asupersync::test_utils::run_test(|| async {
+            let cwd = tempfile::tempdir().unwrap();
+            let tool = pi::tools::BashTool::new(cwd.path());
+            let input = serde_json::json!({
+                "command": "pwd"
+            });
+            let result = tool.execute("sec-env-02", input, None).await;
+            let output = result.expect("pwd should succeed");
+            let text = get_text_content(&output.content);
+            // Canonicalize both for comparison (temp dirs may have symlinks)
+            let expected = std::fs::canonicalize(cwd.path())
+                .unwrap()
+                .to_string_lossy()
+                .to_string();
+            let actual = text.trim().to_string();
+            assert!(
+                actual.contains(&expected) || expected.contains(&actual),
+                "CWD should match configured dir: actual={actual}, expected={expected}"
+            );
+        });
+    }
+
+    /// Bash tool can access HOME environment variable – by design.
+    #[test]
+    fn bash_home_accessible() {
+        asupersync::test_utils::run_test(|| async {
+            let cwd = tempfile::tempdir().unwrap();
+            let tool = pi::tools::BashTool::new(cwd.path());
+            let input = serde_json::json!({
+                "command": "echo $HOME"
+            });
+            let result = tool.execute("sec-env-03", input, None).await;
+            let output = result.expect("HOME should be accessible");
+            let text = get_text_content(&output.content);
+            assert!(!text.trim().is_empty(), "HOME should be non-empty: {text}");
+        });
+    }
+}
+
+mod security_unsafe_writes {
+    use super::*;
+
+    /// Write tool creates deeply nested directories automatically.
+    #[test]
+    fn write_creates_arbitrary_dirs() {
+        asupersync::test_utils::run_test(|| async {
+            let cwd = tempfile::tempdir().unwrap();
+            let tool = pi::tools::WriteTool::new(cwd.path());
+            let deep_path = cwd.path().join("a/b/c/d/e/f/deeply_nested.txt");
+            let input = serde_json::json!({
+                "path": deep_path.to_string_lossy(),
+                "content": "DEEP_CONTENT"
+            });
+            let result = tool.execute("sec-write-03", input, None).await;
+            result.expect("write should auto-create dirs");
+            assert!(deep_path.exists());
+            let content = std::fs::read_to_string(&deep_path).unwrap();
+            assert_eq!(content, "DEEP_CONTENT");
+        });
+    }
+
+    /// Write tool overwrites files without backup – by design.
+    #[test]
+    fn write_overwrites_without_backup() {
+        asupersync::test_utils::run_test(|| async {
+            let cwd = tempfile::tempdir().unwrap();
+            let file = cwd.path().join("overwrite_me.txt");
+            std::fs::write(&file, "ORIGINAL_VALUABLE_DATA").unwrap();
+
+            let tool = pi::tools::WriteTool::new(cwd.path());
+            let input = serde_json::json!({
+                "path": file.to_string_lossy(),
+                "content": "REPLACEMENT"
+            });
+            let result = tool.execute("sec-write-04", input, None).await;
+            result.expect("overwrite should succeed");
+
+            let content = std::fs::read_to_string(&file).unwrap();
+            assert_eq!(content, "REPLACEMENT");
+
+            // No backup file should exist
+            let backup = cwd.path().join("overwrite_me.txt.bak");
+            assert!(!backup.exists(), "no backup is created (by design)");
+        });
+    }
+
+    /// Write tool does not create temp files – writes directly.
+    #[test]
+    fn write_no_temp_files() {
+        asupersync::test_utils::run_test(|| async {
+            let cwd = tempfile::tempdir().unwrap();
+            let file = cwd.path().join("direct_write.txt");
+
+            let tool = pi::tools::WriteTool::new(cwd.path());
+            let input = serde_json::json!({
+                "path": file.to_string_lossy(),
+                "content": "DIRECT"
+            });
+            let result = tool.execute("sec-write-05", input, None).await;
+            result.expect("write should succeed");
+
+            // Only the target file should exist in the directory
+            let entries: Vec<_> = std::fs::read_dir(cwd.path()).unwrap().flatten().collect();
+            assert_eq!(
+                entries.len(),
+                1,
+                "only the target file should exist, found: {:?}",
+                entries
+                    .iter()
+                    .map(std::fs::DirEntry::file_name)
+                    .collect::<Vec<_>>()
+            );
+        });
+    }
+
+    /// Write tool can create files with potentially dangerous names.
+    #[test]
+    fn write_dangerous_filenames() {
+        asupersync::test_utils::run_test(|| async {
+            let cwd = tempfile::tempdir().unwrap();
+            let tool = pi::tools::WriteTool::new(cwd.path());
+
+            // File starting with dot (hidden)
+            let hidden = cwd.path().join(".hidden_config");
+            let input = serde_json::json!({
+                "path": hidden.to_string_lossy(),
+                "content": "hidden"
+            });
+            let result = tool.execute("sec-write-06a", input, None).await;
+            result.expect("hidden file creation should succeed");
+            assert!(hidden.exists());
+
+            // File with spaces
+            let spaced = cwd.path().join("file with spaces.txt");
+            let input = serde_json::json!({
+                "path": spaced.to_string_lossy(),
+                "content": "spaced"
+            });
+            let result = tool.execute("sec-write-06b", input, None).await;
+            result.expect("spaced filename should succeed");
+            assert!(spaced.exists());
+        });
+    }
+
+    /// Edit tool operates directly on files, no copy-on-write.
+    #[test]
+    fn edit_no_copy_on_write() {
+        asupersync::test_utils::run_test(|| async {
+            let cwd = tempfile::tempdir().unwrap();
+            let file = cwd.path().join("edit_target.txt");
+            std::fs::write(&file, "BEFORE_EDIT").unwrap();
+
+            let tool = pi::tools::EditTool::new(cwd.path());
+            let input = serde_json::json!({
+                "path": file.to_string_lossy(),
+                "oldText": "BEFORE_EDIT",
+                "newText": "AFTER_EDIT"
+            });
+            let result = tool.execute("sec-edit-02", input, None).await;
+            result.expect("edit should succeed");
+
+            let content = std::fs::read_to_string(&file).unwrap();
+            assert_eq!(content, "AFTER_EDIT");
+
+            // No temp/backup files should exist
+            let entries: Vec<_> = std::fs::read_dir(cwd.path()).unwrap().flatten().collect();
+            assert_eq!(
+                entries.len(),
+                1,
+                "only the target file should exist after edit"
+            );
+        });
+    }
+}

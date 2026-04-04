@@ -1,0 +1,30 @@
+{
+  "schema": "pi.golden_corpus.v1",
+  "scenario": "error_missing_api_key",
+  "surface": "error_cases",
+  "description": "Error: missing API key results in non-zero exit code",
+  "cli_args": [
+    "-p",
+    "--provider", "anthropic",
+    "--model", "claude-sonnet-4-5",
+    "--no-tools",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--thinking", "off",
+    "Hello"
+  ],
+  "stdin": null,
+  "env_overrides": {
+    "ANTHROPIC_API_KEY": ""
+  },
+  "cassette": null,
+  "expected": {
+    "exit_code_nonzero": true,
+    "stdout_contains": [],
+    "stdout_not_contains": [],
+    "stderr_not_contains": ["panic"],
+    "no_session_files": true
+  }
+}

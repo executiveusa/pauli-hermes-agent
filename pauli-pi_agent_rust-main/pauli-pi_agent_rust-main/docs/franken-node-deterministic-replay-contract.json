@@ -1,0 +1,161 @@
+{
+  "schema": "pi.frankennode.deterministic_replay_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.9",
+  "support_bead_ids": [],
+  "status": "active_blocking_policy",
+  "effective_date_utc": "2026-02-17T09:00:00Z",
+  "scope": {
+    "target_project_root": "/dp/franken_node",
+    "source_project_root": "/data/projects/pi_agent_rust",
+    "objective": "Deliver deterministic capture/replay and fault dossier generation to debug race conditions, tail latency anomalies, and correctness issues in production-like scenarios."
+  },
+  "capture_pipeline": {
+    "recording_modes": [
+      {
+        "mode_id": "full_deterministic",
+        "description": "Record all non-deterministic inputs: IO results, timer firings, random values, timestamps",
+        "overhead_budget": "< 15% wall-clock slowdown",
+        "storage_format": "structured_jsonl_with_binary_blobs"
+      },
+      {
+        "mode_id": "lightweight_trace",
+        "description": "Record only event ordering and timer deltas without IO payload capture",
+        "overhead_budget": "< 3% wall-clock slowdown",
+        "storage_format": "compact_binary_trace"
+      },
+      {
+        "mode_id": "off",
+        "description": "No recording overhead; production default",
+        "overhead_budget": "0%",
+        "storage_format": null
+      }
+    ],
+    "captured_sources": [
+      "timer_firings",
+      "io_poll_results",
+      "random_number_generation",
+      "wall_clock_timestamps",
+      "dns_resolution_results",
+      "filesystem_operation_results",
+      "child_process_exit_codes",
+      "network_receive_ordering"
+    ],
+    "invariants": [
+      "Recording mode is set at process start and cannot change mid-execution",
+      "Captured events include monotonic sequence numbers for total ordering",
+      "Binary blobs are content-addressed (SHA-256) to detect corruption",
+      "Recording does not alter observable program behavior or event ordering"
+    ]
+  },
+  "replay_engine": {
+    "replay_modes": [
+      {
+        "mode_id": "strict_deterministic",
+        "description": "Replay using captured non-deterministic inputs; divergence is a hard failure",
+        "divergence_policy": "abort_with_diagnostic"
+      },
+      {
+        "mode_id": "best_effort",
+        "description": "Replay with tolerance for minor divergences (e.g., timing jitter in logs)",
+        "divergence_policy": "warn_and_continue"
+      }
+    ],
+    "supported_operations": [
+      "replay_from_trace_file",
+      "replay_with_breakpoint_at_event_sequence",
+      "replay_with_fault_injection_at_event",
+      "replay_time_dilation"
+    ],
+    "invariants": [
+      "Strict replay produces identical event ordering as original execution",
+      "Replay engine detects and reports divergence within 1 event of occurrence",
+      "Replay does not require network or filesystem access beyond trace file",
+      "Time dilation uniformly scales all timer delays without reordering"
+    ]
+  },
+  "fault_dossier": {
+    "dossier_format": "structured_json",
+    "required_sections": [
+      {
+        "section_id": "execution_timeline",
+        "description": "Chronological sequence of events with timestamps and causal edges",
+        "required": true
+      },
+      {
+        "section_id": "divergence_report",
+        "description": "First point of divergence between recording and replay (if any)",
+        "required": true
+      },
+      {
+        "section_id": "resource_snapshot",
+        "description": "Memory, handle count, and thread-pool utilization at divergence point",
+        "required": true
+      },
+      {
+        "section_id": "causal_chain",
+        "description": "Causal chain from root event to observed failure",
+        "required": true
+      },
+      {
+        "section_id": "suggested_investigation",
+        "description": "Machine-generated investigation hints based on divergence pattern",
+        "required": false
+      }
+    ],
+    "invariants": [
+      "Dossier is self-contained: no external file references required to interpret",
+      "All required sections present even if their content is 'no data available'",
+      "Dossier size bounded by configurable max (default: 10 MB)",
+      "Dossier generation does not require replay; can be built from trace alone"
+    ]
+  },
+  "fault_injection": {
+    "injectable_faults": [
+      {
+        "fault_id": "io_delay",
+        "description": "Add configurable delay to specific IO operations",
+        "target_granularity": "per_primitive_type_or_per_fd"
+      },
+      {
+        "fault_id": "io_error",
+        "description": "Inject IO errors (ECONNREFUSED, ETIMEDOUT, EIO) at specified event sequence",
+        "target_granularity": "per_event_sequence_number"
+      },
+      {
+        "fault_id": "timer_jitter",
+        "description": "Add random jitter to timer firings within bounded range",
+        "target_granularity": "global_or_per_timer"
+      },
+      {
+        "fault_id": "oom_simulation",
+        "description": "Simulate allocation failure after specified allocation count",
+        "target_granularity": "global"
+      }
+    ],
+    "invariants": [
+      "Fault injection only available in recording and replay modes, never in production off mode",
+      "Injected faults are logged in the trace with clear fault_injected markers",
+      "Fault injection respects sandbox capability grants from security contract",
+      "Multiple faults can be composed; ordering conflicts produce clear diagnostics"
+    ]
+  },
+  "release_blockers": [
+    "recording mode changes observable program behavior",
+    "strict replay produces different event ordering than original",
+    "fault dossier missing required sections",
+    "fault injection available in production off mode",
+    "trace file corruption undetected during replay"
+  ],
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.10",
+      "bd-3ar8v.7.11",
+      "bd-3ar8v.7.15"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-runtime-substrate-contract.json",
+      "docs/franken-node-event-loop-io-parity-contract.json"
+    ]
+  }
+}

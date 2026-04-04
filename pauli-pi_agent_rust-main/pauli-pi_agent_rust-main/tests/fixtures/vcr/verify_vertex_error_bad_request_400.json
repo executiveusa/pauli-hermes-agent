@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "test_name": "verify_vertex_error_bad_request_400",
+  "recorded_at": "2026-02-10T17:12:54.856Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://us-central1-aiplatform.googleapis.com/v1/projects/verify-project/locations/us-central1/publishers/google/models/gemini-2.0-flash:streamGenerateContent",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "Authorization",
+            "Bearer [REDACTED]"
+          ]
+        ]
+      },
+      "response": {
+        "status": 400,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body_chunks": [
+          "{\"error\":{\"code\":400,\"message\":\"Simulated error 400\",\"status\":\"INVALID_ARGUMENT\"}}"
+        ]
+      }
+    }
+  ]
+}

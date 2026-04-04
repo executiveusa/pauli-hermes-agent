@@ -1,0 +1,331 @@
+{
+  "schema": "pi.sec.compatibility_conformance.v1",
+  "generated_at": "2026-03-12T02:22:06.471Z",
+  "bead": "bd-1a2cu",
+  "verdict": "pass",
+  "pass_count": 40,
+  "fail_count": 0,
+  "skip_count": 0,
+  "total": 40,
+  "pass_rate_pct": 100.0,
+  "threshold_pct": 95.0,
+  "checks": [
+    {
+      "id": "benign_cap_read_safe",
+      "category": "benign_capability",
+      "profile": "safe",
+      "description": "Benign capability 'read' must not be denied in safe",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_write_safe",
+      "category": "benign_capability",
+      "profile": "safe",
+      "description": "Benign capability 'write' must not be denied in safe",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_http_safe",
+      "category": "benign_capability",
+      "profile": "safe",
+      "description": "Benign capability 'http' must not be denied in safe",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_events_safe",
+      "category": "benign_capability",
+      "profile": "safe",
+      "description": "Benign capability 'events' must not be denied in safe",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_session_safe",
+      "category": "benign_capability",
+      "profile": "safe",
+      "description": "Benign capability 'session' must not be denied in safe",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_read_standard",
+      "category": "benign_capability",
+      "profile": "standard",
+      "description": "Benign capability 'read' must not be denied in standard",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_write_standard",
+      "category": "benign_capability",
+      "profile": "standard",
+      "description": "Benign capability 'write' must not be denied in standard",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_http_standard",
+      "category": "benign_capability",
+      "profile": "standard",
+      "description": "Benign capability 'http' must not be denied in standard",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_events_standard",
+      "category": "benign_capability",
+      "profile": "standard",
+      "description": "Benign capability 'events' must not be denied in standard",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_session_standard",
+      "category": "benign_capability",
+      "profile": "standard",
+      "description": "Benign capability 'session' must not be denied in standard",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_read_permissive",
+      "category": "benign_capability",
+      "profile": "permissive",
+      "description": "Benign capability 'read' must not be denied in permissive",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_write_permissive",
+      "category": "benign_capability",
+      "profile": "permissive",
+      "description": "Benign capability 'write' must not be denied in permissive",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_http_permissive",
+      "category": "benign_capability",
+      "profile": "permissive",
+      "description": "Benign capability 'http' must not be denied in permissive",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_events_permissive",
+      "category": "benign_capability",
+      "profile": "permissive",
+      "description": "Benign capability 'events' must not be denied in permissive",
+      "status": "pass"
+    },
+    {
+      "id": "benign_cap_session_permissive",
+      "category": "benign_capability",
+      "profile": "permissive",
+      "description": "Benign capability 'session' must not be denied in permissive",
+      "status": "pass"
+    },
+    {
+      "id": "dangerous_denied_exec_safe",
+      "category": "dangerous_gating",
+      "profile": "safe",
+      "description": "Dangerous capability 'exec' must be denied in safe",
+      "status": "pass"
+    },
+    {
+      "id": "dangerous_denied_exec_standard",
+      "category": "dangerous_gating",
+      "profile": "standard",
+      "description": "Dangerous capability 'exec' must be denied in standard",
+      "status": "pass"
+    },
+    {
+      "id": "dangerous_allowed_exec_permissive",
+      "category": "dangerous_gating",
+      "profile": "permissive",
+      "description": "Dangerous capability 'exec' must be allowed in permissive",
+      "status": "pass"
+    },
+    {
+      "id": "dangerous_denied_env_safe",
+      "category": "dangerous_gating",
+      "profile": "safe",
+      "description": "Dangerous capability 'env' must be denied in safe",
+      "status": "pass"
+    },
+    {
+      "id": "dangerous_denied_env_standard",
+      "category": "dangerous_gating",
+      "profile": "standard",
+      "description": "Dangerous capability 'env' must be denied in standard",
+      "status": "pass"
+    },
+    {
+      "id": "dangerous_allowed_env_permissive",
+      "category": "dangerous_gating",
+      "profile": "permissive",
+      "description": "Dangerous capability 'env' must be allowed in permissive",
+      "status": "pass"
+    },
+    {
+      "id": "explanation_complete_safe",
+      "category": "explanation_completeness",
+      "profile": "safe",
+      "description": "Policy explanation in safe covers all 10 capabilities",
+      "status": "pass"
+    },
+    {
+      "id": "explanation_complete_standard",
+      "category": "explanation_completeness",
+      "profile": "standard",
+      "description": "Policy explanation in standard covers all 10 capabilities",
+      "status": "pass"
+    },
+    {
+      "id": "explanation_complete_permissive",
+      "category": "explanation_completeness",
+      "profile": "permissive",
+      "description": "Policy explanation in permissive covers all 10 capabilities",
+      "status": "pass"
+    },
+    {
+      "id": "transition_permissive_to_standard",
+      "category": "profile_transition",
+      "profile": "permissive → standard",
+      "description": "Transition permissive → standard should be a valid downgrade",
+      "status": "pass"
+    },
+    {
+      "id": "transition_permissive_to_safe",
+      "category": "profile_transition",
+      "profile": "permissive → safe",
+      "description": "Transition permissive → safe should be a valid downgrade",
+      "status": "pass"
+    },
+    {
+      "id": "transition_standard_to_safe",
+      "category": "profile_transition",
+      "profile": "standard → safe",
+      "description": "Transition standard → safe should be a valid downgrade",
+      "status": "pass"
+    },
+    {
+      "id": "transition_safe_to_permissive",
+      "category": "profile_transition",
+      "profile": "safe → permissive",
+      "description": "Transition safe → permissive should NOT be a valid downgrade",
+      "status": "pass"
+    },
+    {
+      "id": "transition_standard_to_permissive",
+      "category": "profile_transition",
+      "profile": "standard → permissive",
+      "description": "Transition standard → permissive should NOT be a valid downgrade",
+      "status": "pass"
+    },
+    {
+      "id": "deny_cap_precedence_exec_safe",
+      "category": "deny_cap_precedence",
+      "profile": "safe",
+      "description": "deny_caps for 'exec' overrides per-extension allow in safe",
+      "status": "pass"
+    },
+    {
+      "id": "deny_cap_precedence_env_safe",
+      "category": "deny_cap_precedence",
+      "profile": "safe",
+      "description": "deny_caps for 'env' overrides per-extension allow in safe",
+      "status": "pass"
+    },
+    {
+      "id": "deny_cap_precedence_exec_standard",
+      "category": "deny_cap_precedence",
+      "profile": "standard",
+      "description": "deny_caps for 'exec' overrides per-extension allow in standard",
+      "status": "pass"
+    },
+    {
+      "id": "deny_cap_precedence_env_standard",
+      "category": "deny_cap_precedence",
+      "profile": "standard",
+      "description": "deny_caps for 'env' overrides per-extension allow in standard",
+      "status": "pass"
+    },
+    {
+      "id": "trust_default_pending",
+      "category": "trust_lifecycle",
+      "profile": "all",
+      "description": "Default trust state is Pending",
+      "status": "pass"
+    },
+    {
+      "id": "trust_accept_acknowledged",
+      "category": "trust_lifecycle",
+      "profile": "all",
+      "description": "Accepting onboarding sets Acknowledged",
+      "status": "pass"
+    },
+    {
+      "id": "trust_promote_trusted",
+      "category": "trust_lifecycle",
+      "profile": "all",
+      "description": "Promoting from Acknowledged sets Trusted",
+      "status": "pass"
+    },
+    {
+      "id": "trust_kill_switch",
+      "category": "trust_lifecycle",
+      "profile": "all",
+      "description": "Kill-switch sets Killed state",
+      "status": "pass"
+    },
+    {
+      "id": "serde_roundtrip_safe",
+      "category": "serde_roundtrip",
+      "profile": "safe",
+      "description": "PolicyProfile::safe serde roundtrip",
+      "status": "pass"
+    },
+    {
+      "id": "serde_roundtrip_standard",
+      "category": "serde_roundtrip",
+      "profile": "standard",
+      "description": "PolicyProfile::standard serde roundtrip",
+      "status": "pass"
+    },
+    {
+      "id": "serde_roundtrip_permissive",
+      "category": "serde_roundtrip",
+      "profile": "permissive",
+      "description": "PolicyProfile::permissive serde roundtrip",
+      "status": "pass"
+    }
+  ],
+  "categories": {
+    "trust_lifecycle": {
+      "pass": 4,
+      "fail": 0,
+      "skip": 0
+    },
+    "serde_roundtrip": {
+      "pass": 3,
+      "fail": 0,
+      "skip": 0
+    },
+    "explanation_completeness": {
+      "pass": 3,
+      "fail": 0,
+      "skip": 0
+    },
+    "benign_capability": {
+      "pass": 15,
+      "fail": 0,
+      "skip": 0
+    },
+    "dangerous_gating": {
+      "pass": 6,
+      "fail": 0,
+      "skip": 0
+    },
+    "profile_transition": {
+      "pass": 5,
+      "fail": 0,
+      "skip": 0
+    },
+    "deny_cap_precedence": {
+      "pass": 4,
+      "fail": 0,
+      "skip": 0
+    }
+  }
+}

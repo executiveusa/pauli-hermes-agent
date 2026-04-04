@@ -1,0 +1,44 @@
+{
+  "version": "1.0",
+  "test_name": "verify_kimi-for-coding_simple_text",
+  "recorded_at": "2026-02-11T01:53:33.118Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.kimi.com/coding/v1/messages",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "X-API-Key",
+            "[REDACTED]"
+          ],
+          [
+            "anthropic-version",
+            "2023-06-01"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "Content-Type",
+            "text/event-stream"
+          ]
+        ],
+        "body_chunks": [
+          "event: message_start\ndata: {\"message\":{\"content\":[],\"id\":\"msg_verify_b1_001\",\"model\":\"k2p5\",\"role\":\"assistant\",\"stop_reason\":null,\"stop_sequence\":null,\"type\":\"message\",\"usage\":{\"input_tokens\":20,\"output_tokens\":1}},\"type\":\"message_start\"}\n\n",
+          "event: content_block_start\ndata: {\"content_block\":{\"text\":\"\",\"type\":\"text\"},\"index\":0,\"type\":\"content_block_start\"}\n\n",
+          "event: content_block_delta\ndata: {\"delta\":{\"text\":\"Hello from the verification harness.\",\"type\":\"text_delta\"},\"index\":0,\"type\":\"content_block_delta\"}\n\n",
+          "event: content_block_stop\ndata: {\"index\":0,\"type\":\"content_block_stop\"}\n\n",
+          "event: message_delta\ndata: {\"delta\":{\"stop_reason\":\"end_turn\",\"stop_sequence\":null},\"type\":\"message_delta\",\"usage\":{\"output_tokens\":10}}\n\n",
+          "event: message_stop\ndata: {\"type\":\"message_stop\"}\n\n"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "test_name": "verify_cohere_tool_call_single",
+  "recorded_at": "2026-02-10T17:36:16.045Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.cohere.com/v2/chat",
+        "headers": [
+          [
+            "Authorization",
+            "Bearer [REDACTED]"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "Content-Type",
+            "text/event-stream"
+          ]
+        ],
+        "body_chunks": [
+          "data: {\"id\":\"msg_verify_2\",\"type\":\"message-start\"}\n\n",
+          "data: {\"delta\":{\"message\":{\"tool_calls\":{\"function\":{\"arguments\":\"{\\\"text\\\":\\\"verification test\\\"}\",\"name\":\"echo\"},\"id\":\"call_verify_echo\",\"type\":\"function\"}}},\"type\":\"tool-call-start\"}\n\n",
+          "data: {\"type\":\"tool-call-end\"}\n\n",
+          "data: {\"delta\":{\"finish_reason\":\"TOOL_CALL\",\"usage\":{\"tokens\":{\"input_tokens\":20,\"output_tokens\":8}}},\"type\":\"message-end\"}\n\n",
+          "data: [DONE]\n\n"
+        ]
+      }
+    }
+  ]
+}

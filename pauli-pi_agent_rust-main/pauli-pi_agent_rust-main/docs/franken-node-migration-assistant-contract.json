@@ -1,0 +1,184 @@
+{
+  "schema": "pi.frankennode.migration_assistant_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.14",
+  "support_bead_ids": [],
+  "status": "active_blocking_policy",
+  "effective_date_utc": "2026-02-17T09:00:00Z",
+  "scope": {
+    "target_project_root": "/dp/franken_node",
+    "source_project_root": "/data/projects/pi_agent_rust",
+    "objective": "Provide first-class migration UX: compatibility doctor checks, actionable fix suggestions, and guided migration workflows for real projects moving from Node.js or Bun to FrankenNode."
+  },
+  "compatibility_doctor": {
+    "check_categories": [
+      {
+        "category_id": "package_compatibility",
+        "description": "Scan package.json dependencies against known compatibility matrix",
+        "output": "per_package_verdict_with_severity",
+        "required": true
+      },
+      {
+        "category_id": "native_addon_detection",
+        "description": "Detect native addons (.node files, node-gyp, node-pre-gyp) and report compatibility",
+        "output": "per_addon_verdict_with_alternative_suggestion",
+        "required": true
+      },
+      {
+        "category_id": "api_surface_coverage",
+        "description": "Static analysis of require/import statements against supported API matrix",
+        "output": "per_api_usage_verdict",
+        "required": true
+      },
+      {
+        "category_id": "runtime_feature_detection",
+        "description": "Detect usage of runtime-specific features (V8 flags, inspector protocol, etc.)",
+        "output": "per_feature_verdict_with_workaround",
+        "required": true
+      },
+      {
+        "category_id": "module_system_analysis",
+        "description": "Analyze CJS/ESM usage patterns and flag potential interop issues",
+        "output": "module_system_migration_plan",
+        "required": true
+      }
+    ],
+    "verdict_levels": [
+      {
+        "level": "pass",
+        "description": "Fully compatible, no changes needed"
+      },
+      {
+        "level": "warn",
+        "description": "Compatible with minor behavioral differences documented"
+      },
+      {
+        "level": "action_required",
+        "description": "Requires specific code changes; actionable fix provided"
+      },
+      {
+        "level": "blocked",
+        "description": "Incompatible; no workaround available in current release"
+      }
+    ],
+    "invariants": [
+      "Every check produces exactly one verdict level per analyzed item",
+      "action_required verdicts always include at least one actionable fix suggestion",
+      "blocked verdicts include a tracking reference to the upstream compatibility issue",
+      "Doctor runs without executing user code (static analysis only)",
+      "Doctor completes within 60 seconds for projects with up to 1000 dependencies"
+    ]
+  },
+  "migration_workflow": {
+    "phases": [
+      {
+        "phase_id": "assess",
+        "description": "Run compatibility doctor and generate migration readiness report",
+        "output_artifact": "migration_readiness_report.json",
+        "automated": true
+      },
+      {
+        "phase_id": "plan",
+        "description": "Generate ordered migration plan based on assessment results",
+        "output_artifact": "migration_plan.json",
+        "automated": true
+      },
+      {
+        "phase_id": "adapt",
+        "description": "Apply automated fixes for action_required items where safe",
+        "output_artifact": "adaptation_log.json",
+        "automated": true,
+        "requires_user_confirmation": true
+      },
+      {
+        "phase_id": "verify",
+        "description": "Run project test suite under FrankenNode and compare results",
+        "output_artifact": "verification_report.json",
+        "automated": true
+      },
+      {
+        "phase_id": "report",
+        "description": "Generate final migration status report with remaining manual items",
+        "output_artifact": "final_migration_report.json",
+        "automated": true
+      }
+    ],
+    "invariants": [
+      "Each phase produces a structured artifact that can be machine-parsed",
+      "adapt phase never modifies files without user confirmation or --yes flag",
+      "verify phase uses the same test runner configuration as the original project",
+      "Workflow can be resumed from any phase using artifact checkpoints",
+      "All phases respect sandbox capability grants from security contract"
+    ]
+  },
+  "fix_suggestion_engine": {
+    "suggestion_types": [
+      {
+        "type_id": "api_replacement",
+        "description": "Replace unsupported API call with FrankenNode-compatible equivalent",
+        "example": "Replace require('v8').getHeapStatistics() with process.memoryUsage()"
+      },
+      {
+        "type_id": "polyfill_injection",
+        "description": "Add polyfill package for missing functionality",
+        "example": "Add frankennode-compat-polyfill for missing crypto.createCipheriv"
+      },
+      {
+        "type_id": "configuration_change",
+        "description": "Modify package.json, tsconfig, or runtime configuration",
+        "example": "Add \"type\": \"module\" to package.json for ESM support"
+      },
+      {
+        "type_id": "dependency_swap",
+        "description": "Replace incompatible dependency with compatible alternative",
+        "example": "Replace node-gyp native addon with pure-JS alternative"
+      }
+    ],
+    "invariants": [
+      "Every suggestion includes before/after code diff when applicable",
+      "Suggestions never introduce security vulnerabilities (validated against security contract)",
+      "Dependency swap suggestions only reference packages in the verified compatibility matrix",
+      "Suggestions are idempotent: applying the same suggestion twice has no additional effect"
+    ]
+  },
+  "reporting": {
+    "report_format": "structured_json_with_markdown_summary",
+    "required_fields": [
+      "project_name",
+      "assessment_timestamp_utc",
+      "frankennode_version",
+      "total_checks_run",
+      "pass_count",
+      "warn_count",
+      "action_required_count",
+      "blocked_count",
+      "overall_verdict",
+      "estimated_migration_effort"
+    ],
+    "effort_estimation": {
+      "unit": "developer_hours",
+      "methodology": "per_action_required_item_weighted_by_complexity",
+      "confidence_level": "order_of_magnitude"
+    }
+  },
+  "release_blockers": [
+    "compatibility doctor executes user code during analysis",
+    "action_required verdict without actionable fix suggestion",
+    "migration workflow modifies files without user confirmation",
+    "fix suggestion introduces known security vulnerability",
+    "doctor fails to complete within timeout for projects under 1000 dependencies"
+  ],
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.10",
+      "bd-3ar8v.7.11",
+      "bd-3ar8v.7.13",
+      "bd-3ar8v.7.16"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-package-interop-contract.json",
+      "docs/franken-node-security-sandbox-contract.json",
+      "docs/franken-node-semantic-compat-contract.json"
+    ]
+  }
+}

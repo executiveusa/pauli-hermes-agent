@@ -1,0 +1,47 @@
+# Skills Registry
+# Lists all law skills and operational skills available in the studio.
+# Each skill has a SKILL.md file in skills/<name>/SKILL.md.
+
+law_skills:
+  - name: brand-law
+    description: Brand identity enforcement — logos, colors, voice, positioning
+    path: skills/brand-law/SKILL.md
+    enforced: true
+
+  - name: design-law
+    description: Design system constraints — spacing, typography, components, accessibility
+    path: skills/design-law/SKILL.md
+    enforced: true
+
+  - name: motion-law
+    description: Animation and motion design standards — easing, duration, choreography
+    path: skills/motion-law/SKILL.md
+    enforced: true
+
+  - name: copy-law
+    description: Copywriting standards — tone, structure, clarity, brand voice
+    path: skills/copy-law/SKILL.md
+    enforced: true
+
+  - name: release-law
+    description: Release process — versioning, changelog, deployment checklist
+    path: skills/release-law/SKILL.md
+    enforced: true
+
+  - name: cost-law
+    description: Token and infrastructure cost management — model selection, budget tracking
+    path: skills/cost-law/SKILL.md
+    enforced: true
+
+operational_skills:
+  - name: skill-creation-law
+    description: Template and rules for creating new skills
+    path: skills/skill-creation-law/SKILL.md
+
+  - name: agent-browser
+    description: Browser automation for testing and interaction
+    path: skills/agent-browser/SKILL.md
+
+  - name: code-review
+    description: Code review workflow and quality standards
+    path: skills/code-review/SKILL.md

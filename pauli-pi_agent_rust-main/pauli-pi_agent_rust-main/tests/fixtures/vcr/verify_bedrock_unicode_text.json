@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "test_name": "verify_bedrock_unicode_text",
+  "recorded_at": "2026-02-10T17:12:54.848Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://bedrock-runtime.us-east-1.amazonaws.com/model/anthropic.claude-3-haiku-20240307-v1:0/converse",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "application/json"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body_chunks": [
+          "{\"output\":{\"message\":{\"content\":[{\"text\":\"日本語テスト — émojis: 🦀🔥\"}],\"role\":\"assistant\"}},\"stopReason\":\"end_turn\",\"usage\":{\"inputTokens\":15,\"outputTokens\":10,\"totalTokens\":25}}"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "version": "1.0",
+  "test_name": "cohere_auth_failure_401",
+  "recorded_at": "2026-02-14T01:30:00.000Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.cohere.com/v2/chat",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "Authorization",
+            "[REDACTED]"
+          ]
+        ],
+        "body": {
+          "model": "command-r-plus",
+          "messages": [
+            {
+              "role": "user",
+              "content": "Trigger an auth failure."
+            }
+          ],
+          "stream": true
+        }
+      },
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body_chunks": [
+          "{\"message\":\"invalid api token\"}"
+        ]
+      }
+    }
+  ]
+}

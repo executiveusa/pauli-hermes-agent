@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "test_name": "azure_auth_failure_401",
+  "recorded_at": "2026-02-06T21:00:00.000Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://test-resource.openai.azure.com/openai/deployments/test-deployment/chat/completions?api-version=2024-02-15-preview",
+        "headers": [
+          ["api-key", "[REDACTED]"],
+          ["Content-Type", "application/json"],
+          ["Accept", "text/event-stream"]
+        ]
+      },
+      "response": {
+        "status": 401,
+        "headers": [
+          ["Content-Type", "application/json"]
+        ],
+        "body_chunks": [
+          "{\"error\":{\"code\":\"401\",\"message\":\"Access denied due to invalid subscription key or wrong API endpoint. Make sure to provide a valid key for an active subscription and use a correct regional API endpoint for your resource.\"}}"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,262 @@
+{
+  "schema": "pi.qa.certification_dossier.v1",
+  "generated_at": "2026-03-12T02:21:56.103Z",
+  "bead": "bd-1f42.8.10",
+  "verdict": "pass_with_residuals",
+  "closure_questions": {
+    "q1_non_mock_coverage": {
+      "question": "Do we have full unit/integration coverage without mocks/fakes?",
+      "answer": "Yes, with quantified residuals. 252 test files classified (93 unit, 125 VCR, 34 E2E). Non-mock compliance gate passes (19 checks). Test double inventory: 267 entries across 21 modules. 7 allowlisted exceptions documented with owner and replacement plan. 3 tracked for active migration (Recording*/MockHostActions via bd-m9rk), 4 permanent with rationale.",
+      "status": "pass_with_residuals",
+      "evidence": [
+        "docs/non-mock-rubric.json",
+        "docs/test_double_inventory.json",
+        "docs/testing-policy.md (Allowlisted Exceptions)",
+        "tests/non_mock_compliance_gate.rs (19 tests pass)"
+      ],
+      "quantified_residuals": [
+        "3 recording doubles tracked for migration (bd-m9rk)",
+        "132 high-risk entries in inventory (mostly extension_dispatcher inline stubs)",
+        "model_selector_cycling uses DummyProvider (known, tracked)"
+      ]
+    },
+    "q2_e2e_logging": {
+      "question": "Do we have complete E2E integration scripts with detailed logging?",
+      "answer": "Yes. 11/12 E2E workflows covered (92%), 1 waived (live-only, requires credentials). 34 E2E test files classified. Structured logging: failure_digest.v1, failure_timeline.v1, evidence_contract.json, replay_bundle.v1. CI gate lanes: preflight fast-fail + full certification. Waiver lifecycle enforced. Replay bundles with environment context.",
+      "status": "pass_with_residuals",
+      "evidence": [
+        "docs/e2e_scenario_matrix.json",
+        "scripts/e2e/run_all.sh",
+        "tests/ci_full_suite_gate.rs (12 tests pass)",
+        "tests/e2e_replay_bundles.rs (10 tests pass)",
+        "docs/qa-runbook.md",
+        "docs/ci-operator-runbook.md"
+      ],
+      "quantified_residuals": [
+        "1 waived workflow (live provider parity, requires credentials)",
+        "2 CI gate failure (cross_platform), 0 skipped (missing conformance artifacts)",
+        "Evidence bundle only generated during full E2E runs"
+      ]
+    }
+  },
+  "suite_classification": {
+    "unit_files": 93,
+    "vcr_files": 125,
+    "e2e_files": 34,
+    "total_classified": 252,
+    "total_test_files": 264,
+    "quarantined": 0,
+    "active_waivers": 0
+  },
+  "test_double_inventory": {
+    "entry_count": 267,
+    "module_count": 21,
+    "high_risk": 132,
+    "medium_risk": 99,
+    "low_risk": 36
+  },
+  "e2e_scenario_matrix": {
+    "total_workflows": 12,
+    "covered": 11,
+    "waived": 1,
+    "planned": 0,
+    "coverage_pct": 91.66666666666667
+  },
+  "ci_gate_status": {
+    "total_gates": 20,
+    "passed": 18,
+    "failed": 2,
+    "skipped": 0,
+    "blocking_pass": 13,
+    "blocking_total": 14
+  },
+  "opportunity_matrix_contract": {
+    "schema_expected": "pi.perf.opportunity_matrix.v1",
+    "artifact_path": "tests/perf/reports/opportunity_matrix.json",
+    "artifact_present": true,
+    "contract_valid": true,
+    "readiness_status": "blocked",
+    "readiness_decision": "NO_DECISION",
+    "ready_for_phase5": false,
+    "ranked_opportunities": 0,
+    "blocking_reasons": 1,
+    "validation_errors": []
+  },
+  "allowlisted_exceptions": [
+    {
+      "identifier": "MockHttpServer",
+      "location": "tests/common/harness.rs",
+      "suite": "vcr",
+      "owner": "infra",
+      "replacement_plan": "Permanent: VCR cannot represent invalid UTF-8 bytes",
+      "status": "accepted"
+    },
+    {
+      "identifier": "MockHttpRequest",
+      "location": "tests/common/harness.rs",
+      "suite": "vcr",
+      "owner": "infra",
+      "replacement_plan": "Permanent: companion to MockHttpServer",
+      "status": "accepted"
+    },
+    {
+      "identifier": "MockHttpResponse",
+      "location": "tests/common/harness.rs",
+      "suite": "vcr",
+      "owner": "infra",
+      "replacement_plan": "Permanent: companion to MockHttpServer",
+      "status": "accepted"
+    },
+    {
+      "identifier": "PackageCommandStubs",
+      "location": "tests/e2e_cli.rs",
+      "suite": "e2e",
+      "owner": "infra",
+      "replacement_plan": "Permanent: real npm/git non-deterministic",
+      "status": "accepted"
+    },
+    {
+      "identifier": "RecordingSession",
+      "location": "tests/extensions_message_session.rs",
+      "suite": "vcr",
+      "owner": "bd-m9rk",
+      "replacement_plan": "Replace with SessionHandle (most usages migrated)",
+      "status": "tracked"
+    },
+    {
+      "identifier": "RecordingHostActions",
+      "location": "tests/e2e_message_session_control.rs",
+      "suite": "vcr",
+      "owner": "bd-m9rk",
+      "replacement_plan": "Evaluate agent-loop integration replacement",
+      "status": "tracked"
+    },
+    {
+      "identifier": "MockHostActions",
+      "location": "src/extensions.rs",
+      "suite": "vcr",
+      "owner": "bd-m9rk",
+      "replacement_plan": "Replace with real session-based dispatch",
+      "status": "tracked"
+    }
+  ],
+  "residual_gaps": [
+    {
+      "id": "cross_platform_gate",
+      "description": "Cross-platform matrix gate fails (platform_report.json incomplete)",
+      "severity": "medium",
+      "follow_up_bead": "bd-1f42.6.7"
+    },
+    {
+      "id": "ext_conformance_artifacts",
+      "description": "Extension conformance gate artifacts not present in local runs (requires ext-conformance feature)",
+      "severity": "low",
+      "follow_up_bead": "bd-1f42.4.4"
+    },
+    {
+      "id": "evidence_bundle_artifact",
+      "description": "Evidence bundle index.json only generated during full E2E runs",
+      "severity": "low",
+      "follow_up_bead": "bd-1f42.6.8"
+    },
+    {
+      "id": "recording_doubles_cleanup",
+      "description": "RecordingSession/RecordingHostActions/MockHostActions tracked for migration to real sessions",
+      "severity": "low",
+      "follow_up_bead": "bd-m9rk"
+    },
+    {
+      "id": "live_provider_parity",
+      "description": "Live provider parity workflows waived (require live credentials)",
+      "severity": "low",
+      "follow_up_bead": "bd-1f42.8.5.3"
+    }
+  ],
+  "evidence_artifacts": [
+    {
+      "name": "Suite classification",
+      "path": "tests/suite_classification.toml",
+      "exists": true
+    },
+    {
+      "name": "Test double inventory",
+      "path": "docs/test_double_inventory.json",
+      "exists": true
+    },
+    {
+      "name": "Non-mock rubric",
+      "path": "docs/non-mock-rubric.json",
+      "exists": true
+    },
+    {
+      "name": "E2E scenario matrix",
+      "path": "docs/e2e_scenario_matrix.json",
+      "exists": true
+    },
+    {
+      "name": "CI gate verdict",
+      "path": "tests/full_suite_gate/full_suite_verdict.json",
+      "exists": true
+    },
+    {
+      "name": "Preflight verdict",
+      "path": "tests/full_suite_gate/preflight_verdict.json",
+      "exists": true
+    },
+    {
+      "name": "Certification verdict",
+      "path": "tests/full_suite_gate/certification_verdict.json",
+      "exists": true
+    },
+    {
+      "name": "Practical-finish checkpoint",
+      "path": "tests/full_suite_gate/practical_finish_checkpoint.json",
+      "exists": true
+    },
+    {
+      "name": "Extension remediation backlog",
+      "path": "tests/full_suite_gate/extension_remediation_backlog.json",
+      "exists": true
+    },
+    {
+      "name": "Parameter sweeps report",
+      "path": "tests/perf/reports/parameter_sweeps.json",
+      "exists": true
+    },
+    {
+      "name": "Parameter sweeps events",
+      "path": "tests/perf/reports/parameter_sweeps_events.jsonl",
+      "exists": false
+    },
+    {
+      "name": "Opportunity matrix",
+      "path": "tests/perf/reports/opportunity_matrix.json",
+      "exists": true
+    },
+    {
+      "name": "Waiver audit",
+      "path": "tests/full_suite_gate/waiver_audit.json",
+      "exists": true
+    },
+    {
+      "name": "Replay bundle",
+      "path": "tests/full_suite_gate/replay_bundle.json",
+      "exists": true
+    },
+    {
+      "name": "Testing policy",
+      "path": "docs/testing-policy.md",
+      "exists": true
+    },
+    {
+      "name": "QA runbook",
+      "path": "docs/qa-runbook.md",
+      "exists": true
+    },
+    {
+      "name": "CI operator runbook",
+      "path": "docs/ci-operator-runbook.md",
+      "exists": true
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "schema": "pi.provider_openrouter_model_registry.v1",
+  "schema_version": "1.0",
+  "bead_id": "bd-3uqg.11.7.4",
+  "provider_id": "openrouter",
+  "canonical_provider_id": "openrouter",
+  "verified_at_utc": "2026-02-13T10:12:00Z",
+  "provider_aliases": [
+    "open-router"
+  ],
+  "curated_defaults": {
+    "source": "src/models.rs::built_in_models",
+    "entries": [
+      {
+        "id": "openrouter/auto",
+        "name": "OpenRouter Auto",
+        "api": "openai-completions",
+        "input": ["text"],
+        "reasoning": true,
+        "context_window": 128000,
+        "max_tokens": 16384
+      },
+      {
+        "id": "openai/gpt-4o-mini",
+        "name": "OpenRouter GPT-4o Mini",
+        "api": "openai-completions",
+        "input": ["text"],
+        "reasoning": true,
+        "context_window": 128000,
+        "max_tokens": 16384
+      },
+      {
+        "id": "openai/gpt-4o",
+        "name": "OpenRouter GPT-4o",
+        "api": "openai-completions",
+        "input": ["text"],
+        "reasoning": true,
+        "context_window": 128000,
+        "max_tokens": 16384
+      },
+      {
+        "id": "anthropic/claude-3.5-sonnet",
+        "name": "OpenRouter Claude 3.5 Sonnet",
+        "api": "openai-completions",
+        "input": ["text"],
+        "reasoning": true,
+        "context_window": 128000,
+        "max_tokens": 16384
+      },
+      {
+        "id": "google/gemini-2.5-pro",
+        "name": "OpenRouter Gemini 2.5 Pro",
+        "api": "openai-completions",
+        "input": ["text"],
+        "reasoning": true,
+        "context_window": 128000,
+        "max_tokens": 16384
+      }
+    ]
+  },
+  "alias_normalization": {
+    "scope": "openrouter provider only",
+    "rules": [
+      { "alias": "auto", "canonical": "openrouter/auto" },
+      { "alias": "gpt-4o-mini", "canonical": "openai/gpt-4o-mini" },
+      { "alias": "gpt-4o", "canonical": "openai/gpt-4o" },
+      { "alias": "claude-3.5-sonnet", "canonical": "anthropic/claude-3.5-sonnet" },
+      { "alias": "gemini-2.5-pro", "canonical": "google/gemini-2.5-pro" }
+    ],
+    "lookup_behavior": [
+      "Registry lookup accepts both canonical and alias IDs.",
+      "Ad-hoc entry synthesis normalizes known aliases to canonical IDs.",
+      "Provider alias open-router maps to canonical provider openrouter before lookup."
+    ]
+  },
+  "conflict_checks": {
+    "models_json_openrouter_provider": {
+      "dedupe_key": "normalized_id (case-insensitive)",
+      "on_conflict": "skip duplicate and emit warning",
+      "goal": "prevent ambiguous model selection when aliases and canonical IDs both appear"
+    }
+  },
+  "determinism_contract": {
+    "selection_order": [
+      "explicit provider/model lookup in registry (canonical + aliases)",
+      "ad-hoc synthesis for known providers",
+      "legacy id-only fallback rules"
+    ],
+    "auth_resolution": "uses existing provider env/auth-store precedence for openrouter provider"
+  },
+  "test_evidence": [
+    "src/models.rs::built_in_models_include_core_provider_entries",
+    "src/models.rs::model_registry_find_normalizes_openrouter_model_aliases",
+    "src/models.rs::ad_hoc_model_entry_normalizes_openrouter_aliases",
+    "src/models.rs::apply_custom_models_dedupes_openrouter_alias_conflicts",
+    "src/provider_metadata.rs::metadata_resolves_canonical_and_alias_names",
+    "src/provider_metadata.rs::provider_auth_env_keys_support_aliases",
+    "tests/main_cli_selection.rs::select_model_and_thinking_resolves_model_flag_with_provider_prefixed_openrouter_id",
+    "tests/main_cli_selection.rs::select_model_and_thinking_resolves_openrouter_provider_alias_and_model_alias"
+  ]
+}

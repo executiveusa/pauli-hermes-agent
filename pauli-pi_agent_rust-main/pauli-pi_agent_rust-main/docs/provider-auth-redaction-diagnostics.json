@@ -1,0 +1,302 @@
+{
+  "schema": "pi.docs.provider_auth_redaction_diagnostics.v1",
+  "bead_id": "bd-3uqg.9.3.3",
+  "generated_at_utc": "2026-02-14T00:45:00Z",
+  "generated_by": "LilacCat (Claude Opus 4.6)",
+  "description": "Documents redaction behavior, banned secret exposures, and safe-diagnostics expectations for provider auth workflows. Includes pointers to artifact-level enforcement checks and a safe debugging workflow.",
+
+  "redaction_system": {
+    "implementation_file": "src/vcr.rs",
+    "redaction_constant": "[REDACTED]",
+    "entry_points": [
+      {
+        "function": "redact_cassette(cassette: &mut Cassette) -> RedactionSummary",
+        "location": "src/vcr.rs:662",
+        "purpose": "Master redaction function for VCR cassettes — redacts both request and response headers and bodies",
+        "returns": "RedactionSummary { headers_redacted: usize, json_fields_redacted: usize }"
+      },
+      {
+        "function": "redact_json(value: &mut Value) -> usize",
+        "location": "src/vcr.rs:702",
+        "purpose": "Recursive JSON field redaction — walks object tree and replaces sensitive field values with [REDACTED]",
+        "returns": "Count of redacted fields"
+      },
+      {
+        "function": "redact_headers(headers: &mut Vec<Header>, sensitive: &HashSet<String>) -> usize",
+        "location": "src/vcr.rs:691",
+        "purpose": "Case-insensitive header value redaction",
+        "returns": "Count of redacted headers"
+      }
+    ]
+  },
+
+  "sensitive_headers": {
+    "description": "HTTP headers whose values are ALWAYS redacted (case-insensitive matching)",
+    "location": "src/vcr.rs:29",
+    "keys": [
+      "authorization",
+      "x-api-key",
+      "api-key",
+      "x-goog-api-key",
+      "x-azure-api-key",
+      "proxy-authorization"
+    ],
+    "coverage": {
+      "anthropic": "X-API-Key header value replaced with [REDACTED]",
+      "openai_and_compatible": "Authorization: Bearer header value replaced with [REDACTED]",
+      "azure": "api-key header value replaced with [REDACTED]",
+      "google": "x-goog-api-key header value replaced with [REDACTED] (when used as header; URL param also handled)",
+      "proxy_services": "proxy-authorization header value replaced with [REDACTED]"
+    }
+  },
+
+  "sensitive_json_fields": {
+    "description": "JSON field names whose values are redacted during redact_json(). Case-insensitive substring matching.",
+    "location": "src/vcr.rs:702-741",
+    "patterns": [
+      {
+        "pattern": "api_key or apikey",
+        "matches_example": "api_key, apiKey, x_api_key",
+        "note": "Catches both snake_case and camelCase variants"
+      },
+      {
+        "pattern": "authorization",
+        "matches_example": "authorization, Authorization",
+        "note": "Redundant with headers but also catches JSON body fields"
+      },
+      {
+        "pattern": "token (but NOT if also contains 'tokens')",
+        "matches_example": "access_token, refresh_token, id_token, bearer_token",
+        "excludes": "max_tokens, prompt_tokens, completion_tokens, total_tokens",
+        "note": "Critical exclusion: usage metrics (max_tokens, prompt_tokens) must NOT be redacted"
+      },
+      {
+        "pattern": "access_tokens, refresh_tokens, id_tokens (explicit plural forms)",
+        "matches_example": "access_tokens, refresh_tokens",
+        "note": "Explicit variants caught even though 'tokens' plural normally excluded"
+      },
+      {
+        "pattern": "secret",
+        "matches_example": "client_secret, aws_secret_access_key",
+        "note": "Catches all secret fields"
+      },
+      {
+        "pattern": "password",
+        "matches_example": "password, db_password",
+        "note": "Catches all password fields"
+      }
+    ]
+  },
+
+  "banned_secret_exposures": {
+    "description": "Secrets that must NEVER appear in any diagnostic output, log, error message, or artifact",
+    "categories": [
+      {
+        "category": "API Keys",
+        "examples": ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_API_KEY", "any *_API_KEY env var value"],
+        "where_caught": "Header redaction (authorization, x-api-key) + JSON field redaction (api_key, apikey)"
+      },
+      {
+        "category": "OAuth Tokens",
+        "examples": ["access_token", "refresh_token", "id_token", "authorization_code"],
+        "where_caught": "JSON field redaction (token pattern) + header redaction (authorization)"
+      },
+      {
+        "category": "AWS Credentials",
+        "examples": ["AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_BEARER_TOKEN_BEDROCK"],
+        "where_caught": "JSON field redaction (secret, token patterns) + env var values never logged"
+      },
+      {
+        "category": "OAuth Client Secrets",
+        "examples": ["SAP_AI_CORE_CLIENT_SECRET", "client_secret values in OAuth flows"],
+        "where_caught": "JSON field redaction (secret pattern)"
+      },
+      {
+        "category": "Bearer Token Values",
+        "examples": ["Authorization: Bearer sk-...", "Authorization: Bearer ya29..."],
+        "where_caught": "Header redaction (authorization)"
+      }
+    ]
+  },
+
+  "artifact_level_enforcement": {
+    "description": "Where redaction is enforced at the artifact level",
+    "checks": [
+      {
+        "artifact": "VCR Cassettes (tests/fixtures/vcr/)",
+        "enforcement": "redact_cassette() called before saving any cassette to disk",
+        "verification": "Cassette JSON files on disk always contain [REDACTED] for sensitive values",
+        "test": "src/vcr.rs tests: redacts_sensitive_headers_and_body_fields()"
+      },
+      {
+        "artifact": "VCR Debug Output (VCR_DEBUG_BODY=1)",
+        "enforcement": "redact_json() called on both incoming and cassette bodies BEFORE printing",
+        "verification": "src/vcr.rs:424-461 — bodies are redacted before eprintln! output",
+        "test": "Manual verification — debug output shows [REDACTED] for API keys"
+      },
+      {
+        "artifact": "VCR Debug File (VCR_DEBUG_BODY_FILE=path)",
+        "enforcement": "redact_json() applied before file write",
+        "verification": "src/vcr.rs:398-422 — safe for support/troubleshooting scenarios",
+        "test": "Manual verification"
+      },
+      {
+        "artifact": "Error Messages (AuthDiagnosticCode)",
+        "enforcement": "Error codes emit machine-readable code + remediation text, NEVER raw credentials",
+        "verification": "src/error.rs — remediation() methods contain only action text",
+        "test": "src/error.rs tests + all provider error VCR cassettes verify no key leakage"
+      },
+      {
+        "artifact": "Request Matching (VCR playback)",
+        "enforcement": "Incoming request body redacted BEFORE comparison with cassette",
+        "verification": "src/vcr.rs:582-609 — redact_json() on incoming body ensures API keys don't affect matching",
+        "test": "VCR matching tests with different API keys succeed (both become [REDACTED])"
+      },
+      {
+        "artifact": "Structured Test Logs (pi.test.log.v2)",
+        "enforcement": "Log schema requires only machine fields (schema, type, trace_id, seq, ts, level, category, message)",
+        "verification": "docs/provider_e2e_artifact_contract.json — no credential fields in schema",
+        "test": "tests/common/logging.rs::validate_jsonl_line()"
+      }
+    ]
+  },
+
+  "redaction_tests": {
+    "description": "Automated tests verifying redaction correctness",
+    "location": "src/vcr.rs:814-930",
+    "tests": [
+      {
+        "name": "redacts_sensitive_headers_and_body_fields",
+        "what_it_tests": "Full integration: cassette with auth headers and JSON body fields are all redacted",
+        "type": "integration"
+      },
+      {
+        "name": "redact_json_flat_object",
+        "what_it_tests": "Flat JSON objects with api_key, token, secret fields",
+        "type": "unit"
+      },
+      {
+        "name": "redact_json_nested",
+        "what_it_tests": "Nested JSON objects (credentials inside wrapper objects)",
+        "type": "unit"
+      },
+      {
+        "name": "redact_json_array_of_objects",
+        "what_it_tests": "Arrays containing objects with sensitive fields",
+        "type": "unit"
+      },
+      {
+        "name": "redact_json_scalar_returns_zero",
+        "what_it_tests": "Non-object JSON values (strings, numbers) return zero redactions",
+        "type": "unit"
+      },
+      {
+        "name": "redact_headers_case_insensitive",
+        "what_it_tests": "Header matching works regardless of case (Authorization, AUTHORIZATION, etc.)",
+        "type": "unit"
+      },
+      {
+        "name": "redact_headers_empty",
+        "what_it_tests": "Empty headers list returns zero redactions without error",
+        "type": "unit"
+      },
+      {
+        "name": "redact_headers_all_sensitive_keys",
+        "what_it_tests": "All 6 sensitive header keys are correctly identified and redacted",
+        "type": "unit"
+      }
+    ]
+  },
+
+  "safe_debugging_workflow": {
+    "description": "Step-by-step safe debugging workflow for auth issues that preserves reproducibility without leaking credentials",
+    "steps": [
+      {
+        "step": 1,
+        "action": "Check the AuthDiagnosticCode in the error message",
+        "safe": true,
+        "details": "Error messages contain machine-readable codes (e.g., 'auth.missing_api_key') with remediation text. These NEVER contain actual credentials.",
+        "example": "Error: auth.missing_api_key — Set the provider API key env var or run /login <provider>."
+      },
+      {
+        "step": 2,
+        "action": "Verify env var is set (existence only, not value)",
+        "safe": true,
+        "details": "Check that the required env var exists without printing its value.",
+        "example": "env | grep -c ANTHROPIC_API_KEY  # prints 0 or 1, not the key value"
+      },
+      {
+        "step": 3,
+        "action": "Check key format (prefix only)",
+        "safe": true,
+        "details": "Verify key prefix matches expected format without exposing full key.",
+        "example": "echo ${ANTHROPIC_API_KEY:0:7}  # shows 'sk-ant-' prefix only"
+      },
+      {
+        "step": 4,
+        "action": "Use VCR debug mode for request/response inspection",
+        "safe": true,
+        "details": "Set VCR_DEBUG_BODY=1 to see redacted request/response bodies. All sensitive fields are replaced with [REDACTED] before output.",
+        "example": "VCR_MODE=record VCR_DEBUG_BODY=1 pi --model claude-sonnet-4-5 -p 'test'"
+      },
+      {
+        "step": 5,
+        "action": "Save debug output to file for support",
+        "safe": true,
+        "details": "Use VCR_DEBUG_BODY_FILE=path to write redacted debug data to a file. Safe to share with support — all credentials are replaced with [REDACTED].",
+        "example": "VCR_MODE=record VCR_DEBUG_BODY_FILE=/tmp/debug.json pi -p 'test'"
+      },
+      {
+        "step": 6,
+        "action": "Inspect VCR cassette for exact request shape",
+        "safe": true,
+        "details": "Recorded VCR cassettes have all auth headers and JSON credential fields redacted. Safe to share.",
+        "example": "cat tests/fixtures/vcr/my_debug_cassette.json | jq '.interactions[0].request.headers'"
+      },
+      {
+        "step": 7,
+        "action": "Check auth.json credential status (existence only)",
+        "safe": true,
+        "details": "Verify auth.json has an entry for the provider without reading the key value.",
+        "example": "jq 'keys' ~/.pi/agent/auth.json  # shows provider names, not key values"
+      }
+    ],
+    "anti_patterns": [
+      {
+        "bad": "echo $ANTHROPIC_API_KEY",
+        "why": "Prints full API key to terminal history and potentially log files",
+        "safe_alternative": "echo ${ANTHROPIC_API_KEY:0:7}... (prefix only)"
+      },
+      {
+        "bad": "cat ~/.pi/agent/auth.json",
+        "why": "Dumps all stored credentials to terminal",
+        "safe_alternative": "jq 'keys' ~/.pi/agent/auth.json (provider names only)"
+      },
+      {
+        "bad": "curl -v https://api.anthropic.com/...",
+        "why": "Verbose curl shows full Authorization header in output",
+        "safe_alternative": "Use VCR_DEBUG_BODY=1 which auto-redacts all credentials"
+      },
+      {
+        "bad": "Sharing VCR cassettes recorded without redaction",
+        "why": "Old cassettes or manually created ones might contain real keys",
+        "safe_alternative": "Always use Pi's VCR system which auto-redacts on record"
+      }
+    ]
+  },
+
+  "acceptance_criteria_compliance": {
+    "criterion_1": {
+      "requirement": "Docs specify required redaction behavior and banned secret exposures for provider auth diagnostics",
+      "status": "PASS — sensitive_headers (6 keys), sensitive_json_fields (6 patterns with exclusions), and banned_secret_exposures (5 categories) are fully documented"
+    },
+    "criterion_2": {
+      "requirement": "Includes pointers to artifact-level checks that enforce redaction in structured logs",
+      "status": "PASS — artifact_level_enforcement section covers 6 artifact types with specific enforcement mechanisms and test references"
+    },
+    "criterion_3": {
+      "requirement": "Provides safe debugging workflow that preserves reproducibility without leaking credentials",
+      "status": "PASS — 7-step safe debugging workflow with anti-patterns section showing 4 dangerous patterns and their safe alternatives"
+    }
+  }
+}

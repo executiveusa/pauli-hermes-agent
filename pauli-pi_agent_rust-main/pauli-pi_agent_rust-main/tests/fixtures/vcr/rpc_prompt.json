@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "test_name": "rpc_prompt",
+  "recorded_at": "2026-02-04T00:00:00.000Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "headers": [
+          ["Content-Type", "application/json"],
+          ["Accept", "text/event-stream"],
+          ["Authorization", "[REDACTED]"]
+        ],
+        "body": {
+          "model": "gpt-4o-mini",
+          "messages": [
+            {
+              "role": "user",
+              "content": "hi"
+            }
+          ],
+          "max_tokens": 4096,
+          "stream": true,
+          "stream_options": {
+            "include_usage": true
+          }
+        },
+        "body_text": null
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          ["content-type", "text/event-stream"]
+        ],
+        "body_chunks": [
+          "data: {\"choices\":[{\"delta\":{\"content\":\"hello\"},\"finish_reason\":null}]}\n\ndata: {\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":10,\"completion_tokens\":5,\"total_tokens\":15}}\n\ndata: [DONE]\n\n"
+        ]
+      }
+    }
+  ]
+}

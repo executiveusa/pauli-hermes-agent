@@ -1,0 +1,1149 @@
+{
+  "report": {
+    "title": "Provider Native Parity Report",
+    "bead_id": "bd-3uqg.3.8.4",
+    "generated_at": "2026-02-12T16:45:00Z",
+    "version": "1.0.0",
+    "test_harness": "provider_native_verify",
+    "vcr_mode": "playback"
+  },
+  "test_results_summary": {
+    "provider_native_verify": {
+      "passed": 206,
+      "failed": 0,
+      "total": 206,
+      "status": "green"
+    },
+    "provider_metadata_comprehensive": {
+      "passed": 112,
+      "failed": 0,
+      "total": 112,
+      "status": "green"
+    },
+    "provider_factory": {
+      "passed": 134,
+      "failed": 10,
+      "total": 144,
+      "status": "yellow",
+      "failure_notes": "All 10 failures are infrastructure-related: missing pi_runtime.json VCR cassette. Not provider-related."
+    }
+  },
+  "provider_onboarding_modes": {
+    "BuiltInNative": [
+      "anthropic",
+      "openai",
+      "google",
+      "cohere",
+      "google-vertex"
+    ],
+    "NativeAdapterRequired": [
+      "amazon-bedrock",
+      "sap-ai-core",
+      "azure-openai",
+      "github-copilot",
+      "gitlab"
+    ],
+    "OpenAICompatiblePreset": [
+      "groq",
+      "deepinfra",
+      "cerebras",
+      "openrouter",
+      "mistral",
+      "moonshotai",
+      "alibaba",
+      "deepseek",
+      "fireworks",
+      "togetherai",
+      "perplexity",
+      "xai",
+      "302ai",
+      "abacus",
+      "aihubmix",
+      "bailing",
+      "berget",
+      "chutes",
+      "cortecs",
+      "fastrouter",
+      "firmware",
+      "friendli",
+      "github-models",
+      "helicone",
+      "huggingface",
+      "iflowcn",
+      "inception",
+      "inference",
+      "io-net",
+      "jiekou",
+      "lucidquery",
+      "moark",
+      "morph",
+      "nano-gpt",
+      "nova",
+      "novita-ai",
+      "nvidia",
+      "poe",
+      "privatemode-ai",
+      "requesty",
+      "submodel",
+      "synthetic",
+      "vivgrid",
+      "vultr",
+      "wandb",
+      "xiaomi",
+      "alibaba-cn",
+      "kimi-for-coding",
+      "minimax",
+      "minimax-cn",
+      "minimax-coding-plan",
+      "minimax-cn-coding-plan",
+      "modelscope",
+      "moonshotai-cn",
+      "nebius",
+      "ovhcloud",
+      "scaleway",
+      "siliconflow",
+      "siliconflow-cn",
+      "upstage",
+      "venice",
+      "zai",
+      "zai-coding-plan",
+      "zhipuai",
+      "zhipuai-coding-plan",
+      "baseten",
+      "llama",
+      "lmstudio",
+      "ollama-cloud",
+      "opencode",
+      "vercel",
+      "zenmux",
+      "cloudflare-ai-gateway",
+      "cloudflare-workers-ai"
+    ]
+  },
+  "vcr_verified_providers": [
+    {
+      "canonical_id": "anthropic",
+      "onboarding_mode": "BuiltInNative",
+      "tier": "tier1_builtin_native",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "unicode_text", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" },
+        { "name": "error_bad_request_400", "status": "pass" },
+        { "name": "error_rate_limit_429", "status": "pass" }
+      ],
+      "scenario_count": 6,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_anthropic_simple_text.json",
+        "tests/fixtures/vcr/verify_anthropic_tool_call_single.json",
+        "tests/fixtures/vcr/verify_anthropic_unicode_text.json",
+        "tests/fixtures/vcr/verify_anthropic_error_auth_401.json",
+        "tests/fixtures/vcr/verify_anthropic_error_bad_request_400.json",
+        "tests/fixtures/vcr/verify_anthropic_error_rate_limit_429.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "openai",
+      "onboarding_mode": "BuiltInNative",
+      "tier": "tier1_builtin_native",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "unicode_text", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" },
+        { "name": "error_bad_request_400", "status": "pass" },
+        { "name": "error_rate_limit_429", "status": "pass" }
+      ],
+      "scenario_count": 6,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_openai_simple_text.json",
+        "tests/fixtures/vcr/verify_openai_tool_call_single.json",
+        "tests/fixtures/vcr/verify_openai_unicode_text.json",
+        "tests/fixtures/vcr/verify_openai_error_auth_401.json",
+        "tests/fixtures/vcr/verify_openai_error_bad_request_400.json",
+        "tests/fixtures/vcr/verify_openai_error_rate_limit_429.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "google",
+      "onboarding_mode": "BuiltInNative",
+      "tier": "tier1_builtin_native",
+      "vcr_prefix": "gemini",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "unicode_text", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" },
+        { "name": "error_bad_request_400", "status": "pass" },
+        { "name": "error_rate_limit_429", "status": "pass" }
+      ],
+      "scenario_count": 6,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_gemini_simple_text.json",
+        "tests/fixtures/vcr/verify_gemini_tool_call_single.json",
+        "tests/fixtures/vcr/verify_gemini_unicode_text.json",
+        "tests/fixtures/vcr/verify_gemini_error_auth_401.json",
+        "tests/fixtures/vcr/verify_gemini_error_bad_request_400.json",
+        "tests/fixtures/vcr/verify_gemini_error_rate_limit_429.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "cohere",
+      "onboarding_mode": "BuiltInNative",
+      "tier": "tier1_builtin_native",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "unicode_text", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" },
+        { "name": "error_bad_request_400", "status": "pass" },
+        { "name": "error_rate_limit_429", "status": "pass" }
+      ],
+      "scenario_count": 6,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_cohere_simple_text.json",
+        "tests/fixtures/vcr/verify_cohere_tool_call_single.json",
+        "tests/fixtures/vcr/verify_cohere_unicode_text.json",
+        "tests/fixtures/vcr/verify_cohere_error_auth_401.json",
+        "tests/fixtures/vcr/verify_cohere_error_bad_request_400.json",
+        "tests/fixtures/vcr/verify_cohere_error_rate_limit_429.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "azure-openai",
+      "onboarding_mode": "NativeAdapterRequired",
+      "tier": "tier1_builtin_native",
+      "vcr_prefix": "azure",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "unicode_text", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" },
+        { "name": "error_bad_request_400", "status": "pass" },
+        { "name": "error_rate_limit_429", "status": "pass" }
+      ],
+      "scenario_count": 6,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_azure_simple_text.json",
+        "tests/fixtures/vcr/verify_azure_tool_call_single.json",
+        "tests/fixtures/vcr/verify_azure_unicode_text.json",
+        "tests/fixtures/vcr/verify_azure_error_auth_401.json",
+        "tests/fixtures/vcr/verify_azure_error_bad_request_400.json",
+        "tests/fixtures/vcr/verify_azure_error_rate_limit_429.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "google-vertex",
+      "onboarding_mode": "BuiltInNative",
+      "tier": "tier1_builtin_native",
+      "vcr_prefix": "vertex",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "unicode_text", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" },
+        { "name": "error_bad_request_400", "status": "pass" },
+        { "name": "error_rate_limit_429", "status": "pass" }
+      ],
+      "scenario_count": 6,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_vertex_simple_text.json",
+        "tests/fixtures/vcr/verify_vertex_tool_call_single.json",
+        "tests/fixtures/vcr/verify_vertex_unicode_text.json",
+        "tests/fixtures/vcr/verify_vertex_error_auth_401.json",
+        "tests/fixtures/vcr/verify_vertex_error_bad_request_400.json",
+        "tests/fixtures/vcr/verify_vertex_error_rate_limit_429.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "amazon-bedrock",
+      "onboarding_mode": "NativeAdapterRequired",
+      "tier": "tier2_native_adapter",
+      "vcr_prefix": "bedrock",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "unicode_text", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 4,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_bedrock_simple_text.json",
+        "tests/fixtures/vcr/verify_bedrock_tool_call_single.json",
+        "tests/fixtures/vcr/verify_bedrock_unicode_text.json",
+        "tests/fixtures/vcr/verify_bedrock_error_auth_401.json"
+      ],
+      "deviations": [
+        {
+          "id": "DEV-002",
+          "description": "Missing error_bad_request_400 and error_rate_limit_429 VCR fixtures. AWS Bedrock uses different error signaling (HTTP error mapping differs).",
+          "follow_up": "Expand bedrock error fixtures"
+        }
+      ]
+    },
+    {
+      "canonical_id": "sap-ai-core",
+      "onboarding_mode": "NativeAdapterRequired",
+      "tier": "tier2_native_adapter",
+      "vcr_prefix": "sap_ai_core",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "unicode_text", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" },
+        { "name": "error_bad_request_400", "status": "pass" },
+        { "name": "error_rate_limit_429", "status": "pass" }
+      ],
+      "scenario_count": 6,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_sap_ai_core_simple_text.json",
+        "tests/fixtures/vcr/verify_sap_ai_core_tool_call_single.json",
+        "tests/fixtures/vcr/verify_sap_ai_core_unicode_text.json",
+        "tests/fixtures/vcr/verify_sap_ai_core_error_auth_401.json",
+        "tests/fixtures/vcr/verify_sap_ai_core_error_bad_request_400.json",
+        "tests/fixtures/vcr/verify_sap_ai_core_error_rate_limit_429.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "github-copilot",
+      "onboarding_mode": "NativeAdapterRequired",
+      "tier": "tier2_native_adapter",
+      "vcr_prefix": "copilot",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "unicode_text", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" },
+        { "name": "error_bad_request_400", "status": "pass" },
+        { "name": "error_rate_limit_429", "status": "pass" }
+      ],
+      "scenario_count": 6,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_copilot_simple_text.json",
+        "tests/fixtures/vcr/verify_copilot_tool_call_single.json",
+        "tests/fixtures/vcr/verify_copilot_unicode_text.json",
+        "tests/fixtures/vcr/verify_copilot_error_auth_401.json",
+        "tests/fixtures/vcr/verify_copilot_error_bad_request_400.json",
+        "tests/fixtures/vcr/verify_copilot_error_rate_limit_429.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "gitlab",
+      "onboarding_mode": "NativeAdapterRequired",
+      "tier": "tier2_native_adapter",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "unicode_text", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" },
+        { "name": "error_bad_request_400", "status": "pass" },
+        { "name": "error_rate_limit_429", "status": "pass" }
+      ],
+      "scenario_count": 5,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_gitlab_simple_text.json",
+        "tests/fixtures/vcr/verify_gitlab_unicode_text.json",
+        "tests/fixtures/vcr/verify_gitlab_error_auth_401.json",
+        "tests/fixtures/vcr/verify_gitlab_error_bad_request_400.json",
+        "tests/fixtures/vcr/verify_gitlab_error_rate_limit_429.json"
+      ],
+      "deviations": [
+        {
+          "id": "DEV-001",
+          "description": "Missing tool_call_single VCR fixture. GitLab Duo API does not expose standard OpenAI tool_call format natively.",
+          "follow_up": "bd-3uqg.3 (native provider implementation track)"
+        }
+      ]
+    },
+    {
+      "canonical_id": "alibaba-cn",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b1_regional_coding_plan",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_alibaba-cn_simple_text.json",
+        "tests/fixtures/vcr/verify_alibaba-cn_tool_call_single.json",
+        "tests/fixtures/vcr/verify_alibaba-cn_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "kimi-for-coding",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b1_regional_coding_plan",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_kimi-for-coding_simple_text.json",
+        "tests/fixtures/vcr/verify_kimi-for-coding_tool_call_single.json",
+        "tests/fixtures/vcr/verify_kimi-for-coding_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "minimax",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b1_regional_coding_plan",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_minimax_simple_text.json",
+        "tests/fixtures/vcr/verify_minimax_tool_call_single.json",
+        "tests/fixtures/vcr/verify_minimax_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "modelscope",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b2_regional_cloud",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_modelscope_simple_text.json",
+        "tests/fixtures/vcr/verify_modelscope_tool_call_single.json",
+        "tests/fixtures/vcr/verify_modelscope_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "moonshotai-cn",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b2_regional_cloud",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_moonshotai-cn_simple_text.json",
+        "tests/fixtures/vcr/verify_moonshotai-cn_tool_call_single.json",
+        "tests/fixtures/vcr/verify_moonshotai-cn_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "nebius",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b2_regional_cloud",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_nebius_simple_text.json",
+        "tests/fixtures/vcr/verify_nebius_tool_call_single.json",
+        "tests/fixtures/vcr/verify_nebius_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "ovhcloud",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b2_regional_cloud",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_ovhcloud_simple_text.json",
+        "tests/fixtures/vcr/verify_ovhcloud_tool_call_single.json",
+        "tests/fixtures/vcr/verify_ovhcloud_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "scaleway",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b2_regional_cloud",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_scaleway_simple_text.json",
+        "tests/fixtures/vcr/verify_scaleway_tool_call_single.json",
+        "tests/fixtures/vcr/verify_scaleway_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "siliconflow",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b3",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_siliconflow_simple_text.json",
+        "tests/fixtures/vcr/verify_siliconflow_tool_call_single.json",
+        "tests/fixtures/vcr/verify_siliconflow_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "siliconflow-cn",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b3",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_siliconflow-cn_simple_text.json",
+        "tests/fixtures/vcr/verify_siliconflow-cn_tool_call_single.json",
+        "tests/fixtures/vcr/verify_siliconflow-cn_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "upstage",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b3",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_upstage_simple_text.json",
+        "tests/fixtures/vcr/verify_upstage_tool_call_single.json",
+        "tests/fixtures/vcr/verify_upstage_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "venice",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b3",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_venice_simple_text.json",
+        "tests/fixtures/vcr/verify_venice_tool_call_single.json",
+        "tests/fixtures/vcr/verify_venice_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "zai",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b3",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_zai_simple_text.json",
+        "tests/fixtures/vcr/verify_zai_tool_call_single.json",
+        "tests/fixtures/vcr/verify_zai_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "zai-coding-plan",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b3",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_zai-coding-plan_simple_text.json",
+        "tests/fixtures/vcr/verify_zai-coding-plan_tool_call_single.json",
+        "tests/fixtures/vcr/verify_zai-coding-plan_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "zhipuai",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b3",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_zhipuai_simple_text.json",
+        "tests/fixtures/vcr/verify_zhipuai_tool_call_single.json",
+        "tests/fixtures/vcr/verify_zhipuai_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "zhipuai-coding-plan",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_b3",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_zhipuai-coding-plan_simple_text.json",
+        "tests/fixtures/vcr/verify_zhipuai-coding-plan_tool_call_single.json",
+        "tests/fixtures/vcr/verify_zhipuai-coding-plan_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "opencode",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_c_special_routing",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_opencode_simple_text.json",
+        "tests/fixtures/vcr/verify_opencode_tool_call_single.json",
+        "tests/fixtures/vcr/verify_opencode_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "vercel",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_c_special_routing",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_vercel_simple_text.json",
+        "tests/fixtures/vcr/verify_vercel_tool_call_single.json",
+        "tests/fixtures/vcr/verify_vercel_error_auth_401.json"
+      ],
+      "deviations": []
+    },
+    {
+      "canonical_id": "zenmux",
+      "onboarding_mode": "OpenAICompatiblePreset",
+      "tier": "wave_c_special_routing",
+      "scenarios": [
+        { "name": "simple_text", "status": "pass" },
+        { "name": "tool_call_single", "status": "pass" },
+        { "name": "error_auth_401", "status": "pass" }
+      ],
+      "scenario_count": 3,
+      "evidence_paths": [
+        "tests/fixtures/vcr/verify_zenmux_simple_text.json",
+        "tests/fixtures/vcr/verify_zenmux_tool_call_single.json",
+        "tests/fixtures/vcr/verify_zenmux_error_auth_401.json"
+      ],
+      "deviations": []
+    }
+  ],
+  "preset_providers_no_vcr": {
+    "description": "OpenAI-compatible preset providers verified through shared infrastructure tests. These use the standard OpenAI Chat Completions streaming path tested via the openai VCR fixtures. All pass provider metadata registration tests and provider factory dispatch tests.",
+    "verification_evidence": [
+      "Provider metadata registration tests (provider_metadata_comprehensive: 112 passed)",
+      "Provider factory dispatch tests (provider_factory: 134 passed)",
+      "Shared OpenAI Chat Completions streaming path tested through openai VCR fixtures"
+    ],
+    "providers": [
+      {
+        "canonical_id": "groq",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "deepinfra",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "cerebras",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "openrouter",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "mistral",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "moonshotai",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "alibaba",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "deepseek",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "fireworks",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "togetherai",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "perplexity",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "xai",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "302ai",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "abacus",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "aihubmix",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "bailing",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "berget",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "chutes",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "cortecs",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "fastrouter",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "firmware",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "friendli",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "github-models",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "helicone",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "huggingface",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "iflowcn",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "inception",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "inference",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "io-net",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "jiekou",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "lucidquery",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "moark",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "morph",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "nano-gpt",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "nova",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "novita-ai",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "nvidia",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "poe",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "privatemode-ai",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "requesty",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "submodel",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "synthetic",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "vivgrid",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "vultr",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "wandb",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "xiaomi",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "minimax-cn",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "minimax-coding-plan",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "minimax-cn-coding-plan",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "baseten",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "llama",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "lmstudio",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "ollama-cloud",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "cloudflare-ai-gateway",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      },
+      {
+        "canonical_id": "cloudflare-workers-ai",
+        "onboarding_mode": "OpenAICompatiblePreset",
+        "metadata_test": "pass",
+        "factory_test": "pass"
+      }
+    ]
+  },
+  "deviations": [
+    {
+      "id": "DEV-001",
+      "provider": "gitlab",
+      "description": "Missing tool_call_single VCR fixture. GitLab Duo API does not expose standard OpenAI tool_call format natively.",
+      "impact": "Low - GitLab Duo tool call support requires native provider implementation.",
+      "follow_up_bead": "bd-3uqg.3"
+    },
+    {
+      "id": "DEV-002",
+      "provider": "amazon-bedrock",
+      "description": "Missing error_bad_request_400 and error_rate_limit_429 VCR fixtures. AWS Bedrock uses different error signaling (HTTP error mapping differs from standard OpenAI error codes).",
+      "impact": "Low - Bedrock error paths still function; HTTP-level error mapping differs.",
+      "follow_up_bead": "Expand bedrock error fixtures"
+    },
+    {
+      "id": "DEV-003",
+      "providers": "All Wave B and Wave C providers",
+      "description": "Wave B and C providers have 3-scenario coverage (simple_text, tool_call_single, error_auth_401) versus 6-scenario coverage for Tier 1 native providers. These are OpenAI-compatible presets and the 3 core scenarios cover the critical paths. Expanding to 6 scenarios is tracked in bd-3uqg.8.",
+      "impact": "Minimal - The 3 core scenarios validate the primary success and error paths. unicode_text, error_bad_request_400, and error_rate_limit_429 are shared-path behaviors already tested through native provider VCR fixtures.",
+      "follow_up_bead": "bd-3uqg.8"
+    },
+    {
+      "id": "DEV-004",
+      "providers": "All providers (provider_factory tests)",
+      "description": "provider_factory has 10 test failures due to missing pi_runtime.json VCR cassette. This is an infrastructure gap, not a provider parity issue. Root cause: the cassette file was not created/committed.",
+      "impact": "None on provider parity. Infrastructure-only gap.",
+      "follow_up_bead": "bd-3uqg.8.4"
+    }
+  ],
+  "coverage_summary": {
+    "total_providers_registered": 84,
+    "providers_with_vcr_verification": 29,
+    "providers_without_vcr_verification": 55,
+    "vcr_verified_breakdown": {
+      "tier1_builtin_native_6_scenario": 6,
+      "tier2_native_adapter": 4,
+      "wave_b1_regional_coding_plan_3_scenario": 3,
+      "wave_b2_regional_cloud_3_scenario": 5,
+      "wave_b3_3_scenario": 8,
+      "wave_c_special_routing_3_scenario": 3
+    },
+    "total_vcr_fixture_scenarios": 114,
+    "total_test_scenarios_passing": 206,
+    "total_test_scenarios_failing": 0,
+    "preset_providers_covered_by_shared_tests": 55
+  },
+  "pass_fail_matrix": {
+    "_legend": {
+      "pass": "VCR fixture exists and scenario passes",
+      "missing": "No VCR fixture for this scenario",
+      "n/a": "Provider has no dedicated VCR verification (covered by shared tests)"
+    },
+    "scenarios": [
+      "simple_text",
+      "tool_call_single",
+      "unicode_text",
+      "error_auth_401",
+      "error_bad_request_400",
+      "error_rate_limit_429"
+    ],
+    "results": {
+      "anthropic":           ["pass", "pass", "pass", "pass", "pass", "pass"],
+      "openai":              ["pass", "pass", "pass", "pass", "pass", "pass"],
+      "google":              ["pass", "pass", "pass", "pass", "pass", "pass"],
+      "cohere":              ["pass", "pass", "pass", "pass", "pass", "pass"],
+      "azure-openai":        ["pass", "pass", "pass", "pass", "pass", "pass"],
+      "google-vertex":       ["pass", "pass", "pass", "pass", "pass", "pass"],
+      "amazon-bedrock":      ["pass", "pass", "pass", "pass", "missing", "missing"],
+      "sap-ai-core":         ["pass", "pass", "pass", "pass", "pass", "pass"],
+      "github-copilot":      ["pass", "pass", "pass", "pass", "pass", "pass"],
+      "gitlab":              ["pass", "missing", "pass", "pass", "pass", "pass"],
+      "alibaba-cn":          ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "kimi-for-coding":     ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "minimax":             ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "modelscope":          ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "moonshotai-cn":       ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "nebius":              ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "ovhcloud":            ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "scaleway":            ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "siliconflow":         ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "siliconflow-cn":      ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "upstage":             ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "venice":              ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "zai":                 ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "zai-coding-plan":     ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "zhipuai":             ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "zhipuai-coding-plan": ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "opencode":            ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "vercel":              ["pass", "pass", "missing", "pass", "missing", "missing"],
+      "zenmux":              ["pass", "pass", "missing", "pass", "missing", "missing"]
+    }
+  },
+  "follow_up_beads": [
+    {
+      "bead_id": "bd-3uqg.8.2",
+      "title": "Native adapter contract tests",
+      "description": "Add contract-level tests for NativeAdapterRequired providers (bedrock, sap-ai-core, azure-openai, github-copilot, gitlab)."
+    },
+    {
+      "bead_id": "bd-3uqg.8.4",
+      "title": "Provider-matrix smoke harness",
+      "description": "Fix pi_runtime.json VCR cassette gap and create comprehensive provider-matrix smoke test harness."
+    },
+    {
+      "bead_id": "bd-3uqg.9.1.2",
+      "title": "Capability/auth/API matrix with evidence links",
+      "description": "Build a full capability matrix covering auth methods, API formats, and input modalities for all registered providers with evidence links."
+    }
+  ],
+  "source_files": {
+    "provider_metadata": "src/provider_metadata.rs",
+    "test_harness_native_verify": "tests/provider_native_verify.rs",
+    "test_harness_metadata": "tests/provider_metadata_comprehensive.rs",
+    "test_harness_factory": "tests/provider_factory.rs",
+    "vcr_fixtures_dir": "tests/fixtures/vcr/",
+    "conformance_report": "tests/ext_conformance/reports/CONFORMANCE_REPORT.md",
+    "conformance_summary": "tests/ext_conformance/reports/conformance_summary.json"
+  }
+}

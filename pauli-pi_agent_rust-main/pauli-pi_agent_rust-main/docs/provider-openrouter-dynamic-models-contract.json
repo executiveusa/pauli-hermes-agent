@@ -1,0 +1,93 @@
+{
+  "schema": "pi.provider_openrouter_dynamic_models.v1",
+  "schema_version": "1.0",
+  "bead_id": "bd-3pc3p",
+  "provider_id": "openrouter",
+  "canonical_provider_id": "openrouter",
+  "verified_at_utc": "2026-02-13T10:02:00Z",
+  "design_decision": {
+    "selected_option": "C",
+    "title": "Hybrid static defaults + dynamic catalog refresh",
+    "rationale": [
+      "OpenRouter catalog size/churn make static-only lists stale quickly.",
+      "CLI startup must remain deterministic and offline-safe.",
+      "Routing should accept explicit provider/model IDs even before catalog refresh."
+    ],
+    "non_goals": [
+      "Hard-fail startup when catalog API is unavailable.",
+      "Treat fetched catalog as an auth gate for model execution."
+    ]
+  },
+  "resolver_contract": {
+    "accepted_model_specs": [
+      "--provider openrouter --model <upstream_provider/model_slug>",
+      "--model openrouter/<upstream_provider/model_slug>",
+      "/model openrouter/<upstream_provider/model_slug>",
+      "enabledModels entries using openrouter/<upstream_provider/model_slug>"
+    ],
+    "parsing_rules": [
+      "Parse provider/model spec using the first slash as provider separator.",
+      "Preserve the remainder verbatim as model ID (supports nested slashes and :suffix tags).",
+      "If registry lookup misses and provider is known, synthesize ad-hoc model entry from provider metadata defaults."
+    ],
+    "determinism": {
+      "registry_first": true,
+      "ad_hoc_fallback": true,
+      "tie_breaking": "When multiple static matches exist, preserve existing default-provider and api-key-preferred selection order."
+    }
+  },
+  "dynamic_catalog_contract": {
+    "models_endpoint": "GET https://openrouter.ai/api/v1/models",
+    "cache_path": "~/.pi/agent/cache/openrouter_models.json",
+    "cache_ttl_seconds": 86400,
+    "refresh_triggers": [
+      "explicit refresh flag/command",
+      "cache miss",
+      "expired cache on startup/background refresh"
+    ],
+    "stale_cache_behavior": {
+      "if_expired_and_refresh_succeeds": "replace cache atomically",
+      "if_expired_and_refresh_fails": "continue with stale cache + warn",
+      "if_no_cache_and_refresh_fails": "continue with ad-hoc resolver + warn"
+    },
+    "atomicity_and_integrity": [
+      "write temp file then rename",
+      "embed fetched_at_utc and source_etag/source_hash",
+      "reject malformed payloads and keep last good cache"
+    ]
+  },
+  "metadata_fields_required_for_ui_and_policy": {
+    "identity": ["id", "name"],
+    "capability": ["context_length", "supported_parameters"],
+    "pricing": ["pricing.prompt", "pricing.completion", "pricing.request", "pricing.image"],
+    "routing": ["top_provider", "architecture", "modality"]
+  },
+  "request_header_policy": {
+    "openrouter_attribution_headers": {
+      "headers": ["HTTP-Referer", "X-Title"],
+      "precedence_high_to_low": [
+        "StreamOptions.headers explicit values",
+        "compat.customHeaders",
+        "provider defaults"
+      ],
+      "provider_defaults": {
+        "HTTP-Referer": "https://github.com/Dicklesworthstone/pi_agent_rust",
+        "X-Title": "Pi Agent Rust"
+      },
+      "env_overrides": {
+        "HTTP-Referer": ["OPENROUTER_HTTP_REFERER", "PI_OPENROUTER_HTTP_REFERER"],
+        "X-Title": ["OPENROUTER_X_TITLE", "PI_OPENROUTER_X_TITLE"]
+      }
+    }
+  },
+  "test_evidence": [
+    "src/app.rs::split_provider_model_spec_preserves_nested_model_paths",
+    "src/app.rs::try_match_model_supports_openrouter_dynamic_provider_model_ids",
+    "tests/main_cli_selection.rs::select_model_and_thinking_resolves_model_flag_with_provider_prefixed_openrouter_id",
+    "src/providers/openai.rs::test_stream_openrouter_injects_default_attribution_headers",
+    "src/providers/openai.rs::test_stream_openrouter_respects_explicit_attribution_headers"
+  ],
+  "beads_unblocked": [
+    "bd-3uqg.11.7.4"
+  ]
+}

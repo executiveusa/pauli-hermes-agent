@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "test_name": "verify_gitlab_error_auth_401",
+  "recorded_at": "2026-02-10T17:24:07.231Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://gitlab.com/api/v4/chat/completions",
+        "headers": [
+          [
+            "Authorization",
+            "Bearer [REDACTED]"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "application/json"
+          ]
+        ]
+      },
+      "response": {
+        "status": 401,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body_chunks": [
+          "{\"message\":\"Simulated error 401\"}"
+        ]
+      }
+    }
+  ]
+}

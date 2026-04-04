@@ -1,0 +1,173 @@
+{
+  "schema": "pi.ci.cross_platform_matrix.v1",
+  "generated_at": "2026-03-12T02:40:43.332Z",
+  "platform": "linux",
+  "platform_details": {
+    "arch": "x86_64",
+    "ci": "",
+    "family": "unix",
+    "github_actions": "",
+    "os": "linux"
+  },
+  "merge_policy": {
+    "description": "Cross-platform merge policy for pi_agent_rust CI",
+    "required_platforms": [
+      "linux"
+    ],
+    "informational_platforms": [
+      "macos",
+      "windows"
+    ],
+    "rules": [
+      {
+        "blocking": true,
+        "description": "All required checks on Linux must pass to merge",
+        "rule": "linux_required"
+      },
+      {
+        "blocking": false,
+        "description": "macOS failures are logged but do not block merge",
+        "rule": "macos_informational"
+      },
+      {
+        "blocking": false,
+        "description": "Windows failures are logged but do not block merge",
+        "rule": "windows_informational"
+      },
+      {
+        "blocking": false,
+        "description": "Platform-specific failures are tagged with platform-unsupported or platform-skip for triage grouping",
+        "rule": "platform_tag_grouping"
+      },
+      {
+        "blocking": false,
+        "description": "Each platform publishes structured logs (JSON/JSONL) for cross-platform diff triage",
+        "rule": "artifact_parity"
+      }
+    ]
+  },
+  "capabilities": [
+    {
+      "name": "unix_signals",
+      "available": true,
+      "notes": "POSIX signal handling (SIGTERM, SIGINT)"
+    },
+    {
+      "name": "tmux",
+      "available": true,
+      "notes": "Terminal multiplexer for E2E TUI tests"
+    },
+    {
+      "name": "symlinks",
+      "available": true,
+      "notes": "Filesystem symlink support"
+    },
+    {
+      "name": "file_permissions",
+      "available": true,
+      "notes": "POSIX file permission bits (chmod)"
+    },
+    {
+      "name": "dev_null",
+      "available": true,
+      "notes": "Null device for output redirection"
+    },
+    {
+      "name": "temp_dir",
+      "available": true,
+      "notes": "System temp directory accessible"
+    },
+    {
+      "name": "git",
+      "available": true,
+      "notes": "Git CLI available in PATH"
+    },
+    {
+      "name": "node",
+      "available": true,
+      "notes": "Node.js runtime for extension execution"
+    }
+  ],
+  "checks": [
+    {
+      "id": "cargo_check",
+      "name": "Cargo check compiles",
+      "platform": "linux",
+      "policy": "required",
+      "status": "pass"
+    },
+    {
+      "id": "test_infra",
+      "name": "Test infrastructure functional",
+      "platform": "linux",
+      "policy": "required",
+      "status": "pass"
+    },
+    {
+      "id": "temp_writable",
+      "name": "Temp directory writable",
+      "platform": "linux",
+      "policy": "required",
+      "status": "pass"
+    },
+    {
+      "id": "git_available",
+      "name": "Git CLI available",
+      "platform": "linux",
+      "policy": "required",
+      "status": "pass"
+    },
+    {
+      "id": "conformance_artifacts",
+      "name": "Conformance artifacts present",
+      "platform": "linux",
+      "policy": "required",
+      "status": "pass"
+    },
+    {
+      "id": "e2e_tui_support",
+      "name": "E2E TUI test support (tmux)",
+      "platform": "linux",
+      "policy": "required",
+      "status": "pass"
+    },
+    {
+      "id": "file_permissions",
+      "name": "POSIX file permission support",
+      "platform": "linux",
+      "policy": "informational",
+      "status": "pass"
+    },
+    {
+      "id": "extension_artifacts",
+      "name": "Extension test artifacts present",
+      "platform": "linux",
+      "policy": "required",
+      "status": "pass"
+    },
+    {
+      "id": "evidence_bundle",
+      "name": "Evidence bundle index present",
+      "platform": "linux",
+      "policy": "informational",
+      "status": "pass"
+    },
+    {
+      "id": "suite_classification",
+      "name": "Suite classification file present and valid",
+      "platform": "linux",
+      "policy": "required",
+      "status": "pass"
+    }
+  ],
+  "summary": {
+    "total_checks": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "unsupported": 0,
+    "required_pass": 8,
+    "required_total": 8,
+    "all_required_pass": true
+  }
+}

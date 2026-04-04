@@ -1,0 +1,519 @@
+{
+  "schema": "pi.dropin.parity_gap_ledger.v1",
+  "bead_id": "bd-13pqz",
+  "generated_at_utc": "2026-02-14T19:16:00Z",
+  "status": "active",
+  "baseline_reference": "docs/dropin-upstream-baseline.json",
+  "inventory_references": [
+    "docs/dropin-feature-inventory-matrix.json",
+    "docs/dropin-112-feature-inventory-matrix.md"
+  ],
+  "severity_scale": {
+    "critical": "Breaks strict drop-in behavior for existing integrators.",
+    "high": "Likely observable divergence in common workflows.",
+    "medium": "Narrower divergence, but still part of parity closure scope.",
+    "low": "Non-blocking mismatch or governance/documentation alignment."
+  },
+  "entries": [
+    {
+      "gap_id": "gap-sdk-contract-shape",
+      "priority_rank": 1,
+      "area": "sdk",
+      "mismatch_kind": "partial_contract_shape_diff",
+      "severity": "critical",
+      "sources": [
+        "docs/dropin-feature-inventory-matrix.json#row:mode.sdk.embedding",
+        "docs/dropin-feature-inventory-matrix.json#unknown:unknown-01-sdk-dropin-contract"
+      ],
+      "current_state": "sdk module exists, but TS createAgentSession/rpc-client contract shape is not fully mirrored",
+      "user_impact": "Embedding integrations cannot reliably swap TS Pi with Rust Pi without SDK adaptation.",
+      "owner_issue_primary": "bd-1it6z",
+      "owner_issue_supporting": [
+        "bd-c9usa",
+        "bd-2ibww",
+        "bd-3fbzn"
+      ],
+      "closure_path": [
+        "Define canonical SDK contract and required usage patterns in bd-1it6z.",
+        "Implement lifecycle + transport + streaming parity in bd-c9usa, bd-3fbzn, and bd-2ibww.",
+        "Validate with SDK conformance fixtures and transcript-based parity evidence."
+      ],
+      "verification_evidence": [
+        "SDK conformance results in bd-3ig1e and bd-2omnf",
+        "No adapter-layer deltas required for representative TS SDK usage",
+        "Contract diff report against pinned baseline in docs/dropin-upstream-baseline.json"
+      ],
+      "blocked_by": [
+        "bd-35t7i"
+      ]
+    },
+    {
+      "gap_id": "gap-cli-extension-flag-pass-through",
+      "priority_rank": 2,
+      "area": "cli",
+      "mismatch_kind": "partial_in_progress",
+      "severity": "critical",
+      "sources": [
+        "docs/dropin-feature-inventory-matrix.json#row:cli.extensions.dynamic_flags",
+        "docs/dropin-feature-inventory-matrix.json#unknown:unknown-02-extension-cli-flag-pass-through"
+      ],
+      "current_state": "two-pass unknown-flag pass-through behavior is in progress",
+      "user_impact": "Extension-registered CLI flags can fail or misparse, breaking extension invocation contracts.",
+      "owner_issue_primary": "bd-2cd9b",
+      "owner_issue_supporting": [
+        "bd-3meug"
+      ],
+      "closure_path": [
+        "Complete two-pass parsing for extension flags in bd-2cd9b.",
+        "Lock command/flag/subcommand parity completion in bd-3meug.",
+        "Add fixture tests covering mixed built-in + extension flag sets."
+      ],
+      "verification_evidence": [
+        "CLI parser tests with extension-registered unknown flags",
+        "Parity fixture for TS-compatible invocation strings",
+        "No regression across non-extension CLI paths"
+      ],
+      "blocked_by": []
+    },
+    {
+      "gap_id": "gap-json-auto-lifecycle-events",
+      "priority_rank": 3,
+      "area": "json-mode",
+      "mismatch_kind": "event_schema_and_ordering",
+      "severity": "high",
+      "sources": [
+        "docs/dropin-feature-inventory-matrix.json#row:json.events.auto_lifecycle",
+        "docs/dropin-112-feature-inventory-matrix.md#summary:agent-events-auto-compaction-auto-retry"
+      ],
+      "current_state": "base event variants were added via bd-2ilgm, but end-to-end schema/order parity still needs closure",
+      "user_impact": "Automation consuming JSON streams can mis-handle retries/compaction lifecycle transitions.",
+      "owner_issue_primary": "bd-2my4b",
+      "owner_issue_supporting": [
+        "bd-2ilgm",
+        "bd-38v5y"
+      ],
+      "closure_path": [
+        "Ensure event payload shape and ordering match TS behavior in bd-2my4b.",
+        "Align command-path triggers in bd-38v5y.",
+        "Publish replayable transcript evidence in JSON-mode fixture suites."
+      ],
+      "verification_evidence": [
+        "Golden JSON transcript diff with no semantic mismatch",
+        "Schema validation for auto_compaction_* and auto_retry_* events",
+        "Command/event integration test for retry and compaction toggles"
+      ],
+      "blocked_by": [
+        "bd-3eb4d"
+      ]
+    },
+    {
+      "gap_id": "gap-json-rpc-command-semantic-coverage",
+      "priority_rank": 4,
+      "area": "json-mode",
+      "mismatch_kind": "unverified_command_parity",
+      "severity": "critical",
+      "sources": [
+        "docs/dropin-112-feature-inventory-matrix.md#section:11-rpc-protocol-commands"
+      ],
+      "current_state": "multiple TS RPC commands are marked unverified in Rust matrix",
+      "user_impact": "RPC clients can hit missing or behaviorally divergent command semantics.",
+      "owner_issue_primary": "bd-38v5y",
+      "owner_issue_supporting": [
+        "bd-3eb4d",
+        "bd-2my4b"
+      ],
+      "closure_path": [
+        "Close command semantics parity in bd-38v5y.",
+        "Confirm CLI entrypoint/invocation compatibility in bd-3eb4d.",
+        "Backstop with schema+ordering verification in bd-2my4b."
+      ],
+      "verification_evidence": [
+        "Command-by-command RPC parity matrix with explicit pass/fail",
+        "Mirrored scenario runner output without semantic diffs",
+        "Regression tests for prompt/steer/follow_up/abort/get_state/compact and remaining RPC commands"
+      ],
+      "blocked_by": [
+        "bd-35t7i"
+      ]
+    },
+    {
+      "gap_id": "gap-json-tool-and-extension-ui-events",
+      "priority_rank": 5,
+      "area": "json-mode",
+      "mismatch_kind": "unverified_extension_ui_event_parity",
+      "severity": "high",
+      "sources": [
+        "docs/dropin-112-feature-inventory-matrix.md#section:11-rpc-events-responses",
+        "docs/dropin-112-feature-inventory-matrix.md#section:15-extension-api-surface-ui"
+      ],
+      "current_state": "tool execution event names and extension_ui_request/response round-trips are now validated by deterministic test evidence; parity closure tracked by bd-359pl",
+      "user_impact": "Extension-driven UX flows can diverge or fail in JSON/RPC integrations.",
+      "owner_issue_primary": "bd-359pl",
+      "owner_issue_supporting": [
+        "bd-2my4b",
+        "bd-38v5y"
+      ],
+      "closure_path": [
+        "Match JSON-mode tool and extension UI event behavior in bd-359pl.",
+        "Align envelope/schema expectations with bd-2my4b.",
+        "Verify command-path dispatch coverage alongside bd-38v5y."
+      ],
+      "verification_evidence": [
+        "tests/e2e_rpc.rs: extension_ui_request/response round-trips, id/requestId handling, and negative-path coverage",
+        "tests/json_mode_parity.rs: tool_execution_start/update/end schema + event type assertions",
+        "legacy_pi_mono_code/pi-mono/packages/agent/src/types.ts: upstream tool_execution_* event contract"
+      ],
+      "blocked_by": []
+    },
+    {
+      "gap_id": "gap-cli-slash-command-surface",
+      "priority_rank": 6,
+      "area": "cli",
+      "mismatch_kind": "unverified_command_surface",
+      "severity": "high",
+      "sources": [
+        "docs/dropin-112-feature-inventory-matrix.md#section:5-slash-commands"
+      ],
+      "current_state": "multiple slash commands are marked unknown for Rust behavior parity",
+      "user_impact": "Interactive users can encounter command-level drift or missing UX paths.",
+      "owner_issue_primary": "bd-3meug",
+      "owner_issue_supporting": [
+        "bd-35t7i"
+      ],
+      "closure_path": [
+        "Expand command parity matrix in bd-3meug with explicit implemented/missing behavior.",
+        "Decide strict parity vs intentional divergence per command in bd-35t7i.",
+        "Back with interactive regression scenarios and command snapshots."
+      ],
+      "verification_evidence": [
+        "Slash-command conformance checklist with evidence per command",
+        "Interactive transcript fixtures for high-value commands",
+        "Documented and approved intentional divergences"
+      ],
+      "blocked_by": [
+        "bd-13pqz"
+      ]
+    },
+    {
+      "gap_id": "gap-extension-hook-lifecycle-coverage",
+      "priority_rank": 7,
+      "area": "extensions",
+      "mismatch_kind": "unverified_hook_parity",
+      "severity": "high",
+      "sources": [
+        "docs/dropin-112-feature-inventory-matrix.md#section:10-extension-events-hook-points"
+      ],
+      "current_state": "session/agent/user hook points have unresolved parity verification",
+      "user_impact": "Extensions relying on lifecycle hooks can behave differently between TS and Rust.",
+      "owner_issue_primary": "bd-2xalc",
+      "owner_issue_supporting": [
+        "bd-3meug",
+        "bd-359pl"
+      ],
+      "closure_path": [
+        "Define hook contract coverage plan under integration parity in bd-2xalc.",
+        "Tie command-triggered hook points to CLI closure in bd-3meug.",
+        "Validate extension UI + tool event interactions in bd-359pl."
+      ],
+      "verification_evidence": [
+        "Lifecycle hook invocation matrix (before/after/cancellable paths)",
+        "Cross-implementation hook ordering traces",
+        "Extension fixture suite with deterministic assertions"
+      ],
+      "blocked_by": [
+        "bd-3meug",
+        "bd-359pl"
+      ]
+    },
+    {
+      "gap_id": "gap-tool-io-limit-divergence",
+      "priority_rank": 8,
+      "area": "tools",
+      "mismatch_kind": "default_limit_divergence",
+      "severity": "high",
+      "sources": [
+        "docs/dropin-112-feature-inventory-matrix.md#section:4-built-in-tools"
+      ],
+      "current_state": "read/tool byte limits include at least one documented TS vs Rust divergence (1MB vs 50KB default max bytes)",
+      "user_impact": "Same tool call can truncate or fail differently, breaking automation assumptions.",
+      "owner_issue_primary": "bd-2xalc",
+      "owner_issue_supporting": [
+        "bd-b4s4l",
+        "bd-35t7i"
+      ],
+      "closure_path": [
+        "Decide canonical drop-in default and compatibility guardrails in bd-35t7i.",
+        "Implement/tool-wire alignment under integration parity in bd-2xalc.",
+        "Capture cross-size behavioral tests for truncation/error parity."
+      ],
+      "verification_evidence": [
+        "Tool conformance fixtures at threshold boundaries",
+        "Before/after diff of truncation metadata and error envelopes",
+        "Documented default values in parity spec"
+      ],
+      "blocked_by": [
+        "bd-35t7i"
+      ]
+    },
+    {
+      "gap_id": "gap-config-defaults-compaction-retry",
+      "priority_rank": 9,
+      "area": "config",
+      "mismatch_kind": "default_value_divergence",
+      "severity": "high",
+      "sources": [
+        "docs/dropin-112-feature-inventory-matrix.md#section:6-configuration-settings-compaction-retry"
+      ],
+      "current_state": "documented default differences for compaction reserve tokens and retry backoff values",
+      "user_impact": "Out-of-the-box behavior differs even with equivalent user config.",
+      "owner_issue_primary": "bd-uuf2z",
+      "owner_issue_supporting": [
+        "bd-b4s4l"
+      ],
+      "closure_path": [
+        "Audit default provenance and precedence in bd-uuf2z.",
+        "Align runtime behavior in session/compaction paths via bd-b4s4l.",
+        "Pin expected defaults in spec docs and tests."
+      ],
+      "verification_evidence": [
+        "Config precedence tests proving TS-equivalent defaults",
+        "Session behavior diffs for retry/compaction with unset config",
+        "Updated settings parity table"
+      ],
+      "blocked_by": []
+    },
+    {
+      "gap_id": "gap-config-ui-editor-knobs",
+      "priority_rank": 10,
+      "area": "config",
+      "mismatch_kind": "partial_some_not_fully_wired",
+      "severity": "medium",
+      "sources": [
+        "docs/dropin-feature-inventory-matrix.json#row:config.ui_editor"
+      ],
+      "current_state": "UI/editor-related knobs are present but not fully wired or parity-verified",
+      "user_impact": "Users can observe config keys that do not fully affect behavior as expected.",
+      "owner_issue_primary": "bd-uuf2z",
+      "owner_issue_supporting": [
+        "bd-3meug"
+      ],
+      "closure_path": [
+        "Create per-knob parity checklist and implementation status in bd-uuf2z.",
+        "Connect any CLI-triggered behaviors in bd-3meug.",
+        "Add integration tests for representative UI/editor knob effects."
+      ],
+      "verification_evidence": [
+        "Knob-to-behavior trace table",
+        "Automated tests for quietStartup/collapseChangelog/doubleEscapeAction/editorPaddingX and related keys",
+        "No-op knob detection report reduced to zero"
+      ],
+      "blocked_by": []
+    },
+    {
+      "gap_id": "gap-config-markdown-indent",
+      "priority_rank": 11,
+      "area": "config",
+      "mismatch_kind": "missing_or_unverified_in_rust",
+      "severity": "medium",
+      "sources": [
+        "docs/dropin-feature-inventory-matrix.json#row:config.markdown",
+        "docs/dropin-feature-inventory-matrix.json#unknown:unknown-03-markdown-code-block-indent"
+      ],
+      "current_state": "markdown.codeBlockIndent is unresolved for parity classification/implementation",
+      "user_impact": "Markdown rendering/output formatting may differ unexpectedly.",
+      "owner_issue_primary": "bd-uuf2z",
+      "owner_issue_supporting": [
+        "bd-3cqgd"
+      ],
+      "closure_path": [
+        "Confirm TS semantics for markdown.codeBlockIndent in parity notes.",
+        "Implement or explicitly document non-support with certification sign-off.",
+        "Add snapshot tests for markdown output formatting."
+      ],
+      "verification_evidence": [
+        "Config load/serialize tests for markdown.codeBlockIndent",
+        "Markdown rendering snapshots with varied indentation settings",
+        "Decision logged in drop-in spec artifacts"
+      ],
+      "blocked_by": []
+    },
+    {
+      "gap_id": "gap-env-pi-ai-antigravity-version",
+      "priority_rank": 12,
+      "area": "config_and_env",
+      "mismatch_kind": "unknown_needs_gap_classification",
+      "severity": "medium",
+      "sources": [
+        "docs/dropin-feature-inventory-matrix.json#row:env.contracts.pi_ai_antigravity_version",
+        "docs/dropin-feature-inventory-matrix.json#unknown:unknown-04-gap-ledger-reconciliation"
+      ],
+      "current_state": "PI_AI_ANTIGRAVITY_VERSION semantics are not fully classified in Rust parity surface",
+      "user_impact": "Environment-driven behavior can diverge for advanced provider/integration flows.",
+      "owner_issue_primary": "bd-uuf2z",
+      "owner_issue_supporting": [
+        "bd-3cqgd",
+        "bd-hx9ks"
+      ],
+      "closure_path": [
+        "Classify whether variable is required, optional passthrough, or deprecated for strict parity.",
+        "Implement equivalent handling or an explicit compatibility policy.",
+        "Document final semantics and migration notes."
+      ],
+      "verification_evidence": [
+        "Env precedence tests with/without PI_AI_ANTIGRAVITY_VERSION",
+        "Provider initialization trace showing consistent behavior",
+        "Documentation alignment in drop-in spec docs"
+      ],
+      "blocked_by": []
+    },
+    {
+      "gap_id": "gap-provider-support-verification",
+      "priority_rank": 13,
+      "area": "providers",
+      "mismatch_kind": "unverified_provider_parity",
+      "severity": "medium",
+      "sources": [
+        "docs/dropin-112-feature-inventory-matrix.md#section:8-providers",
+        "docs/dropin-112-feature-inventory-matrix.md#section:7-environment-variables"
+      ],
+      "current_state": "several providers and env variables are marked unknown for parity verification",
+      "user_impact": "Provider selection/auth behavior may differ for long-tail integrations.",
+      "owner_issue_primary": "bd-2xalc",
+      "owner_issue_supporting": [
+        "bd-uuf2z"
+      ],
+      "closure_path": [
+        "Verify provider availability and auth/env wiring against pinned TS baseline.",
+        "Classify each unknown as implemented, intentionally unsupported, or missing.",
+        "Route missing support to implementation beads or explicit compatibility waivers."
+      ],
+      "verification_evidence": [
+        "Provider capability table with executable checks",
+        "Env var ingestion tests per provider family",
+        "Updated parity docs with explicit support classifications"
+      ],
+      "blocked_by": []
+    },
+    {
+      "gap_id": "gap-rust-superset-governance",
+      "priority_rank": 14,
+      "area": "governance",
+      "mismatch_kind": "superset_behavior_policy",
+      "severity": "low",
+      "sources": [
+        "docs/dropin-feature-inventory-matrix.json#row:cli.flags.rust_only",
+        "docs/dropin-feature-inventory-matrix.json#row:cli.subcommands.rust_only",
+        "docs/dropin-feature-inventory-matrix.json#row:config.rust_additional_policy_knobs",
+        "docs/dropin-112-feature-inventory-matrix.md#summary:features-in-rust-not-in-ts"
+      ],
+      "current_state": "Rust includes superset capabilities not present in TS baseline",
+      "user_impact": "Not a direct drop-in blocker if defaults remain compatible, but can confuse certification claims.",
+      "owner_issue_primary": "bd-35t7i",
+      "owner_issue_supporting": [
+        "bd-hx9ks",
+        "bd-3cqgd"
+      ],
+      "closure_path": [
+        "Define policy for acceptable supersets under strict drop-in certification.",
+        "Ensure supersets are non-breaking and gated behind explicit opt-in where needed.",
+        "Align documentation language and certification criteria."
+      ],
+      "verification_evidence": [
+        "Certification contract explicitly handling supersets",
+        "Compatibility docs with clear default-behavior guarantees",
+        "No baseline regression when superset features are unused"
+      ],
+      "blocked_by": [
+        "bd-13pqz"
+      ]
+    }
+  ],
+  "coverage_mapping": {
+    "inventory_rows_requiring_ledger": [
+      {
+        "row_id": "mode.sdk.embedding",
+        "status": "partial_contract_shape_diff",
+        "ledger_gap_id": "gap-sdk-contract-shape"
+      },
+      {
+        "row_id": "cli.extensions.dynamic_flags",
+        "status": "partial_in_progress",
+        "ledger_gap_id": "gap-cli-extension-flag-pass-through"
+      },
+      {
+        "row_id": "json.events.auto_lifecycle",
+        "status": "in_progress_parity_hardening",
+        "ledger_gap_id": "gap-json-auto-lifecycle-events"
+      },
+      {
+        "row_id": "config.ui_editor",
+        "status": "partial_some_not_fully_wired",
+        "ledger_gap_id": "gap-config-ui-editor-knobs"
+      },
+      {
+        "row_id": "config.markdown",
+        "status": "missing_or_unverified_in_rust",
+        "ledger_gap_id": "gap-config-markdown-indent"
+      },
+      {
+        "row_id": "env.contracts.pi_ai_antigravity_version",
+        "status": "unknown_needs_gap_classification",
+        "ledger_gap_id": "gap-env-pi-ai-antigravity-version"
+      }
+    ],
+    "summary_divergence_items_requiring_ledger": [
+      {
+        "summary_item": "Agent events auto_compaction/auto_retry parity",
+        "ledger_gap_id": "gap-json-auto-lifecycle-events"
+      },
+      {
+        "summary_item": "Slash command parity unknowns",
+        "ledger_gap_id": "gap-cli-slash-command-surface"
+      },
+      {
+        "summary_item": "RPC command parity unknowns",
+        "ledger_gap_id": "gap-json-rpc-command-semantic-coverage"
+      },
+      {
+        "summary_item": "Extension hook-point parity unknowns",
+        "ledger_gap_id": "gap-extension-hook-lifecycle-coverage"
+      },
+      {
+        "summary_item": "Extension UI method parity unknowns",
+        "ledger_gap_id": "gap-json-tool-and-extension-ui-events"
+      },
+      {
+        "summary_item": "Provider support unknowns",
+        "ledger_gap_id": "gap-provider-support-verification"
+      },
+      {
+        "summary_item": "Config default divergences",
+        "ledger_gap_id": "gap-config-defaults-compaction-retry"
+      },
+      {
+        "summary_item": "Tool byte-limit divergence",
+        "ledger_gap_id": "gap-tool-io-limit-divergence"
+      }
+    ]
+  },
+  "rollup": {
+    "entry_count": 14,
+    "severity_counts": {
+      "critical": 3,
+      "high": 6,
+      "medium": 4,
+      "low": 1
+    },
+    "top_unblockers": [
+      "bd-35t7i",
+      "bd-3meug",
+      "bd-uuf2z",
+      "bd-2xalc"
+    ],
+    "notes": [
+      "All currently identified mismatches from inventory sources are mapped to explicit owner issues.",
+      "Closed enabling beads (bd-2ilgm, bd-2km0n) are retained as supporting references where they affected gap state.",
+      "Any new mismatch discovery should append a new ledger entry and update coverage_mapping."
+    ]
+  }
+}

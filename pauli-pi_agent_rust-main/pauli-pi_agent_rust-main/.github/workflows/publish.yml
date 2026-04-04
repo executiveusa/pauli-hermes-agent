@@ -1,0 +1,128 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g., v0.1.0)'
+        required: true
+        type: string
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      version: ${{ steps.tag.outputs.version }}
+    steps:
+      - name: Determine and validate tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          VERSION="${TAG#v}"
+
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
+            echo "Error: Version '$VERSION' does not match semver format"
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+  publish:
+    name: Publish to crates.io
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: ${{ !contains(needs.plan.outputs.tag, '-') }}
+    defaults:
+      run:
+        working-directory: pi_agent_rust
+        shell: bash
+    steps:
+      - name: Checkout pi_agent_rust
+        uses: actions/checkout@v4
+        with:
+          path: pi_agent_rust
+          fetch-depth: 0
+          ref: ${{ needs.plan.outputs.tag }}
+
+      - name: Checkout asupersync
+        uses: actions/checkout@v4
+        with:
+          repository: Dicklesworthstone/asupersync
+          path: asupersync
+          fetch-depth: 1
+
+      - name: Checkout rich_rust
+        uses: actions/checkout@v4
+        with:
+          repository: Dicklesworthstone/rich_rust
+          path: rich_rust
+          fetch-depth: 1
+
+      - name: Checkout charmed_rust
+        uses: actions/checkout@v4
+        with:
+          repository: Dicklesworthstone/charmed_rust
+          path: charmed_rust
+          fetch-depth: 1
+
+      - name: Checkout sqlmodel_rust
+        uses: actions/checkout@v4
+        with:
+          repository: Dicklesworthstone/sqlmodel_rust
+          path: sqlmodel_rust
+          fetch-depth: 1
+
+      - name: Install system deps (xcb) [linux]
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
+
+      - uses: dtolnay/rust-toolchain@nightly
+
+      - name: Verify version matches tag
+        run: |
+          cargo_version=$(grep '^version' Cargo.toml | head -1 | cut -d'"' -f2)
+          tag_version="${{ needs.plan.outputs.version }}"
+          if [[ "$cargo_version" != "$tag_version" ]]; then
+            echo "Version mismatch: Cargo.toml=$cargo_version, tag=$tag_version"
+            exit 1
+          fi
+          echo "Version verified: $cargo_version"
+
+      - name: Dry run publish
+        run: cargo publish --dry-run --locked
+
+      - name: Publish to crates.io
+        if: ${{ secrets.CARGO_REGISTRY_TOKEN != '' }}
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish --locked
+
+      - name: Summary
+        run: |
+          echo "## Crates.io Publish" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ -n "${{ secrets.CARGO_REGISTRY_TOKEN }}" ]]; then
+            echo "Published pi v${{ needs.plan.outputs.version }} to crates.io" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Skipped - CARGO_REGISTRY_TOKEN not configured" >> $GITHUB_STEP_SUMMARY
+          fi

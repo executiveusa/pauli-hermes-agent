@@ -1,0 +1,356 @@
+{
+  "schema": "pi.qa.coverage_baseline.v1",
+  "bead_id": "bd-1f42.8.1",
+  "status": "complete_with_partial_branch",
+  "generated_at": "2026-02-14T14:00:00Z",
+  "workspace": "/data/projects/pi_agent_rust",
+  "collection": {
+    "status": "partial_branch_via_per_file_export",
+    "blockers": [
+      "llvm-cov export SIGSEGV when processing branch coverage for all files at once (LLVM 22.1.0, nightly-2026-02-13). Root cause: upstream LLVM bug triggered by large coverage maps with branch instrumentation.",
+      "44 of 107 source files individually trigger SIGSEGV during branch export; 63 files export branch data successfully."
+    ],
+    "workaround": "Per-file llvm-cov export with -sources flag. Files that SIGSEGV individually are excluded from branch totals and use line/function-only fallback. Branch instrumentation is enabled via cargo llvm-cov --branch, and the profdata is generated with branch counters; only the export phase crashes for certain files.",
+    "deterministic_command_path": [
+      "Step 1: Build with branch instrumentation: CARGO_TARGET_DIR=/data/tmp/pi_agent_rust/cov cargo llvm-cov --lib --branch --ignore-run-fail --no-report",
+      "Step 2: For each src/*.rs file, run: llvm-cov export -format=text -instr-profile=PROFDATA -object OBJECT -sources FILE -summary-only",
+      "Step 3: Files that exit 0 have real branch metrics; files that exit 139 (SIGSEGV) use line/function from non-branch run",
+      "Step 4: Merge per-file summaries into combined baseline JSON"
+    ],
+    "successful_branch_command": "Per-file: llvm-cov export -format=text -instr-profile=$PROFDATA -object $OBJECT -sources $FILE -summary-only",
+    "successful_nonbranch_command": "CARGO_TARGET_DIR=/data/tmp/pi_agent_rust/cov_nobranch cargo llvm-cov --lib --json --summary-only --output-path cov_nobranch_result.json --ignore-run-fail",
+    "artifacts": {
+      "branch_ok_files_json": "target/branch_coverage_ok_files.json",
+      "nobranch_full_json": "target/cov_nobranch_result.json",
+      "merged_summary_json": "target/merged_coverage.json"
+    },
+    "branch_file_compatibility": {
+      "ok_count": 63,
+      "sigsegv_count": 44,
+      "sigsegv_files": [
+        "src/agent.rs", "src/bin/*.rs", "src/buffer_shim.rs", "src/connectors/http.rs",
+        "src/extension_dispatcher.rs", "src/extension_tools.rs", "src/http/*.rs",
+        "src/http_shim.rs", "src/interactive/ext_session.rs", "src/lib.rs", "src/main.rs",
+        "src/providers/anthropic.rs", "src/providers/azure.rs", "src/providers/bedrock.rs",
+        "src/providers/cohere.rs", "src/providers/gemini.rs", "src/providers/gitlab.rs",
+        "src/providers/openai.rs", "src/providers/openai_responses.rs", "src/providers/vertex.rs",
+        "src/rpc.rs", "src/session.rs", "src/session_sqlite.rs", "src/tools.rs"
+      ]
+    }
+  },
+  "summary": {
+    "line_pct": 79.08,
+    "branch_pct": 51.95,
+    "function_pct": 78.01,
+    "region_pct": 78.32,
+    "line_count": 121018,
+    "covered_line_count": 95706,
+    "uncovered_line_count": 25312,
+    "function_count": 10954,
+    "covered_function_count": 8545,
+    "uncovered_function_count": 2409,
+    "branch_count": 7984,
+    "covered_branch_count": 4148,
+    "branch_measurable_files": 63,
+    "branch_sigsegv_files": 44,
+    "notes": "Branch metrics are real measurements from 63 of 107 source files via per-file llvm-cov export workaround. The remaining 44 files trigger SIGSEGV in llvm-cov export and are excluded from branch totals (line/function still measured). Branch coverage of 51.95% represents a lower bound since unmeasurable files are not counted."
+  },
+  "critical_paths": [
+    {
+      "area": "agent_loop",
+      "paths": [
+        "src/agent.rs"
+      ],
+      "coverage": {
+        "line_pct": 79.57,
+        "branch_pct": 0.0,
+        "function_pct": 74.76,
+        "line_count": 3094,
+        "covered_line_count": 2462,
+        "uncovered_line_count": 632,
+        "function_count": 317,
+        "covered_function_count": 237,
+        "uncovered_function_count": 80,
+        "branch_count": 0,
+        "covered_branch_count": 0
+      },
+      "status": "baseline_captured_branch_sigsegv",
+      "branch_note": "src/agent.rs triggers SIGSEGV in llvm-cov export; branch metrics unavailable (numeric fallback values emitted as 0)"
+    },
+    {
+      "area": "tools",
+      "paths": [
+        "src/tools.rs"
+      ],
+      "coverage": {
+        "line_pct": 78.99,
+        "branch_pct": 0.0,
+        "function_pct": 76.90,
+        "line_count": 3032,
+        "covered_line_count": 2395,
+        "uncovered_line_count": 637,
+        "function_count": 407,
+        "covered_function_count": 313,
+        "uncovered_function_count": 94,
+        "branch_count": 0,
+        "covered_branch_count": 0
+      },
+      "status": "baseline_captured_branch_sigsegv",
+      "branch_note": "src/tools.rs triggers SIGSEGV in llvm-cov export; branch metrics unavailable (numeric fallback values emitted as 0)"
+    },
+    {
+      "area": "providers",
+      "paths": [
+        "src/provider.rs",
+        "src/providers/*.rs",
+        "src/providers/mod.rs"
+      ],
+      "coverage": {
+        "line_pct": 86.34,
+        "branch_pct": 69.0,
+        "function_pct": 83.31,
+        "line_count": 8949,
+        "covered_line_count": 7727,
+        "uncovered_line_count": 1222,
+        "function_count": 761,
+        "covered_function_count": 634,
+        "uncovered_function_count": 127,
+        "branch_count": 116,
+        "covered_branch_count": 80
+      },
+      "status": "baseline_captured_partial_branch",
+      "branch_note": "Branch data from src/provider.rs, src/providers/mod.rs, src/providers/copilot.rs only. Other provider files (anthropic, openai, gemini, cohere, azure, bedrock, gitlab, vertex, openai_responses) trigger SIGSEGV."
+    },
+    {
+      "area": "session",
+      "paths": [
+        "src/session.rs"
+      ],
+      "coverage": {
+        "line_pct": 80.50,
+        "branch_pct": 0.0,
+        "function_pct": 77.88,
+        "line_count": 2882,
+        "covered_line_count": 2320,
+        "uncovered_line_count": 562,
+        "function_count": 330,
+        "covered_function_count": 257,
+        "uncovered_function_count": 73,
+        "branch_count": 0,
+        "covered_branch_count": 0
+      },
+      "status": "baseline_captured_branch_sigsegv",
+      "branch_note": "src/session.rs triggers SIGSEGV in llvm-cov export; branch metrics unavailable (numeric fallback values emitted as 0)"
+    },
+    {
+      "area": "extensions",
+      "paths": [
+        "src/extensions.rs",
+        "src/extension_dispatcher.rs",
+        "src/extensions_js.rs"
+      ],
+      "coverage": {
+        "line_pct": 82.53,
+        "branch_pct": 57.35,
+        "function_pct": 73.53,
+        "line_count": 38663,
+        "covered_line_count": 31913,
+        "uncovered_line_count": 6750,
+        "function_count": 2293,
+        "covered_function_count": 1686,
+        "uncovered_function_count": 607,
+        "branch_count": 2722,
+        "covered_branch_count": 1561
+      },
+      "status": "baseline_captured_partial_branch",
+      "branch_note": "Branch data from src/extensions.rs and src/extensions_js.rs. src/extension_dispatcher.rs triggers SIGSEGV."
+    }
+  ],
+  "critical_gap_matrix": [
+    {
+      "area": "agent_loop",
+      "current": {
+        "line_pct": 79.57336780866193,
+        "function_pct": 74.76340694006309
+      },
+      "target": {
+        "line_pct": 85.0,
+        "function_pct": 80.0
+      },
+      "delta_to_target": {
+        "line_pct": 5.42663219133807,
+        "function_pct": 5.23659305993691
+      },
+      "blocker": "Abort/retry/interrupt control-flow paths remain under-covered; branch-depth signal is still blocked by llvm-cov branch-summary SIGSEGV.",
+      "owning_bead_id": "bd-1f42.8.4.1"
+    },
+    {
+      "area": "tools",
+      "current": {
+        "line_pct": 78.99076517150395,
+        "function_pct": 76.90417690417691
+      },
+      "target": {
+        "line_pct": 85.0,
+        "function_pct": 82.0
+      },
+      "delta_to_target": {
+        "line_pct": 6.00923482849605,
+        "function_pct": 5.09582309582309
+      },
+      "blocker": "Tool error-path and threshold contract cases are still incomplete; branch-depth signal is blocked by llvm-cov branch-summary SIGSEGV.",
+      "owning_bead_id": "bd-1f42.8.4.1"
+    },
+    {
+      "area": "providers",
+      "current": {
+        "line_pct": 86.34484299921779,
+        "function_pct": 83.311432325887
+      },
+      "target": {
+        "line_pct": 90.0,
+        "function_pct": 88.0
+      },
+      "delta_to_target": {
+        "line_pct": 3.6551570007822096,
+        "function_pct": 4.688567674113001
+      },
+      "blocker": "Provider routing and adapter coverage still misses key normalization/auth permutations across provider families.",
+      "owning_bead_id": "bd-1f42.8.4.2"
+    },
+    {
+      "area": "session",
+      "current": {
+        "line_pct": 80.49965301873699,
+        "function_pct": 77.87878787878788
+      },
+      "target": {
+        "line_pct": 85.0,
+        "function_pct": 82.0
+      },
+      "delta_to_target": {
+        "line_pct": 4.500346981263014,
+        "function_pct": 4.121212121212125
+      },
+      "blocker": "Interruption/replay/index recovery paths remain shallow relative to target threshold depth.",
+      "owning_bead_id": "bd-1f42.8.4.2"
+    },
+    {
+      "area": "extensions",
+      "current": {
+        "line_pct": 85.01170219495224,
+        "function_pct": 73.5281290885303
+      },
+      "target": {
+        "line_pct": 88.0,
+        "function_pct": 80.0
+      },
+      "delta_to_target": {
+        "line_pct": 2.988297805047758,
+        "function_pct": 6.471870911469704
+      },
+      "blocker": "Dispatcher/runtime/JS bridge has the largest remaining uncovered function surface and needs targeted non-mock expansion.",
+      "owning_bead_id": "bd-1f42.8.4.3"
+    }
+  ],
+  "risk_ranked_gap_backlog": [
+    {
+      "rank": 1,
+      "gap": "Extensions critical-path function coverage deficit",
+      "severity": "critical",
+      "impact": "Largest uncovered surface in extension runtime increases risk of regressions in policy gating, host-call dispatch, and JS bridge behavior.",
+      "reproducibility": "high",
+      "target_test_type": "extension_fixtures+conformance+integration",
+      "evidence": {
+        "critical_path": "extensions",
+        "uncovered_line_count": 4739,
+        "uncovered_function_count": 607
+      },
+      "mapped_issue_id": "bd-1f42.8.4.3"
+    },
+    {
+      "rank": 2,
+      "gap": "Provider routing and adapter baseline gaps",
+      "severity": "high",
+      "impact": "Provider regressions can break model routing, auth handling, and tool-call normalization across integrations.",
+      "reproducibility": "high",
+      "target_test_type": "contract+conformance+smoke_e2e",
+      "evidence": {
+        "critical_path": "providers",
+        "uncovered_line_count": 1222,
+        "uncovered_function_count": 127
+      },
+      "mapped_issue_id": "bd-1f42.8.4.2"
+    },
+    {
+      "rank": 3,
+      "gap": "Agent loop orchestration uncovered branches of control flow",
+      "severity": "high",
+      "impact": "Missed abort/retry/interrupt paths can cause incorrect run termination and tool lifecycle inconsistencies.",
+      "reproducibility": "medium",
+      "target_test_type": "scenario_e2e+soak",
+      "evidence": {
+        "critical_path": "agent_loop",
+        "uncovered_line_count": 632,
+        "uncovered_function_count": 80
+      },
+      "mapped_issue_id": "bd-1f42.8.4.1"
+    },
+    {
+      "rank": 4,
+      "gap": "Tools execution/error-path threshold definition incomplete",
+      "severity": "high",
+      "impact": "Missing explicit non-mock thresholds weakens gate quality for file/shell/search tool reliability.",
+      "reproducibility": "high",
+      "target_test_type": "unit+integration_policy",
+      "evidence": {
+        "critical_path": "tools",
+        "uncovered_line_count": 637,
+        "uncovered_function_count": 94
+      },
+      "mapped_issue_id": "bd-1f42.8.4.1"
+    },
+    {
+      "rank": 5,
+      "gap": "Session persistence reliability coverage depth",
+      "severity": "medium",
+      "impact": "Uncovered persistence paths can produce replay/index drift under long-running or interrupted sessions.",
+      "reproducibility": "medium",
+      "target_test_type": "soak+recovery_e2e",
+      "evidence": {
+        "critical_path": "session",
+        "uncovered_line_count": 562,
+        "uncovered_function_count": 73
+      },
+      "mapped_issue_id": "bd-1f42.8.4.2"
+    },
+    {
+      "rank": 6,
+      "gap": "Branch metrics partially available via per-file export workaround",
+      "severity": "low",
+      "impact": "63 of 107 source files have real branch metrics (51.95%). Remaining 44 files trigger SIGSEGV in llvm-cov export and are excluded from branch totals. Full branch coverage requires upstream LLVM fix.",
+      "reproducibility": "high",
+      "target_test_type": "coverage_infrastructure",
+      "evidence": {
+        "branch_pct": 51.95,
+        "branch_count": 7984,
+        "covered_branch_count": 4148,
+        "measurable_files": 63,
+        "sigsegv_files": 44,
+        "failure_mode": "llvm-cov export SIGSEGV for specific files with large/complex coverage maps",
+        "workaround": "per_file_export_with_sources_flag"
+      },
+      "mapped_issue_id": "bd-1f42.1.5"
+    }
+  ],
+  "handoff": {
+    "owner": "RusticPeak",
+    "resolved_by": "context-takeover-session",
+    "resolution_date": "2026-02-14",
+    "next_actions": [
+      "Per-file llvm-cov export workaround is now the deterministic command path for branch metrics. 63/107 files emit real branch data (51.95% coverage).",
+      "To improve branch coverage on SIGSEGV files: monitor upstream LLVM nightly for fix, or investigate if specific Rust codegen patterns (large match arms, complex async transforms) are the trigger.",
+      "Consider filing upstream LLVM bug with minimal reproduction case extracted from the SIGSEGV files."
+    ]
+  }
+}

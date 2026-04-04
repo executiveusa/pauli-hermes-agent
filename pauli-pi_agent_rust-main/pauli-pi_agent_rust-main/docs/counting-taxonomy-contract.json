@@ -1,0 +1,58 @@
+{
+  "schema": "pi.qa.counting_taxonomy_contract.v1",
+  "taxonomy_schema": "pi.qa.counting_taxonomy.v1",
+  "contract_version": "1.0.0",
+  "description": "Mandatory counting taxonomy for performance and parity claims. Every reported count must include explicit granularity labels and tool provenance so comparisons are auditable and side-by-side.",
+  "required_dimensions": {
+    "loc": {
+      "required_granularity_labels": [
+        "loc_raw_lines",
+        "loc_logical_lines"
+      ],
+      "comparison_mode": "side_by_side",
+      "notes": [
+        "Raw and logical lines must be reported together.",
+        "Single-number LOC claims without granularity are invalid."
+      ]
+    },
+    "providers": {
+      "required_granularity_labels": [
+        "provider_canonical_ids",
+        "provider_alias_ids",
+        "provider_families"
+      ],
+      "comparison_mode": "side_by_side",
+      "notes": [
+        "Provider breadth claims must distinguish canonical IDs, aliases, and family-level groupings."
+      ]
+    },
+    "extensions": {
+      "required_granularity_labels": [
+        "extension_official_subset",
+        "extension_community_subset",
+        "extension_full_corpus"
+      ],
+      "comparison_mode": "side_by_side",
+      "notes": [
+        "Extension claims must show official, community, and full corpus counts together."
+      ]
+    }
+  },
+  "required_metric_fields": [
+    "metric_key",
+    "granularity_label",
+    "value",
+    "unit",
+    "tool_provenance"
+  ],
+  "required_tool_provenance_fields": [
+    "source",
+    "command_signature"
+  ],
+  "validation_policies": {
+    "missing_granularity_label": "fail",
+    "missing_provenance": "fail",
+    "missing_required_dimension": "fail",
+    "missing_required_label": "fail"
+  }
+}

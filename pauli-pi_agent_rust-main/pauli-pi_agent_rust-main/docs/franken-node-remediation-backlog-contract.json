@@ -1,0 +1,121 @@
+{
+  "schema": "pi.frankennode.remediation_backlog_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.16",
+  "support_bead_ids": [],
+  "status": "active_blocking_policy",
+  "effective_date_utc": "2026-02-17T10:00:00Z",
+  "scope": {
+    "target_project_root": "/dp/franken_node",
+    "source_project_root": "/data/projects/pi_agent_rust",
+    "objective": "Turn real-world compatibility failures into ranked remediation backlog with reproducible artifacts and user-impact prioritization."
+  },
+  "telemetry_ingestion": {
+    "supported_sources": [
+      "compatibility_doctor_reports",
+      "shadow_canary_divergence_events",
+      "benchmark_gate_failures",
+      "user_filed_issues"
+    ],
+    "required_fields_per_event": [
+      "source_id",
+      "timestamp_utc",
+      "package_name",
+      "failure_category",
+      "severity",
+      "reproduction_context"
+    ],
+    "invariants": [
+      "All ingested events are deduplicated by (package_name, failure_category) before ranking",
+      "Events without reproduction_context are flagged but not discarded",
+      "Ingestion pipeline processes events within 60 seconds of receipt"
+    ]
+  },
+  "prioritization_model": {
+    "ranking_dimensions": [
+      {
+        "dimension_id": "user_impact",
+        "weight": 0.4,
+        "description": "Number of distinct projects affected by this failure"
+      },
+      {
+        "dimension_id": "severity",
+        "weight": 0.3,
+        "description": "Failure severity: blocked > action_required > warn"
+      },
+      {
+        "dimension_id": "fix_complexity",
+        "weight": 0.15,
+        "description": "Estimated effort to remediate (inverse: lower complexity = higher priority)"
+      },
+      {
+        "dimension_id": "ecosystem_centrality",
+        "weight": 0.15,
+        "description": "How many downstream packages depend on the failing package"
+      }
+    ],
+    "invariants": [
+      "Dimension weights sum to 1.0",
+      "Ranking is deterministic: same inputs always produce same ordering",
+      "Blocked-severity items always rank above action_required regardless of other dimensions",
+      "Ranking recalculates on every new telemetry ingestion batch"
+    ]
+  },
+  "backlog_artifact": {
+    "format": "structured_json",
+    "required_fields_per_item": [
+      "backlog_item_id",
+      "package_name",
+      "failure_category",
+      "severity",
+      "priority_score",
+      "affected_project_count",
+      "reproduction_command",
+      "suggested_fix_type",
+      "tracking_bead_id"
+    ],
+    "output_path": "tests/full_suite_gate/franken_node_remediation_backlog.json",
+    "invariants": [
+      "Backlog is sorted by priority_score descending",
+      "Every item has a reproducible reproduction_command",
+      "Every item references a tracking_bead_id for resolution tracking",
+      "Backlog size is bounded (default: top 500 items)"
+    ]
+  },
+  "automation": {
+    "auto_triage_rules": [
+      {
+        "rule_id": "native_addon_blocked",
+        "condition": "failure_category == 'native_addon' AND severity == 'blocked'",
+        "action": "create_tracking_bead_with_label('native-addon', 'blocked')"
+      },
+      {
+        "rule_id": "api_gap_action_required",
+        "condition": "failure_category == 'unsupported_api' AND severity == 'action_required'",
+        "action": "create_tracking_bead_with_label('api-gap', 'action-required')"
+      }
+    ],
+    "invariants": [
+      "Auto-triage rules fire only after human-defined threshold (default: 5 reports for same item)",
+      "Auto-created beads include full telemetry context and reproduction steps",
+      "No auto-triage action modifies user code or configuration"
+    ]
+  },
+  "release_blockers": [
+    "prioritization model produces non-deterministic rankings",
+    "backlog item missing reproduction_command",
+    "auto-triage fires without meeting minimum report threshold",
+    "telemetry ingestion drops events without audit trail",
+    "blocked-severity items ranked below action_required items"
+  ],
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.12",
+      "bd-3ar8v.7.13"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-migration-assistant-contract.json",
+      "docs/franken-node-benchmark-resource-gate-contract.json"
+    ]
+  }
+}

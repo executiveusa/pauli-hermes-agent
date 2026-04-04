@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "test_name": "verify_vertex_tool_call_single",
+  "recorded_at": "2026-02-10T17:12:54.856Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://us-central1-aiplatform.googleapis.com/v1/projects/verify-project/locations/us-central1/publishers/google/models/gemini-2.0-flash:streamGenerateContent",
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "text/event-stream"
+          ],
+          [
+            "Authorization",
+            "Bearer [REDACTED]"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "Content-Type",
+            "text/event-stream"
+          ]
+        ],
+        "body_chunks": [
+          "data: {\"candidates\":[{\"content\":{\"parts\":[{\"functionCall\":{\"args\":{\"text\":\"verification test\"},\"name\":\"echo\"}}],\"role\":\"model\"},\"finishReason\":\"STOP\"}],\"usageMetadata\":{\"candidatesTokenCount\":15,\"promptTokenCount\":25,\"totalTokenCount\":40}}\n\n"
+        ]
+      }
+    }
+  ]
+}

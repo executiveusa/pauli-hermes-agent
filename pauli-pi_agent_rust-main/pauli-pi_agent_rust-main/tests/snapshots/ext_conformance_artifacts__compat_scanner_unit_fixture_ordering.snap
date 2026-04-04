@@ -1,0 +1,116 @@
+---
+source: tests/ext_conformance_artifacts.rs
+assertion_line: 78
+expression: text
+---
+{
+  "schema": "pi.ext.compat_ledger.v1",
+  "capabilities": [
+    {
+      "capability": "env",
+      "reason": "process.env",
+      "evidence": [
+        {
+          "file": "sub/a.ts",
+          "line": 2,
+          "column": 1,
+          "snippet": "process.env.PATH;"
+        }
+      ],
+      "remediation": "Declare `env` capability (scoped) or avoid reading host env vars."
+    },
+    {
+      "capability": "exec",
+      "reason": "import:child_process",
+      "evidence": [
+        {
+          "file": "sub/a.ts",
+          "line": 1,
+          "column": 24,
+          "snippet": "import { spawn } from 'child_process';"
+        }
+      ],
+      "remediation": "Extc rewrites to `pi:node/child_process`; declare `exec` or use `pi.exec(...)`."
+    },
+    {
+      "capability": "read",
+      "reason": "import:fs",
+      "evidence": [
+        {
+          "file": "b.ts",
+          "line": 1,
+          "column": 17,
+          "snippet": "import fs from 'fs';"
+        }
+      ],
+      "remediation": "Extc rewrites to `pi:node/fs`; declare `read`/`write` capabilities or use `pi.tool(...)` directly."
+    },
+    {
+      "capability": "read",
+      "reason": "pi.tool(read)",
+      "evidence": [
+        {
+          "file": "b.ts",
+          "line": 2,
+          "column": 10,
+          "snippet": "pi.tool('read', {});"
+        }
+      ]
+    },
+    {
+      "capability": "write",
+      "reason": "import:fs",
+      "evidence": [
+        {
+          "file": "b.ts",
+          "line": 1,
+          "column": 17,
+          "snippet": "import fs from 'fs';"
+        }
+      ],
+      "remediation": "Extc rewrites to `pi:node/fs`; declare `read`/`write` capabilities or use `pi.tool(...)` directly."
+    }
+  ],
+  "rewrites": [
+    {
+      "from": "child_process",
+      "to": "pi:node/child_process",
+      "evidence": [
+        {
+          "file": "sub/a.ts",
+          "line": 1,
+          "column": 24,
+          "snippet": "import { spawn } from 'child_process';"
+        }
+      ]
+    },
+    {
+      "from": "fs",
+      "to": "pi:node/fs",
+      "evidence": [
+        {
+          "file": "b.ts",
+          "line": 1,
+          "column": 17,
+          "snippet": "import fs from 'fs';"
+        }
+      ]
+    }
+  ],
+  "forbidden": [],
+  "flagged": [
+    {
+      "rule": "flagged_api",
+      "message": "new Function(...)",
+      "evidence": [
+        {
+          "file": "b.ts",
+          "line": 3,
+          "column": 1,
+          "snippet": "new Function('return 1');"
+        }
+      ],
+      "remediation": "Avoid dynamic code generation when possible; prefer static bundling. If required, ensure the function body is a literal and keep it minimal."
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "schema": "pi.provider_setup_guide.v1",
+  "bead_id": "bd-3uqg.11.9.7",
+  "provider_id": "alibaba",
+  "canonical_provider_id": "alibaba",
+  "last_verified_utc": "2026-02-13T10:00:00Z",
+
+  "quick_start": {
+    "description": "Qwen (Alibaba DashScope) provides two Pi entries: alibaba (international/Singapore) and alibaba-cn (China/Beijing). Uses OpenAI-compatible Chat Completions API with critical streaming+tools limitation.",
+    "auth_env": "DASHSCOPE_API_KEY",
+    "base_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+    "api_type": "openai-completions",
+    "minimal_config": {
+      "steps": [
+        "1. Get an API key from https://dashscope.console.aliyun.com/apiKey",
+        "2. Export: export DASHSCOPE_API_KEY=sk-...",
+        "3. Run: pi --provider alibaba --model qwen-plus"
+      ],
+      "example_env": {
+        "DASHSCOPE_API_KEY": "sk-your_api_key_here"
+      }
+    },
+    "advanced_config": {
+      "description": "Use reasoning models or vision models with explicit tool handling.",
+      "example_env": {
+        "DASHSCOPE_API_KEY": "sk-your_api_key_here",
+        "QWEN_API_KEY": "sk-alternate_key"
+      },
+      "example_cli_options": [
+        "pi --provider alibaba --model qwen-max          # Most capable general model",
+        "pi --provider alibaba --model qwen3-coder-plus  # Specialized for code",
+        "pi --provider alibaba-cn --model qwen-plus      # China endpoint"
+      ],
+      "notes": [
+        "QWEN_API_KEY is only used as fallback for alibaba (intl); not for alibaba-cn.",
+        "US endpoint (dashscope-us.aliyuncs.com) not yet registered as separate provider.",
+        "stream_options.include_usage=true is needed to get token counts in final streaming chunk."
+      ]
+    }
+  },
+
+  "caveats": [
+    {
+      "id": "qwen-cav-001",
+      "severity": "critical",
+      "summary": "Tool calling CANNOT be combined with streaming",
+      "detail": "When tools are defined, stream must be set to false. The current OpenAIProvider hardcodes stream=true (src/providers/openai.rs line 139), so tool-calling turns will produce incorrect results. A non-streaming fallback for tool-call turns needs to be added as a future enhancement.",
+      "test_evidence": "docs/provider-qwen-capability-profile.json spec-003",
+      "workaround": "Avoid tool-calling models with Qwen until the non-streaming fallback is implemented."
+    },
+    {
+      "id": "qwen-cav-002",
+      "severity": "warning",
+      "summary": "Tool calling only on 4 specific models",
+      "detail": "Tool calling is only supported on qwen-turbo, qwen-plus, qwen-max, and qwen3-coder-plus. Other models will return errors if tools are provided.",
+      "test_evidence": "docs/provider-qwen-capability-profile.json spec-004"
+    },
+    {
+      "id": "qwen-cav-003",
+      "severity": "warning",
+      "summary": "Two distinct 429 error categories",
+      "detail": "Qwen returns 429 for both rate limiting (429/qps - retryable) and quota exhaustion (429/quota - non-retryable). Must check error.code field to distinguish.",
+      "test_evidence": "docs/provider-qwen-capability-profile.json spec-005"
+    },
+    {
+      "id": "qwen-cav-004",
+      "severity": "info",
+      "summary": "Tool choice limited to auto/none",
+      "detail": "Only tool_choice auto and none supported. required is NOT available. Parallel tool calls default false.",
+      "test_evidence": "docs/provider-qwen-capability-profile.json"
+    },
+    {
+      "id": "qwen-cav-005",
+      "severity": "info",
+      "summary": "logprobs returns null, system_fingerprint returns empty string",
+      "detail": "These OpenAI-compatible fields are technically present but return null/empty. Do not rely on them.",
+      "test_evidence": "docs/provider-qwen-capability-profile.json spec-003"
+    },
+    {
+      "id": "qwen-cav-006",
+      "severity": "info",
+      "summary": "Function name constraints stricter than OpenAI",
+      "detail": "Function names must be letters, digits, underscores, or hyphens only, max 64 characters.",
+      "test_evidence": "docs/provider-qwen-capability-profile.json"
+    }
+  ],
+
+  "troubleshooting": [
+    {
+      "symptom": "HTTP 401 Invalid API key",
+      "cause": "DASHSCOPE_API_KEY not set or invalid",
+      "fix": "Verify key at https://dashscope.console.aliyun.com/apiKey. Re-export: export DASHSCOPE_API_KEY=sk-...",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_error_auth_all_families, tests/fixtures/vcr/verify_alibaba_error_auth_401.json"
+    },
+    {
+      "symptom": "HTTP 429 with code 'qps'",
+      "cause": "Rate limit exceeded (retryable)",
+      "fix": "Wait and retry. This is a transient QPS/QPM limit. Reduce request frequency.",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_error_rate_limit_all_families"
+    },
+    {
+      "symptom": "HTTP 429 with code 'quota'",
+      "cause": "Account quota exhausted (non-retryable)",
+      "fix": "Check account billing status. This indicates payment overdue or prepaid quota depleted. Top up account.",
+      "test_evidence": "docs/provider-qwen-capability-profile.json spec-005"
+    },
+    {
+      "symptom": "Tool calls produce empty or malformed results",
+      "cause": "Streaming + tools combination not supported",
+      "fix": "Known limitation (qwen-cav-001). Avoid tool-calling with Qwen until non-streaming fallback is implemented in OpenAIProvider.",
+      "test_evidence": "docs/provider-qwen-capability-profile.json spec-003"
+    },
+    {
+      "symptom": "QWEN_API_KEY fallback not working for alibaba-cn",
+      "cause": "QWEN_API_KEY fallback only configured for alibaba (intl)",
+      "fix": "For alibaba-cn, only DASHSCOPE_API_KEY is checked. Set it with a valid key.",
+      "test_evidence": "src/auth.rs::test_resolve_api_key_qwen_uses_qwen_env_fallback"
+    },
+    {
+      "symptom": "Provider not found for 'qwen'",
+      "cause": "Provider ID is 'alibaba', not 'qwen'",
+      "fix": "Use: pi --provider alibaba --model qwen-plus (or alibaba-cn for China endpoint).",
+      "test_evidence": "src/provider_metadata.rs canonical_provider_id mapping"
+    }
+  ],
+
+  "test_coverage": {
+    "unit_contract": {
+      "file": "tests/provider_factory.rs",
+      "test_count": 144,
+      "scenarios": ["factory presets", "routing", "auth header", "wave_b1 family coherence"]
+    },
+    "vcr_fixtures": {
+      "directory": "tests/fixtures/vcr/",
+      "scenarios": ["verify_alibaba_simple_text", "verify_alibaba_unicode_text", "verify_alibaba_tool_call_single", "verify_alibaba_error_auth_401", "verify_alibaba-cn_simple_text"]
+    },
+    "e2e": {
+      "file": "tests/e2e_provider_scenarios.rs",
+      "scenarios": ["simple_text", "tool_call", "error_auth", "error_rate_limit", "schema_drift", "wave_preset", "determinism", "event_ordering", "request_body_stability", "comprehensive_report"]
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "schema": "pi.perf.extension_benchmark_stratification.v1",
+  "generated_at": "2026-02-17T03:04:00Z",
+  "layers": [
+    {
+      "layer_id": "cold_load_init",
+      "absolute_metrics": {
+        "value": 10.0
+      },
+      "relative_metrics": {
+        "rust_vs_node_ratio": 2.1,
+        "rust_vs_bun_ratio": 1.7
+      }
+    },
+    {
+      "layer_id": "per_call_dispatch_micro",
+      "absolute_metrics": {
+        "value": 40.0
+      },
+      "relative_metrics": {
+        "rust_vs_node_ratio": 2.0,
+        "rust_vs_bun_ratio": 1.6
+      }
+    },
+    {
+      "layer_id": "full_e2e_long_session",
+      "absolute_metrics": {
+        "value": 120.0
+      },
+      "relative_metrics": {
+        "rust_vs_node_ratio": 1.8,
+        "rust_vs_bun_ratio": 1.5
+      }
+    }
+  ],
+  "claim_integrity": {
+    "cherry_pick_guard": {
+      "invalidity_reasons": [],
+      "global_claim_valid": true,
+      "layer_coverage": {
+        "full_e2e_long_session": true
+      }
+    }
+  }
+}

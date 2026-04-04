@@ -1,0 +1,32 @@
+{
+  "schema": "pi.golden_corpus.v1",
+  "scenario": "rpc_mode_unknown_command_error",
+  "surface": "rpc_mode",
+  "description": "RPC mode failure path: unknown command returns structured error response",
+  "cli_args": [
+    "--mode", "rpc",
+    "--provider", "anthropic",
+    "--model", "claude-sonnet-4-5",
+    "--api-key", "test-vcr-key",
+    "--no-tools",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--thinking", "off"
+  ],
+  "stdin": "{\"id\":\"cmd-rpc-2\",\"type\":\"not_a_real_command\"}\n",
+  "env_overrides": {},
+  "cassette": null,
+  "expected": {
+    "exit_code": 0,
+    "stdout_contains": [
+      "\"type\":\"response\"",
+      "\"command\":\"not_a_real_command\"",
+      "\"success\":false",
+      "Unknown command: not_a_real_command"
+    ],
+    "stdout_not_contains": [],
+    "stderr_not_contains": ["panic"]
+  }
+}

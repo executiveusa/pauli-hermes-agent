@@ -1,0 +1,109 @@
+{
+  "name": "Documentary Video Processing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "documentary-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "documentary-processing"
+    },
+    {
+      "parameters": {
+        "functionCode": "const job_id = $input.first().json.job_id;\nconst video_source = $input.first().json.video_source;\nconst config = $input.first().json.config || {};\n\nreturn {\n  job_id,\n  video_source,\n  config,\n  timestamp: new Date().toISOString()\n};"
+      },
+      "name": "Parse Input",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "command": "cd /path/to/pauli-effect && python scripts/documentary_orchestrator.py process {{$json.job_id}}"
+      },
+      "name": "Run Orchestrator",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.exitCode}}",
+              "value2": "0"
+            }
+          ]
+        }
+      },
+      "name": "Check Success",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "return {\n  success: true,\n  job_id: $input.first().json.job_id,\n  message: 'Processing completed'\n};"
+      },
+      "name": "Success Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "return {\n  success: false,\n  job_id: $input.first().json.job_id,\n  error: $input.first().json.stderr || 'Processing failed'\n};"
+      },
+      "name": "Error Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}"
+      },
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{"node": "Parse Input", "type": "main", "index": 0}]]
+    },
+    "Parse Input": {
+      "main": [[{"node": "Run Orchestrator", "type": "main", "index": 0}]]
+    },
+    "Run Orchestrator": {
+      "main": [[{"node": "Check Success", "type": "main", "index": 0}]]
+    },
+    "Check Success": {
+      "main": [
+        [{"node": "Success Response", "type": "main", "index": 0}],
+        [{"node": "Error Response", "type": "main", "index": 0}]
+      ]
+    },
+    "Success Response": {
+      "main": [[{"node": "Webhook Response", "type": "main", "index": 0}]]
+    },
+    "Error Response": {
+      "main": [[{"node": "Webhook Response", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-01-06T00:00:00.000Z",
+  "versionId": "1"
+}

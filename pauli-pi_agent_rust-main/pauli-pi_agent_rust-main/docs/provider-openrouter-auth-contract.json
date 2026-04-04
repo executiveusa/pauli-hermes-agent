@@ -1,0 +1,183 @@
+{
+  "schema": "pi.provider_auth_contract.v1",
+  "schema_version": "1.0",
+  "bead_id": "bd-3uqg.11.7.2",
+  "provider_id": "openrouter",
+  "canonical_provider_id": "openrouter",
+  "verified_at_utc": "2026-02-13T08:50:00Z",
+  "source_snapshot": [
+    {
+      "label": "OpenRouter Quickstart",
+      "url": "https://openrouter.ai/docs/quickstart",
+      "key_points": [
+        "Bearer authentication with OPENROUTER_API_KEY",
+        "HTTP-Referer and X-Title are optional attribution headers"
+      ]
+    },
+    {
+      "label": "Provider Metadata Defaults",
+      "path": "src/provider_metadata.rs",
+      "evidence": [
+        "openrouter canonical ID",
+        "auth_env_keys = [OPENROUTER_API_KEY]",
+        "default base_url = https://openrouter.ai/api/v1",
+        "default api = openai-completions"
+      ]
+    },
+    {
+      "label": "Auth Resolution Logic",
+      "path": "src/auth.rs",
+      "evidence": [
+        "resolve_api_key_with_env_lookup precedence",
+        "empty/whitespace env values are ignored"
+      ]
+    },
+    {
+      "label": "CLI/App API Key Resolution",
+      "path": "src/app.rs",
+      "evidence": [
+        "resolve_api_key provider resolution chain",
+        "models.json inline apiKey fallback via entry.api_key"
+      ]
+    },
+    {
+      "label": "OpenAI-Compatible Base URL Normalization",
+      "path": "src/providers/mod.rs",
+      "evidence": [
+        "normalize_openai_base rules",
+        "create_provider routes openai-completions through normalized chat-completions endpoint"
+      ]
+    },
+    {
+      "label": "Header Forwarding Order",
+      "path": "src/providers/openai.rs",
+      "evidence": [
+        "compat custom headers applied before StreamOptions.headers",
+        "StreamOptions.headers are highest-priority per-request overrides"
+      ]
+    }
+  ],
+  "credential_resolution_contract": {
+    "precedence_high_to_low": [
+      {
+        "source": "CLI override (--api-key)",
+        "behavior": "Highest precedence when non-null; passed into auth.resolve_api_key(provider, override).",
+        "code_path": "src/app.rs::resolve_api_key + src/auth.rs::resolve_api_key_with_env_lookup"
+      },
+      {
+        "source": "Environment variables",
+        "behavior": "Ordered provider chain from provider metadata. For openrouter this is [OPENROUTER_API_KEY]. Empty/whitespace values are ignored.",
+        "code_path": "src/provider_metadata.rs::provider_auth_env_keys + src/auth.rs::resolve_api_key_with_env_lookup"
+      },
+      {
+        "source": "Persisted auth store (~/.pi/agent/auth.json)",
+        "behavior": "ApiKey credential or unexpired OAuth access_token via auth.api_key(provider).",
+        "code_path": "src/auth.rs::api_key"
+      },
+      {
+        "source": "models.json inline apiKey fallback",
+        "behavior": "Applied if the auth/env chain does not resolve a key.",
+        "code_path": "src/app.rs::resolve_api_key (or_else entry.api_key)"
+      }
+    ],
+    "unset_empty_error_cases": {
+      "empty_env_values": "Ignored (trimmed empty => treated as absent).",
+      "unknown_provider_env_chain": "No provider metadata env keys => empty chain.",
+      "all_sources_missing": "StartupError::MissingApiKey for provider openrouter."
+    },
+    "tests": [
+      "src/auth.rs::test_resolve_api_key_openrouter_env_beats_stored",
+      "src/auth.rs::test_resolve_api_key_empty_env_falls_through_to_stored",
+      "src/auth.rs::test_resolve_api_key_whitespace_env_falls_through_to_stored",
+      "src/auth.rs::test_env_keys_all_built_in_providers"
+    ]
+  },
+  "base_url_contract": {
+    "default_base_url": "https://openrouter.ai/api/v1",
+    "default_api_family": "openai-completions",
+    "override_rules": [
+      "Provider-level models.json baseUrl overrides routing defaults.",
+      "OpenAI-compatible route normalizes to chat-completions endpoint before request dispatch."
+    ],
+    "normalization_rules": [
+      "If base ends with /chat/completions, keep as-is (minus trailing slash).",
+      "If base ends with /responses, strip suffix and append /chat/completions.",
+      "If base ends with /v1, append /chat/completions.",
+      "Otherwise append /chat/completions."
+    ],
+    "tests": [
+      "src/providers/mod.rs::normalize_openai_base_*",
+      "tests/provider_factory.rs::normalize_openai_base_*",
+      "tests/provider_native_contract.rs::openrouter_contract::openrouter_routes_through_factory"
+    ]
+  },
+  "header_and_routing_metadata_contract": {
+    "required_headers": [
+      "Authorization: Bearer <OPENROUTER_API_KEY>"
+    ],
+    "optional_openrouter_headers": [
+      "HTTP-Referer",
+      "X-Title"
+    ],
+    "header_precedence_high_to_low": [
+      {
+        "source": "StreamOptions.headers",
+        "behavior": "Highest-priority per-request override.",
+        "code_path": "src/providers/openai.rs"
+      },
+      {
+        "source": "compat.customHeaders",
+        "behavior": "Provider/model compatibility headers applied before request overrides.",
+        "code_path": "src/providers/openai.rs + src/models.rs::merge_compat"
+      },
+      {
+        "source": "model/provider headers from models.json",
+        "behavior": "Propagated into StreamOptions.headers by app-level setup.",
+        "code_path": "src/models.rs::apply_custom_models + src/app.rs::build_stream_options"
+      }
+    ],
+    "routing_payload_forwarding_semantics": {
+      "open_router_routing_config_field": "CompatConfig.open_router_routing is parsed and merged in model loading.",
+      "current_runtime_behavior": "OpenAI-compatible request builders inject open_router_routing object keys into outbound request JSON when provider is openrouter.",
+      "implementation_note": "Routing metadata is merged after request serialization with provider-specific validation that openRouterRouting is an object."
+    },
+    "tests": [
+      "tests/provider_factory.rs::schema_compat_overrides_flow_through_factory_for_openai_completions",
+      "tests/provider_factory.rs::schema_compat_headers_respect_precedence_for_openai_responses"
+    ]
+  },
+  "redaction_and_diagnostics_contract": {
+    "redaction_policy": "redact-secrets",
+    "requirements": [
+      "No raw API keys in user-facing diagnostics",
+      "Missing-key hints derive from provider_auth_env_keys chain",
+      "Provider-specific diagnostic context must remain actionable"
+    ],
+    "tests": [
+      "src/error.rs::e2e_all_diagnostic_codes_have_redact_secrets_policy",
+      "src/error.rs::e2e_hints_enrichment_completeness",
+      "src/error.rs::e2e_alias_env_key_consistency",
+      "tests/provider_factory.rs::schema_compat_overrides_flow_through_factory_for_openai_completions (authorization redaction assertion)"
+    ]
+  },
+  "intentional_contract_decisions": [
+    {
+      "decision_id": "openrouter-auth-001",
+      "decision": "Treat OPENROUTER_API_KEY as sole built-in env credential for canonical openrouter provider.",
+      "rationale": "Matches provider metadata and onboarding matrix."
+    },
+    {
+      "decision_id": "openrouter-auth-002",
+      "decision": "Keep OpenRouter on openai-completions adapter with deterministic base URL normalization contract.",
+      "rationale": "Shared OAI-compatible route reduces adapter drift while preserving provider-specific defaults."
+    },
+    {
+      "decision_id": "openrouter-auth-003",
+      "decision": "Document optional attribution headers and explicit forwarding precedence without introducing undocumented implicit env aliases.",
+      "rationale": "Preserves deterministic behavior and keeps policy explicit in models/compat configuration."
+    }
+  ],
+  "downstream_beads_unblocked": [
+    "bd-3uqg.11.7.3"
+  ]
+}

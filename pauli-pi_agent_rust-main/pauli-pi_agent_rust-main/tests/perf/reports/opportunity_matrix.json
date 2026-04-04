@@ -1,0 +1,22 @@
+{
+  "schema": "pi.perf.opportunity_matrix.v1",
+  "run_id": "20260216T041030Z",
+  "correlation_id": "bd-3ar8v.3.8-20260216T041030Z",
+  "generated_at": "2026-02-17T00:00:00Z",
+  "source_identity": {
+    "source_artifact": "phase1_matrix_validation",
+    "source_artifact_path": "tests/perf/reports/phase1_matrix_validation.json",
+    "weighted_bottleneck_schema": "pi.perf.phase1_weighted_bottleneck_attribution.v1",
+    "weighted_bottleneck_status": "missing"
+  },
+  "readiness": {
+    "status": "blocked",
+    "decision": "NO_DECISION",
+    "mode": "fail_closed",
+    "ready_for_phase5": false,
+    "blocking_reasons": [
+      "phase1_matrix_not_ready_for_phase5"
+    ]
+  },
+  "ranked_opportunities": []
+}

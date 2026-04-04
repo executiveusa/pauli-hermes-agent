@@ -1,0 +1,402 @@
+{
+  "schema": "pi.dropin.certification_contract.v1",
+  "bead_id": "bd-35t7i",
+  "version": "1.0.0",
+  "effective_date_utc": "2026-02-14T19:30:00Z",
+  "status": "active_blocking_policy",
+  "policy_owner_issue": "bd-35t7i",
+  "normative_statement": "Pi Rust MUST NOT be described as a strict drop-in replacement unless every hard gate in this contract is PASS with verifiable evidence.",
+  "decision_model": {
+    "gate_states": [
+      "pass",
+      "fail",
+      "blocked",
+      "waived"
+    ],
+    "waiver_policy": "Waivers are allowed only for non-critical gates and require explicit release-note disclosure.",
+    "overall_verdict_rule": "CERTIFIED only when all hard gates are pass and no critical parity ledger gaps remain open."
+  },
+  "hard_gates": [
+    {
+      "gate_id": "G01-baseline-freeze",
+      "domain": "baseline",
+      "blocking": true,
+      "owner_issue_primary": "bd-2ej25",
+      "required_beads": [
+        "bd-2ej25"
+      ],
+      "required_artifacts": [
+        "docs/dropin-upstream-baseline.json"
+      ],
+      "required_evidence": [
+        "Pinned upstream commit and package version are present.",
+        "Source/docs manifests are checksummed and reproducible."
+      ],
+      "pass_criteria": [
+        "Baseline schema is valid and points to a single canonical upstream commit.",
+        "No active parity artifact points to a conflicting baseline snapshot."
+      ],
+      "fail_conditions": [
+        "Baseline artifact missing, stale, or conflicting."
+      ]
+    },
+    {
+      "gate_id": "G02-feature-inventory-complete",
+      "domain": "inventory",
+      "blocking": true,
+      "owner_issue_primary": "bd-w9i9o",
+      "required_beads": [
+        "bd-w9i9o"
+      ],
+      "required_artifacts": [
+        "docs/dropin-feature-inventory-matrix.json",
+        "docs/dropin-112-feature-inventory-matrix.md"
+      ],
+      "required_evidence": [
+        "Execution surfaces are inventoried across CLI, JSON, RPC, SDK, config, session, extensions, tools, and providers.",
+        "Rows carry source evidence pointers for TS and Rust."
+      ],
+      "pass_criteria": [
+        "Inventory artifacts are present and reconciled to baseline.",
+        "No in-scope execution surface is missing from inventory."
+      ],
+      "fail_conditions": [
+        "Missing surface inventory or baseline/inventory disagreement."
+      ]
+    },
+    {
+      "gate_id": "G03-gap-ledger-owned",
+      "domain": "gap-ledger",
+      "blocking": true,
+      "owner_issue_primary": "bd-13pqz",
+      "required_beads": [
+        "bd-13pqz"
+      ],
+      "required_artifacts": [
+        "docs/dropin-parity-gap-ledger.json"
+      ],
+      "required_evidence": [
+        "Each known mismatch has severity, ownership, and closure path.",
+        "Coverage mapping links mismatch sources to ledger entries."
+      ],
+      "pass_criteria": [
+        "Ledger is schema-valid and comprehensive for known mismatches.",
+        "Critical mismatches have active owner beads."
+      ],
+      "fail_conditions": [
+        "Unowned mismatch or critical mismatch without closure path."
+      ]
+    },
+    {
+      "gate_id": "G04-cli-parity",
+      "domain": "cli",
+      "blocking": true,
+      "owner_issue_primary": "bd-3meug",
+      "required_beads": [
+        "bd-2cd9b",
+        "bd-3meug"
+      ],
+      "required_artifacts": [
+        "docs/dropin-parity-gap-ledger.json"
+      ],
+      "required_evidence": [
+        "CLI command/flag/subcommand parity matrix results.",
+        "Extension-registered flag pass-through conformance tests."
+      ],
+      "pass_criteria": [
+        "No open critical/high CLI gaps in parity ledger.",
+        "CLI parity tests pass for baseline invocation patterns."
+      ],
+      "fail_conditions": [
+        "Required CLI path missing or behaviorally divergent.",
+        "Extension flag pass-through mismatch."
+      ]
+    },
+    {
+      "gate_id": "G05-json-rpc-parity",
+      "domain": "json-and-rpc",
+      "blocking": true,
+      "owner_issue_primary": "bd-2ez14",
+      "required_beads": [
+        "bd-15ggf",
+        "bd-3eb4d",
+        "bd-38v5y",
+        "bd-2my4b",
+        "bd-359pl",
+        "bd-2ez14"
+      ],
+      "required_artifacts": [
+        "docs/dropin-parity-gap-ledger.json"
+      ],
+      "required_evidence": [
+        "JSON event schema and ordering conformance outputs.",
+        "RPC command semantic parity results.",
+        "Extension UI/tool event parity fixtures."
+      ],
+      "pass_criteria": [
+        "No open critical/high JSON or RPC gaps remain.",
+        "Differential transcript comparison shows no unresolved semantic mismatches."
+      ],
+      "fail_conditions": [
+        "Missing/incorrect event variants or ordering drift.",
+        "RPC command mismatch in in-scope surface."
+      ]
+    },
+    {
+      "gate_id": "G06-sdk-parity",
+      "domain": "sdk",
+      "blocking": true,
+      "owner_issue_primary": "bd-28zrk",
+      "required_beads": [
+        "bd-1it6z",
+        "bd-c9usa",
+        "bd-2ibww",
+        "bd-3fbzn",
+        "bd-2xhgm",
+        "bd-28zrk"
+      ],
+      "required_artifacts": [
+        "docs/dropin-parity-gap-ledger.json",
+        "docs/dropin-sdk-contract.json"
+      ],
+      "required_evidence": [
+        "SDK contract definition and API shape diff.",
+        "Streaming, transport, and tool-hook parity tests.",
+        "Embedding conformance scenarios."
+      ],
+      "pass_criteria": [
+        "SDK contract is explicitly defined and implemented.",
+        "No open critical/high SDK gaps remain."
+      ],
+      "fail_conditions": [
+        "Embedding requires TS-specific adapters.",
+        "Session lifecycle or streaming callback divergence."
+      ]
+    },
+    {
+      "gate_id": "G07-config-and-env-parity",
+      "domain": "config-and-env",
+      "blocking": true,
+      "owner_issue_primary": "bd-uuf2z",
+      "required_beads": [
+        "bd-uuf2z"
+      ],
+      "required_artifacts": [
+        "docs/dropin-parity-gap-ledger.json"
+      ],
+      "required_evidence": [
+        "Config precedence/default parity tests.",
+        "Environment variable contract verification."
+      ],
+      "pass_criteria": [
+        "No open critical/high config/env gaps remain.",
+        "Default and precedence behavior is documented and test-backed."
+      ],
+      "fail_conditions": [
+        "Divergent defaults without approved compatibility policy.",
+        "Unsupported required env contract."
+      ]
+    },
+    {
+      "gate_id": "G08-session-error-parity",
+      "domain": "session-and-errors",
+      "blocking": true,
+      "owner_issue_primary": "bd-b4s4l",
+      "required_beads": [
+        "bd-b4s4l",
+        "bd-3kz49"
+      ],
+      "required_artifacts": [
+        "docs/dropin-parity-gap-ledger.json"
+      ],
+      "required_evidence": [
+        "Session branching/compaction parity tests.",
+        "Error model and exit code parity map."
+      ],
+      "pass_criteria": [
+        "Session and error gaps are closed or explicitly waived.",
+        "In-scope behavior is parity-verified."
+      ],
+      "fail_conditions": [
+        "Session semantics diverge with data-loss-risk impact.",
+        "Exit-code/error-envelope mismatch breaks automation."
+      ]
+    },
+    {
+      "gate_id": "G09-integration-io-parity",
+      "domain": "integration-io",
+      "blocking": true,
+      "owner_issue_primary": "bd-2xalc",
+      "required_beads": [
+        "bd-2xalc"
+      ],
+      "required_artifacts": [
+        "docs/dropin-parity-gap-ledger.json"
+      ],
+      "required_evidence": [
+        "stdio framing and non-interactive semantics parity checks.",
+        "Pipe behavior parity evidence."
+      ],
+      "pass_criteria": [
+        "Integration I/O parity gaps closed for supported execution modes.",
+        "No unresolved framing/truncation mismatch."
+      ],
+      "fail_conditions": [
+        "Protocol framing difference that can break existing clients.",
+        "Tool I/O limit mismatch without approved policy."
+      ]
+    },
+    {
+      "gate_id": "G10-differential-evidence-suite",
+      "domain": "differential-testing",
+      "blocking": true,
+      "owner_issue_primary": "bd-1nq53",
+      "required_beads": [
+        "bd-37zh7",
+        "bd-3vraw",
+        "bd-1nq53"
+      ],
+      "required_artifacts": [
+        "docs/dropin-parity-gap-ledger.json"
+      ],
+      "required_evidence": [
+        "Differential runner outputs for mirrored scenarios.",
+        "Golden transcript corpus coverage across CLI, JSON, RPC, and SDK."
+      ],
+      "pass_criteria": [
+        "Required mirrored scenarios run with no unresolved semantic diffs.",
+        "Corpus coverage satisfies execution-surface minimum set."
+      ],
+      "fail_conditions": [
+        "Missing differential tests for any certified surface.",
+        "Unresolved critical/high semantic diff."
+      ]
+    },
+    {
+      "gate_id": "G11-test-architecture-and-ci-enforcement",
+      "domain": "quality-gates",
+      "blocking": true,
+      "owner_issue_primary": "bd-iumsf",
+      "required_beads": [
+        "bd-2m6qw",
+        "bd-3d7jg",
+        "bd-y20iz",
+        "bd-322qy",
+        "bd-1xsus",
+        "bd-iumsf",
+        "bd-18umj"
+      ],
+      "required_artifacts": [
+        "docs/testing-policy.md",
+        "docs/qa-runbook.md"
+      ],
+      "required_evidence": [
+        "Versioned test architecture and logging contract.",
+        "CI parity lanes with artifact retention and blocking behavior."
+      ],
+      "pass_criteria": [
+        "Release path enforces parity gates automatically.",
+        "Evidence artifacts are retained and traceable."
+      ],
+      "fail_conditions": [
+        "Parity lanes non-blocking/bypassable for release claims.",
+        "Certification not reproducible from retained artifacts."
+      ]
+    },
+    {
+      "gate_id": "G12-claim-language-alignment",
+      "domain": "docs-and-positioning",
+      "blocking": true,
+      "owner_issue_primary": "bd-3cqgd",
+      "required_beads": [
+        "bd-3cqgd",
+        "bd-hx9ks",
+        "bd-2v813"
+      ],
+      "required_artifacts": [
+        "README.md",
+        "docs/dropin-parity-gap-ledger.json"
+      ],
+      "required_evidence": [
+        "Public parity claims align with actual gate status.",
+        "No contradictory 'already certified' language while hard gates are open."
+      ],
+      "pass_criteria": [
+        "External parity claims are conditioned on this contract.",
+        "Spec and gap-ledger artifacts are treated as normative."
+      ],
+      "fail_conditions": [
+        "Strict drop-in claims present while hard gates are not all pass."
+      ]
+    }
+  ],
+  "release_process_enforcement": {
+    "required_sequence": [
+      {
+        "step": 1,
+        "description": "Refresh baseline and parity artifacts to current commit.",
+        "required_outputs": [
+          "docs/dropin-upstream-baseline.json",
+          "docs/dropin-feature-inventory-matrix.json",
+          "docs/dropin-parity-gap-ledger.json"
+        ]
+      },
+      {
+        "step": 2,
+        "description": "Evaluate all hard gates and emit a machine-readable verdict artifact.",
+        "required_outputs": [
+          "docs/dropin-certification-verdict.json"
+        ]
+      },
+      {
+        "step": 3,
+        "description": "Block release if verdict is not CERTIFIED.",
+        "required_outputs": [
+          "release gate log with explicit blocking reasons"
+        ]
+      },
+      {
+        "step": 4,
+        "description": "Publish release notes that include certification verdict and evidence pointers.",
+        "required_outputs": [
+          "release notes section: drop-in certification status"
+        ]
+      }
+    ],
+    "verdict_artifact_contract": {
+      "path": "docs/dropin-certification-verdict.json",
+      "schema": "pi.dropin.certification_verdict.v1",
+      "required_fields": [
+        "git_commit",
+        "generated_at_utc",
+        "overall_verdict",
+        "hard_gate_results",
+        "blocking_reasons",
+        "evidence_index"
+      ],
+      "blocking_rule": "overall_verdict MUST equal CERTIFIED for drop-in replacement release language to be allowed."
+    }
+  },
+  "immediate_status_snapshot": {
+    "overall_verdict_now": "NOT_CERTIFIED",
+    "reason": "Multiple hard gates depend on open parity implementation beads.",
+    "open_critical_gate_domains": [
+      "cli",
+      "json-and-rpc",
+      "sdk",
+      "config-and-env",
+      "session-and-errors",
+      "integration-io",
+      "differential-testing",
+      "quality-gates"
+    ]
+  },
+  "maintenance_policy": {
+    "update_trigger": "Any newly discovered mismatch or gate-topology change.",
+    "required_actions_on_update": [
+      "Bump version when gate semantics change.",
+      "Update required_beads and required_artifacts.",
+      "Recompute immediate_status_snapshot."
+    ]
+  }
+}

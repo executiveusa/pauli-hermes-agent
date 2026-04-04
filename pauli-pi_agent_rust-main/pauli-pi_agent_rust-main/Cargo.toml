@@ -1,0 +1,230 @@
+[package]
+name = "pi_agent_rust"
+version = "0.1.9"
+edition = "2024"
+rust-version = "1.85"
+description = "High-performance AI coding agent CLI - Rust port of Pi Agent"
+authors = ["Jeffrey Emanuel"]
+license-file = "LICENSE"
+repository = "https://github.com/Dicklesworthstone/pi_agent_rust"
+homepage = "https://github.com/Dicklesworthstone/pi_agent_rust"
+documentation = "https://docs.rs/pi_agent_rust"
+readme = "README.md"
+keywords = ["ai", "cli", "coding-agent", "llm", "anthropic"]
+categories = ["command-line-utilities", "development-tools"]
+include = [
+    "docs/extension-artifact-provenance.json",
+    "docs/wit/extension.wit",
+    "docs/provider-upstream-model-ids-snapshot.json",
+    "docs/schema/extension_protocol.json",
+    "legacy_pi_mono_code/pi-mono/packages/ai/src/models.generated.ts",
+    "Cargo.toml",
+    "LICENSE",
+    "README.md",
+    "build.rs",
+    "src/**",
+]
+
+[lib]
+name = "pi"
+path = "src/lib.rs"
+
+[[bin]]
+name = "pi"
+path = "src/main.rs"
+
+[dependencies]
+# CLI
+clap = { version = "4.5.60", features = ["derive", "env", "string"] }
+clap_complete = "4.5.66"
+
+# Async runtime
+asupersync = { version = "=0.2.5", default-features = false, features = ["tls-native-roots", "sqlite"] }
+futures = "0.3"
+async-trait = "0.1"
+
+# URL parsing/building
+url = "2"
+
+# Signals
+ctrlc = "3.5.2"
+
+# Serialization
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = { version = "1", features = ["raw_value"] }
+json5 = "1.3.1"
+
+# Error handling
+anyhow = "1.0.102"
+thiserror = "2"
+
+# Terminal output (rich_rust for beautiful TUI)
+rich_rust = { version = "0.2.0", features = ["full"] }
+crossterm = "0.29"
+
+# Interactive TUI (charmed_rust - bubbletea/lipgloss/bubbles/glamour)
+bubbletea = { package = "charmed-bubbletea", version = "0.2.0" }
+lipgloss = { package = "charmed-lipgloss", version = "0.2.0" }
+bubbles = { package = "charmed-bubbles", version = "0.2.0" }
+glamour = { package = "charmed-glamour", version = "0.2.0" }
+unicode-width = "0.2"
+textwrap = "0.16"
+arboard = { version = "3.6.1", optional = true }
+
+# Filesystem
+dirs = "6"
+tempfile = "3.25.0"
+fs4 = "0.13"
+glob = "0.3"
+ignore = "0.4"
+crossbeam-queue = "0.3"
+sqlmodel-sqlite = { version = "0.2.0" }
+sqlmodel-core = { version = "0.2.0" }
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Utilities
+uuid = { version = "1.21.0", features = ["v4"] }
+memchr = "2.8.0"
+base64 = "0.22"
+sha2 = "0.10"
+sha1 = "0.10"
+md-5 = "0.10"
+hmac = "0.12"
+getrandom = "0.4.1"
+regex = "1.12.3"
+semver = "1.0.27"
+crc32c = "0.6"
+ast-grep-core = "0.40"
+ast-grep-language = { version = "0.40", default-features = false, features = [
+    "tree-sitter-bash",
+    "tree-sitter-python",
+    "tree-sitter-javascript",
+    "tree-sitter-typescript",
+    "tree-sitter-ruby",
+] }
+unicode-normalization = "0.1"
+xxhash-rust = { version = "0.8", features = ["xxh32"] }
+similar = "2"
+sysinfo = "0.38.2"
+rquickjs = { version = "0.11", features = ["futures", "loader"] }
+swc_common = "18.0.1"
+swc_ecma_codegen = "23.0.0"
+swc_ecma_ast = "20.0.1"
+swc_ecma_parser = "34.0.0"
+swc_ecma_transforms_base = "37.0.0"
+swc_ecma_transforms_typescript = "41.0.0"
+swc_ecma_visit = "20.0.0"
+wasmtime = { version = "41.0.3", features = ["component-model"], optional = true }
+
+# Image processing (optional)
+image = { version = "0.25", optional = true }
+
+[build-dependencies]
+vergen-gix = { version = "9.1.0", features = ["build", "cargo", "rustc"] }
+
+[dev-dependencies]
+arbitrary = { version = "1", features = ["derive"] }
+pretty_assertions = "1"
+insta = { version = "1", features = ["filters"] }
+tempfile = "3.25.0"
+asupersync = { version = "=0.2.5", default-features = false, features = ["test-internals"] }
+criterion = { version = "0.8.2", features = ["html_reports"] }
+jsonschema = { version = "0.42.0", default-features = false }
+proptest = "1.10.0"
+wat = "1.245.1"
+toml = "1.0.3"
+loom = "0.7.2"
+
+[[bench]]
+name = "tools"
+harness = false
+
+[[bench]]
+name = "extensions"
+harness = false
+
+[[bench]]
+name = "system"
+harness = false
+
+[[bench]]
+name = "tui_perf"
+harness = false
+
+# Gap H: jemalloc for 10-20% allocation-heavy path improvement.
+[target.'cfg(not(target_env = "msvc"))'.dependencies]
+tikv-jemallocator = { version = "0.6", optional = true }
+
+[features]
+default = ["image-resize", "jemalloc", "clipboard", "wasm-host", "sqlite-sessions"]
+image-resize = ["image"]
+clipboard = ["dep:arboard"]
+wasm-host = ["dep:wasmtime"]
+sqlite-sessions = []
+ext-conformance = []
+fuzzing = []
+jemalloc = ["tikv-jemallocator"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+# Performance benchmarking profile: opt-level=3, with debug info.
+[profile.perf]
+inherits = "release"
+opt-level = 3
+lto = "thin"
+debug = 1
+strip = false
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+# Allow some common patterns
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+module_name_repetitions = "allow"
+
+# ---------------------------------------------------------------------------
+# Local development with sibling crates
+# ---------------------------------------------------------------------------
+# This project depends on published crates.io versions of asupersync,
+# rich_rust, charmed-*, and sqlmodel-*. CI builds verify this (no sibling
+# repos are checked out).
+#
+# To develop against LOCAL checkouts of these crates, uncomment the
+# [patch.crates-io] section below. Cargo will use the local paths when they
+# satisfy the version requirement and fall back to crates.io otherwise.
+#
+# IMPORTANT: Do NOT commit this section. To prevent accidental commits:
+#   git update-index --skip-worktree Cargo.toml
+# To re-enable tracking:
+#   git update-index --no-skip-worktree Cargo.toml
+#
+# [patch.crates-io]
+# asupersync = { path = "../asupersync" }
+# rich_rust = { path = "../rich_rust" }
+# charmed-bubbletea = { path = "../charmed_rust/crates/bubbletea" }
+# charmed-bubbletea-macros = { path = "../charmed_rust/crates/bubbletea-macros" }
+# charmed-lipgloss = { path = "../charmed_rust/crates/lipgloss" }
+# charmed-bubbles = { path = "../charmed_rust/crates/bubbles" }
+# charmed-glamour = { path = "../charmed_rust/crates/glamour" }
+# charmed-harmonica = { path = "../charmed_rust/crates/harmonica" }
+# sqlmodel-core = { path = "../sqlmodel_rust/crates/sqlmodel-core" }
+# sqlmodel-sqlite = { path = "../sqlmodel_rust/crates/sqlmodel-sqlite" }

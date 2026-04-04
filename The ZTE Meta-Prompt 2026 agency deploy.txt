@@ -1,0 +1,114 @@
+trigger prompt 
+
+
+Read DEPLOY.md in this repo. Detect the stack. Deploy to production. 
+Report the live URL to the Vibe Graph when done.
+
+
+
+
+
+The ZTE Meta-Prompt — Copy Into Any Repo Root as DEPLOY.md
+Stack detection rules (follow exactly):
+
+next.config.* found → Platform: Vercel
+Dockerfile or requirements.txt found → Platform: Coolify (VPS)
+Only index.html + no build step → Platform: Cloudflare Pages
+Cargo.toml found → Platform: Coolify (Rust/Docker)
+Ambiguous → ask once, then proceed
+STAGE 1 — HANDLE STUBS
+If stub count from Stage 0 > 0:
+
+Stub rule: Implement every stub before proceeding. If a stub requires
+a missing API key or external service, replace it with a clearly-typed
+no-op that fails gracefully (not silently). Never leave a stub in code
+that ships to production.
+
+STAGE 2 — BUILD
+Run the build for the detected stack:
+
+If build fails:
+
+Read the error carefully
+Fix the root cause — do not suppress warnings
+Re-run build
+Max 3 self-healing iterations (LOOP_GUARD)
+If still failing after 3: stop, report exact error, do not deploy broken code
+STAGE 3 — GET/CREATE THE PROJECT ID
+If Vercel (Next.js/Vite):
+Option A — CLI (preferred, no browser needed):
+
+Option B — Browser agent (if CLI fails or no token):
+
+Option C — API (if token exists):
+
+If Cloudflare Pages (static):
+If Coolify (Docker/Python/Rust):
+STAGE 4 — QUALITY GATE (Emerald Tablets™)
+Run before every deploy. No exceptions.
+
+UDEC Design Gate (only for UI/frontend repos):
+Any frontend output must score ≥ 8.5 on these axes before shipping:
+
+TYP (typography hierarchy) — no Inter as only font, no lorem ipsum
+CLR (color system) — no purple gradient on white, real palette
+MOT (motion) — GSAP/Framer only, no window.addEventListener('scroll')
+ACC (accessibility) — semantic HTML, ARIA labels, keyboard nav
+At least one animated element per above-fold section
+STAGE 5 — DEPLOY
+Vercel:
+Cloudflare Pages:
+Coolify (Rust/Python/Docker):
+STAGE 6 — NOTIFY VIBE GRAPH
+After every successful deploy, report back:
+
+STAGE 7 — GITHUB ACTIONS (install once, runs forever)
+Create .github/workflows/zte-deploy.yml with this exact content:
+
+AGENT COMPUTER + BROWSER ACCESS
+Every agent operating under this protocol has access to:
+
+Terminal (always available)
+Browser Agent (for OAuth flows, project creation, visual QA)
+Multi-Model Routing
+CIRCUIT BREAKERS — HARDCODED, NO OVERRIDE
+Breaker	Trigger	Action
+SECRET_GUARD	Any API key/token found in source files	HALT + scrub + rotate alert
+LOOP_GUARD	Same error 3× in a row	HALT + report exact error
+COST_GUARD	API spend > $10 per task / > $50 per day	HALT + human confirm
+BLAST_RADIUS	Action affects > 3 services/repos	Require explicit plan
+IRREVERSIBILITY	DB drops, secret deletes, force push	HALT + human confirm
+STUB_GUARD	Any TODO/FIXME in shipped code	Block deploy
+BUILD_GUARD	Build fails	Never deploy — fix first
+REQUIRED SECRETS (set once in GitHub repo Settings → Secrets)
+Never put secrets in code. Use Infisical for local dev:
+
+SELF-IMPROVEMENT LOOP
+After every successful deploy, append to ops/deploy-log.md:
+
+After 5 deploys, review the log and update this file with improvements.
+Every cycle this protocol gets 10% more autonomous. That is the law.
+
+ONE-LINE INSTALL FOR ANY REPO
+ZTE Deploy v3.0 | The Pauli Effect™ Ecosystem
+"The folder is the system. The agent reads the folder. Work ships."
+Dominant Law: Emerald Tablets™ | Built on ZTE Protocol v3.0
+
+Read DEPLOY.md and execute it end to end. Zero human intervention.
+Use browser agent for any step that requires a dashboard or OAuth.
+
+Cursor / Windsurf — add to .cursorrules or .windsurfrules:
+
+Any agent via webhook — the trigger prompt is always:
+
+
+Read DEPLOY.md in this repo. Detect the stack. Deploy to production. Report the live URL to the Vibe Graph when done.
+The Vercel project ID is handled automatically — vercel link --yes creates or reuses the project and writes .vercel/project.json without any human input. No dashboard visit needed.
+
+Continued with Autopilot
+
+Compacted conversation
+
+The universal ZTE Deploy meta-prompt has been delivered — a complete, copy-paste-ready DEPLOY.md covering all 7 stages (scan → install → build → test → audit → deploy → notify), auto-discovery of Vercel project IDs via CLI/API/browser fallback, Playwright smoke tests, multi-model routing table, circuit breakers, the GitHub Actions drop-in workflow, and activation instructions for Claude Code, Hermes, Cursor, and webhook agents.
+
+ugt.clearMarks is not a function

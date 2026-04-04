@@ -1,0 +1,31 @@
+{
+  "extension": {
+    "id": "minimal_configuration",
+    "source": {
+      "path": "tests/ext_conformance/artifacts/base_fixtures/minimal_configuration/index.ts"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "scn-minimal-configuration-001",
+      "kind": "registration",
+      "summary": "Registers a flag and a shortcut",
+      "expect": {
+        "flags_contains": [
+          "verbose"
+        ],
+        "shortcuts_contains": [
+          "ctrl+shift+v"
+        ]
+      }
+    },
+    {
+      "id": "scn-minimal-configuration-neg-001",
+      "kind": "registration",
+      "summary": "Negative: configuration registration fails with malformed config",
+      "expect": {
+        "is_error": true
+      }
+    }
+  ]
+}

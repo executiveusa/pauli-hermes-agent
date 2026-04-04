@@ -1,0 +1,217 @@
+{
+  "schema": "pi.qa.provider_remediation_manifest.v1",
+  "bead_id": "bd-3uqg.12.1.2",
+  "generated_at_utc": "2026-02-14T01:15:00Z",
+  "generated_by": "LilacCat (Claude Opus 4.6)",
+  "description": "Maps all non-trivial discrepancies from provider-discrepancy-classification.json to concrete remediation beads with dependency placement, priority, and required obligations.",
+  "source_classification": "docs/provider-discrepancy-classification.json",
+
+  "summary": {
+    "total_discrepancies": 21,
+    "no_action_needed": 11,
+    "remediation_beads_created": 10,
+    "beads_by_lane": {
+      "provider_rollup_ux": 4,
+      "provider_test": 2,
+      "provider_docs_logging": 4
+    },
+    "beads_by_priority": {
+      "P2": 6,
+      "P3": 4
+    }
+  },
+
+  "no_action_items": [
+    {
+      "disc_id": "DISC-001", "reason": "alias_mismatch, severity none — transparent resolution"
+    },
+    {
+      "disc_id": "DISC-002", "reason": "alias_mismatch, severity none — transparent resolution"
+    },
+    {
+      "disc_id": "DISC-003", "reason": "alias_mismatch, severity none — transparent resolution"
+    },
+    {
+      "disc_id": "DISC-004", "reason": "alias_mismatch, severity none — transparent resolution"
+    },
+    {
+      "disc_id": "DISC-005", "reason": "alias_mismatch, severity none — transparent resolution"
+    },
+    {
+      "disc_id": "DISC-006", "reason": "naming_convention, severity none — future migration candidate only"
+    },
+    {
+      "disc_id": "DISC-007", "reason": "naming_convention, severity none — future migration candidate only"
+    },
+    {
+      "disc_id": "DISC-008", "reason": "api_architecture_deviation — intentional (Bedrock error signaling)"
+    },
+    {
+      "disc_id": "DISC-009", "reason": "api_architecture_deviation — intentional (GitLab Duo API limitation)"
+    },
+    {
+      "disc_id": "DISC-012", "reason": "already resolved — bd-1gi21 CLOSED"
+    },
+    {
+      "disc_id": "DISC-016", "reason": "already resolved — bd-1fgjj CLOSED"
+    }
+  ],
+
+  "remediation_beads": [
+    {
+      "disc_id": "DISC-010",
+      "bead_id": "bd-2ncd7",
+      "title": "[PROVIDER-REMEDIATION-ALIASES] Add common aliases for high-traffic providers",
+      "priority": "P2",
+      "lane": "provider_rollup_ux",
+      "depends_on": ["bd-3uqg.12.1.2", "bd-3uqg.10.4"],
+      "behavior_impacting": true,
+      "obligations": {
+        "unit_test": "Alias resolution tests for each new alias",
+        "e2e": "None required (metadata-only additive change)",
+        "logging": "None"
+      }
+    },
+    {
+      "disc_id": "DISC-011",
+      "bead_id": "bd-4v1xz",
+      "title": "[PROVIDER-REMEDIATION-LIST-CMD] Implement --list-providers CLI command",
+      "priority": "P2",
+      "lane": "provider_rollup_ux",
+      "depends_on": ["bd-3uqg.12.1.2", "bd-3uqg.10.4"],
+      "behavior_impacting": true,
+      "obligations": {
+        "unit_test": "CLI argument parsing test",
+        "e2e": "Integration test validating output format",
+        "logging": "None"
+      }
+    },
+    {
+      "disc_id": "DISC-013",
+      "bead_id": "bd-mbk79",
+      "title": "[PROVIDER-REMEDIATION-DISPLAY-NAME] Add display_name field to ProviderMetadata",
+      "priority": "P2",
+      "lane": "provider_rollup_ux",
+      "depends_on": ["bd-3uqg.12.1.2", "bd-3uqg.10.4"],
+      "behavior_impacting": true,
+      "obligations": {
+        "unit_test": "Struct construction with display_name + backward compat",
+        "e2e": "None (cosmetic improvement)",
+        "logging": "None"
+      }
+    },
+    {
+      "disc_id": "DISC-014",
+      "bead_id": "bd-2jskn",
+      "title": "[PROVIDER-REMEDIATION-ONBOARDING] Expand onboarding wizard provider recognition",
+      "priority": "P2",
+      "lane": "provider_rollup_ux",
+      "depends_on": ["bd-3uqg.12.1.2", "bd-3uqg.10.4"],
+      "behavior_impacting": true,
+      "obligations": {
+        "unit_test": "Token recognition for expanded provider set",
+        "e2e": "None (first-run UX improvement)",
+        "logging": "None"
+      }
+    },
+    {
+      "disc_id": "DISC-015",
+      "bead_id": "bd-396fn",
+      "title": "[PROVIDER-REMEDIATION-VCR-CASSETTE] Fix pi_runtime.json VCR cassette",
+      "priority": "P2",
+      "lane": "provider_test",
+      "depends_on": ["bd-3uqg.12.1.2", "bd-3uqg.8"],
+      "behavior_impacting": false,
+      "obligations": {
+        "unit_test": "All 10 provider_factory tests pass",
+        "e2e": "None (test infra fix)",
+        "logging": "None"
+      }
+    },
+    {
+      "disc_id": "DISC-018",
+      "bead_id": "bd-2vlau",
+      "title": "[PROVIDER-REMEDIATION-REDACTION-SCAN] Per-provider artifact redaction scan",
+      "priority": "P2",
+      "lane": "provider_test",
+      "depends_on": ["bd-3uqg.12.1.2", "bd-3uqg.8"],
+      "behavior_impacting": false,
+      "obligations": {
+        "unit_test": "find_unredacted_keys() on JSONL fixtures for 4+ providers",
+        "e2e": "None (test-only)",
+        "logging": "None"
+      }
+    },
+    {
+      "disc_id": "DISC-017",
+      "bead_id": "bd-2w6ts",
+      "title": "[PROVIDER-REMEDIATION-CI-CORRELATION] Add ci_correlation_id to log schema",
+      "priority": "P3",
+      "lane": "provider_docs_logging",
+      "depends_on": ["bd-3uqg.12.1.2", "bd-3uqg.9"],
+      "behavior_impacting": false,
+      "obligations": {
+        "unit_test": "JSONL validator accepts ci_correlation_id field",
+        "e2e": "None",
+        "logging": "Schema v2 updated with optional field"
+      }
+    },
+    {
+      "disc_id": "DISC-019",
+      "bead_id": "bd-z5vt4",
+      "title": "[PROVIDER-REMEDIATION-ARTIFACT-XREF] Artifact-index path cross-validation",
+      "priority": "P3",
+      "lane": "provider_docs_logging",
+      "depends_on": ["bd-3uqg.12.1.2", "bd-3uqg.9"],
+      "behavior_impacting": false,
+      "obligations": {
+        "unit_test": "Synthetic fixture with valid/invalid paths",
+        "e2e": "None",
+        "logging": "None"
+      }
+    },
+    {
+      "disc_id": "DISC-020",
+      "bead_id": "bd-7rs2j",
+      "title": "[PROVIDER-REMEDIATION-EVIDENCE-SCHEMA] Formal evidence_contract schema",
+      "priority": "P3",
+      "lane": "provider_docs_logging",
+      "depends_on": ["bd-3uqg.12.1.2", "bd-3uqg.9"],
+      "behavior_impacting": false,
+      "obligations": {
+        "unit_test": "Schema validation on existing evidence_contract.json",
+        "e2e": "None",
+        "logging": "None"
+      }
+    },
+    {
+      "disc_id": "DISC-021",
+      "bead_id": "bd-38m8w",
+      "title": "[PROVIDER-REMEDIATION-V1-DEPRECATION] Enforce v2-only schema for new tests",
+      "priority": "P3",
+      "lane": "provider_docs_logging",
+      "depends_on": ["bd-3uqg.12.1.2", "bd-3uqg.9"],
+      "behavior_impacting": false,
+      "obligations": {
+        "unit_test": "Lint/validation rejects v1 in new test context",
+        "e2e": "None",
+        "logging": "V1 grandfathered with explicit marker"
+      }
+    }
+  ],
+
+  "acceptance_criteria_compliance": {
+    "criterion_1": {
+      "requirement": "Each actionable discrepancy maps to an existing reopened bead or a newly created bead ID",
+      "status": "PASS — 10 new beads created for 10 actionable discrepancies, 11 no-action items documented with rationale"
+    },
+    "criterion_2": {
+      "requirement": "New/reopened beads include dependency placement under provider test/docs/rollup lanes as appropriate",
+      "status": "PASS — 4 beads under bd-3uqg.10.4 (rollup UX), 2 under bd-3uqg.8 (test), 4 under bd-3uqg.9 (docs/logging)"
+    },
+    "criterion_3": {
+      "requirement": "Every remediation bead includes required unit/e2e/logging obligations when behavior-impacting",
+      "status": "PASS — All 4 behavior-impacting beads (DISC-010/011/013/014) include unit test obligations; 6 non-behavior-impacting beads include appropriate test/schema obligations"
+    }
+  }
+}

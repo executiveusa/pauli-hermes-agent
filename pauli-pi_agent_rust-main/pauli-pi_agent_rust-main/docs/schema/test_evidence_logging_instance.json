@@ -1,0 +1,456 @@
+{
+  "schema_registry": {
+    "schemas": [
+      {
+        "schema_id": "pi.test.log.v2",
+        "version": "v2",
+        "status": "canonical",
+        "domain": "test-logging",
+        "source_files": ["tests/common/logging.rs"],
+        "output_format": "jsonl",
+        "description": "Canonical JSONL log schema for all test types. Carries trace_id, span_id, level, category, message, and key-value context.",
+        "required_fields": ["schema", "type", "trace_id", "seq", "ts", "t_ms", "level", "category", "message"],
+        "supersedes": "pi.test.log.v1"
+      },
+      {
+        "schema_id": "pi.test.log.v1",
+        "version": "v1",
+        "status": "deprecated",
+        "domain": "test-logging",
+        "source_files": ["tests/common/logging.rs"],
+        "output_format": "jsonl",
+        "description": "Legacy log schema. Readable but not writable. All new tests MUST use v2.",
+        "required_fields": ["schema", "level", "message"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.test.artifact.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "test-artifacts",
+        "source_files": ["tests/common/logging.rs"],
+        "output_format": "jsonl",
+        "description": "Artifact index records tracking files produced during tests with paths and checksums.",
+        "required_fields": ["schema", "type", "seq", "ts", "t_ms", "name", "path"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.qa.evidence_contract.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "evidence",
+        "source_files": ["docs/evidence-contract-schema.json", "tests/common/harness.rs"],
+        "output_format": "json",
+        "description": "Aggregate run evidence linking suite outcomes to structured artifacts. One per CI run.",
+        "required_fields": ["schema", "generated_at", "correlation_id", "run_summary", "environment", "suite_evidence", "aggregate_artifacts"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.e2e.failure_digest.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "evidence",
+        "source_files": ["docs/evidence-contract-schema.json"],
+        "output_format": "json",
+        "description": "Structured failure analysis for failed suites with root-cause classification and remediation pointers.",
+        "required_fields": ["schema", "suite", "root_cause_class", "first_failing_assertion"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.parity.test_logging_contract.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "parity",
+        "source_files": ["tests/common/logging.rs", "docs/evidence-contract-schema.json"],
+        "output_format": "json",
+        "description": "Cross-suite parity test/logging contract overlay. Specifies suite taxonomy, trace model, and triage fields.",
+        "required_fields": ["schema", "suite_taxonomy_ref", "log_record_schema", "artifact_record_schema", "failure_digest_schema", "trace_model", "triage_required_fields"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.ext.rust_bench.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "benchmarks",
+        "source_files": ["tests/bench_schema.rs", "tests/perf_bench_harness.rs"],
+        "output_format": "jsonl",
+        "description": "Rust QuickJS extension benchmark records with environment fingerprint and statistical summary.",
+        "required_fields": ["schema", "runtime", "scenario", "extension"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.ext.legacy_bench.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "benchmarks",
+        "source_files": ["tests/bench_schema.rs"],
+        "output_format": "jsonl",
+        "description": "Legacy pi-mono (Node.js/V8) benchmark records for cross-runtime comparison.",
+        "required_fields": ["schema", "runtime", "scenario", "extension"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.perf.workload.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "benchmarks",
+        "source_files": ["tests/bench_schema.rs"],
+        "output_format": "jsonl",
+        "description": "PiJS workload benchmark records measuring tool call throughput and latency.",
+        "required_fields": ["scenario", "iterations", "tool_calls_per_iteration"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.perf.budget.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "benchmarks",
+        "source_files": ["tests/perf_budgets.rs", "tests/perf_regression.rs"],
+        "output_format": "jsonl",
+        "description": "Performance budget check results with threshold pass/fail and measured values.",
+        "required_fields": ["name", "category", "metric", "threshold", "measured", "status"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.bench.protocol.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "benchmarks",
+        "source_files": ["tests/bench_schema.rs", "tests/bench_scenario_runner.rs", "docs/evidence-contract-schema.json"],
+        "output_format": "json",
+        "description": "Canonical benchmark protocol contract defining partitions, datasets, replay inputs, and evidence labels.",
+        "required_fields": ["schema", "version", "partition_tags", "required_metadata_fields"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.perf.sli_ux_matrix.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "evidence",
+        "source_files": ["docs/perf_sli_matrix.json"],
+        "output_format": "json",
+        "description": "User-visible E2E SLI priorities with absolute+relative reporting requirements.",
+        "required_fields": ["schema", "version"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.test.transcript.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "transcripts",
+        "source_files": ["tests/common/transcript_diff.rs"],
+        "output_format": "jsonl",
+        "description": "Golden transcript records for deterministic replay comparison.",
+        "required_fields": ["schema", "type"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.perf.baseline_variance.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "benchmarks",
+        "source_files": ["scripts/perf/capture_baseline.sh", "tests/perf_baseline_variance.rs"],
+        "output_format": "json",
+        "description": "Baseline variance analysis with confidence intervals, coefficient of variation, and variance classification for truthful progress claims.",
+        "required_fields": ["schema", "version", "metrics", "summary"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.perf.run_manifest.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "benchmarks",
+        "source_files": ["scripts/perf/orchestrate.sh"],
+        "output_format": "json",
+        "description": "Run manifest for reproducible benchmark orchestration with suite results and contract references.",
+        "required_fields": ["schema", "correlation_id", "run_summary", "suite_results"],
+        "supersedes": null
+      },
+      {
+        "schema_id": "pi.qa.evidence_adjudication_matrix.v1",
+        "version": "v1",
+        "status": "canonical",
+        "domain": "evidence",
+        "source_files": ["scripts/e2e/run_all.sh", "tests/ci_full_suite_gate.rs"],
+        "output_format": "json",
+        "description": "Machine-readable reconciliation matrix mapping conflicting claims to canonical artifacts, freshness checks, confidence labels, and adjudication outcomes.",
+        "required_fields": ["schema", "generated_at", "correlation_id", "claims", "adjudication_matrix", "summary"],
+        "supersedes": null
+      }
+    ],
+    "schema_relationships": [
+      {
+        "from_schema": "pi.qa.evidence_contract.v1",
+        "to_schema": "pi.test.log.v2",
+        "relationship": "references",
+        "join_field": "trace_id"
+      },
+      {
+        "from_schema": "pi.qa.evidence_contract.v1",
+        "to_schema": "pi.test.artifact.v1",
+        "relationship": "references",
+        "join_field": "artifact_index_path"
+      },
+      {
+        "from_schema": "pi.qa.evidence_contract.v1",
+        "to_schema": "pi.e2e.failure_digest.v1",
+        "relationship": "embeds",
+        "join_field": "failure_digest"
+      },
+      {
+        "from_schema": "pi.qa.evidence_contract.v1",
+        "to_schema": "pi.bench.protocol.v1",
+        "relationship": "embeds",
+        "join_field": "benchmark_protocol"
+      },
+      {
+        "from_schema": "pi.qa.evidence_contract.v1",
+        "to_schema": "pi.parity.test_logging_contract.v1",
+        "relationship": "embeds",
+        "join_field": "parity_contract"
+      },
+      {
+        "from_schema": "pi.bench.protocol.v1",
+        "to_schema": "pi.perf.sli_ux_matrix.v1",
+        "relationship": "references",
+        "join_field": "user_perceived_sli_catalog"
+      },
+      {
+        "from_schema": "pi.ext.rust_bench.v1",
+        "to_schema": "pi.bench.protocol.v1",
+        "relationship": "validates",
+        "join_field": "schema"
+      },
+      {
+        "from_schema": "pi.ext.legacy_bench.v1",
+        "to_schema": "pi.bench.protocol.v1",
+        "relationship": "validates",
+        "join_field": "schema"
+      },
+      {
+        "from_schema": "pi.perf.budget.v1",
+        "to_schema": "pi.perf.sli_ux_matrix.v1",
+        "relationship": "references",
+        "join_field": "category"
+      },
+      {
+        "from_schema": "pi.test.log.v2",
+        "to_schema": "pi.test.artifact.v1",
+        "relationship": "produces",
+        "join_field": "trace_id"
+      },
+      {
+        "from_schema": "pi.perf.baseline_variance.v1",
+        "to_schema": "pi.perf.budget.v1",
+        "relationship": "references",
+        "join_field": "metric_name"
+      },
+      {
+        "from_schema": "pi.perf.baseline_variance.v1",
+        "to_schema": "pi.perf.sli_ux_matrix.v1",
+        "relationship": "references",
+        "join_field": "metric_name"
+      },
+      {
+        "from_schema": "pi.perf.run_manifest.v1",
+        "to_schema": "pi.qa.evidence_contract.v1",
+        "relationship": "references",
+        "join_field": "correlation_id"
+      },
+      {
+        "from_schema": "pi.qa.evidence_contract.v1",
+        "to_schema": "pi.qa.evidence_adjudication_matrix.v1",
+        "relationship": "references",
+        "join_field": "correlation_id"
+      },
+      {
+        "from_schema": "pi.perf.run_manifest.v1",
+        "to_schema": "pi.qa.evidence_adjudication_matrix.v1",
+        "relationship": "references",
+        "join_field": "correlation_id"
+      }
+    ]
+  },
+  "suite_requirements": {
+    "unit": {
+      "required_schemas": ["pi.test.log.v2"],
+      "optional_schemas": ["pi.test.artifact.v1"],
+      "evidence_level": "minimal",
+      "correlation_required": false,
+      "artifact_checksums_required": false
+    },
+    "vcr": {
+      "required_schemas": ["pi.test.log.v2", "pi.test.artifact.v1"],
+      "optional_schemas": ["pi.test.transcript.v1"],
+      "evidence_level": "standard",
+      "correlation_required": true,
+      "artifact_checksums_required": false
+    },
+    "e2e": {
+      "required_schemas": ["pi.test.log.v2", "pi.test.artifact.v1", "pi.qa.evidence_contract.v1"],
+      "optional_schemas": ["pi.e2e.failure_digest.v1", "pi.test.transcript.v1"],
+      "evidence_level": "forensic",
+      "correlation_required": true,
+      "artifact_checksums_required": true
+    },
+    "perf_bench": {
+      "required_schemas": ["pi.test.log.v2", "pi.ext.rust_bench.v1", "pi.bench.protocol.v1"],
+      "optional_schemas": ["pi.ext.legacy_bench.v1", "pi.perf.workload.v1", "pi.test.artifact.v1"],
+      "evidence_level": "forensic",
+      "correlation_required": true,
+      "artifact_checksums_required": true
+    },
+    "perf_regression": {
+      "required_schemas": ["pi.test.log.v2", "pi.perf.budget.v1"],
+      "optional_schemas": ["pi.test.artifact.v1", "pi.perf.sli_ux_matrix.v1"],
+      "evidence_level": "standard",
+      "correlation_required": true,
+      "artifact_checksums_required": false
+    }
+  },
+  "correlation_model": {
+    "levels": [
+      {
+        "level": 0,
+        "scope": "ci_run",
+        "id_field": "correlation_id",
+        "schemas": ["pi.qa.evidence_contract.v1", "pi.bench.protocol.v1"]
+      },
+      {
+        "level": 1,
+        "scope": "suite",
+        "id_field": "suite_id",
+        "schemas": ["pi.qa.evidence_contract.v1", "pi.e2e.failure_digest.v1"]
+      },
+      {
+        "level": 2,
+        "scope": "test",
+        "id_field": "trace_id",
+        "schemas": ["pi.test.log.v2", "pi.test.artifact.v1", "pi.ext.rust_bench.v1"]
+      },
+      {
+        "level": 3,
+        "scope": "operation",
+        "id_field": "span_id",
+        "schemas": ["pi.test.log.v2"]
+      }
+    ],
+    "join_keys": {
+      "ci_run_to_evidence": "correlation_id",
+      "evidence_to_suite": "suite_id",
+      "suite_to_log": "trace_id",
+      "log_to_span": "span_id",
+      "bench_to_evidence": "correlation_id"
+    },
+    "cross_domain_paths": [
+      {
+        "name": "bead_to_evidence",
+        "purpose": "Given a bead ID, find all test evidence and log artifacts proving its implementation.",
+        "path": [
+          { "schema": "pi.perf.bead_coverage.v1", "field": "bead_id" },
+          { "schema": "pi.perf.bead_coverage.v1", "field": "test_files" },
+          { "schema": "pi.test.log.v2", "field": "trace_id" },
+          { "schema": "pi.test.artifact.v1", "field": "path" }
+        ]
+      },
+      {
+        "name": "failure_to_replay",
+        "purpose": "Given a failed suite, find replay commands and root cause classification.",
+        "path": [
+          { "schema": "pi.qa.evidence_contract.v1", "field": "suite_id" },
+          { "schema": "pi.e2e.failure_digest.v1", "field": "root_cause_class" },
+          { "schema": "pi.e2e.failure_digest.v1", "field": "remediation_pointer" }
+        ]
+      },
+      {
+        "name": "perf_claim_to_measurements",
+        "purpose": "Given a performance claim, trace to raw benchmark measurements and statistical evidence.",
+        "path": [
+          { "schema": "pi.perf.sli_ux_matrix.v1", "field": "sli_id" },
+          { "schema": "pi.bench.protocol.v1", "field": "scenario_sli_matrix" },
+          { "schema": "pi.ext.rust_bench.v1", "field": "scenario" },
+          { "schema": "pi.ext.rust_bench.v1", "field": "summary" }
+        ]
+      },
+      {
+        "name": "budget_to_threshold",
+        "purpose": "Given a budget check result, trace to the SLI definition and budget threshold.",
+        "path": [
+          { "schema": "pi.perf.budget.v1", "field": "name" },
+          { "schema": "pi.perf.sli_ux_matrix.v1", "field": "metric_id" }
+        ]
+      }
+    ]
+  },
+  "perf_evidence_contract": {
+    "schema": "pi.perf.evidence.v1",
+    "version": "1.0.0",
+    "required_record_types": [
+      {
+        "record_type": "bench_run",
+        "schema_id": "pi.ext.rust_bench.v1",
+        "purpose": "Raw benchmark timing data with statistical summary and environment fingerprint."
+      },
+      {
+        "record_type": "budget_check",
+        "schema_id": "pi.perf.budget.v1",
+        "purpose": "Pass/fail evaluation of measured values against defined performance budgets."
+      },
+      {
+        "record_type": "regression_delta",
+        "schema_id": "pi.perf.budget.v1",
+        "purpose": "Delta between current and baseline measurements for regression detection."
+      },
+      {
+        "record_type": "workload_result",
+        "schema_id": "pi.perf.workload.v1",
+        "purpose": "Throughput and latency measurements from realistic workload scenarios."
+      },
+      {
+        "record_type": "comparison_report",
+        "schema_id": "pi.ext.rust_bench.v1",
+        "purpose": "Cross-runtime (Rust vs Node) comparison with delta and percent improvement."
+      }
+    ],
+    "env_fingerprint_fields": ["os", "arch", "cpu_model", "cpu_cores", "mem_total_mb", "build_profile", "git_commit"],
+    "statistical_fields": {
+      "required_percentiles": ["p50", "p95", "p99"],
+      "required_aggregates": ["min", "max", "mean", "count"]
+    },
+    "partition_fields": {
+      "partition_tag_field": "partition",
+      "scenario_id_field": "scenario_id",
+      "valid_partitions": ["matched-state", "realistic"]
+    },
+    "no_data_policy": {
+      "action": "hard_fail",
+      "grace_period_builds": 0,
+      "rationale": "Silent perf gate bypass via missing data is the most dangerous regression vector. Every perf bead MUST produce measurable evidence."
+    }
+  },
+  "bead_coverage_contract": {
+    "schema": "pi.perf.bead_coverage.v1",
+    "version": "1.0.0",
+    "link_format": {
+      "bead_id": "bd-3ar8v.1.7",
+      "test_files": ["tests/qa_docs_policy_validation.rs"],
+      "log_artifacts": ["artifacts/test_evidence_logging_validation.jsonl"],
+      "evidence_type": "design_doc"
+    },
+    "required_link_fields": ["bead_id", "test_files", "evidence_type"],
+    "coverage_policy": {
+      "min_evidence_per_bead": 1,
+      "allowed_evidence_types": ["unit", "vcr", "e2e", "bench", "regression", "design_doc"],
+      "audit_frequency": "per_phase",
+      "critical_perf3x_beads": [
+        "bd-3ar8v.2.8",
+        "bd-3ar8v.3.8",
+        "bd-3ar8v.4.7",
+        "bd-3ar8v.4.8",
+        "bd-3ar8v.4.9",
+        "bd-3ar8v.4.10",
+        "bd-3ar8v.6.11"
+      ]
+    }
+  }
+}

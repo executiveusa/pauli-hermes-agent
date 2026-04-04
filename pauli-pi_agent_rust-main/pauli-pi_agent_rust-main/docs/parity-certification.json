@@ -1,0 +1,139 @@
+{
+  "schema": "pi.qa.parity_certification.v1",
+  "certification_date": "2026-02-18",
+  "generated_by": "Codex (gpt-5)",
+  "bead_id": "bd-2pc62",
+  "verdict": "NOT_CERTIFIED",
+  "summary": "Informational implementation snapshot only. Strict drop-in certification is not granted while hard-gate drop-in parity domains remain open.",
+  "release_claim_status": {
+    "strict_dropin_allowed": false,
+    "gate_contract": "docs/dropin-certification-contract.json",
+    "verdict_artifact": "docs/dropin-certification-verdict.json",
+    "blocking_reason": "Open critical/high parity gaps across CLI, JSON/RPC, SDK, config/env, session/errors, integration I/O, differential-testing, and quality-gates."
+  },
+  "test_results": {
+    "lib": {
+      "passed": 3360,
+      "failed": 13,
+      "ignored": 1,
+      "total": 3374,
+      "note": "13 failures are pre-existing regressions from concurrent agent work (autocomplete: 5, compaction: 4, provider fixtures: 3, package_manager: 1). None are parity-related."
+    },
+    "tui_state": {
+      "passed": 296,
+      "failed": 0,
+      "ignored": 0,
+      "total": 296
+    },
+    "e2e_tui_perf": {
+      "passed": 103,
+      "failed": 0,
+      "ignored": 0,
+      "total": 103
+    },
+    "aggregate": {
+      "passed": 3759,
+      "failed": 13,
+      "ignored": 1,
+      "note": "All failures are pre-existing from concurrent agent work, not parity gaps"
+    }
+  },
+  "quality_gates": {
+    "cargo_check": "clean",
+    "cargo_fmt": "clean",
+    "clippy_lib": "clean (zero warnings with -D warnings)",
+    "clippy_all_targets": "blocked by pre-existing test compilation issues from concurrent agents",
+    "benchmarks": "all pass (3 criterion benchmarks)"
+  },
+  "benchmarks": {
+    "viewport_goto_bottom_10k_lines": "6.71 ns p50",
+    "markdown_short_100_chars": "17.90 µs p50",
+    "markdown_long_10kb": "93.25 µs p50",
+    "frame_budget_met": true,
+    "note": "All benchmarks well within 16ms frame budget"
+  },
+  "parity_status": {
+    "implemented": 115,
+    "partial": 0,
+    "missing": 0,
+    "out_of_scope": 11,
+    "total": 126
+  },
+  "categories": {
+    "core_types": { "implemented": 8, "out_of_scope": 0 },
+    "provider_layer": { "implemented": 18, "out_of_scope": 9 },
+    "tools": { "implemented": 7, "out_of_scope": 0 },
+    "agent_runtime": { "implemented": 7, "out_of_scope": 0 },
+    "session_management": { "implemented": 10, "out_of_scope": 0 },
+    "cli": { "implemented": 10, "out_of_scope": 0 },
+    "resources_customization": { "implemented": 8, "out_of_scope": 0 },
+    "extensions_runtime": { "implemented": 12, "out_of_scope": 0 },
+    "tui": { "implemented": 18, "out_of_scope": 2 },
+    "configuration": { "implemented": 9, "out_of_scope": 0 },
+    "authentication": { "implemented": 8, "out_of_scope": 0 }
+  },
+  "out_of_scope_items": [
+    "Amazon Bedrock provider",
+    "Google Vertex provider",
+    "GitHub Copilot provider",
+    "XAI provider",
+    "Groq provider",
+    "Cerebras provider",
+    "OpenRouter provider",
+    "Mistral provider",
+    "Custom providers",
+    "Image display (terminal dependent)",
+    "Autocomplete (now implemented, was out of scope)"
+  ],
+  "resolved_partial_items": [
+    {
+      "feature": "/login",
+      "previous_status": "partial",
+      "new_status": "implemented",
+      "evidence": "Anthropic OAuth PKCE + OpenAI/Google API key + extension-registered OAuth (src/interactive/commands.rs:1310-1429)"
+    },
+    {
+      "feature": "/scoped-models",
+      "previous_status": "partial",
+      "new_status": "implemented",
+      "evidence": "Pattern matching UI + persistence to project settings (src/interactive/commands.rs:1661-1780, bd-27a8 CLOSED)"
+    },
+    {
+      "feature": "/share",
+      "previous_status": "partial",
+      "new_status": "implemented",
+      "evidence": "HTML export + GitHub Gist upload via gh CLI (src/interactive/share.rs, 272 lines)"
+    },
+    {
+      "feature": "OAuth flow",
+      "previous_status": "partial",
+      "new_status": "implemented",
+      "evidence": "Anthropic PKCE + extension-registered providers (src/auth.rs)"
+    },
+    {
+      "feature": "Token refresh",
+      "previous_status": "partial",
+      "new_status": "implemented",
+      "evidence": "Auto-refresh on startup for all OAuth providers with unit tests (src/auth.rs, bd-3pn CLOSED)"
+    }
+  ],
+  "performance_track": {
+    "status": "complete",
+    "features": [
+      { "id": "PERF-1", "name": "Message render cache", "status": "implemented" },
+      { "id": "PERF-2", "name": "Incremental prefix", "status": "implemented" },
+      { "id": "PERF-3", "name": "Frame timing telemetry", "status": "implemented" },
+      { "id": "PERF-4", "name": "Frame budget + degradation", "status": "implemented" },
+      { "id": "PERF-6", "name": "Memory pressure detection", "status": "implemented" },
+      { "id": "PERF-7", "name": "Buffer pre-allocation", "status": "implemented" },
+      { "id": "PERF-8", "name": "Criterion benchmarks", "status": "implemented" },
+      { "id": "PERF-9", "name": "CI regression gate", "status": "implemented" },
+      { "id": "PERF-CROSS", "name": "Cross-platform fallbacks", "status": "implemented" }
+    ]
+  },
+  "conformance_tests": {
+    "total_fixtures": 171,
+    "suites": 11,
+    "status": "all pass"
+  }
+}

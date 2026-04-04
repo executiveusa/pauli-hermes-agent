@@ -1,0 +1,1053 @@
+{
+  "schema": "pi.perf.sli_ux_matrix.v1",
+  "contract_version": "1.1.0",
+  "bead_id": "bd-3ar8v.1.10",
+  "previous_contract_bead_id": "bd-3ar8v.1.9",
+  "updated_at": "2026-02-15",
+  "purpose": "Benchmark epistemology contract: prioritize user-visible E2E evidence, require absolute+relative reporting, and machine-enforce confidence semantics.",
+  "source_inputs": [
+    "BENCHMARKS.md",
+    "docs/e2e_scenario_matrix.json",
+    "scripts/e2e/run_all.sh",
+    "scripts/e2e/run_runtime_risk_telemetry.sh",
+    "docs/testing-policy.md",
+    ".github/workflows/ci.yml",
+    ".beads/issues.jsonl"
+  ],
+  "contract_references": {
+    "ci_blocking_beads": [
+      {
+        "issue_id": "bd-3ar8v.1.2",
+        "role": "Blocking CI matrix gate for realistic and matched-state workloads."
+      },
+      {
+        "issue_id": "bd-3ar8v.1.12",
+        "role": "Claim-integrity checker enforcing freshness/completeness and anti-cherrypicking policy."
+      }
+    ],
+    "certification_beads": [
+      {
+        "issue_id": "bd-3ar8v.6.6",
+        "role": "Unified certification suite consumes this contract as an evidence gate."
+      },
+      {
+        "issue_id": "bd-3ar8v.6.5",
+        "role": "Final certification decision requires contract-compliant artifacts."
+      }
+    ],
+    "reporting_beads": [
+      {
+        "issue_id": "bd-3ar8v.6.5",
+        "role": "Final go/no-go report must include absolute and relative figures per scenario."
+      },
+      {
+        "issue_id": "bd-3ar8v.6.10",
+        "role": "Evidence-adjudication report consumes confidence/evidence-class labels."
+      }
+    ],
+    "enforcement_surfaces": [
+      "tests/qa_docs_policy_validation.rs",
+      "docs/testing-policy.md",
+      ".github/workflows/ci.yml"
+    ]
+  },
+  "evidence_adjudication_contract": {
+    "schema": "pi.perf.evidence_adjudication_contract.v1",
+    "required_input_artifacts": [
+      "summary_json",
+      "baseline_variance_confidence",
+      "extension_benchmark_stratification",
+      "phase1_matrix_validation",
+      "claim_integrity_scenario_cells"
+    ],
+    "canonical_identity_fields": [
+      "run_id",
+      "correlation_id"
+    ],
+    "allowed_verdict_statuses": [
+      "resolved",
+      "conflict",
+      "stale",
+      "non_canonical"
+    ],
+    "confidence_precedence": [
+      "high",
+      "medium",
+      "low"
+    ],
+    "evidence_class_precedence": [
+      "measured",
+      "inferred"
+    ],
+    "freshness_policy": {
+      "max_age_hours": 24,
+      "timezone": "UTC"
+    },
+    "fail_closed_reason_codes": [
+      "missing_input_artifact",
+      "stale_input_artifact",
+      "lineage_mismatch",
+      "confidence_conflict_unresolved",
+      "non_canonical_claim_source"
+    ]
+  },
+  "metric_hierarchy": {
+    "primary": [
+      "sli_e2e_turn_latency_p95_ms",
+      "sli_time_to_first_token_p95_ms",
+      "sli_resume_ready_p95_ms"
+    ],
+    "secondary": [
+      "sli_stream_tail_stability_ratio_p99_over_p50",
+      "sli_tool_roundtrip_p95_ms",
+      "sli_extension_action_p95_ms",
+      "sli_failure_recovery_success_rate"
+    ],
+    "tertiary": [
+      "microbench_extension_load_ms",
+      "microbench_tool_dispatch_us",
+      "microbench_memory_delta_mb"
+    ],
+    "policy": "Primary E2E wall-clock/user-visible SLIs are release-deciding. Secondary metrics support attribution. Tertiary microbench metrics are diagnostic only and can never justify pass-by-themselves claims.",
+    "interpretation_rules": [
+      "Any claim about practical speed must lead with primary metrics for required scenarios.",
+      "Secondary metrics may explain causality but cannot override primary regressions.",
+      "Tertiary microbench improvements require explicit caveat when primary metrics do not improve."
+    ]
+  },
+  "evidence_labels": {
+    "evidence_class": [
+      "measured",
+      "inferred"
+    ],
+    "confidence": [
+      "high",
+      "medium",
+      "low"
+    ]
+  },
+  "sli_aliases": {
+    "sli.agent.turn_completion_ms": "sli_e2e_turn_latency_p95_ms",
+    "sli.cli.first_response_ms": "sli_time_to_first_token_p95_ms",
+    "sli.extension.action_latency_ms": "sli_extension_action_p95_ms",
+    "sli.live.auth_success_rate_pct": "sli_failure_recovery_success_rate",
+    "sli.policy.preflight_decision_ms": "sli_extension_action_p95_ms",
+    "sli.provider.first_token_ms": "sli_time_to_first_token_p95_ms",
+    "sli.provider.stream_jitter_p95_ms": "sli_stream_tail_stability_ratio_p99_over_p50",
+    "sli.recovery.time_to_stable_ms": "sli_resume_ready_p95_ms",
+    "sli.resume.replay_integrity_pct": "sli_failure_recovery_success_rate",
+    "sli.rpc.roundtrip_ms": "sli_e2e_turn_latency_p95_ms",
+    "sli.session.resume_ready_ms": "sli_resume_ready_p95_ms",
+    "sli.tui.input_to_render_ms": "sli_time_to_first_token_p95_ms"
+  },
+  "sli_catalog": [
+    {
+      "sli_id": "sli_e2e_turn_latency_p95_ms",
+      "name": "End-to-end turn latency (p95)",
+      "kind": "latency_ms",
+      "metric_family": "e2e_wall_clock",
+      "priority_level": "primary",
+      "thresholds": {
+        "target": 2200,
+        "warning": 3200,
+        "fail": 3200,
+        "target_lte": 2200,
+        "warning_lte": 3200,
+        "critical_gt": 3200
+      },
+      "user_interpretation": {
+        "target": "Typical coding turns feel fast and uninterrupted.",
+        "warning": "Users notice occasional sluggish turns.",
+        "fail": "Turns feel slow and break flow.",
+        "critical": "Turns feel slow and break flow."
+      },
+      "mandatory_interpretation_notes": [
+        "Report this metric for every required scenario as a release-deciding signal.",
+        "Always pair absolute latency with Rust-vs-Node and Rust-vs-Bun ratios.",
+        "If evidence_class=inferred, include explicit rationale for inference method."
+      ]
+    },
+    {
+      "sli_id": "sli_time_to_first_token_p95_ms",
+      "name": "Interactive time-to-first-token (p95)",
+      "kind": "latency_ms",
+      "metric_family": "e2e_responsiveness",
+      "priority_level": "primary",
+      "thresholds": {
+        "target": 1200,
+        "warning": 2000,
+        "fail": 2000,
+        "target_lte": 1200,
+        "warning_lte": 2000,
+        "critical_gt": 2000
+      },
+      "user_interpretation": {
+        "target": "Assistant appears quickly after submit.",
+        "warning": "Response feels delayed but usable.",
+        "fail": "UI feels stalled before output starts.",
+        "critical": "UI feels stalled before output starts."
+      },
+      "mandatory_interpretation_notes": [
+        "Use this metric to represent visible responsiveness at turn start.",
+        "Absolute latency without Rust-vs-Node/Bun ratios is non-compliant.",
+        "Confidence must be high/medium/low and tied to scenario sample count."
+      ]
+    },
+    {
+      "sli_id": "sli_resume_ready_p95_ms",
+      "name": "Session resume ready latency (p95)",
+      "kind": "latency_ms",
+      "metric_family": "e2e_resume",
+      "priority_level": "primary",
+      "thresholds": {
+        "target": 450,
+        "warning": 900,
+        "fail": 900,
+        "target_lte": 450,
+        "warning_lte": 900,
+        "critical_gt": 900
+      },
+      "user_interpretation": {
+        "target": "Resume is effectively instant.",
+        "warning": "Resume is noticeable but acceptable.",
+        "fail": "Resume causes repeated workflow interruption.",
+        "critical": "Resume causes repeated workflow interruption."
+      },
+      "mandatory_interpretation_notes": [
+        "Resume UX claims must cite this metric as primary evidence.",
+        "Report absolute latency and both Rust-vs-Node/Bun ratios per scenario.",
+        "Inferred labels are allowed only when direct measured samples are unavailable."
+      ]
+    },
+    {
+      "sli_id": "sli_stream_tail_stability_ratio_p99_over_p50",
+      "name": "Streaming tail stability (p99/p50 ratio)",
+      "kind": "ratio",
+      "metric_family": "streaming_stability",
+      "priority_level": "secondary",
+      "thresholds": {
+        "target": 3.0,
+        "warning": 4.5,
+        "fail": 4.5,
+        "target_lte": 3.0,
+        "warning_lte": 4.5,
+        "critical_gt": 4.5
+      },
+      "user_interpretation": {
+        "target": "Streaming pace is steady and predictable.",
+        "warning": "Intermittent stutter appears on long outputs.",
+        "fail": "Streaming jitter is obvious and disruptive.",
+        "critical": "Streaming jitter is obvious and disruptive."
+      },
+      "mandatory_interpretation_notes": [
+        "Treat as supporting attribution unless coupled with primary metrics.",
+        "Ratio-only wins without primary improvements are non-decisive.",
+        "For inferred values, report upstream assumptions and model lineage."
+      ]
+    },
+    {
+      "sli_id": "sli_tool_roundtrip_p95_ms",
+      "name": "Built-in tool roundtrip latency (p95)",
+      "kind": "latency_ms",
+      "metric_family": "tooling_latency",
+      "priority_level": "secondary",
+      "thresholds": {
+        "target": 350,
+        "warning": 700,
+        "fail": 700,
+        "target_lte": 350,
+        "warning_lte": 700,
+        "critical_gt": 700
+      },
+      "user_interpretation": {
+        "target": "Tool actions feel immediate.",
+        "warning": "Tool calls feel a bit heavy.",
+        "fail": "Tool calls noticeably block momentum.",
+        "critical": "Tool calls noticeably block momentum."
+      },
+      "mandatory_interpretation_notes": [
+        "Use for root-cause attribution of agent-loop slowdowns.",
+        "Absolute values must be paired with Rust-vs-Node/Bun ratios.",
+        "Do not promote as primary evidence for release claims."
+      ]
+    },
+    {
+      "sli_id": "sli_extension_action_p95_ms",
+      "name": "Extension action latency (p95)",
+      "kind": "latency_ms",
+      "metric_family": "extension_runtime",
+      "priority_level": "secondary",
+      "thresholds": {
+        "target": 450,
+        "warning": 900,
+        "fail": 900,
+        "target_lte": 450,
+        "warning_lte": 900,
+        "critical_gt": 900
+      },
+      "user_interpretation": {
+        "target": "Extensions feel integrated and responsive.",
+        "warning": "Extension actions feel delayed.",
+        "fail": "Extension operations feel unreliable/slow.",
+        "critical": "Extension operations feel unreliable/slow."
+      },
+      "mandatory_interpretation_notes": [
+        "Use to attribute extension-hosting overhead in realistic workflows.",
+        "Relative ratio fields are mandatory for this metric family.",
+        "If inferred, attach evidence_ref to measured proxy source."
+      ]
+    },
+    {
+      "sli_id": "sli_failure_recovery_success_rate",
+      "name": "Failure/recovery success rate",
+      "kind": "percent",
+      "metric_family": "resilience",
+      "priority_level": "secondary",
+      "thresholds": {
+        "target": 99.0,
+        "warning": 97.0,
+        "fail": 97.0,
+        "target_gte": 99.0,
+        "warning_gte": 97.0,
+        "critical_lt": 97.0
+      },
+      "user_interpretation": {
+        "target": "Interruptions and retries recover reliably.",
+        "warning": "Recovery usually works but needs occasional manual intervention.",
+        "fail": "Recovery failures are frequent and user-visible.",
+        "critical": "Recovery failures are frequent and user-visible."
+      },
+      "mandatory_interpretation_notes": [
+        "Resilience narratives must pair this with at least one primary latency SLI.",
+        "Both absolute rate and relative Rust-vs-Node/Bun ratios are mandatory.",
+        "Confidence label must reflect sample size and retry-scenario coverage."
+      ]
+    }
+  ],
+  "benchmark_partitions": {
+    "partition_tags": [
+      "matched-state",
+      "realistic"
+    ],
+    "realistic_long_session": [
+      "realistic_100k",
+      "realistic_200k",
+      "realistic_500k",
+      "realistic_1m",
+      "realistic_5m"
+    ],
+    "matched_state": [
+      "matched_state_100k",
+      "matched_state_200k",
+      "matched_state_500k",
+      "matched_state_1m",
+      "matched_state_5m"
+    ]
+  },
+  "workload_partition_contract": {
+    "schema": "pi.perf.workload_partition_contract.v1",
+    "contract_version": "1.0.0",
+    "bead_id": "bd-3ar8v.1.10",
+    "benchmark_script_references": [
+      {
+        "path": "scripts/e2e/run_all.sh",
+        "role": "Top-level e2e entrypoint that anchors perf SLI contract paths in emitted evidence artifacts."
+      },
+      {
+        "path": "scripts/perf/orchestrate.sh",
+        "role": "Partition-aware benchmark orchestrator that emits workload-partition-tagged confidence records from scenario partition requirements."
+      }
+    ],
+    "partition_definitions": {
+      "matched-state": {
+        "label": "apples-to-apples",
+        "intent": "Strict comparability with normalized workload and replay parameters.",
+        "input_contract": [
+          "fixed_session_message_count",
+          "fixed_tool_invocation_plan",
+          "fixed_provider_model_family",
+          "deterministic_replay_seed"
+        ],
+        "interpretation_rules": [
+          "Matched-state results are required to attribute engine/runtime deltas with minimized confounders.",
+          "Matched-state gains cannot replace realistic partition regressions when making release decisions."
+        ]
+      },
+      "realistic": {
+        "label": "apples-to-oranges",
+        "intent": "User-fidelity workflows with practical variance retained for real-world representativeness.",
+        "input_contract": [
+          "realistic_session_shape",
+          "production-like_tool_mix",
+          "provider_mix_by_workflow",
+          "traceable_replay_bundle_reference"
+        ],
+        "interpretation_rules": [
+          "Realistic results carry the highest weight for practical speed narratives and release claims.",
+          "Realistic evidence must still be paired with matched-state evidence before claiming global conclusions."
+        ]
+      }
+    },
+    "required_result_metadata_fields": [
+      "workflow_id",
+      "workflow_class",
+      "suite_ids",
+      "vcr_mode",
+      "scenario_owner"
+    ],
+    "scenario_partition_coverage": [
+      {
+        "workflow_id": "wf-cli-onboarding-and-slash-commands",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-agent-loop-and-tool-roundtrip",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-provider-streaming-and-deterministic-parity",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-extension-registration-and-ts-loading",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-session-control-persistence-recovery",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-rpc-endpoint-integration",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-tui-interactive-journeys",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-library-runtime-integration",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-preflight-policy-and-auto-repair",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-live-provider-parity-and-auth",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-failure-injection-and-recovery-pack",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-interruption-resume-replay-pack",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      }
+    ],
+    "weighting_policy": {
+      "schema": "pi.perf.partition_weighting.v1",
+      "decision_weights": {
+        "matched-state": 0.35,
+        "realistic": 0.65
+      },
+      "normalization": "decision_weights must sum to 1.0",
+      "interpretation": "Optimization and release narratives prioritize realistic evidence while treating matched-state regressions as blockers."
+    },
+    "release_claim_policy": {
+      "global_conclusion_requires_partitions": [
+        "matched-state",
+        "realistic"
+      ],
+      "forbidden_single_partition_claim": true,
+      "policy": "Global Rust>=3x claims are invalid when only one partition has compliant evidence."
+    }
+  },
+  "scenario_sli_matrix": [
+    {
+      "scenario_id": "wf-cli-onboarding-and-slash-commands",
+      "sli_ids": [
+        "sli_time_to_first_token_p95_ms",
+        "sli_e2e_turn_latency_p95_ms"
+      ],
+      "user_outcome": "First-run and slash-command control loops feel responsive."
+    },
+    {
+      "scenario_id": "wf-agent-loop-and-tool-roundtrip",
+      "sli_ids": [
+        "sli_e2e_turn_latency_p95_ms",
+        "sli_tool_roundtrip_p95_ms",
+        "sli_stream_tail_stability_ratio_p99_over_p50"
+      ],
+      "user_outcome": "Normal coding turns and built-in tools stay fast and stable."
+    },
+    {
+      "scenario_id": "wf-provider-streaming-and-deterministic-parity",
+      "sli_ids": [
+        "sli_time_to_first_token_p95_ms",
+        "sli_stream_tail_stability_ratio_p99_over_p50",
+        "sli_e2e_turn_latency_p95_ms"
+      ],
+      "user_outcome": "Streaming begins quickly and remains smooth across providers."
+    },
+    {
+      "scenario_id": "wf-extension-registration-and-ts-loading",
+      "sli_ids": [
+        "sli_extension_action_p95_ms",
+        "sli_e2e_turn_latency_p95_ms"
+      ],
+      "user_outcome": "Extension enable/load path remains practical for daily use."
+    },
+    {
+      "scenario_id": "wf-session-control-persistence-recovery",
+      "sli_ids": [
+        "sli_resume_ready_p95_ms",
+        "sli_failure_recovery_success_rate"
+      ],
+      "user_outcome": "Resume and session control operations recover reliably."
+    },
+    {
+      "scenario_id": "wf-rpc-endpoint-integration",
+      "sli_ids": [
+        "sli_e2e_turn_latency_p95_ms",
+        "sli_time_to_first_token_p95_ms"
+      ],
+      "user_outcome": "IDE and automation RPC flows stay responsive."
+    },
+    {
+      "scenario_id": "wf-tui-interactive-journeys",
+      "sli_ids": [
+        "sli_time_to_first_token_p95_ms",
+        "sli_stream_tail_stability_ratio_p99_over_p50",
+        "sli_tool_roundtrip_p95_ms"
+      ],
+      "user_outcome": "Interactive terminal journeys remain fluid."
+    },
+    {
+      "scenario_id": "wf-library-runtime-integration",
+      "sli_ids": [
+        "sli_e2e_turn_latency_p95_ms",
+        "sli_resume_ready_p95_ms"
+      ],
+      "user_outcome": "Embedded/SDK integration keeps low-latency behavior."
+    },
+    {
+      "scenario_id": "wf-preflight-policy-and-auto-repair",
+      "sli_ids": [
+        "sli_extension_action_p95_ms",
+        "sli_failure_recovery_success_rate"
+      ],
+      "user_outcome": "Policy checks and auto-repair do not create UX stalls."
+    },
+    {
+      "scenario_id": "wf-live-provider-parity-and-auth",
+      "sli_ids": [
+        "sli_time_to_first_token_p95_ms",
+        "sli_e2e_turn_latency_p95_ms",
+        "sli_failure_recovery_success_rate"
+      ],
+      "user_outcome": "Live auth/provider paths remain responsive and recoverable."
+    },
+    {
+      "scenario_id": "wf-failure-injection-and-recovery-pack",
+      "sli_ids": [
+        "sli_failure_recovery_success_rate",
+        "sli_resume_ready_p95_ms"
+      ],
+      "user_outcome": "Faults recover without repeated user intervention."
+    },
+    {
+      "scenario_id": "wf-interruption-resume-replay-pack",
+      "sli_ids": [
+        "sli_failure_recovery_success_rate",
+        "sli_resume_ready_p95_ms",
+        "sli_stream_tail_stability_ratio_p99_over_p50"
+      ],
+      "user_outcome": "Interrupt-resume-replay workflows preserve responsiveness."
+    }
+  ],
+  "workflow_sli_mapping": [
+    {
+      "workflow_id": "wf-cli-onboarding-and-slash-commands",
+      "sli_ids": [
+        "sli_time_to_first_token_p95_ms",
+        "sli_e2e_turn_latency_p95_ms"
+      ]
+    },
+    {
+      "workflow_id": "wf-agent-loop-and-tool-roundtrip",
+      "sli_ids": [
+        "sli_e2e_turn_latency_p95_ms",
+        "sli_tool_roundtrip_p95_ms",
+        "sli_stream_tail_stability_ratio_p99_over_p50"
+      ]
+    },
+    {
+      "workflow_id": "wf-provider-streaming-and-deterministic-parity",
+      "sli_ids": [
+        "sli_time_to_first_token_p95_ms",
+        "sli_stream_tail_stability_ratio_p99_over_p50",
+        "sli_e2e_turn_latency_p95_ms"
+      ]
+    },
+    {
+      "workflow_id": "wf-extension-registration-and-ts-loading",
+      "sli_ids": [
+        "sli_extension_action_p95_ms",
+        "sli_e2e_turn_latency_p95_ms"
+      ]
+    },
+    {
+      "workflow_id": "wf-session-control-persistence-recovery",
+      "sli_ids": [
+        "sli_resume_ready_p95_ms",
+        "sli_failure_recovery_success_rate"
+      ]
+    },
+    {
+      "workflow_id": "wf-rpc-endpoint-integration",
+      "sli_ids": [
+        "sli_e2e_turn_latency_p95_ms",
+        "sli_time_to_first_token_p95_ms"
+      ]
+    },
+    {
+      "workflow_id": "wf-tui-interactive-journeys",
+      "sli_ids": [
+        "sli_time_to_first_token_p95_ms",
+        "sli_stream_tail_stability_ratio_p99_over_p50",
+        "sli_tool_roundtrip_p95_ms"
+      ]
+    },
+    {
+      "workflow_id": "wf-library-runtime-integration",
+      "sli_ids": [
+        "sli_e2e_turn_latency_p95_ms",
+        "sli_resume_ready_p95_ms"
+      ]
+    },
+    {
+      "workflow_id": "wf-preflight-policy-and-auto-repair",
+      "sli_ids": [
+        "sli_extension_action_p95_ms",
+        "sli_failure_recovery_success_rate"
+      ]
+    },
+    {
+      "workflow_id": "wf-live-provider-parity-and-auth",
+      "sli_ids": [
+        "sli_time_to_first_token_p95_ms",
+        "sli_e2e_turn_latency_p95_ms",
+        "sli_failure_recovery_success_rate"
+      ]
+    },
+    {
+      "workflow_id": "wf-failure-injection-and-recovery-pack",
+      "sli_ids": [
+        "sli_failure_recovery_success_rate",
+        "sli_resume_ready_p95_ms"
+      ]
+    },
+    {
+      "workflow_id": "wf-interruption-resume-replay-pack",
+      "sli_ids": [
+        "sli_failure_recovery_success_rate",
+        "sli_resume_ready_p95_ms",
+        "sli_stream_tail_stability_ratio_p99_over_p50"
+      ]
+    }
+  ],
+  "phase_validation_consumers": [
+    {
+      "issue_id": "bd-3ar8v.1.5",
+      "contract": "Baseline variance/confidence output must be keyed by sli_id and scenario_id."
+    },
+    {
+      "issue_id": "bd-3ar8v.2.11",
+      "contract": "Durability-mode UX validation must report pass/warn/fail per mapped SLI."
+    },
+    {
+      "issue_id": "bd-3ar8v.3.11",
+      "contract": "Resume/fork/export UX validation must consume resume and recovery SLIs."
+    },
+    {
+      "issue_id": "bd-3ar8v.6.7",
+      "contract": "User diagnostics workflow must map troubleshooting guidance to breached SLI IDs."
+    },
+    {
+      "issue_id": "bd-3ar8v.1.2",
+      "contract": "CI matrix must block on primary E2E SLI regression and emit required ratios."
+    },
+    {
+      "issue_id": "bd-3ar8v.1.12",
+      "contract": "Claim-integrity gate must fail artifacts missing measured/inferred labels or absolute/relative metrics."
+    },
+    {
+      "issue_id": "bd-3ar8v.6.5",
+      "contract": "Final certification report must present contract-compliant scenario summaries."
+    }
+  ],
+  "downstream_consumers": [
+    {
+      "bead_id": "bd-3ar8v.1.5",
+      "contract": "Baseline variance/confidence output must be keyed by sli_id and scenario_id."
+    },
+    {
+      "bead_id": "bd-3ar8v.2.11",
+      "contract": "Durability-mode UX validation must report pass/warn/fail per mapped SLI."
+    },
+    {
+      "bead_id": "bd-3ar8v.3.11",
+      "contract": "Resume/fork/export UX validation must consume resume and recovery SLIs."
+    },
+    {
+      "bead_id": "bd-3ar8v.6.7",
+      "contract": "User diagnostics workflow must map troubleshooting guidance to breached SLI IDs."
+    }
+  ],
+  "reporting_contract": {
+    "schema": "pi.perf.epistemology_reporting_contract.v1",
+    "required_scenarios": [
+      "wf-cli-onboarding-and-slash-commands",
+      "wf-agent-loop-and-tool-roundtrip",
+      "wf-provider-streaming-and-deterministic-parity",
+      "wf-extension-registration-and-ts-loading",
+      "wf-session-control-persistence-recovery",
+      "wf-rpc-endpoint-integration",
+      "wf-tui-interactive-journeys",
+      "wf-library-runtime-integration",
+      "wf-preflight-policy-and-auto-repair",
+      "wf-live-provider-parity-and-auth",
+      "wf-failure-injection-and-recovery-pack",
+      "wf-interruption-resume-replay-pack"
+    ],
+    "required_metric_fields": [
+      "run_id",
+      "correlation_id",
+      "scenario_id",
+      "workload_partition",
+      "scenario_metadata",
+      "sli_id",
+      "evidence_class",
+      "confidence",
+      "absolute_value",
+      "absolute_unit",
+      "rust_vs_node_ratio",
+      "rust_vs_bun_ratio",
+      "status",
+      "evidence_ref"
+    ],
+    "absolute_relative_policy": "Every required scenario must include absolute values and both relative ratios (Rust-vs-Node, Rust-vs-Bun). Missing either is a fail-closed contract violation.",
+    "required_partition_tags": [
+      "matched-state",
+      "realistic"
+    ],
+    "required_scenario_metadata_fields": [
+      "workflow_id",
+      "workflow_class",
+      "suite_ids",
+      "vcr_mode",
+      "scenario_owner"
+    ],
+    "partition_completeness_policy": "Every required scenario must publish contract-compliant rows for matched-state and realistic partitions before global conclusions are allowed.",
+    "scenario_requirements": [
+      {
+        "workflow_id": "wf-cli-onboarding-and-slash-commands",
+        "required_absolute_metrics": true,
+        "required_relative_ratios": [
+          "rust_vs_node_ratio",
+          "rust_vs_bun_ratio"
+        ]
+      },
+      {
+        "workflow_id": "wf-agent-loop-and-tool-roundtrip",
+        "required_absolute_metrics": true,
+        "required_relative_ratios": [
+          "rust_vs_node_ratio",
+          "rust_vs_bun_ratio"
+        ]
+      },
+      {
+        "workflow_id": "wf-provider-streaming-and-deterministic-parity",
+        "required_absolute_metrics": true,
+        "required_relative_ratios": [
+          "rust_vs_node_ratio",
+          "rust_vs_bun_ratio"
+        ]
+      },
+      {
+        "workflow_id": "wf-extension-registration-and-ts-loading",
+        "required_absolute_metrics": true,
+        "required_relative_ratios": [
+          "rust_vs_node_ratio",
+          "rust_vs_bun_ratio"
+        ]
+      },
+      {
+        "workflow_id": "wf-session-control-persistence-recovery",
+        "required_absolute_metrics": true,
+        "required_relative_ratios": [
+          "rust_vs_node_ratio",
+          "rust_vs_bun_ratio"
+        ]
+      },
+      {
+        "workflow_id": "wf-rpc-endpoint-integration",
+        "required_absolute_metrics": true,
+        "required_relative_ratios": [
+          "rust_vs_node_ratio",
+          "rust_vs_bun_ratio"
+        ]
+      },
+      {
+        "workflow_id": "wf-tui-interactive-journeys",
+        "required_absolute_metrics": true,
+        "required_relative_ratios": [
+          "rust_vs_node_ratio",
+          "rust_vs_bun_ratio"
+        ]
+      },
+      {
+        "workflow_id": "wf-library-runtime-integration",
+        "required_absolute_metrics": true,
+        "required_relative_ratios": [
+          "rust_vs_node_ratio",
+          "rust_vs_bun_ratio"
+        ]
+      },
+      {
+        "workflow_id": "wf-preflight-policy-and-auto-repair",
+        "required_absolute_metrics": true,
+        "required_relative_ratios": [
+          "rust_vs_node_ratio",
+          "rust_vs_bun_ratio"
+        ]
+      },
+      {
+        "workflow_id": "wf-live-provider-parity-and-auth",
+        "required_absolute_metrics": true,
+        "required_relative_ratios": [
+          "rust_vs_node_ratio",
+          "rust_vs_bun_ratio"
+        ]
+      },
+      {
+        "workflow_id": "wf-failure-injection-and-recovery-pack",
+        "required_absolute_metrics": true,
+        "required_relative_ratios": [
+          "rust_vs_node_ratio",
+          "rust_vs_bun_ratio"
+        ]
+      },
+      {
+        "workflow_id": "wf-interruption-resume-replay-pack",
+        "required_absolute_metrics": true,
+        "required_relative_ratios": [
+          "rust_vs_node_ratio",
+          "rust_vs_bun_ratio"
+        ]
+      }
+    ],
+    "scenario_partition_requirements": [
+      {
+        "workflow_id": "wf-cli-onboarding-and-slash-commands",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-agent-loop-and-tool-roundtrip",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-provider-streaming-and-deterministic-parity",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-extension-registration-and-ts-loading",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-session-control-persistence-recovery",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-rpc-endpoint-integration",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-tui-interactive-journeys",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-library-runtime-integration",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-preflight-policy-and-auto-repair",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-live-provider-parity-and-auth",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-failure-injection-and-recovery-pack",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      },
+      {
+        "workflow_id": "wf-interruption-resume-replay-pack",
+        "required_partitions": [
+          "matched-state",
+          "realistic"
+        ]
+      }
+    ],
+    "interpretation_template": {
+      "required_sections": [
+        "primary_signal_summary",
+        "secondary_attribution_summary",
+        "tertiary_microbench_caveats",
+        "confidence_and_lineage"
+      ],
+      "example_row": {
+        "run_id": "ci-2026-02-15T20:00:00Z",
+        "correlation_id": "perf3x-epistemology-sample",
+        "scenario_id": "wf-agent-loop-and-tool-roundtrip",
+        "workload_partition": "realistic",
+        "scenario_metadata": {
+          "workflow_id": "wf-agent-loop-and-tool-roundtrip",
+          "workflow_class": "success_path",
+          "suite_ids": [
+            "e2e_agent_loop",
+            "e2e_tools"
+          ],
+          "vcr_mode": "vcr-only",
+          "scenario_owner": "bd-1f42.8.5.2"
+        },
+        "sli_id": "sli_e2e_turn_latency_p95_ms",
+        "evidence_class": "measured",
+        "confidence": "high",
+        "absolute_value": 1890,
+        "absolute_unit": "ms",
+        "rust_vs_node_ratio": 2.31,
+        "rust_vs_bun_ratio": 1.64,
+        "status": "pass",
+        "evidence_ref": "artifacts/perf/ci-2026-02-15/wf-agent-loop/result.json"
+      }
+    }
+  },
+  "ci_enforcement": {
+    "result_status_values": [
+      "pass",
+      "warn",
+      "fail"
+    ],
+    "required_result_fields": [
+      "run_id",
+      "correlation_id",
+      "scenario_id",
+      "workload_partition",
+      "scenario_metadata",
+      "sli_id",
+      "evidence_class",
+      "confidence",
+      "absolute_value",
+      "absolute_unit",
+      "rust_vs_node_ratio",
+      "rust_vs_bun_ratio",
+      "status",
+      "evidence_ref"
+    ],
+    "allowed_evidence_class": [
+      "measured",
+      "inferred"
+    ],
+    "allowed_confidence": [
+      "high",
+      "medium",
+      "low"
+    ],
+    "fail_closed_conditions": [
+      "missing_required_result_field",
+      "scenario_without_sli_mapping",
+      "sli_without_thresholds",
+      "missing_or_stale_evidence",
+      "missing_absolute_or_relative_values",
+      "missing_workload_partition_tag",
+      "missing_scenario_metadata",
+      "invalid_evidence_class",
+      "invalid_confidence_label",
+      "microbench_only_claim",
+      "global_claim_missing_partition_coverage",
+      "unresolved_conflicting_claims"
+    ]
+  }
+}

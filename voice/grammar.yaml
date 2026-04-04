@@ -1,0 +1,64 @@
+# Voice Grammar — Maps spoken commands to agent actions
+# Used by the dashboard voice input and CLI voice mode.
+
+commands:
+  # Agent switching
+  - patterns: ["switch to {agent}", "talk to {agent}", "hey {agent}"]
+    action: switch_agent
+    params: [agent]
+
+  # Mode selection
+  - patterns: ["mode {mode}", "switch to {mode} mode", "enter {mode}"]
+    action: set_mode
+    params: [mode]
+
+  # Memory operations
+  - patterns: ["remember {content}", "save to brain {content}", "store {content}"]
+    action: brain_store
+    params: [content]
+
+  - patterns: ["search brain for {query}", "find in brain {query}", "recall {query}"]
+    action: brain_search
+    params: [query]
+
+  # Task management
+  - patterns: ["create task {title}", "new task {title}", "add task {title}"]
+    action: bead_create
+    params: [title]
+
+  - patterns: ["close task {id}", "done with task {id}", "finish task {id}"]
+    action: bead_close
+    params: [id]
+
+  # Navigation
+  - patterns: ["show {panel}", "open {panel}", "go to {panel}"]
+    action: show_panel
+    params: [panel]
+
+  # Quick actions
+  - patterns: ["deploy", "ship it", "push to production"]
+    action: deploy
+    params: []
+
+  - patterns: ["run tests", "test everything", "check tests"]
+    action: run_tests
+    params: []
+
+  - patterns: ["status", "how are we doing", "health check"]
+    action: health_check
+    params: []
+
+modes:
+  - orchestration
+  - luxury-travel
+  - eco-events
+  - repo-architecture
+  - voice-dashboard
+  - deployment
+
+agents:
+  - hermes
+  - zero
+  - darya
+  - pi
+  - humanizer

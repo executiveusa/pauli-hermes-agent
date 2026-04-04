@@ -1,0 +1,417 @@
+{
+  "schema": "pi.qa.non_mock_rubric.v1",
+  "bead_id": "bd-1f42.2.8",
+  "created_at": "2026-02-12T20:00:00Z",
+  "owner": "OrangeHeron",
+  "description": "Per-module coverage thresholds, mock/fake exception template, and failure-log schema for non-mock unit/integration testing.",
+  "references": {
+    "coverage_baseline": "docs/coverage-baseline-map.json",
+    "testing_policy": "docs/testing-policy.md",
+    "test_double_inventory": "docs/test_double_inventory.json",
+    "suite_classification": "tests/suite_classification.toml"
+  },
+
+  "module_thresholds": {
+    "_doc": "Per-module coverage minimums. 'floor' is the hard CI-gate minimum (fail below). 'target' is the aspirational goal. Branch metrics are available for 63/107 source files via per-file llvm-cov export workaround (51.95% branch coverage). Branch floor enforcement is deferred until full-file coverage is achievable (see coverage-baseline-map.json).",
+    "global": {
+      "line_floor_pct": 75.0,
+      "function_floor_pct": 73.0,
+      "branch_floor_pct": null,
+      "line_target_pct": 85.0,
+      "function_target_pct": 82.0,
+      "branch_target_pct": null,
+      "baseline_line_pct": 78.64,
+      "baseline_function_pct": 77.36,
+      "notes": "Global floor set ~3-4% below baseline to absorb CI variance. Branch gating remains deferred; fallback branch metrics are emitted as 0.0/0/0 while llvm-cov branch export is unstable."
+    },
+    "modules": [
+      {
+        "name": "agent_loop",
+        "paths": ["src/agent.rs"],
+        "criticality": "critical",
+        "line_floor_pct": 75.0,
+        "function_floor_pct": 70.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 85.0,
+        "function_target_pct": 80.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": 79.54,
+        "baseline_function_pct": 74.76,
+        "rationale": "Agent loop orchestrates all tool/provider interactions. Uncovered abort/retry/interrupt paths are high-risk."
+      },
+      {
+        "name": "tools",
+        "paths": ["src/tools.rs"],
+        "criticality": "critical",
+        "line_floor_pct": 75.0,
+        "function_floor_pct": 72.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 85.0,
+        "function_target_pct": 82.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": 78.96,
+        "baseline_function_pct": 76.66,
+        "rationale": "Tool execution surfaces directly to users. File/shell/search reliability regressions cause visible breakage."
+      },
+      {
+        "name": "providers",
+        "paths": ["src/provider.rs", "src/providers/*.rs", "src/provider_metadata.rs"],
+        "criticality": "critical",
+        "line_floor_pct": 82.0,
+        "function_floor_pct": 79.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 90.0,
+        "function_target_pct": 88.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": 86.30,
+        "baseline_function_pct": 83.31,
+        "rationale": "Provider layer has the highest baseline and the most active expansion. Thresholds set to prevent regression during rapid onboarding."
+      },
+      {
+        "name": "session",
+        "paths": ["src/session.rs", "src/session_index.rs", "src/session_picker.rs", "src/session_sqlite.rs"],
+        "criticality": "high",
+        "line_floor_pct": 76.0,
+        "function_floor_pct": 74.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 85.0,
+        "function_target_pct": 82.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": 80.50,
+        "baseline_function_pct": 77.88,
+        "rationale": "Session persistence reliability is essential for long-running agent sessions. Replay/index drift under interruption is a known risk."
+      },
+      {
+        "name": "extensions",
+        "paths": ["src/extensions.rs", "src/extension_dispatcher.rs", "src/extensions_js.rs"],
+        "criticality": "critical",
+        "line_floor_pct": 80.0,
+        "function_floor_pct": 69.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 88.0,
+        "function_target_pct": 80.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": 85.01,
+        "baseline_function_pct": 73.53,
+        "rationale": "Largest uncovered surface (607 uncovered functions). Function floor set below baseline to avoid blocking on sheer volume; line floor is firm."
+      },
+      {
+        "name": "auth",
+        "paths": ["src/auth.rs"],
+        "criticality": "high",
+        "line_floor_pct": 72.0,
+        "function_floor_pct": 70.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 82.0,
+        "function_target_pct": 78.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": null,
+        "baseline_function_pct": null,
+        "rationale": "Auth handles credential chains, OAuth, redaction. Security-sensitive; floor set conservatively pending per-file baseline."
+      },
+      {
+        "name": "error",
+        "paths": ["src/error.rs", "src/error_hints.rs"],
+        "criticality": "high",
+        "line_floor_pct": 72.0,
+        "function_floor_pct": 70.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 82.0,
+        "function_target_pct": 78.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": null,
+        "baseline_function_pct": null,
+        "rationale": "Error paths and diagnostic hints are user-facing. Incorrect error messages erode trust and complicate debugging."
+      },
+      {
+        "name": "model",
+        "paths": ["src/model.rs", "src/models.rs", "src/model_selector.rs"],
+        "criticality": "high",
+        "line_floor_pct": 74.0,
+        "function_floor_pct": 72.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 84.0,
+        "function_target_pct": 80.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": null,
+        "baseline_function_pct": null,
+        "rationale": "Model serialization and registry routing are foundational. Regressions propagate to all providers."
+      },
+      {
+        "name": "config",
+        "paths": ["src/config.rs"],
+        "criticality": "medium",
+        "line_floor_pct": 70.0,
+        "function_floor_pct": 68.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 80.0,
+        "function_target_pct": 76.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": null,
+        "baseline_function_pct": null,
+        "rationale": "Config precedence is well-tested by existing suite; medium criticality because errors are typically caught at startup."
+      },
+      {
+        "name": "sse",
+        "paths": ["src/sse.rs"],
+        "criticality": "high",
+        "line_floor_pct": 76.0,
+        "function_floor_pct": 74.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 86.0,
+        "function_target_pct": 82.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": null,
+        "baseline_function_pct": null,
+        "rationale": "SSE parser correctness is critical for all streaming providers. Malformed event handling is a known risk area."
+      },
+      {
+        "name": "compaction",
+        "paths": ["src/compaction.rs"],
+        "criticality": "medium",
+        "line_floor_pct": 70.0,
+        "function_floor_pct": 68.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 80.0,
+        "function_target_pct": 76.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": null,
+        "baseline_function_pct": null,
+        "rationale": "Compaction has dedicated test suites and bounded scope."
+      },
+      {
+        "name": "vcr",
+        "paths": ["src/vcr.rs"],
+        "criticality": "medium",
+        "line_floor_pct": 68.0,
+        "function_floor_pct": 66.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 78.0,
+        "function_target_pct": 74.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": null,
+        "baseline_function_pct": null,
+        "rationale": "VCR is test infrastructure, not production code. Moderate floor is sufficient."
+      },
+      {
+        "name": "rpc",
+        "paths": ["src/rpc.rs"],
+        "criticality": "medium",
+        "line_floor_pct": 70.0,
+        "function_floor_pct": 68.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 80.0,
+        "function_target_pct": 76.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": null,
+        "baseline_function_pct": null,
+        "rationale": "RPC protocol handling has dedicated conformance tests."
+      },
+      {
+        "name": "interactive",
+        "paths": ["src/interactive.rs", "src/tui.rs", "src/keybindings.rs"],
+        "criticality": "low",
+        "line_floor_pct": 60.0,
+        "function_floor_pct": 58.0,
+        "branch_floor_pct": null,
+        "line_target_pct": 72.0,
+        "function_target_pct": 68.0,
+        "branch_target_pct": null,
+        "baseline_line_pct": null,
+        "baseline_function_pct": null,
+        "rationale": "UI/TUI code is inherently hard to test with deterministic coverage. Relies on E2E scenarios for validation."
+      }
+    ]
+  },
+
+  "exception_template": {
+    "_doc": "Mandatory fields for any mock/fake/stub exception. All exceptions must be time-limited and tracked by a bead.",
+    "required_fields": [
+      {
+        "field": "bead_id",
+        "type": "string",
+        "description": "Tracking bead that justifies the exception."
+      },
+      {
+        "field": "owner",
+        "type": "string",
+        "description": "Single accountable owner (agent or person name)."
+      },
+      {
+        "field": "expires_at",
+        "type": "string",
+        "format": "date",
+        "description": "Hard expiration date (UTC, YYYY-MM-DD). Maximum 90 days from creation."
+      },
+      {
+        "field": "replacement_plan",
+        "type": "string",
+        "description": "Concrete path to remove the double (e.g., 'Replace with VCR cassette in bd-XXXX')."
+      },
+      {
+        "field": "scope",
+        "type": "array",
+        "items": "string",
+        "description": "Exact files/tests where the exception is permitted."
+      },
+      {
+        "field": "double_identifier",
+        "type": "string",
+        "description": "The mock/fake/stub type name being excepted."
+      },
+      {
+        "field": "double_type",
+        "type": "string",
+        "enum": ["mock", "fake", "stub", "spy", "recording"],
+        "description": "Category of the test double."
+      },
+      {
+        "field": "rationale",
+        "type": "string",
+        "description": "Why the double is necessary and why alternatives were rejected."
+      },
+      {
+        "field": "verification",
+        "type": "string",
+        "description": "CI/tests proving behavior remains covered despite the temporary double."
+      }
+    ],
+    "validation_rules": [
+      "expires_at must be within 90 days of creation.",
+      "replacement_plan must reference a concrete bead or action.",
+      "scope must be non-empty and list specific file paths.",
+      "All fields are required; CI rejects entries missing any field."
+    ]
+  },
+
+  "failure_log_schema": {
+    "_doc": "Mandatory schema for unit/integration test failure diagnostics. Every test failure must emit structured data following this schema.",
+    "schema_id": "pi.test.failure_log.v1",
+    "fields": [
+      {
+        "field": "correlation_id",
+        "type": "string",
+        "format": "uuid",
+        "required": true,
+        "description": "Unique ID for this test invocation. Format: <test_name>-<timestamp_ms>-<random_4hex>."
+      },
+      {
+        "field": "test_name",
+        "type": "string",
+        "required": true,
+        "description": "Fully qualified test name (module::test_fn)."
+      },
+      {
+        "field": "suite",
+        "type": "string",
+        "enum": ["unit", "vcr", "e2e"],
+        "required": true,
+        "description": "Suite classification from suite_classification.toml."
+      },
+      {
+        "field": "timestamp",
+        "type": "string",
+        "format": "iso8601",
+        "required": true,
+        "description": "UTC timestamp of the failure."
+      },
+      {
+        "field": "fixture",
+        "type": "object",
+        "required": false,
+        "description": "Fixture/cassette metadata if applicable.",
+        "properties": {
+          "path": "Path to fixture file or VCR cassette.",
+          "version": "Fixture schema version.",
+          "hash": "SHA-256 of the fixture content."
+        }
+      },
+      {
+        "field": "seed",
+        "type": "integer",
+        "required": false,
+        "description": "Random seed if the test uses deterministic randomness."
+      },
+      {
+        "field": "env",
+        "type": "object",
+        "required": true,
+        "description": "Relevant environment variables (redacted). Keys are variable names, values are redacted or sanitized.",
+        "redaction_rules": [
+          "Values matching *_KEY, *_SECRET, *_TOKEN, *_PASSWORD are replaced with [REDACTED].",
+          "Values matching *_API_KEY are replaced with [REDACTED].",
+          "Only test-relevant env vars are included (VCR_MODE, RUST_LOG, PI_E2E, CARGO_TARGET_DIR)."
+        ]
+      },
+      {
+        "field": "expected",
+        "type": "any",
+        "required": true,
+        "description": "Expected value or condition."
+      },
+      {
+        "field": "actual",
+        "type": "any",
+        "required": true,
+        "description": "Actual value or condition observed."
+      },
+      {
+        "field": "diff",
+        "type": "string",
+        "required": false,
+        "description": "Human-readable diff between expected and actual when applicable."
+      },
+      {
+        "field": "error_message",
+        "type": "string",
+        "required": true,
+        "description": "The assertion or panic message."
+      },
+      {
+        "field": "backtrace",
+        "type": "string",
+        "required": false,
+        "description": "Filtered backtrace (test-relevant frames only)."
+      },
+      {
+        "field": "duration_ms",
+        "type": "number",
+        "required": true,
+        "description": "Test execution duration in milliseconds."
+      },
+      {
+        "field": "runner",
+        "type": "object",
+        "required": true,
+        "description": "Runner environment metadata.",
+        "properties": {
+          "os": "Operating system (uname -s).",
+          "arch": "CPU architecture.",
+          "rust_version": "rustc --version output.",
+          "ci": "Boolean; true if running in CI."
+        }
+      }
+    ],
+    "output_format": "JSONL (one line per failure event)",
+    "output_path": "target/test-failures.jsonl",
+    "redaction_policy": "All env values matching secret patterns are force-redacted before write. No raw API keys, tokens, or passwords may appear in failure logs."
+  },
+
+  "ci_enforcement": {
+    "coverage_gate": {
+      "command": "cargo llvm-cov --workspace --lib --json --summary-only --output-path target/coverage-summary.json --ignore-run-fail",
+      "evaluation": "Compare target/coverage-summary.json per-file metrics against module_thresholds.modules[].line_floor_pct and function_floor_pct.",
+      "failure_mode": "CI job fails if any module's line or function coverage drops below its floor.",
+      "notes": "Branch metrics now available for 63/107 files (51.95%) via per-file llvm-cov export workaround. Branch gate deferred until full-file coverage is achievable. See docs/coverage-baseline-map.json for deterministic command path."
+    },
+    "exception_audit": {
+      "source": "docs/testing-policy.md (Allowlisted Exceptions table)",
+      "validation": "CI validates each exception has all required_fields from exception_template and that expires_at has not passed.",
+      "failure_mode": "CI job fails on expired or incomplete exceptions."
+    },
+    "failure_log_compliance": {
+      "validation": "CI validates that target/test-failures.jsonl entries conform to failure_log_schema.",
+      "failure_mode": "Warning only (non-blocking) until schema adoption reaches 80% of test files."
+    }
+  }
+}

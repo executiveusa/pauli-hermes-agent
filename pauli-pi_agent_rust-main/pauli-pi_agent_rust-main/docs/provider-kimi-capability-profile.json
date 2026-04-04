@@ -1,0 +1,375 @@
+{
+  "schema": "pi.provider_capability_profile.v1",
+  "schema_version": "1.0",
+  "bead_id": "bd-3uqg.11.8.1",
+  "provider_id": "kimi",
+  "canonical_provider_id": "moonshotai",
+  "verified_at_utc": "2026-02-13T09:05:00Z",
+  "source_snapshot": [
+    {
+      "label": "Moonshot AI Open Platform",
+      "url": "https://platform.moonshot.ai/",
+      "key_points": [
+        "OpenAI-compatible API at https://api.moonshot.ai/v1 (global) and https://api.moonshot.cn/v1 (China)",
+        "Brand is 'Kimi', API domain is 'moonshot'",
+        "MoE architecture: 1T total parameters, 32B activated per request (K2)"
+      ]
+    },
+    {
+      "label": "Kimi API Chat Completions",
+      "url": "https://platform.moonshot.ai/docs/api/chat",
+      "key_points": [
+        "POST /v1/chat/completions",
+        "Standard OpenAI request/response format",
+        "moonshot-v1-auto model for automatic context window sizing"
+      ]
+    },
+    {
+      "label": "Kimi API Streaming Guide",
+      "url": "https://platform.moonshot.ai/docs/guide/utilize-the-streaming-output-feature-of-kimi-api",
+      "key_points": [
+        "SSE streaming with data:[DONE] termination",
+        "Standard OpenAI chunk format: chat.completion.chunk object",
+        "delta.role + delta.content in choices array"
+      ]
+    },
+    {
+      "label": "Vercel AI SDK Moonshot Provider",
+      "url": "https://ai-sdk.dev/providers/ai-sdk-providers/moonshotai",
+      "key_points": [
+        "Tool usage supported on all models",
+        "Tool streaming supported on all models",
+        "Thinking models support budgetTokens (min 1024)",
+        "Vision support on kimi-k2.5 only"
+      ]
+    },
+    {
+      "label": "Kimi API Models and Pricing",
+      "url": "https://platform.moonshot.ai/docs/introduction",
+      "key_points": [
+        "12+ model variants from moonshot-v1-8k to kimi-k2.5",
+        "Automatic caching: cached tokens at 75% savings",
+        "Web search: $0.005 per call",
+        "Rate limit tiers based on cumulative recharge"
+      ]
+    },
+    {
+      "label": "SillyTavern Moonshot Endpoint Bug",
+      "url": "https://github.com/SillyTavern/SillyTavern/issues/5076",
+      "key_points": [
+        "Keys are NOT interchangeable between .ai (global) and .cn (China) endpoints",
+        "China-registered keys require .cn endpoint",
+        "Global endpoint .ai may not work for all users"
+      ]
+    }
+  ],
+  "endpoint_profile": {
+    "global_base_url": "https://api.moonshot.ai/v1",
+    "china_base_url": "https://api.moonshot.cn/v1",
+    "kimi_coding_base_url": "https://api.kimi.com/coding/v1/messages",
+    "anthropic_compatible_url": "https://api.moonshot.ai/anthropic/v1",
+    "primary_chat_endpoint": "/chat/completions",
+    "models_endpoint": "/models",
+    "responses_api": {
+      "supported": false,
+      "status": "not_available"
+    },
+    "endpoint_disambiguation": {
+      "note": "Pi has THREE distinct provider entries for the Moonshot/Kimi family",
+      "entries": [
+        {
+          "canonical_id": "moonshotai",
+          "aliases": ["moonshot", "kimi"],
+          "base_url": "https://api.moonshot.ai/v1",
+          "api_family": "openai-completions",
+          "auth_keys": ["MOONSHOT_API_KEY", "KIMI_API_KEY"]
+        },
+        {
+          "canonical_id": "moonshotai-cn",
+          "aliases": [],
+          "base_url": "https://api.moonshot.cn/v1",
+          "api_family": "openai-completions",
+          "auth_keys": ["MOONSHOT_API_KEY"]
+        },
+        {
+          "canonical_id": "kimi-for-coding",
+          "aliases": [],
+          "base_url": "https://api.kimi.com/coding/v1/messages",
+          "api_family": "anthropic-messages",
+          "auth_keys": ["KIMI_API_KEY"],
+          "note": "Uses Anthropic Messages API format, NOT OpenAI. Auth header is NOT Bearer token."
+        }
+      ]
+    }
+  },
+  "openai_compatibility_contract": {
+    "compatible": true,
+    "unsupported_chat_fields": [],
+    "n_parameter": {
+      "min": 1,
+      "max": 1,
+      "non_1_behavior": "unknown"
+    },
+    "temperature_behavior": {
+      "input_zero_behavior": "standard",
+      "recommended_range": "0 to 1"
+    },
+    "moonshot_v1_auto_model": {
+      "description": "moonshot-v1-auto automatically selects 8k/32k/128k based on input token count",
+      "purpose": "Cost optimization — avoids overpaying for unused context window"
+    },
+    "additional_capabilities": [
+      "automatic_caching",
+      "web_search",
+      "reasoning_thinking_models",
+      "vision_kimi_k2_5_only"
+    ]
+  },
+  "streaming_contract": {
+    "protocol": "server_sent_events",
+    "stream_parameter_default": false,
+    "termination_marker": "data: [DONE]",
+    "chunk_object_type": "chat.completion.chunk",
+    "chunk_structure": {
+      "id": "string",
+      "object": "chat.completion.chunk",
+      "created": "integer",
+      "model": "string",
+      "choices": [
+        {
+          "index": 0,
+          "delta": {"role": "assistant", "content": "string"},
+          "finish_reason": "null or string"
+        }
+      ]
+    },
+    "pi_normalization_expectations": [
+      "Map delta chunks into StreamEvent::TextDelta/ToolCallDelta consistently",
+      "Treat terminal SSE marker data:[DONE] as Done",
+      "Standard OpenAI streaming format — no special normalization required for moonshotai/moonshotai-cn",
+      "kimi-for-coding uses Anthropic streaming format — route through Anthropic provider, not OpenAI"
+    ]
+  },
+  "tool_calling_contract": {
+    "supported": true,
+    "supported_on_all_models": true,
+    "tool_choice_modes": [
+      "auto",
+      "none"
+    ],
+    "parallel_tool_calls_default": false,
+    "tool_streaming_supported": true,
+    "pi_normalization_expectations": [
+      "Standard OpenAI function calling format for moonshotai/moonshotai-cn providers",
+      "Anthropic tool format for kimi-for-coding provider",
+      "tool_choice 'required' support status is unclear from docs — test defensively"
+    ]
+  },
+  "usage_and_metrics": {
+    "usage_fields": [
+      "prompt_tokens",
+      "completion_tokens",
+      "total_tokens"
+    ],
+    "caching_note": "Automatic caching reduces input token costs by 75%. Cached token counts may appear in responses."
+  },
+  "error_and_rate_limit_profile": {
+    "http_errors_expected": [
+      400,
+      401,
+      403,
+      429,
+      500,
+      503
+    ],
+    "rate_limit_status_code": 429,
+    "rate_limit_tiers": {
+      "description": "Rate limits are tiered by cumulative account recharge amount",
+      "tiers": [
+        {"tier": 0, "recharge": "$1", "concurrency": 1, "rpm": 3, "tpm": "500K"},
+        {"tier": 1, "recharge": "$10", "concurrency": 50, "rpm": 200, "tpm": "2M"},
+        {"tier": 2, "recharge": "$20", "concurrency": 100, "rpm": 500, "tpm": "3M"},
+        {"tier": 3, "recharge": "$100", "concurrency": 200, "rpm": "5K", "tpm": "3M"},
+        {"tier": 4, "recharge": "$1000", "concurrency": 400, "rpm": "5K", "tpm": "4M"},
+        {"tier": 5, "recharge": "$3000", "concurrency": 1000, "rpm": "10K", "tpm": "5M"}
+      ]
+    },
+    "pi_expectations": [
+      "Classify 429 as rate-limit diagnostic with tier-based remediation",
+      "Classify 401 as auth diagnostic — note that keys are endpoint-specific (.ai vs .cn)",
+      "Low-tier accounts (tier 0) have only 1 concurrent request and 3 RPM — warn users"
+    ]
+  },
+  "model_lineup": {
+    "legacy_models": [
+      {
+        "model_id": "moonshot-v1-8k",
+        "context_window": 8192,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": false
+      },
+      {
+        "model_id": "moonshot-v1-32k",
+        "context_window": 32768,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": false
+      },
+      {
+        "model_id": "moonshot-v1-128k",
+        "context_window": 131072,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": false
+      },
+      {
+        "model_id": "moonshot-v1-auto",
+        "description": "Auto-selects 8k/32k/128k based on input size for cost optimization",
+        "context_window": 131072,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": false
+      }
+    ],
+    "vision_preview_models": [
+      {
+        "model_id": "moonshot-v1-8k-vision-preview",
+        "context_window": 8192,
+        "tool_calling": true,
+        "vision": true,
+        "reasoning": false
+      },
+      {
+        "model_id": "moonshot-v1-32k-vision-preview",
+        "context_window": 32768,
+        "tool_calling": true,
+        "vision": true,
+        "reasoning": false
+      },
+      {
+        "model_id": "moonshot-v1-128k-vision-preview",
+        "context_window": 131072,
+        "tool_calling": true,
+        "vision": true,
+        "reasoning": false
+      }
+    ],
+    "kimi_k2_models": [
+      {
+        "model_id": "kimi-k2.5",
+        "description": "Kimi K2.5 — latest flagship, vision + reasoning + tool use",
+        "context_window": 262144,
+        "tool_calling": true,
+        "vision": true,
+        "reasoning": true,
+        "pricing": {"input_per_m": 0.60, "output_per_m": 3.00}
+      },
+      {
+        "model_id": "kimi-k2-thinking",
+        "description": "Kimi K2 with extended reasoning (thinking tokens)",
+        "context_window": 262144,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": true,
+        "pricing": {"input_per_m": 0.60, "output_per_m": 2.50}
+      },
+      {
+        "model_id": "kimi-k2-thinking-turbo",
+        "description": "Faster K2 thinking variant",
+        "context_window": 262144,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": true,
+        "pricing": {"input_per_m": 1.15, "output_per_m": 8.00}
+      },
+      {
+        "model_id": "kimi-k2-0905-preview",
+        "description": "K2 preview (Sept 2025)",
+        "context_window": 262144,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": false,
+        "pricing": {"input_per_m": 0.60, "output_per_m": 2.50}
+      },
+      {
+        "model_id": "kimi-k2-0711-preview",
+        "description": "K2 preview (July 2025)",
+        "context_window": 131072,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": false,
+        "pricing": {"input_per_m": 0.60, "output_per_m": 2.50}
+      },
+      {
+        "model_id": "kimi-k2-turbo-preview",
+        "description": "K2 turbo preview — faster, higher cost",
+        "context_window": 262144,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": false,
+        "pricing": {"input_per_m": 1.15, "output_per_m": 8.00}
+      }
+    ],
+    "other_models": [
+      {
+        "model_id": "moonlight-v1-32k",
+        "context_window": 32768,
+        "tool_calling": true,
+        "vision": false,
+        "reasoning": false
+      }
+    ]
+  },
+  "differentiators": {
+    "architecture": "K2: Mixture-of-Experts (MoE) with 1T total parameters, 32B activated per request",
+    "auto_caching": "Automatic prompt caching — cached tokens at $0.15/M (75% savings vs standard input)",
+    "web_search": "Built-in web search capability ($0.005/call)",
+    "dual_endpoints": "Global (.ai) and China (.cn) endpoints with non-interchangeable API keys",
+    "kimi_for_coding": "Separate Anthropic-messages-compatible coding API at api.kimi.com",
+    "thinking_models": "kimi-k2-thinking supports intermediate reasoning with configurable budgetTokens"
+  },
+  "implementation_decisions_for_pi": [
+    {
+      "decision_id": "kimi-spec-001",
+      "decision": "Maintain three separate Pi provider entries: moonshotai (global), moonshotai-cn (China), kimi-for-coding (Anthropic API). Do NOT merge them.",
+      "rationale": "Keys are not interchangeable between .ai and .cn. kimi-for-coding uses a fundamentally different API format (anthropic-messages). Each needs distinct routing.",
+      "downstream_bead": "bd-3uqg.11.8.3"
+    },
+    {
+      "decision_id": "kimi-spec-002",
+      "decision": "Auth chain: moonshotai uses MOONSHOT_API_KEY + KIMI_API_KEY fallback. moonshotai-cn uses MOONSHOT_API_KEY only. kimi-for-coding uses KIMI_API_KEY only.",
+      "rationale": "Already correctly configured in provider_metadata.rs and auth.rs. Key isolation prevents accidental cross-endpoint auth failures.",
+      "downstream_bead": "bd-3uqg.11.8.2"
+    },
+    {
+      "decision_id": "kimi-spec-003",
+      "decision": "Register moonshot-v1-auto as a special model that auto-selects context window. Document cost-optimization behavior for users.",
+      "rationale": "moonshot-v1-auto is unique — no fixed context window, auto-selects 8k/32k/128k based on input. Users should know about this cost-saving option.",
+      "downstream_bead": "bd-3uqg.11.8.4"
+    },
+    {
+      "decision_id": "kimi-spec-004",
+      "decision": "kimi-for-coding routes through Anthropic provider path (anthropic-messages API), not OpenAI-compatible. Ensure correct provider routing in factory.",
+      "rationale": "This is already set in provider_metadata.rs: api='anthropic-messages', auth_header=false. Critical to preserve — mixing API formats would break requests.",
+      "downstream_bead": "bd-3uqg.11.8.3"
+    },
+    {
+      "decision_id": "kimi-spec-005",
+      "decision": "Warn users about low-tier rate limits (tier 0: 1 concurrent, 3 RPM). Include tier info in rate-limit diagnostics.",
+      "rationale": "New accounts with minimal recharge ($1) have extremely restrictive limits. Pi should surface this in error messages rather than generic 429 handling.",
+      "downstream_bead": "bd-3uqg.11.8.3"
+    },
+    {
+      "decision_id": "kimi-spec-006",
+      "decision": "Thinking model support: kimi-k2-thinking and kimi-k2-thinking-turbo support budgetTokens for reasoning. Map to Pi's thinking level configuration.",
+      "rationale": "These models generate intermediate reasoning tokens. Pi should map its thinking levels to appropriate budgetTokens values.",
+      "downstream_bead": "bd-3uqg.11.8.4"
+    }
+  ],
+  "downstream_beads_unblocked": [
+    "bd-3uqg.11.8.2",
+    "bd-3uqg.11.8.3",
+    "bd-3uqg.11.8.4"
+  ]
+}

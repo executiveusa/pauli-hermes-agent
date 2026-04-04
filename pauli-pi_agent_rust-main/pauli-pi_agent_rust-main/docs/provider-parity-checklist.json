@@ -1,0 +1,3950 @@
+{
+  "schema_version": "1.0",
+  "bead_id": "bd-3uqg.1.5",
+  "generated_at_utc": "2026-02-10T06:24:50Z",
+  "frozen_input_refs": [
+    "docs/provider-upstream-catalog-snapshot.json",
+    "docs/provider-baseline-audit.json",
+    "docs/provider-canonical-id-policy.json",
+    "docs/provider-implementation-modes.json"
+  ],
+  "quality_gate_obligations": [
+    "cargo fmt --check",
+    "cargo check --all-targets",
+    "cargo clippy --all-targets -- -D warnings",
+    "cargo test",
+    "ubs --staged --only=rust ."
+  ],
+  "provider_checklist": [
+    {
+      "provider_id": "302ai",
+      "canonical_id": "302ai",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No in-repo runtime/auth evidence yet; keep deferred until protocol/auth are verified.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "abacus",
+      "canonical_id": "abacus",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No in-repo runtime/auth evidence yet; keep deferred until protocol/auth are verified.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "aihubmix",
+      "canonical_id": "aihubmix",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No in-repo runtime/auth evidence yet; keep deferred until protocol/auth are verified.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "alibaba",
+      "canonical_id": "alibaba",
+      "id_kind": "canonical",
+      "owner_track": "provider-compat-adapters",
+      "implementation_mode": "openai-compatible-preset",
+      "current_runtime_status": "preset-dispatchable",
+      "auth_path_hint": "DASHSCOPE_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "standard-jsonl + compat normalization traces",
+      "logging_artifacts": [
+        "base-url/header normalization test output",
+        "tool-call schema compatibility transcript"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-openai-compat-normalization",
+        "unit-auth-env-resolution",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "alibaba-cn",
+      "canonical_id": "alibaba-cn",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "Regional CN variant has no verified endpoint/auth path in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "amazon-bedrock",
+      "canonical_id": "amazon-bedrock",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "enum-or-auth-only",
+      "auth_path_hint": "AWS_ACCESS_KEY_ID (+ secret/session token expected)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-error-paths"
+      ],
+      "logging_depth": "full request/response timeline + auth redaction + usage parity",
+      "logging_artifacts": [
+        "provider metadata schema conformance output",
+        "auth resolution trace with redaction summary",
+        "streaming/event parity report",
+        "error taxonomy mapping dossier"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.7.4",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "anthropic",
+      "canonical_id": "anthropic",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "implemented",
+      "auth_path_hint": "ANTHROPIC_API_KEY or auth.json OAuth",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "verbose-jsonl+wire-redaction",
+      "logging_artifacts": [
+        "provider-streaming fixture transcript",
+        "error-path cassette replay",
+        "live parity summary"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "azure",
+      "canonical_id": "azure",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "module-present-factory-blocked",
+      "auth_path_hint": "AZURE_OPENAI_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-error-paths"
+      ],
+      "logging_depth": "full request/response timeline + auth redaction + usage parity",
+      "logging_artifacts": [
+        "provider metadata schema conformance output",
+        "auth resolution trace with redaction summary",
+        "streaming/event parity report",
+        "error taxonomy mapping dossier"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.7.4",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "azure-cognitive-services",
+      "canonical_id": "azure-cognitive-services",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-error-paths"
+      ],
+      "logging_depth": "full request/response timeline + auth redaction + usage parity",
+      "logging_artifacts": [
+        "provider metadata schema conformance output",
+        "auth resolution trace with redaction summary",
+        "streaming/event parity report",
+        "error taxonomy mapping dossier"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.7.4",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "bailing",
+      "canonical_id": "bailing",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "baseten",
+      "canonical_id": "baseten",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "bedrock",
+      "canonical_id": "amazon-bedrock",
+      "id_kind": "alias",
+      "owner_track": "provider-id-normalization",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "alias-only",
+      "auth_path_hint": "AWS_ACCESS_KEY_ID (+ secret/session token expected)",
+      "required_test_tiers": [
+        "unit-alias-resolution",
+        "e2e-alias-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-alias-resolution-smoke"
+      ],
+      "logging_depth": "alias-resolution trace",
+      "logging_artifacts": [
+        "alias normalization unit report",
+        "deprecation-warning assertion log"
+      ],
+      "risk_level": "low",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.1.3"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "berget",
+      "canonical_id": "berget",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "cerebras",
+      "canonical_id": "cerebras",
+      "id_kind": "canonical",
+      "owner_track": "provider-compat-adapters",
+      "implementation_mode": "openai-compatible-preset",
+      "current_runtime_status": "preset-dispatchable",
+      "auth_path_hint": "CEREBRAS_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "standard-jsonl + compat normalization traces",
+      "logging_artifacts": [
+        "base-url/header normalization test output",
+        "tool-call schema compatibility transcript"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-openai-compat-normalization",
+        "unit-auth-env-resolution",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "chutes",
+      "canonical_id": "chutes",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "cloudflare-ai-gateway",
+      "canonical_id": "cloudflare-ai-gateway",
+      "id_kind": "canonical",
+      "owner_track": "provider-routing-gateways",
+      "implementation_mode": "gateway-wrapper-routing",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ],
+      "logging_depth": "full routing trace + upstream header map + error provenance",
+      "logging_artifacts": [
+        "routing decision matrix",
+        "header/query passthrough audit",
+        "upstream provider attribution trace"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.10.1",
+        "bd-3uqg.9"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-routing-decision-matrix",
+        "unit-header-passthrough-policy",
+        "unit-provider-provenance-tagging"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ]
+    },
+    {
+      "provider_id": "cloudflare-workers-ai",
+      "canonical_id": "cloudflare-workers-ai",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-error-paths"
+      ],
+      "logging_depth": "full request/response timeline + auth redaction + usage parity",
+      "logging_artifacts": [
+        "provider metadata schema conformance output",
+        "auth resolution trace with redaction summary",
+        "streaming/event parity report",
+        "error taxonomy mapping dossier"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.7.4",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "cohere",
+      "canonical_id": "cohere",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "implemented",
+      "auth_path_hint": "COHERE_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "verbose-jsonl+wire-redaction",
+      "logging_artifacts": [
+        "provider-streaming fixture transcript",
+        "error-path cassette replay",
+        "live parity summary"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "copilot",
+      "canonical_id": "github-copilot",
+      "id_kind": "alias",
+      "owner_track": "provider-id-normalization",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "alias-only",
+      "auth_path_hint": "GITHUB_COPILOT_API_KEY",
+      "required_test_tiers": [
+        "unit-alias-resolution",
+        "e2e-alias-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-alias-resolution-smoke"
+      ],
+      "logging_depth": "alias-resolution trace",
+      "logging_artifacts": [
+        "alias normalization unit report",
+        "deprecation-warning assertion log"
+      ],
+      "risk_level": "low",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.1.3"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "cortecs",
+      "canonical_id": "cortecs",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "deepinfra",
+      "canonical_id": "deepinfra",
+      "id_kind": "canonical",
+      "owner_track": "provider-compat-adapters",
+      "implementation_mode": "openai-compatible-preset",
+      "current_runtime_status": "preset-dispatchable",
+      "auth_path_hint": "DEEPINFRA_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "standard-jsonl + compat normalization traces",
+      "logging_artifacts": [
+        "base-url/header normalization test output",
+        "tool-call schema compatibility transcript"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-openai-compat-normalization",
+        "unit-auth-env-resolution",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "deepseek",
+      "canonical_id": "deepseek",
+      "id_kind": "canonical",
+      "owner_track": "provider-compat-adapters",
+      "implementation_mode": "openai-compatible-preset",
+      "current_runtime_status": "preset-dispatchable",
+      "auth_path_hint": "DEEPSEEK_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "standard-jsonl + compat normalization traces",
+      "logging_artifacts": [
+        "base-url/header normalization test output",
+        "tool-call schema compatibility transcript"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-openai-compat-normalization",
+        "unit-auth-env-resolution",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "fastrouter",
+      "canonical_id": "fastrouter",
+      "id_kind": "canonical",
+      "owner_track": "provider-routing-gateways",
+      "implementation_mode": "gateway-wrapper-routing",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ],
+      "logging_depth": "full routing trace + upstream header map + error provenance",
+      "logging_artifacts": [
+        "routing decision matrix",
+        "header/query passthrough audit",
+        "upstream provider attribution trace"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.10.1",
+        "bd-3uqg.9"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-routing-decision-matrix",
+        "unit-header-passthrough-policy",
+        "unit-provider-provenance-tagging"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ]
+    },
+    {
+      "provider_id": "fireworks-ai",
+      "canonical_id": "fireworks-ai",
+      "id_kind": "canonical",
+      "owner_track": "provider-compat-adapters",
+      "implementation_mode": "openai-compatible-preset",
+      "current_runtime_status": "preset-dispatchable",
+      "auth_path_hint": "FIREWORKS_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "standard-jsonl + compat normalization traces",
+      "logging_artifacts": [
+        "base-url/header normalization test output",
+        "tool-call schema compatibility transcript"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-openai-compat-normalization",
+        "unit-auth-env-resolution",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "firmware",
+      "canonical_id": "firmware",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "friendli",
+      "canonical_id": "friendli",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "gemini",
+      "canonical_id": "google",
+      "id_kind": "alias",
+      "owner_track": "provider-id-normalization",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "alias-only",
+      "auth_path_hint": "GOOGLE_API_KEY",
+      "required_test_tiers": [
+        "unit-alias-resolution",
+        "e2e-alias-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-alias-resolution-smoke"
+      ],
+      "logging_depth": "alias-resolution trace",
+      "logging_artifacts": [
+        "alias normalization unit report",
+        "deprecation-warning assertion log"
+      ],
+      "risk_level": "low",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.1.3"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "github-copilot",
+      "canonical_id": "github-copilot",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "enum-or-auth-only",
+      "auth_path_hint": "GITHUB_COPILOT_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-error-paths"
+      ],
+      "logging_depth": "full request/response timeline + auth redaction + usage parity",
+      "logging_artifacts": [
+        "provider metadata schema conformance output",
+        "auth resolution trace with redaction summary",
+        "streaming/event parity report",
+        "error taxonomy mapping dossier"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.7.4",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "github-models",
+      "canonical_id": "github-models",
+      "id_kind": "canonical",
+      "owner_track": "provider-routing-gateways",
+      "implementation_mode": "gateway-wrapper-routing",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ],
+      "logging_depth": "full routing trace + upstream header map + error provenance",
+      "logging_artifacts": [
+        "routing decision matrix",
+        "header/query passthrough audit",
+        "upstream provider attribution trace"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.10.1",
+        "bd-3uqg.9"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-routing-decision-matrix",
+        "unit-header-passthrough-policy",
+        "unit-provider-provenance-tagging"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ]
+    },
+    {
+      "provider_id": "gitlab",
+      "canonical_id": "gitlab",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "Upstream listing exists but protocol/auth/tool contract is not yet validated.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "google",
+      "canonical_id": "google",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "implemented",
+      "auth_path_hint": "GOOGLE_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "verbose-jsonl+wire-redaction",
+      "logging_artifacts": [
+        "provider-streaming fixture transcript",
+        "error-path cassette replay",
+        "live parity summary"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "google-vertex",
+      "canonical_id": "google-vertex",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "enum-or-auth-only",
+      "auth_path_hint": "GOOGLE_CLOUD_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-error-paths"
+      ],
+      "logging_depth": "full request/response timeline + auth redaction + usage parity",
+      "logging_artifacts": [
+        "provider metadata schema conformance output",
+        "auth resolution trace with redaction summary",
+        "streaming/event parity report",
+        "error taxonomy mapping dossier"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.7.4",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "google-vertex-anthropic",
+      "canonical_id": "google-vertex-anthropic",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-error-paths"
+      ],
+      "logging_depth": "full request/response timeline + auth redaction + usage parity",
+      "logging_artifacts": [
+        "provider metadata schema conformance output",
+        "auth resolution trace with redaction summary",
+        "streaming/event parity report",
+        "error taxonomy mapping dossier"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.7.4",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "groq",
+      "canonical_id": "groq",
+      "id_kind": "canonical",
+      "owner_track": "provider-compat-adapters",
+      "implementation_mode": "openai-compatible-preset",
+      "current_runtime_status": "preset-dispatchable",
+      "auth_path_hint": "GROQ_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "standard-jsonl + compat normalization traces",
+      "logging_artifacts": [
+        "base-url/header normalization test output",
+        "tool-call schema compatibility transcript"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-openai-compat-normalization",
+        "unit-auth-env-resolution",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "helicone",
+      "canonical_id": "helicone",
+      "id_kind": "canonical",
+      "owner_track": "provider-routing-gateways",
+      "implementation_mode": "gateway-wrapper-routing",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ],
+      "logging_depth": "full routing trace + upstream header map + error provenance",
+      "logging_artifacts": [
+        "routing decision matrix",
+        "header/query passthrough audit",
+        "upstream provider attribution trace"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.10.1",
+        "bd-3uqg.9"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-routing-decision-matrix",
+        "unit-header-passthrough-policy",
+        "unit-provider-provenance-tagging"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ]
+    },
+    {
+      "provider_id": "huggingface",
+      "canonical_id": "huggingface",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated runtime/auth contract yet for this provider surface.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "iflowcn",
+      "canonical_id": "iflowcn",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "inception",
+      "canonical_id": "inception",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "inference",
+      "canonical_id": "inference",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "io-net",
+      "canonical_id": "io-net",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "jiekou",
+      "canonical_id": "jiekou",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "kimi-for-coding",
+      "canonical_id": "kimi-for-coding",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "Distinct coding-plan style ID is not currently represented by runtime routing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "llama",
+      "canonical_id": "llama",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No confirmed API/auth contract in current provider runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "lmstudio",
+      "canonical_id": "lmstudio",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-error-paths"
+      ],
+      "logging_depth": "full request/response timeline + auth redaction + usage parity",
+      "logging_artifacts": [
+        "provider metadata schema conformance output",
+        "auth resolution trace with redaction summary",
+        "streaming/event parity report",
+        "error taxonomy mapping dossier"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.7.4",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "local",
+      "canonical_id": "local",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-error-paths"
+      ],
+      "logging_depth": "full request/response timeline + auth redaction + usage parity",
+      "logging_artifacts": [
+        "provider metadata schema conformance output",
+        "auth resolution trace with redaction summary",
+        "streaming/event parity report",
+        "error taxonomy mapping dossier"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.7.4",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "lucidquery",
+      "canonical_id": "lucidquery",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "minimax",
+      "canonical_id": "minimax",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated provider protocol/auth details in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "minimax-cn",
+      "canonical_id": "minimax-cn",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "Regional CN variant requires separate endpoint/auth validation before onboarding.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "minimax-cn-coding-plan",
+      "canonical_id": "minimax-cn-coding-plan",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "Coding-plan variant lacks verified transport/auth requirements.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "minimax-coding-plan",
+      "canonical_id": "minimax-coding-plan",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "Coding-plan variant lacks verified transport/auth requirements.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "mistral",
+      "canonical_id": "mistral",
+      "id_kind": "canonical",
+      "owner_track": "provider-compat-adapters",
+      "implementation_mode": "openai-compatible-preset",
+      "current_runtime_status": "preset-dispatchable",
+      "auth_path_hint": "MISTRAL_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "standard-jsonl + compat normalization traces",
+      "logging_artifacts": [
+        "base-url/header normalization test output",
+        "tool-call schema compatibility transcript"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-openai-compat-normalization",
+        "unit-auth-env-resolution",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "moark",
+      "canonical_id": "moark",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "modelscope",
+      "canonical_id": "modelscope",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "moonshotai",
+      "canonical_id": "moonshotai",
+      "id_kind": "canonical",
+      "owner_track": "provider-compat-adapters",
+      "implementation_mode": "openai-compatible-preset",
+      "current_runtime_status": "preset-dispatchable",
+      "auth_path_hint": "MOONSHOT_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "standard-jsonl + compat normalization traces",
+      "logging_artifacts": [
+        "base-url/header normalization test output",
+        "tool-call schema compatibility transcript"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-openai-compat-normalization",
+        "unit-auth-env-resolution",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "moonshotai-cn",
+      "canonical_id": "moonshotai-cn",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "Regional CN variant requires separate endpoint/auth verification.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "morph",
+      "canonical_id": "morph",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "nano-gpt",
+      "canonical_id": "nano-gpt",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "nebius",
+      "canonical_id": "nebius",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "nova",
+      "canonical_id": "nova",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No runtime/auth evidence beyond upstream catalog listing.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "novita-ai",
+      "canonical_id": "novita-ai",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "nvidia",
+      "canonical_id": "nvidia",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "ollama",
+      "canonical_id": "ollama",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-error-paths"
+      ],
+      "logging_depth": "full request/response timeline + auth redaction + usage parity",
+      "logging_artifacts": [
+        "provider metadata schema conformance output",
+        "auth resolution trace with redaction summary",
+        "streaming/event parity report",
+        "error taxonomy mapping dossier"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.7.4",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "ollama-cloud",
+      "canonical_id": "ollama-cloud",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-error-paths"
+      ],
+      "logging_depth": "full request/response timeline + auth redaction + usage parity",
+      "logging_artifacts": [
+        "provider metadata schema conformance output",
+        "auth resolution trace with redaction summary",
+        "streaming/event parity report",
+        "error taxonomy mapping dossier"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.7.4",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "openai",
+      "canonical_id": "openai",
+      "id_kind": "canonical",
+      "owner_track": "provider-native-core",
+      "implementation_mode": "native-adapter-required",
+      "current_runtime_status": "implemented",
+      "auth_path_hint": "OPENAI_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "verbose-jsonl+wire-redaction",
+      "logging_artifacts": [
+        "provider-streaming fixture transcript",
+        "error-path cassette replay",
+        "live parity summary"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-provider-id-resolution",
+        "unit-model-registry-defaults",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-provider-streaming",
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "opencode",
+      "canonical_id": "opencode",
+      "id_kind": "canonical",
+      "owner_track": "provider-routing-gateways",
+      "implementation_mode": "gateway-wrapper-routing",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ],
+      "logging_depth": "full routing trace + upstream header map + error provenance",
+      "logging_artifacts": [
+        "routing decision matrix",
+        "header/query passthrough audit",
+        "upstream provider attribution trace"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.10.1",
+        "bd-3uqg.9"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-routing-decision-matrix",
+        "unit-header-passthrough-policy",
+        "unit-provider-provenance-tagging"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ]
+    },
+    {
+      "provider_id": "openrouter",
+      "canonical_id": "openrouter",
+      "id_kind": "canonical",
+      "owner_track": "provider-compat-adapters",
+      "implementation_mode": "openai-compatible-preset",
+      "current_runtime_status": "preset-dispatchable",
+      "auth_path_hint": "OPENROUTER_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "standard-jsonl + compat normalization traces",
+      "logging_artifacts": [
+        "base-url/header normalization test output",
+        "tool-call schema compatibility transcript"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-openai-compat-normalization",
+        "unit-auth-env-resolution",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "ovhcloud",
+      "canonical_id": "ovhcloud",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "perplexity",
+      "canonical_id": "perplexity",
+      "id_kind": "canonical",
+      "owner_track": "provider-compat-adapters",
+      "implementation_mode": "openai-compatible-preset",
+      "current_runtime_status": "preset-dispatchable",
+      "auth_path_hint": "PERPLEXITY_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "standard-jsonl + compat normalization traces",
+      "logging_artifacts": [
+        "base-url/header normalization test output",
+        "tool-call schema compatibility transcript"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-openai-compat-normalization",
+        "unit-auth-env-resolution",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "poe",
+      "canonical_id": "poe",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "privatemode-ai",
+      "canonical_id": "privatemode-ai",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "requesty",
+      "canonical_id": "requesty",
+      "id_kind": "canonical",
+      "owner_track": "provider-routing-gateways",
+      "implementation_mode": "gateway-wrapper-routing",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ],
+      "logging_depth": "full routing trace + upstream header map + error provenance",
+      "logging_artifacts": [
+        "routing decision matrix",
+        "header/query passthrough audit",
+        "upstream provider attribution trace"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.10.1",
+        "bd-3uqg.9"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-routing-decision-matrix",
+        "unit-header-passthrough-policy",
+        "unit-provider-provenance-tagging"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ]
+    },
+    {
+      "provider_id": "sap-ai-core",
+      "canonical_id": "sap-ai-core",
+      "id_kind": "canonical",
+      "owner_track": "provider-routing-gateways",
+      "implementation_mode": "gateway-wrapper-routing",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ],
+      "logging_depth": "full routing trace + upstream header map + error provenance",
+      "logging_artifacts": [
+        "routing decision matrix",
+        "header/query passthrough audit",
+        "upstream provider attribution trace"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.10.1",
+        "bd-3uqg.9"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-routing-decision-matrix",
+        "unit-header-passthrough-policy",
+        "unit-provider-provenance-tagging"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ]
+    },
+    {
+      "provider_id": "scaleway",
+      "canonical_id": "scaleway",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "siliconflow",
+      "canonical_id": "siliconflow",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "siliconflow-cn",
+      "canonical_id": "siliconflow-cn",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "Regional CN variant requires separate endpoint/auth verification.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "submodel",
+      "canonical_id": "submodel",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "synthetic",
+      "canonical_id": "synthetic",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "togetherai",
+      "canonical_id": "togetherai",
+      "id_kind": "canonical",
+      "owner_track": "provider-compat-adapters",
+      "implementation_mode": "openai-compatible-preset",
+      "current_runtime_status": "preset-dispatchable",
+      "auth_path_hint": "TOGETHER_API_KEY | TOGETHER_AI_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "standard-jsonl + compat normalization traces",
+      "logging_artifacts": [
+        "base-url/header normalization test output",
+        "tool-call schema compatibility transcript"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-openai-compat-normalization",
+        "unit-auth-env-resolution",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "upstage",
+      "canonical_id": "upstage",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "v0",
+      "canonical_id": "v0",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "venice",
+      "canonical_id": "venice",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "vercel",
+      "canonical_id": "vercel",
+      "id_kind": "canonical",
+      "owner_track": "provider-routing-gateways",
+      "implementation_mode": "gateway-wrapper-routing",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ],
+      "logging_depth": "full routing trace + upstream header map + error provenance",
+      "logging_artifacts": [
+        "routing decision matrix",
+        "header/query passthrough audit",
+        "upstream provider attribution trace"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.10.1",
+        "bd-3uqg.9"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-routing-decision-matrix",
+        "unit-header-passthrough-policy",
+        "unit-provider-provenance-tagging"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ]
+    },
+    {
+      "provider_id": "vertexai",
+      "canonical_id": "google-vertex",
+      "id_kind": "alias",
+      "owner_track": "provider-id-normalization",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "alias-only",
+      "auth_path_hint": "GOOGLE_CLOUD_API_KEY",
+      "required_test_tiers": [
+        "unit-alias-resolution",
+        "e2e-alias-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-alias-resolution-smoke"
+      ],
+      "logging_depth": "alias-resolution trace",
+      "logging_artifacts": [
+        "alias normalization unit report",
+        "deprecation-warning assertion log"
+      ],
+      "risk_level": "low",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.1.3"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "vivgrid",
+      "canonical_id": "vivgrid",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "vultr",
+      "canonical_id": "vultr",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "wandb",
+      "canonical_id": "wandb",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "xai",
+      "canonical_id": "xai",
+      "id_kind": "canonical",
+      "owner_track": "provider-compat-adapters",
+      "implementation_mode": "openai-compatible-preset",
+      "current_runtime_status": "preset-dispatchable",
+      "auth_path_hint": "XAI_API_KEY",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ],
+      "logging_depth": "standard-jsonl + compat normalization traces",
+      "logging_artifacts": [
+        "base-url/header normalization test output",
+        "tool-call schema compatibility transcript"
+      ],
+      "risk_level": "medium",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-openai-compat-normalization",
+        "unit-auth-env-resolution",
+        "unit-provider-factory-selection"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity"
+      ],
+      "required_conformance_suites": [],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness"
+      ]
+    },
+    {
+      "provider_id": "xiaomi",
+      "canonical_id": "xiaomi",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "zai",
+      "canonical_id": "zai",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "zai-coding-plan",
+      "canonical_id": "zai-coding-plan",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "Coding-plan variant lacks verified transport/auth requirements.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "zenmux",
+      "canonical_id": "zenmux",
+      "id_kind": "canonical",
+      "owner_track": "provider-routing-gateways",
+      "implementation_mode": "gateway-wrapper-routing",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit",
+        "contract",
+        "conformance",
+        "e2e-live-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ],
+      "logging_depth": "full routing trace + upstream header map + error provenance",
+      "logging_artifacts": [
+        "routing decision matrix",
+        "header/query passthrough audit",
+        "upstream provider attribution trace"
+      ],
+      "risk_level": "high",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.2.1",
+        "bd-3uqg.10.1",
+        "bd-3uqg.9"
+      ],
+      "checklist_status": "implementation-pending",
+      "required_unit_suites": [
+        "unit-routing-decision-matrix",
+        "unit-header-passthrough-policy",
+        "unit-provider-provenance-tagging"
+      ],
+      "required_contract_suites": [
+        "contract-provider-streaming-event-parity",
+        "contract-provider-error-translation"
+      ],
+      "required_conformance_suites": [
+        "conformance-provider-routing-shape",
+        "conformance-auth-redaction-policy"
+      ],
+      "required_e2e_suites": [
+        "e2e-cross-provider-parity",
+        "e2e-live-harness",
+        "e2e-routing-provenance"
+      ]
+    },
+    {
+      "provider_id": "zhipuai",
+      "canonical_id": "zhipuai",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "No validated protocol/auth route in current runtime.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "zhipuai-coding-plan",
+      "canonical_id": "zhipuai-coding-plan",
+      "id_kind": "canonical",
+      "owner_track": "provider-program-planning",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "missing",
+      "auth_path_hint": "TBD (provider-specific credential chain)",
+      "required_test_tiers": [
+        "unit-metadata"
+      ],
+      "e2e_scenario_ids": [],
+      "logging_depth": "catalog-diff-only",
+      "logging_artifacts": [
+        "upstream capability notes",
+        "auth-method verification notes"
+      ],
+      "risk_level": "low",
+      "deferred": true,
+      "deferred_rationale": "Coding-plan variant lacks verified transport/auth requirements.",
+      "follow_up_beads": [
+        "bd-3uqg.2",
+        "bd-3uqg.9",
+        "bd-3uqg.10.1"
+      ],
+      "checklist_status": "deferred",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "azure-openai",
+      "canonical_id": "azure",
+      "id_kind": "pi-legacy-alias",
+      "owner_track": "provider-id-normalization",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "alias-only",
+      "auth_path_hint": "AZURE_OPENAI_API_KEY",
+      "required_test_tiers": [
+        "unit-alias-resolution",
+        "e2e-alias-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-alias-resolution-smoke"
+      ],
+      "logging_depth": "alias-resolution trace",
+      "logging_artifacts": [
+        "alias normalization unit report",
+        "deprecation-warning assertion log"
+      ],
+      "risk_level": "low",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.1.3"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "dashscope",
+      "canonical_id": "alibaba",
+      "id_kind": "pi-alias",
+      "owner_track": "provider-id-normalization",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "alias-only",
+      "auth_path_hint": "DASHSCOPE_API_KEY",
+      "required_test_tiers": [
+        "unit-alias-resolution",
+        "e2e-alias-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-alias-resolution-smoke"
+      ],
+      "logging_depth": "alias-resolution trace",
+      "logging_artifacts": [
+        "alias normalization unit report",
+        "deprecation-warning assertion log"
+      ],
+      "risk_level": "low",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.1.3"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "fireworks",
+      "canonical_id": "fireworks-ai",
+      "id_kind": "pi-legacy-alias",
+      "owner_track": "provider-id-normalization",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "alias-only",
+      "auth_path_hint": "FIREWORKS_API_KEY",
+      "required_test_tiers": [
+        "unit-alias-resolution",
+        "e2e-alias-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-alias-resolution-smoke"
+      ],
+      "logging_depth": "alias-resolution trace",
+      "logging_artifacts": [
+        "alias normalization unit report",
+        "deprecation-warning assertion log"
+      ],
+      "risk_level": "low",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.1.3"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "kimi",
+      "canonical_id": "moonshotai",
+      "id_kind": "pi-alias",
+      "owner_track": "provider-id-normalization",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "alias-only",
+      "auth_path_hint": "MOONSHOT_API_KEY",
+      "required_test_tiers": [
+        "unit-alias-resolution",
+        "e2e-alias-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-alias-resolution-smoke"
+      ],
+      "logging_depth": "alias-resolution trace",
+      "logging_artifacts": [
+        "alias normalization unit report",
+        "deprecation-warning assertion log"
+      ],
+      "risk_level": "low",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.1.3"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "moonshot",
+      "canonical_id": "moonshotai",
+      "id_kind": "pi-alias",
+      "owner_track": "provider-id-normalization",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "alias-only",
+      "auth_path_hint": "MOONSHOT_API_KEY",
+      "required_test_tiers": [
+        "unit-alias-resolution",
+        "e2e-alias-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-alias-resolution-smoke"
+      ],
+      "logging_depth": "alias-resolution trace",
+      "logging_artifacts": [
+        "alias normalization unit report",
+        "deprecation-warning assertion log"
+      ],
+      "risk_level": "low",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.1.3"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    },
+    {
+      "provider_id": "qwen",
+      "canonical_id": "alibaba",
+      "id_kind": "pi-alias",
+      "owner_track": "provider-id-normalization",
+      "implementation_mode": "deferred",
+      "current_runtime_status": "alias-only",
+      "auth_path_hint": "DASHSCOPE_API_KEY",
+      "required_test_tiers": [
+        "unit-alias-resolution",
+        "e2e-alias-smoke"
+      ],
+      "e2e_scenario_ids": [
+        "e2e-alias-resolution-smoke"
+      ],
+      "logging_depth": "alias-resolution trace",
+      "logging_artifacts": [
+        "alias normalization unit report",
+        "deprecation-warning assertion log"
+      ],
+      "risk_level": "low",
+      "deferred": false,
+      "deferred_rationale": null,
+      "follow_up_beads": [
+        "bd-3uqg.1.3"
+      ],
+      "checklist_status": "validate-and-freeze",
+      "required_unit_suites": [
+        "unit-metadata-classification-integrity"
+      ],
+      "required_contract_suites": [],
+      "required_conformance_suites": [],
+      "required_e2e_suites": []
+    }
+  ],
+  "summary": {
+    "total_providers": 99,
+    "by_mode": {
+      "deferred": 63,
+      "gateway-wrapper-routing": 9,
+      "native-adapter-required": 15,
+      "openai-compatible-preset": 12
+    },
+    "by_owner_track": {
+      "provider-compat-adapters": 12,
+      "provider-id-normalization": 10,
+      "provider-native-core": 15,
+      "provider-program-planning": 53,
+      "provider-routing-gateways": 9
+    },
+    "by_status": {
+      "deferred": 53,
+      "implementation-pending": 20,
+      "validate-and-freeze": 26
+    },
+    "deferred_count": 53,
+    "implementation_pending_count": 20,
+    "validate_and_freeze_count": 26
+  },
+  "matrix_version": "2026-02-10.bd-3uqg.1.5.v2",
+  "freeze_input_sha256": {
+    "docs/provider-upstream-catalog-snapshot.json": "c3c6b4d2655408edc14458a163f9d228e995aa6a6d786cb64c26da49f3822a41",
+    "docs/provider-baseline-audit.json": "d627b385749aa162673384e10c2eecdc635ed913fe226e395ea1f8a885e5007c",
+    "docs/provider-canonical-id-policy.json": "e47d54a9030acfc1dbdd9befc59c0a1cd3249ed31c7c59ba021373568faefde5",
+    "docs/provider-implementation-modes.json": "3213764980c3828c68d8657b8c4688a59d81c5a205c5bf72b05a0b982cc80c52"
+  },
+  "quality_gate_suite_catalog": {
+    "unit": [
+      "unit-provider-id-resolution",
+      "unit-model-registry-defaults",
+      "unit-provider-factory-selection"
+    ],
+    "contract": [
+      "contract-provider-streaming-event-parity",
+      "contract-provider-error-translation"
+    ],
+    "conformance": [
+      "conformance-provider-routing-shape",
+      "conformance-auth-redaction-policy"
+    ],
+    "e2e": [
+      "e2e-provider-streaming",
+      "e2e-cross-provider-parity",
+      "e2e-live-harness"
+    ]
+  }
+}

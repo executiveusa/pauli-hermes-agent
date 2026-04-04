@@ -1,0 +1,12 @@
+{
+  "schema": "pi.fuzz.crash_metadata.v1",
+  "target": "fuzz_sse_parser",
+  "category": "panic-unwrap",
+  "original_artifact": "crash-28de6b0685a7989f4c24ea8feea29aaa57d50053",
+  "stored_as": "panic-unwrap-001.bin",
+  "description": "SSE parser crash found during P2 validation",
+  "stored_at": "2026-02-15T03:46:16Z",
+  "size_bytes": 185,
+  "status": "resolved-false-positive",
+  "resolution": "Harness bug: Strategy 3 split raw bytes before UTF-8 conversion, producing different replacement chars at split boundary. Fixed in 0687fa33."
+}

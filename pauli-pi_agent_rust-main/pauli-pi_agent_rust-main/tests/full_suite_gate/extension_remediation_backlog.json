@@ -1,0 +1,1073 @@
+{
+  "schema": "pi.qa.extension_remediation_backlog.v1",
+  "generated_at": "2026-03-12T02:21:56.103Z",
+  "source_inputs": {
+    "certification_dossier": "tests/full_suite_gate/certification_dossier.json",
+    "certification_verdict": "tests/full_suite_gate/certification_verdict.json",
+    "conformance_baseline": "tests/ext_conformance/reports/conformance_baseline.json"
+  },
+  "summary": {
+    "total_non_pass_extensions": 36,
+    "actionable": 31,
+    "non_actionable": 5,
+    "by_severity": {
+      "high": 9,
+      "low": 5,
+      "medium": 22
+    },
+    "by_owner": {
+      "pi-conformance-team": 22,
+      "pi-parity-runtime": 13,
+      "pi-policy-runtime": 1
+    }
+  },
+  "entries": [
+    {
+      "rank": 1,
+      "extension_id": "community/nicobailon-interview-tool",
+      "status": "actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "high",
+      "root_cause_family": "runtime_crash",
+      "root_cause_codes": [
+        "runtime_error"
+      ],
+      "remediation": "Add deterministic bundling/asset-pack inclusion for required form assets.",
+      "fallback_guidance": "Capture deterministic init traces and fix runtime assumptions before re-enabling must-pass.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/runtime_error/extensions",
+        "/remediation_buckets/missing_runtime_api/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=runtime_error review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Bundle expects local HTML artifact not currently packaged in runtime artifact set.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 2,
+      "extension_id": "npm/aliou-pi-guardrails",
+      "status": "actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "high",
+      "root_cause_family": "runtime_crash",
+      "root_cause_codes": [
+        "runtime_error"
+      ],
+      "remediation": "Align shim API surface and add regression tests for aliou guardrails flow.",
+      "fallback_guidance": "Capture deterministic init traces and fix runtime assumptions before re-enabling must-pass.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/runtime_error/extensions",
+        "/remediation_buckets/missing_runtime_api/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=runtime_error review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Expected runtime shape diverges from shim implementation (`not a function`).",
+      "canonical_failure": false
+    },
+    {
+      "rank": 3,
+      "extension_id": "npm/aliou-pi-toolchain",
+      "status": "actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "high",
+      "root_cause_family": "runtime_crash",
+      "root_cause_codes": [
+        "runtime_error"
+      ],
+      "remediation": "Patch shim API contract and validate with extension-specific parity checks.",
+      "fallback_guidance": "Capture deterministic init traces and fix runtime assumptions before re-enabling must-pass.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/runtime_error/extensions",
+        "/remediation_buckets/missing_runtime_api/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=runtime_error review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Runtime shim mismatch triggers callable-shape failure at activation.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 4,
+      "extension_id": "npm/marckrenn-pi-sub-core",
+      "status": "actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "high",
+      "root_cause_family": "runtime_crash",
+      "root_cause_codes": [
+        "runtime_error"
+      ],
+      "remediation": "Implement missing detection/runtime utility behavior or canonical fallback shim.",
+      "fallback_guidance": "Capture deterministic init traces and fix runtime assumptions before re-enabling must-pass.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/runtime_error/extensions",
+        "/remediation_buckets/missing_runtime_api/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=runtime_error review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Extension expects provider detection shape not fully represented in runtime stubs.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 5,
+      "extension_id": "npm/pi-search-agent",
+      "status": "actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "high",
+      "root_cause_family": "runtime_api_gap",
+      "root_cause_codes": [
+        "missing_npm_package"
+      ],
+      "remediation": "Add vetted virtual module stub for `openai` with deterministic behavior.",
+      "fallback_guidance": "Pin and stub missing npm dependencies in QuickJS virtual modules before cert reruns.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/missing_npm_package/extensions",
+        "/remediation_buckets/missing_runtime_api/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=missing_npm_package review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Depends on unsupported package specifier (`openai`).",
+      "canonical_failure": false
+    },
+    {
+      "rank": 6,
+      "extension_id": "npm/pi-wakatime",
+      "status": "actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "high",
+      "root_cause_family": "runtime_api_gap",
+      "root_cause_codes": [
+        "missing_npm_package"
+      ],
+      "remediation": "Provide minimal audited `adm-zip` virtual module behavior required by corpus.",
+      "fallback_guidance": "Pin and stub missing npm dependencies in QuickJS virtual modules before cert reruns.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/missing_npm_package/extensions",
+        "/remediation_buckets/missing_runtime_api/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=missing_npm_package review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Depends on unsupported package specifier (`adm-zip`).",
+      "canonical_failure": false
+    },
+    {
+      "rank": 7,
+      "extension_id": "npm/pi-web-access",
+      "status": "actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "high",
+      "root_cause_family": "runtime_api_gap",
+      "root_cause_codes": [
+        "missing_npm_package"
+      ],
+      "remediation": "Implement compatible `linkedom` stub subset used by this extension.",
+      "fallback_guidance": "Pin and stub missing npm dependencies in QuickJS virtual modules before cert reruns.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/missing_npm_package/extensions",
+        "/remediation_buckets/missing_runtime_api/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=missing_npm_package review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Depends on unsupported package specifier (`linkedom`).",
+      "canonical_failure": false
+    },
+    {
+      "rank": 8,
+      "extension_id": "npm/qualisero-pi-agent-scip",
+      "status": "actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "high",
+      "root_cause_family": "runtime_api_gap",
+      "root_cause_codes": [
+        "missing_npm_package"
+      ],
+      "remediation": "Provide deterministic scip-typescript stub path used in indexing flow.",
+      "fallback_guidance": "Pin and stub missing npm dependencies in QuickJS virtual modules before cert reruns.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/missing_npm_package/extensions",
+        "/remediation_buckets/missing_runtime_api/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=missing_npm_package review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Depends on unsupported package specifier (`@sourcegraph/scip-typescript`).",
+      "canonical_failure": false
+    },
+    {
+      "rank": 9,
+      "extension_id": "third-party/qualisero-pi-agent-scip",
+      "status": "actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "high",
+      "root_cause_family": "runtime_api_gap",
+      "root_cause_codes": [
+        "missing_npm_package"
+      ],
+      "remediation": "Implement audited virtual module support for required SCIP API subset.",
+      "fallback_guidance": "Pin and stub missing npm dependencies in QuickJS virtual modules before cert reruns.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/missing_npm_package/extensions",
+        "/remediation_buckets/missing_runtime_api/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=missing_npm_package review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Depends on unsupported package specifier (`@sourcegraph/scip-typescript`).",
+      "canonical_failure": false
+    },
+    {
+      "rank": 10,
+      "extension_id": "agents-mikeastock/extensions",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 11,
+      "extension_id": "community/prateekmedia-lsp",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 12,
+      "extension_id": "npm/aliou-pi-linkup",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries",
+        "canonical_223_failure_trio"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": true
+    },
+    {
+      "rank": 13,
+      "extension_id": "npm/aliou-pi-synthetic",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries",
+        "canonical_223_failure_trio"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": true
+    },
+    {
+      "rank": 14,
+      "extension_id": "npm/lsp-pi",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 15,
+      "extension_id": "npm/marckrenn-pi-sub-bar",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 16,
+      "extension_id": "npm/mitsupi",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 17,
+      "extension_id": "npm/pi-amplike",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 18,
+      "extension_id": "npm/pi-bash-confirm",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 19,
+      "extension_id": "npm/pi-extensions",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 20,
+      "extension_id": "npm/pi-package-test",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries",
+        "canonical_223_failure_trio"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": true
+    },
+    {
+      "rank": 21,
+      "extension_id": "npm/shitty-extensions",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 22,
+      "extension_id": "npm/tmustier-pi-arcade",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 23,
+      "extension_id": "npm/vaayne-agent-kit",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 24,
+      "extension_id": "third-party/aliou-pi-extensions",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 25,
+      "extension_id": "third-party/ben-vargas-pi-packages",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 26,
+      "extension_id": "third-party/charles-cooper-pi-extensions",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 27,
+      "extension_id": "third-party/marckrenn-pi-sub",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 28,
+      "extension_id": "third-party/openclaw-openclaw",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 29,
+      "extension_id": "third-party/pasky-pi-amplike",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 30,
+      "extension_id": "third-party/w-winter-dot314",
+      "status": "actionable",
+      "owner": "pi-conformance-team",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Audit fixture expectations and extension registrations to restore parity.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=temporary cause_code=manifest_mismatch review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Registered command set diverges from manifest expectation in current fixture corpus.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 31,
+      "extension_id": "third-party/kcosr-pi-extensions",
+      "status": "actionable",
+      "owner": "pi-policy-runtime",
+      "severity": "medium",
+      "root_cause_family": "fixture_manifest_drift",
+      "root_cause_codes": [
+        "manifest_mismatch"
+      ],
+      "remediation": "Package prompt assets in-root or extend safe packaged-asset mapping.",
+      "fallback_guidance": "Regenerate expected registration fixtures so manifest and runtime outputs agree.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/manifest_mismatch/extensions",
+        "/remediation_buckets/missing_fixture/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.4",
+      "fallback_validation": "exception_policy status=temporary cause_code=policy_blocked review_by=2026-03-31 tracking_issue=bd-k5q5.4; rationale=Reads prompt artifact outside extension root and is blocked by path policy.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 32,
+      "extension_id": "base_fixtures",
+      "status": "tracked_non_actionable",
+      "owner": "pi-conformance-team",
+      "severity": "low",
+      "root_cause_family": "fixture_exclusion",
+      "root_cause_codes": [
+        "test_fixture"
+      ],
+      "remediation": "Keep excluded from user-facing pass-rate decisions.",
+      "fallback_guidance": "Keep test-only fixtures out of release must-pass sets.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/test_fixture/extensions",
+        "/remediation_buckets/intentionally_unsupported/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.2.7",
+      "fallback_validation": "exception_policy status=approved cause_code=test_fixture review_by=2026-03-31 tracking_issue=bd-k5q5.2.7; rationale=Fixture-only manifest sentinel; not a user-installable extension.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 33,
+      "extension_id": "community/qualisero-background-notify",
+      "status": "tracked_non_actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "low",
+      "root_cause_family": "packaging_gap",
+      "root_cause_codes": [
+        "multi_file_dependency"
+      ],
+      "remediation": "Land multi-file dependency packaging/resolution support.",
+      "fallback_guidance": "Bundle multi-file extensions or explicitly mark them unsupported in certification policy.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/multi_file_dependency/extensions",
+        "/remediation_buckets/intentionally_unsupported/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=multi_file_dependency review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Relative import outside single-file artifact is unresolved in current loader.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 34,
+      "extension_id": "community/qualisero-pi-agent-scip",
+      "status": "tracked_non_actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "low",
+      "root_cause_family": "packaging_gap",
+      "root_cause_codes": [
+        "multi_file_dependency"
+      ],
+      "remediation": "Support package-style dist entry resolution during extension load.",
+      "fallback_guidance": "Bundle multi-file extensions or explicitly mark them unsupported in certification policy.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/multi_file_dependency/extensions",
+        "/remediation_buckets/intentionally_unsupported/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=multi_file_dependency review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Runtime cannot resolve bundled dist-relative module path for this layout.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 35,
+      "extension_id": "community/qualisero-safe-git",
+      "status": "tracked_non_actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "low",
+      "root_cause_family": "packaging_gap",
+      "root_cause_codes": [
+        "multi_file_dependency"
+      ],
+      "remediation": "Enable deterministic multi-file import resolution for validated artifacts.",
+      "fallback_guidance": "Bundle multi-file extensions or explicitly mark them unsupported in certification policy.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/multi_file_dependency/extensions",
+        "/remediation_buckets/intentionally_unsupported/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=multi_file_dependency review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Cross-directory relative import is unresolved by current single-entry resolver.",
+      "canonical_failure": false
+    },
+    {
+      "rank": 36,
+      "extension_id": "npm/aliou-pi-processes",
+      "status": "tracked_non_actionable",
+      "owner": "pi-parity-runtime",
+      "severity": "low",
+      "root_cause_family": "packaging_gap",
+      "root_cause_codes": [
+        "multi_file_dependency"
+      ],
+      "remediation": "Add package-style module graph resolution for this dependency pattern.",
+      "fallback_guidance": "Bundle multi-file extensions or explicitly mark them unsupported in certification policy.",
+      "verification_tests": [
+        "cargo test --test conformance_regression_gate -- --nocapture",
+        "cargo test --test conformance_report -- --nocapture",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_must_pass_gate --nocapture --exact",
+        "cargo test --test ext_conformance_generated --features ext-conformance -- conformance_provider_compat_matrix --nocapture --exact"
+      ],
+      "evidence_refs": [
+        "tests/ext_conformance/reports/conformance_baseline.json",
+        "/failure_classification/multi_file_dependency/extensions",
+        "/remediation_buckets/intentionally_unsupported/cause_codes",
+        "/exception_policy/entries"
+      ],
+      "follow_up_bead": "bd-1f42.4.4",
+      "tracking_issue": "bd-k5q5.3.9",
+      "fallback_validation": "exception_policy status=temporary cause_code=multi_file_dependency review_by=2026-03-31 tracking_issue=bd-k5q5.3.9; rationale=Unbundled component import path cannot be resolved by current loader.",
+      "canonical_failure": false
+    }
+  ]
+}

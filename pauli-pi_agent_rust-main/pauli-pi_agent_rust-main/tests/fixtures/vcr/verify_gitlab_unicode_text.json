@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "test_name": "verify_gitlab_unicode_text",
+  "recorded_at": "2026-02-10T17:24:07.231Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://gitlab.com/api/v4/chat/completions",
+        "headers": [
+          [
+            "Authorization",
+            "Bearer [REDACTED]"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ],
+          [
+            "Accept",
+            "application/json"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ],
+        "body_chunks": [
+          "{\"response\":\"日本語テスト — émojis: 🦀🔥\"}"
+        ]
+      }
+    }
+  ]
+}

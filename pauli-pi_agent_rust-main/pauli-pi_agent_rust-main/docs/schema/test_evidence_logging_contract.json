@@ -1,0 +1,508 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "pi.test.evidence_logging_contract.v1",
+  "title": "Unified Structured Logging Contract for Unit/E2E/Perf Test Evidence",
+  "description": "Normative contract defining the unified structured logging schema across all test categories (unit, e2e, perf). Every PERF-3X bead MUST produce evidence traceable through this contract. Downstream consumers: bd-3ar8v.1.8 (orchestration scripts), bd-3ar8v.1.3 (NO_DATA hard failures), bd-3ar8v.5.6 (build-profile verification), bd-3ar8v.6.11 (bead-to-test coverage audit).",
+  "version": "1.0.0",
+  "bead_id": "bd-3ar8v.1.7",
+  "type": "object",
+  "required": [
+    "schema_registry",
+    "suite_requirements",
+    "correlation_model",
+    "perf_evidence_contract",
+    "bead_coverage_contract"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_registry": {
+      "$ref": "#/definitions/schema_registry",
+      "description": "Canonical registry of all structured logging schemas and their relationships."
+    },
+    "suite_requirements": {
+      "$ref": "#/definitions/suite_requirements",
+      "description": "Per-suite logging requirements matrix specifying which schemas each test category MUST produce."
+    },
+    "correlation_model": {
+      "$ref": "#/definitions/correlation_model",
+      "description": "Cross-domain correlation model linking log entries to benchmark results to evidence contracts."
+    },
+    "perf_evidence_contract": {
+      "$ref": "#/definitions/perf_evidence_contract",
+      "description": "Performance-specific evidence requirements for PERF-3X beads."
+    },
+    "bead_coverage_contract": {
+      "$ref": "#/definitions/bead_coverage_contract",
+      "description": "Contract for linking beads to their test/log evidence for coverage auditing."
+    }
+  },
+  "definitions": {
+    "schema_registry": {
+      "type": "object",
+      "required": ["schemas", "schema_relationships"],
+      "additionalProperties": false,
+      "properties": {
+        "schemas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/schema_entry"
+          },
+          "minItems": 10,
+          "description": "All known structured logging schemas in the project."
+        },
+        "schema_relationships": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/schema_relationship"
+          },
+          "description": "Directed edges describing how schemas reference or embed each other."
+        }
+      }
+    },
+    "schema_entry": {
+      "type": "object",
+      "required": ["schema_id", "version", "status", "domain", "source_files", "output_format"],
+      "additionalProperties": false,
+      "properties": {
+        "schema_id": {
+          "type": "string",
+          "pattern": "^pi\\.",
+          "description": "Unique schema identifier (e.g., pi.test.log.v2)."
+        },
+        "version": {
+          "type": "string",
+          "description": "Schema version (e.g., v2, v1)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["canonical", "deprecated", "experimental"],
+          "description": "Lifecycle status of this schema."
+        },
+        "domain": {
+          "type": "string",
+          "enum": ["test-logging", "test-artifacts", "evidence", "benchmarks", "parity", "transcripts"],
+          "description": "Functional domain this schema serves."
+        },
+        "source_files": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Source files defining or producing records of this schema."
+        },
+        "output_format": {
+          "type": "string",
+          "enum": ["jsonl", "json"],
+          "description": "File format used for records of this schema."
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of this schema's purpose."
+        },
+        "required_fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Top-level required fields for records of this schema."
+        },
+        "supersedes": {
+          "type": ["string", "null"],
+          "description": "Schema ID this version supersedes (null if first version)."
+        }
+      }
+    },
+    "schema_relationship": {
+      "type": "object",
+      "required": ["from_schema", "to_schema", "relationship"],
+      "additionalProperties": false,
+      "properties": {
+        "from_schema": {
+          "type": "string",
+          "description": "Source schema ID."
+        },
+        "to_schema": {
+          "type": "string",
+          "description": "Target schema ID."
+        },
+        "relationship": {
+          "type": "string",
+          "enum": ["embeds", "references", "produces", "validates", "aggregates"],
+          "description": "Type of relationship between schemas."
+        },
+        "join_field": {
+          "type": "string",
+          "description": "Field name used to correlate records across schemas."
+        }
+      }
+    },
+    "suite_requirements": {
+      "type": "object",
+      "required": ["unit", "vcr", "e2e", "perf_bench", "perf_regression"],
+      "additionalProperties": false,
+      "properties": {
+        "unit": {
+          "$ref": "#/definitions/suite_logging_requirement",
+          "description": "Logging requirements for Suite 1 (Unit tests)."
+        },
+        "vcr": {
+          "$ref": "#/definitions/suite_logging_requirement",
+          "description": "Logging requirements for Suite 2 (VCR / Fixture Replay)."
+        },
+        "e2e": {
+          "$ref": "#/definitions/suite_logging_requirement",
+          "description": "Logging requirements for Suite 3 (Live E2E)."
+        },
+        "perf_bench": {
+          "$ref": "#/definitions/suite_logging_requirement",
+          "description": "Logging requirements for performance benchmark harnesses."
+        },
+        "perf_regression": {
+          "$ref": "#/definitions/suite_logging_requirement",
+          "description": "Logging requirements for performance regression tests."
+        }
+      }
+    },
+    "suite_logging_requirement": {
+      "type": "object",
+      "required": ["required_schemas", "optional_schemas", "evidence_level"],
+      "additionalProperties": false,
+      "properties": {
+        "required_schemas": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Schema IDs that MUST be produced by tests in this suite."
+        },
+        "optional_schemas": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Schema IDs that MAY be produced by tests in this suite."
+        },
+        "evidence_level": {
+          "type": "string",
+          "enum": ["minimal", "standard", "forensic"],
+          "description": "Required evidence depth: minimal (pass/fail), standard (structured logs), forensic (full trace + artifacts)."
+        },
+        "correlation_required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether trace_id/correlation_id linking is required."
+        },
+        "artifact_checksums_required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether SHA-256 checksums on artifacts are required."
+        }
+      }
+    },
+    "correlation_model": {
+      "type": "object",
+      "required": ["levels", "join_keys", "cross_domain_paths"],
+      "additionalProperties": false,
+      "properties": {
+        "levels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/correlation_level"
+          },
+          "minItems": 3,
+          "description": "Hierarchical correlation levels from broadest (CI run) to narrowest (individual operation)."
+        },
+        "join_keys": {
+          "type": "object",
+          "required": ["ci_run_to_evidence", "evidence_to_suite", "suite_to_log", "log_to_span", "bench_to_evidence"],
+          "additionalProperties": false,
+          "properties": {
+            "ci_run_to_evidence": {
+              "type": "string",
+              "const": "correlation_id",
+              "description": "Join key from CI run to evidence contract."
+            },
+            "evidence_to_suite": {
+              "type": "string",
+              "const": "suite_id",
+              "description": "Join key from evidence contract to per-suite entries."
+            },
+            "suite_to_log": {
+              "type": "string",
+              "const": "trace_id",
+              "description": "Join key from suite entry to JSONL log records."
+            },
+            "log_to_span": {
+              "type": "string",
+              "const": "span_id",
+              "description": "Join key from log entry to nested span operations."
+            },
+            "bench_to_evidence": {
+              "type": "string",
+              "const": "correlation_id",
+              "description": "Join key from benchmark records to evidence contract."
+            }
+          },
+          "description": "Named join keys for cross-schema correlation."
+        },
+        "cross_domain_paths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cross_domain_path"
+          },
+          "description": "Named query paths for common cross-domain forensic queries."
+        }
+      }
+    },
+    "correlation_level": {
+      "type": "object",
+      "required": ["level", "scope", "id_field", "schemas"],
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Nesting depth (0 = broadest)."
+        },
+        "scope": {
+          "type": "string",
+          "description": "Human-readable scope name (e.g., ci_run, suite, test, operation)."
+        },
+        "id_field": {
+          "type": "string",
+          "description": "Field name carrying the unique ID at this level."
+        },
+        "schemas": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Schema IDs that participate at this correlation level."
+        }
+      }
+    },
+    "cross_domain_path": {
+      "type": "object",
+      "required": ["name", "purpose", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Query path name (e.g., bead_to_evidence, failure_to_replay)."
+        },
+        "purpose": {
+          "type": "string",
+          "description": "What forensic question this path answers."
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["schema", "field"],
+            "additionalProperties": false,
+            "properties": {
+              "schema": { "type": "string" },
+              "field": { "type": "string" }
+            }
+          },
+          "description": "Ordered list of schema→field hops to traverse."
+        }
+      }
+    },
+    "perf_evidence_contract": {
+      "type": "object",
+      "required": [
+        "schema",
+        "version",
+        "required_record_types",
+        "env_fingerprint_fields",
+        "statistical_fields",
+        "partition_fields",
+        "no_data_policy"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "type": "string",
+          "const": "pi.perf.evidence.v1",
+          "description": "Schema identifier for perf evidence records."
+        },
+        "version": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "required_record_types": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["record_type", "schema_id", "purpose"],
+            "additionalProperties": false,
+            "properties": {
+              "record_type": {
+                "type": "string",
+                "enum": ["bench_run", "budget_check", "regression_delta", "workload_result", "comparison_report"]
+              },
+              "schema_id": {
+                "type": "string",
+                "description": "Schema ID for records of this type."
+              },
+              "purpose": {
+                "type": "string",
+                "description": "What this record type captures."
+              }
+            }
+          },
+          "description": "Required perf evidence record types and their schemas."
+        },
+        "env_fingerprint_fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 5,
+          "description": "Fields that MUST appear in environment fingerprints for reproducibility."
+        },
+        "statistical_fields": {
+          "type": "object",
+          "required": ["required_percentiles", "required_aggregates"],
+          "additionalProperties": false,
+          "properties": {
+            "required_percentiles": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Percentile labels that MUST be reported (e.g., p50, p95, p99)."
+            },
+            "required_aggregates": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Aggregate statistics that MUST be reported (e.g., min, max, mean, count)."
+            }
+          },
+          "description": "Required statistical rigor for benchmark results."
+        },
+        "partition_fields": {
+          "type": "object",
+          "required": ["partition_tag_field", "scenario_id_field", "valid_partitions"],
+          "additionalProperties": false,
+          "properties": {
+            "partition_tag_field": {
+              "type": "string",
+              "const": "partition",
+              "description": "Field name carrying the benchmark partition tag."
+            },
+            "scenario_id_field": {
+              "type": "string",
+              "const": "scenario_id",
+              "description": "Field name carrying the scenario identifier."
+            },
+            "valid_partitions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["matched-state", "realistic"]
+              },
+              "description": "Valid partition tag values."
+            }
+          },
+          "description": "Partition-awareness fields for benchmark results."
+        },
+        "no_data_policy": {
+          "type": "object",
+          "required": ["action", "grace_period_builds", "rationale"],
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "hard_fail",
+              "description": "What happens when expected perf evidence is missing."
+            },
+            "grace_period_builds": {
+              "type": "integer",
+              "const": 0,
+              "description": "Number of builds allowed without data before failure (0 = immediate)."
+            },
+            "rationale": {
+              "type": "string",
+              "description": "Why NO_DATA is treated as hard failure."
+            }
+          },
+          "description": "Policy for handling missing benchmark data (consumed by bd-3ar8v.1.3)."
+        }
+      }
+    },
+    "bead_coverage_contract": {
+      "type": "object",
+      "required": ["schema", "version", "link_format", "required_link_fields", "coverage_policy"],
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "type": "string",
+          "const": "pi.perf.bead_coverage.v1",
+          "description": "Schema identifier for bead-to-test coverage links."
+        },
+        "version": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "link_format": {
+          "type": "object",
+          "required": ["bead_id", "test_files", "log_artifacts", "evidence_type"],
+          "additionalProperties": false,
+          "properties": {
+            "bead_id": {
+              "type": "string",
+              "pattern": "^bd-",
+              "description": "Bead identifier (e.g., bd-3ar8v.1.7)."
+            },
+            "test_files": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1,
+              "description": "Test source files providing evidence for this bead."
+            },
+            "log_artifacts": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "JSONL log artifact paths produced by the tests."
+            },
+            "evidence_type": {
+              "type": "string",
+              "enum": ["unit", "vcr", "e2e", "bench", "regression", "design_doc"],
+              "description": "Classification of the evidence."
+            }
+          },
+          "description": "Format for a single bead-to-test link record."
+        },
+        "required_link_fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "const": ["bead_id", "test_files", "evidence_type"],
+          "description": "Fields that MUST be present on every bead coverage link."
+        },
+        "coverage_policy": {
+          "type": "object",
+          "required": ["min_evidence_per_bead", "allowed_evidence_types", "audit_frequency", "critical_perf3x_beads"],
+          "additionalProperties": false,
+          "properties": {
+            "min_evidence_per_bead": {
+              "type": "integer",
+              "minimum": 1,
+              "const": 1,
+              "description": "Minimum number of evidence links per implementation bead."
+            },
+            "allowed_evidence_types": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Evidence types that count toward coverage."
+            },
+            "audit_frequency": {
+              "type": "string",
+              "enum": ["per_commit", "per_phase", "per_release"],
+              "description": "How often bead coverage is audited."
+            },
+            "critical_perf3x_beads": {
+              "type": "array",
+              "description": "Critical PERF-3X bead IDs that must be represented by the coverage audit.",
+              "items": {
+                "type": "string",
+                "pattern": "^bd-3ar8v\\."
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          },
+          "description": "Policy governing minimum evidence requirements per bead."
+        }
+      }
+    }
+  }
+}

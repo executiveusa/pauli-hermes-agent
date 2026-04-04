@@ -1,0 +1,180 @@
+{
+  "report_version": "1.0",
+  "bead_id": "bd-3uqg.14.3.1",
+  "generated_at_utc": "2026-02-13T23:45:00Z",
+  "generated_by": "TopazFalcon (Claude Opus 4.6)",
+  "description": "Deterministic alias-aware provider-id parity reconciliation between upstream surfaces and Pi canonical metadata",
+  "methodology": {
+    "upstream_source": "docs/provider-upstream-catalog-snapshot.json (union of models.dev + opencode-effective + code built-ins)",
+    "pi_source": "src/provider_metadata.rs PROVIDER_METADATA array",
+    "normalization": "docs/provider-canonical-id-policy.md (lowercase, hyphenate, alias-resolve)",
+    "classification_rules": [
+      "canonical-match: upstream ID exists verbatim as a Pi canonical_id",
+      "alias-match: upstream ID exists as a Pi alias that resolves to a canonical_id",
+      "true-missing-gap: upstream ID has no match in Pi (neither canonical nor alias)",
+      "pi-only-canonical: Pi canonical_id not in upstream union but reachable via upstream aliases"
+    ]
+  },
+  "summary": {
+    "upstream_union_count": 90,
+    "pi_canonical_count": 87,
+    "pi_alias_count": 16,
+    "upstream_to_pi": {
+      "canonical_match": 85,
+      "alias_match": 5,
+      "true_missing_gap": 0,
+      "total_resolved": 90,
+      "resolution_rate": "100.0%"
+    },
+    "pi_to_upstream": {
+      "in_upstream_directly": 85,
+      "reachable_via_upstream_aliases": 2,
+      "pi_only_no_upstream_reference": 0,
+      "total_resolved": 87,
+      "resolution_rate": "100.0%"
+    },
+    "verdict": "FULL_PARITY — every upstream ID resolves to a Pi provider, and every Pi canonical is reachable from upstream"
+  },
+  "upstream_to_pi_classification": {
+    "canonical_matches": [
+      "302ai", "abacus", "aihubmix", "alibaba", "alibaba-cn",
+      "amazon-bedrock", "anthropic", "bailing", "baseten", "berget",
+      "cerebras", "chutes", "cloudflare-ai-gateway", "cloudflare-workers-ai",
+      "cohere", "cortecs", "deepinfra", "deepseek", "fastrouter",
+      "firmware", "friendli", "github-copilot", "github-models", "gitlab",
+      "google", "google-vertex", "groq", "helicone", "huggingface",
+      "iflowcn", "inception", "inference", "io-net", "jiekou",
+      "kimi-for-coding", "llama", "lmstudio", "lucidquery", "minimax",
+      "minimax-cn", "minimax-cn-coding-plan", "minimax-coding-plan",
+      "mistral", "moark", "modelscope", "moonshotai", "moonshotai-cn",
+      "morph", "nano-gpt", "nebius", "nova", "novita-ai", "nvidia",
+      "ollama", "ollama-cloud", "openai", "opencode", "openrouter",
+      "ovhcloud", "perplexity", "poe", "privatemode-ai", "requesty",
+      "sap-ai-core", "scaleway", "siliconflow", "siliconflow-cn",
+      "stackit", "submodel", "synthetic", "togetherai", "upstage",
+      "v0", "venice", "vercel", "vivgrid", "vultr", "wandb",
+      "xai", "xiaomi", "zai", "zai-coding-plan", "zenmux",
+      "zhipuai", "zhipuai-coding-plan"
+    ],
+    "alias_matches": [
+      {
+        "upstream_id": "azure",
+        "pi_canonical_id": "azure-openai",
+        "alias_source": "Pi provider_metadata.rs aliases field",
+        "user_impact": "none — user types 'azure', Pi resolves to azure-openai correctly"
+      },
+      {
+        "upstream_id": "azure-cognitive-services",
+        "pi_canonical_id": "azure-openai",
+        "alias_source": "Pi provider_metadata.rs aliases field",
+        "user_impact": "none — user types 'azure-cognitive-services', Pi resolves to azure-openai correctly"
+      },
+      {
+        "upstream_id": "fireworks-ai",
+        "pi_canonical_id": "fireworks",
+        "alias_source": "Pi provider_metadata.rs aliases field",
+        "user_impact": "none — user types 'fireworks-ai', Pi resolves to fireworks correctly"
+      },
+      {
+        "upstream_id": "github-copilot-enterprise",
+        "pi_canonical_id": "github-copilot",
+        "alias_source": "Pi provider_metadata.rs aliases field",
+        "user_impact": "none — user types 'github-copilot-enterprise', Pi resolves to github-copilot correctly"
+      },
+      {
+        "upstream_id": "google-vertex-anthropic",
+        "pi_canonical_id": "google-vertex",
+        "alias_source": "Pi provider_metadata.rs aliases field",
+        "user_impact": "none — user types 'google-vertex-anthropic', Pi resolves to google-vertex correctly"
+      }
+    ],
+    "true_missing_gaps": []
+  },
+  "pi_only_canonicals": {
+    "description": "Pi canonical IDs not in upstream union as direct entries (but all reachable via aliases from upstream)",
+    "entries": [
+      {
+        "pi_canonical_id": "azure-openai",
+        "upstream_aliases_that_resolve_here": ["azure", "azure-cognitive-services"],
+        "user_impact": "none — upstream users use 'azure' which resolves correctly"
+      },
+      {
+        "pi_canonical_id": "fireworks",
+        "upstream_aliases_that_resolve_here": ["fireworks-ai"],
+        "user_impact": "none — upstream users use 'fireworks-ai' which resolves correctly"
+      }
+    ]
+  },
+  "alias_inventory": {
+    "description": "Complete Pi alias table from provider_metadata.rs",
+    "total_aliases": 16,
+    "mappings": [
+      {"alias": "azure", "canonical": "azure-openai"},
+      {"alias": "azure-cognitive-services", "canonical": "azure-openai"},
+      {"alias": "bedrock", "canonical": "amazon-bedrock"},
+      {"alias": "copilot", "canonical": "github-copilot"},
+      {"alias": "dashscope", "canonical": "alibaba"},
+      {"alias": "fireworks-ai", "canonical": "fireworks"},
+      {"alias": "gemini", "canonical": "google"},
+      {"alias": "github-copilot-enterprise", "canonical": "github-copilot"},
+      {"alias": "gitlab-duo", "canonical": "gitlab"},
+      {"alias": "google-vertex-anthropic", "canonical": "google-vertex"},
+      {"alias": "kimi", "canonical": "moonshotai"},
+      {"alias": "moonshot", "canonical": "moonshotai"},
+      {"alias": "open-router", "canonical": "openrouter"},
+      {"alias": "qwen", "canonical": "alibaba"},
+      {"alias": "sap", "canonical": "sap-ai-core"},
+      {"alias": "vertexai", "canonical": "google-vertex"}
+    ]
+  },
+  "discoverability_risks": {
+    "description": "Cases where upstream naming differs from Pi canonical, potentially confusing users",
+    "entries": [
+      {
+        "upstream_name": "fireworks-ai",
+        "pi_canonical": "fireworks",
+        "risk": "low — alias resolves correctly, user sees no difference",
+        "recommendation": "no action needed, alias is functional"
+      },
+      {
+        "upstream_name": "azure",
+        "pi_canonical": "azure-openai",
+        "risk": "low — alias resolves correctly",
+        "recommendation": "no action needed, both 'azure' and 'azure-openai' work"
+      },
+      {
+        "upstream_name": "azure-cognitive-services",
+        "pi_canonical": "azure-openai",
+        "risk": "low — alias resolves correctly",
+        "recommendation": "no action needed"
+      },
+      {
+        "upstream_name": "github-copilot-enterprise",
+        "pi_canonical": "github-copilot",
+        "risk": "low — alias resolves correctly",
+        "recommendation": "no action needed"
+      },
+      {
+        "upstream_name": "google-vertex-anthropic",
+        "pi_canonical": "google-vertex",
+        "risk": "low — alias resolves correctly",
+        "recommendation": "no action needed"
+      }
+    ]
+  },
+  "evidence_commands": {
+    "description": "Commands to independently verify this reconciliation",
+    "pi_canonical_ids": "grep 'canonical_id:' src/provider_metadata.rs | sed 's/.*\"\\(.*\\)\".*/\\1/' | sort",
+    "pi_aliases": "grep -A1 'aliases:' src/provider_metadata.rs | grep '\"' | sed 's/.*\"\\(.*\\)\".*/\\1/' | sort -u",
+    "upstream_union": "python3 -c \"import json; d=json.load(open('docs/provider-upstream-catalog-snapshot.json')); print('\\n'.join(sorted(d['combined']['union_provider_ids'])))\"",
+    "alias_resolution_test": "cargo test --lib canonical_provider_id -- --nocapture",
+    "full_metadata_test": "cargo test provider_metadata -- --nocapture"
+  },
+  "gate_results": {
+    "timestamp_utc": "2026-02-13T23:42:00Z",
+    "cargo_check_all_targets": "PASS",
+    "cargo_clippy_all_targets": "PASS (after fixing pub(super) → pub visibility on build_conversation_content in src/interactive/view.rs:264)",
+    "cargo_fmt_check": "PASS",
+    "notes": "Bench visibility error was from concurrent bd-21mwg modularization, not provider scope"
+  }
+}

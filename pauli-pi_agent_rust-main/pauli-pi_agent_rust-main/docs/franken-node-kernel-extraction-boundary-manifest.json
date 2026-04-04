@@ -1,0 +1,280 @@
+{
+  "schema": "pi.frankennode.kernel_extraction_boundary_manifest.v1",
+  "contract_version": "1.1.0",
+  "bead_id": "bd-3ar8v.7.2",
+  "support_bead_id": "bd-3ar8v.7.2.1",
+  "support_bead_ids": [
+    "bd-3ar8v.7.2.1",
+    "bd-3ar8v.7.2.3"
+  ],
+  "status": "active_blocking_policy",
+  "effective_date_utc": "2026-02-17T00:00:00Z",
+  "source_project_root": "/data/projects/pi_agent_rust",
+  "target_project_root": "/dp/franken_node",
+  "boundary_domains": [
+    {
+      "domain_id": "reactor_scheduler",
+      "target_crate": "franken-kernel-reactor",
+      "current_modules": [
+        "src/scheduler.rs"
+      ],
+      "target_modules": [
+        "franken_kernel_reactor::scheduler"
+      ],
+      "invariants": [
+        "deterministic scheduler ordering",
+        "bounded queue progression",
+        "fallback path emits structured diagnostics"
+      ],
+      "forbidden_cross_boundary_refs": [
+        "must not import session persistence internals",
+        "must not depend on provider-specific runtime adapters"
+      ]
+    },
+    {
+      "domain_id": "hostcall_queueing",
+      "target_crate": "franken-kernel-hostcall-queue",
+      "current_modules": [
+        "src/hostcall_queue.rs",
+        "src/hostcall_s3_fifo.rs"
+      ],
+      "target_modules": [
+        "franken_kernel_hostcall_queue::queue",
+        "franken_kernel_hostcall_queue::s3_fifo"
+      ],
+      "invariants": [
+        "queue fairness contract",
+        "bounded memory under backpressure",
+        "policy decision traceability"
+      ],
+      "forbidden_cross_boundary_refs": [
+        "must not reach into JS runtime internals",
+        "must not mutate session index storage directly"
+      ]
+    },
+    {
+      "domain_id": "hostcall_execution",
+      "target_crate": "franken-kernel-hostcall-exec",
+      "current_modules": [
+        "src/hostcall_amac.rs",
+        "src/hostcall_io_uring_lane.rs",
+        "src/hostcall_superinstructions.rs",
+        "src/hostcall_trace_jit.rs",
+        "src/hostcall_rewrite.rs"
+      ],
+      "target_modules": [
+        "franken_kernel_hostcall_exec::amac",
+        "franken_kernel_hostcall_exec::io_uring",
+        "franken_kernel_hostcall_exec::superinstructions",
+        "franken_kernel_hostcall_exec::trace_jit",
+        "franken_kernel_hostcall_exec::rewrite"
+      ],
+      "invariants": [
+        "semantic parity across execution tiers",
+        "deterministic deopt and fallback behavior",
+        "policy gates remain fail-closed"
+      ],
+      "forbidden_cross_boundary_refs": [
+        "must not bypass hostcall queue policy checks",
+        "must not import CLI presentation code"
+      ]
+    },
+    {
+      "domain_id": "extension_dispatch",
+      "target_crate": "franken-kernel-extension-bridge",
+      "current_modules": [
+        "src/extension_dispatcher.rs",
+        "src/extensions.rs"
+      ],
+      "target_modules": [
+        "franken_kernel_extension_bridge::dispatcher",
+        "franken_kernel_extension_bridge::policy"
+      ],
+      "invariants": [
+        "capability policy enforcement unchanged",
+        "dispatch telemetry includes run lineage",
+        "bridge errors remain classifiable"
+      ],
+      "forbidden_cross_boundary_refs": [
+        "must not contain provider transport code",
+        "must not own session persistence schema"
+      ]
+    },
+    {
+      "domain_id": "extension_runtime_js",
+      "target_crate": "franken-kernel-runtime-js",
+      "current_modules": [
+        "src/extensions_js.rs"
+      ],
+      "target_modules": [
+        "franken_kernel_runtime_js::runtime"
+      ],
+      "invariants": [
+        "hostcall ABI compatibility",
+        "sandbox policy parity",
+        "runtime diagnostics preserved"
+      ],
+      "forbidden_cross_boundary_refs": [
+        "must not include file-system capability escalation paths",
+        "must not pull in session tree mutation code"
+      ]
+    },
+    {
+      "domain_id": "session_orchestration",
+      "target_crate": "franken-kernel-session",
+      "current_modules": [
+        "src/session.rs",
+        "src/session_metrics.rs",
+        "src/session_index.rs"
+      ],
+      "target_modules": [
+        "franken_kernel_session::store",
+        "franken_kernel_session::metrics",
+        "franken_kernel_session::index"
+      ],
+      "invariants": [
+        "append and rewrite consistency",
+        "index/cache coherence",
+        "structured replay metadata preservation"
+      ],
+      "forbidden_cross_boundary_refs": [
+        "must not own extension execution policy decisions",
+        "must not import CLI rendering state"
+      ]
+    },
+    {
+      "domain_id": "context_and_diagnostics",
+      "target_crate": "franken-kernel-context",
+      "current_modules": [
+        "src/agent_cx.rs"
+      ],
+      "target_modules": [
+        "franken_kernel_context::agent_cx"
+      ],
+      "invariants": [
+        "capability context remains explicit",
+        "diagnostic lineage continuity",
+        "context serialization is deterministic"
+      ],
+      "forbidden_cross_boundary_refs": [
+        "must not contain provider request construction",
+        "must not own benchmark report generation"
+      ]
+    }
+  ],
+  "deferred_modules": [
+    {
+      "module_path": "src/provider.rs",
+      "reason": "Provider abstraction remains in pi_agent_rust until semantic/runtime parity gates are complete.",
+      "follow_up_bead": "bd-3ar8v.7.3"
+    },
+    {
+      "module_path": "src/providers/mod.rs",
+      "reason": "Provider factory reintegration depends on post-parity runtime crate boundaries.",
+      "follow_up_bead": "bd-3ar8v.7.13"
+    }
+  ],
+  "ownership_rules": {
+    "require_full_module_coverage": true,
+    "disallow_duplicate_module_ownership": true,
+    "require_explicit_deferred_modules": true,
+    "banned_cross_boundary_pairs": [
+      {
+        "from_domain": "hostcall_execution",
+        "to_domain": "session_orchestration",
+        "reason": "execution lanes must use queue and context interfaces, not direct session mutation"
+      },
+      {
+        "from_domain": "extension_runtime_js",
+        "to_domain": "provider_runtime",
+        "reason": "JS runtime must stay transport-agnostic"
+      }
+    ]
+  },
+  "drift_detection_contract": {
+    "required_checks": [
+      "kernel_boundary.all_modules_mapped_or_deferred",
+      "kernel_boundary.no_duplicate_domain_ownership",
+      "kernel_boundary.banned_cross_boundary_pairs_absent",
+      "kernel_boundary.reintegration_target_list_complete",
+      "kernel_boundary.reintegration_module_mappings_complete"
+    ],
+    "report_artifact": "tests/full_suite_gate/franken_node_kernel_boundary_drift_report.json",
+    "failure_policy": "hard_fail"
+  },
+  "reintegration_linkage": {
+    "required_bead": "bd-3ar8v.7.13",
+    "replacement_targets": [
+      "src/agent_cx.rs",
+      "src/hostcall_queue.rs",
+      "src/hostcall_amac.rs",
+      "src/scheduler.rs",
+      "src/extensions.rs",
+      "src/extensions_js.rs",
+      "src/session.rs"
+    ],
+    "require_explicit_module_mappings": true,
+    "failure_policy": "hard_fail",
+    "module_mappings": [
+      {
+        "source_module": "src/agent_cx.rs",
+        "source_domain": "context_and_diagnostics",
+        "target_crate": "franken-kernel-context",
+        "target_module": "franken_kernel_context::agent_cx",
+        "replacement_target": "src/agent_cx.rs"
+      },
+      {
+        "source_module": "src/hostcall_queue.rs",
+        "source_domain": "hostcall_queueing",
+        "target_crate": "franken-kernel-hostcall-queue",
+        "target_module": "franken_kernel_hostcall_queue::queue",
+        "replacement_target": "src/hostcall_queue.rs"
+      },
+      {
+        "source_module": "src/hostcall_amac.rs",
+        "source_domain": "hostcall_execution",
+        "target_crate": "franken-kernel-hostcall-exec",
+        "target_module": "franken_kernel_hostcall_exec::amac",
+        "replacement_target": "src/hostcall_amac.rs"
+      },
+      {
+        "source_module": "src/scheduler.rs",
+        "source_domain": "reactor_scheduler",
+        "target_crate": "franken-kernel-reactor",
+        "target_module": "franken_kernel_reactor::scheduler",
+        "replacement_target": "src/scheduler.rs"
+      },
+      {
+        "source_module": "src/extensions.rs",
+        "source_domain": "extension_dispatch",
+        "target_crate": "franken-kernel-extension-bridge",
+        "target_module": "franken_kernel_extension_bridge::policy",
+        "replacement_target": "src/extensions.rs"
+      },
+      {
+        "source_module": "src/extensions_js.rs",
+        "source_domain": "extension_runtime_js",
+        "target_crate": "franken-kernel-runtime-js",
+        "target_module": "franken_kernel_runtime_js::runtime",
+        "replacement_target": "src/extensions_js.rs"
+      },
+      {
+        "source_module": "src/session.rs",
+        "source_domain": "session_orchestration",
+        "target_crate": "franken-kernel-session",
+        "target_module": "franken_kernel_session::store",
+        "replacement_target": "src/session.rs"
+      }
+    ]
+  },
+  "structured_logging_contract": {
+    "required_fields": [
+      "run_id",
+      "domain_id",
+      "module_path",
+      "decision",
+      "reason",
+      "timestamp_utc"
+    ]
+  }
+}

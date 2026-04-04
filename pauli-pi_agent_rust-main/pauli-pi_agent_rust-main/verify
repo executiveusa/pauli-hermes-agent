@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Top-level verification entrypoint.
+# Delegates to scripts/e2e/run_all.sh with all arguments forwarded.
+#
+# Quick reference:
+#   ./verify                    # full verification (lint + lib + all tests + E2E)
+#   ./verify --profile quick    # fast: lint + lib + unit suite only
+#   ./verify --profile ci       # CI: lint + lib + all non-E2E + 1 E2E
+#   ./verify --help             # show all options
+#
+# Multi-agent note:
+#   When CODEX_THREAD_ID is set and CARGO_TARGET_DIR is unset, run_all.sh
+#   defaults CARGO_TARGET_DIR to target/agents/<CODEX_THREAD_ID> to avoid
+#   shared target/ contention.
+exec "$(dirname "$0")/scripts/e2e/run_all.sh" "$@"

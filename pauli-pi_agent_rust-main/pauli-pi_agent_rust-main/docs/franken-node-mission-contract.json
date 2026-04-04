@@ -1,0 +1,105 @@
+{
+  "schema": "pi.franken_node.mission_contract.v1",
+  "bead_id": "bd-3ar8v.7.1",
+  "contract_version": "1.0.0",
+  "effective_date_utc": "2026-02-17T00:00:00Z",
+  "status": "active_blocking_policy",
+  "mission_statement": "FrankenNode reuses Pi Rust's certified extension-host runtime core first, with explicit claim tiers that prevent over-claiming full Node/Bun runtime replacement before strict evidence gates are satisfied.",
+  "scope_boundaries": {
+    "extension_host_dropin": {
+      "status": "in_scope_now",
+      "description": "Drop-in parity scope is limited to extension-hosting workloads validated by PERF-3X claim-integrity evidence.",
+      "allowed_language": [
+        "extension-host drop-in parity",
+        "certified extension runtime core"
+      ]
+    },
+    "full_runtime_replacement": {
+      "status": "blocked_until_certified",
+      "description": "Strict Node/Bun runtime replacement language remains blocked until drop-in certification verdict is CERTIFIED and declared phase-6 runtime beads are complete.",
+      "blocked_language": [
+        "strict drop-in replacement for Node.js",
+        "strict drop-in replacement for Bun",
+        "full Node/Bun runtime replacement is complete"
+      ]
+    }
+  },
+  "claim_tiers": [
+    {
+      "tier_id": "extension_host_dropin",
+      "claim_label": "Extension-host drop-in parity",
+      "allowed": true,
+      "required_evidence_artifacts": [
+        "tests/perf/reports/baseline_variance_confidence.json",
+        "tests/perf/reports/extension_benchmark_stratification.json",
+        "tests/perf/reports/phase1_matrix_validation.json",
+        "tests/perf/reports/parameter_sweeps.json",
+        "tests/e2e_results/<run>/claim_integrity_scenario_cell_status.json",
+        "tests/e2e_results/<run>/claim_integrity_evidence_adjudication_matrix.json"
+      ],
+      "required_check_ids": [
+        "claim_integrity.realistic_session_shape_coverage",
+        "claim_integrity.microbench_only_claim",
+        "claim_integrity.global_claim_missing_partition_coverage",
+        "claim_integrity.unresolved_conflicting_claims",
+        "claim_integrity.evidence_adjudication_matrix_schema",
+        "claim_integrity.franken_node_requested_claim_tier_allowed"
+      ]
+    },
+    {
+      "tier_id": "full_runtime_replacement",
+      "claim_label": "Strict Node/Bun runtime replacement",
+      "allowed": false,
+      "required_beads": [
+        "bd-3ar8v.7.2",
+        "bd-3ar8v.7.3",
+        "bd-3ar8v.7.4",
+        "bd-3ar8v.7.5",
+        "bd-3ar8v.7.6",
+        "bd-3ar8v.7.15",
+        "bd-3ar8v.7.16"
+      ],
+      "required_evidence_artifacts": [
+        "docs/dropin-certification-verdict.json",
+        "docs/franken-node-kernel-extraction-boundary-manifest.json",
+        "docs/franken-node-package-interop-contract.json",
+        "docs/franken-node-runtime-substrate-contract.json",
+        "docs/franken-node-remediation-backlog-contract.json",
+        "docs/franken-node-shadow-canary-rollout-contract.json",
+        "tests/full_suite_gate/franken_node_kernel_boundary_drift_report.json"
+      ],
+      "required_check_ids": [
+        "claim_integrity.franken_node_strict_replacement_dropin_certified",
+        "claim_integrity.franken_node_phase6_runtime_beads_declared",
+        "claim_integrity.franken_node_strict_tier_required_evidence"
+      ],
+      "blocking_reason": "Strict runtime-replacement claims remain blocked until drop-in verdict is CERTIFIED and phase-6 runtime interoperability beads are complete."
+    }
+  ],
+  "forbidden_claims": [
+    {
+      "claim_id": "strict_dropin_nodejs",
+      "phrase": "strict drop-in replacement for Node.js",
+      "blocked_until_tier": "full_runtime_replacement"
+    },
+    {
+      "claim_id": "strict_dropin_bun",
+      "phrase": "strict drop-in replacement for Bun",
+      "blocked_until_tier": "full_runtime_replacement"
+    },
+    {
+      "claim_id": "full_runtime_replacement_now",
+      "phrase": "full Node/Bun runtime replacement is complete",
+      "blocked_until_tier": "full_runtime_replacement"
+    }
+  ],
+  "release_claim_policy": {
+    "default_allowed_tier": "extension_host_dropin",
+    "strict_claim_tier": "full_runtime_replacement",
+    "strict_claim_verdict_artifact": "docs/dropin-certification-verdict.json",
+    "strict_claim_requires_dropin_verdict": "CERTIFIED",
+    "fail_closed": true,
+    "enforced_by": "scripts/e2e/run_all.sh",
+    "requested_tier_env_var": "FRANKEN_NODE_CLAIM_TIER"
+  }
+}

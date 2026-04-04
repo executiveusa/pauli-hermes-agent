@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "test_name": "verify_cohere_unicode_text",
+  "recorded_at": "2026-02-10T17:36:16.045Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.cohere.com/v2/chat",
+        "headers": [
+          [
+            "Authorization",
+            "Bearer [REDACTED]"
+          ],
+          [
+            "Content-Type",
+            "application/json"
+          ]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          [
+            "Content-Type",
+            "text/event-stream"
+          ]
+        ],
+        "body_chunks": [
+          "data: {\"id\":\"msg_verify_1\",\"type\":\"message-start\"}\n\n",
+          "data: {\"delta\":{\"message\":{\"content\":{\"text\":\"\",\"type\":\"text\"}}},\"index\":0,\"type\":\"content-start\"}\n\n",
+          "data: {\"delta\":{\"message\":{\"content\":{\"text\":\"日本語テスト — émojis: 🦀🔥\"}}},\"index\":0,\"type\":\"content-delta\"}\n\n",
+          "data: {\"index\":0,\"type\":\"content-end\"}\n\n",
+          "data: {\"delta\":{\"finish_reason\":\"COMPLETE\",\"usage\":{\"tokens\":{\"input_tokens\":15,\"output_tokens\":10}}},\"type\":\"message-end\"}\n\n",
+          "data: [DONE]\n\n"
+        ]
+      }
+    }
+  ]
+}

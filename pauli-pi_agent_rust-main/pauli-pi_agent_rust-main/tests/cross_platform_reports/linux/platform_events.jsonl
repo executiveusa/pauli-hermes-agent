@@ -1,0 +1,10 @@
+{"check_id":"cargo_check","platform":"linux","platform_tag":null,"policy":"required","schema":"pi.ci.platform_check_event.v1","status":"pass","ts":"2026-03-12T02:40:43.333Z"}
+{"check_id":"test_infra","platform":"linux","platform_tag":null,"policy":"required","schema":"pi.ci.platform_check_event.v1","status":"pass","ts":"2026-03-12T02:40:43.333Z"}
+{"check_id":"temp_writable","platform":"linux","platform_tag":null,"policy":"required","schema":"pi.ci.platform_check_event.v1","status":"pass","ts":"2026-03-12T02:40:43.333Z"}
+{"check_id":"git_available","platform":"linux","platform_tag":null,"policy":"required","schema":"pi.ci.platform_check_event.v1","status":"pass","ts":"2026-03-12T02:40:43.333Z"}
+{"check_id":"conformance_artifacts","platform":"linux","platform_tag":null,"policy":"required","schema":"pi.ci.platform_check_event.v1","status":"pass","ts":"2026-03-12T02:40:43.333Z"}
+{"check_id":"e2e_tui_support","platform":"linux","platform_tag":null,"policy":"required","schema":"pi.ci.platform_check_event.v1","status":"pass","ts":"2026-03-12T02:40:43.333Z"}
+{"check_id":"file_permissions","platform":"linux","platform_tag":null,"policy":"informational","schema":"pi.ci.platform_check_event.v1","status":"pass","ts":"2026-03-12T02:40:43.333Z"}
+{"check_id":"extension_artifacts","platform":"linux","platform_tag":null,"policy":"required","schema":"pi.ci.platform_check_event.v1","status":"pass","ts":"2026-03-12T02:40:43.333Z"}
+{"check_id":"evidence_bundle","platform":"linux","platform_tag":null,"policy":"informational","schema":"pi.ci.platform_check_event.v1","status":"pass","ts":"2026-03-12T02:40:43.333Z"}
+{"check_id":"suite_classification","platform":"linux","platform_tag":null,"policy":"required","schema":"pi.ci.platform_check_event.v1","status":"pass","ts":"2026-03-12T02:40:43.333Z"}

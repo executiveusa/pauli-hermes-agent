@@ -1,0 +1,385 @@
+# Popular Pi Extensions — Scoring + Inclusion Criteria (bd-29ko)
+
+This document defines what **“popular”** means for Pi extensions and how we decide whether an
+extension belongs in the **expanded compatibility corpus** (see `bd-po15` / `bd-d7gn`).
+
+Goal: make selection **mechanical and reproducible** so two people applying the rubric to the same
+inputs would converge on the same tiering, while explicitly accounting for **compatibility** and
+**reliability risk**.
+
+Non-goals:
+- This is **not** the stratified conformance sample (that’s the pinned 16 in `docs/extension-sample.json`).
+- This does not prescribe *how* to scrape data; it prescribes **what fields and scoring logic**
+  the inventory must produce.
+
+---
+
+## 0) Definitions
+
+- **Candidate**: an extension artifact (single file, directory, package) plus provenance metadata.
+- **Corpus**: the tiered set we aim to support **unmodified**.
+  - **Tier-0**: official baseline (pi-mono examples); always included in coverage.
+  - **Tier-1**: must-pass, always run in CI (**target size: >= 200**).
+  - **Tier-2**: stretch; additional long-tail coverage run in CI on a schedule or opt-in job.
+- **Signals**: objective measures like stars/downloads/official listings.
+- **Coverage**: how much *new* extension surface area this exercises (runtime tier, interaction
+  model, hostcall mix).
+
+---
+
+## 1) Hard Gates (must-pass to be in Tier-1/Tier-2)
+
+If a candidate fails any gate, it is **Excluded** (or kept as “metadata-only” for research).
+
+### 1.1 Provenance is pin-able
+
+The candidate must have a stable, reproducible reference:
+- Git repo: commit SHA (preferred) or immutable tag + repo URL
+- Gist: gist revision SHA / commit SHA + URL
+- npm: package name + exact version
+
+No floating refs (e.g. “main”, “latest”, unpinned URLs).
+
+### 1.2 License / redistribution is known
+
+We must be able to answer: “Can we vendor this in `tests/ext_conformance/artifacts/**`?”
+
+Allowed outcomes:
+- **OK**: MIT/Apache-2.0/BSD/etc or explicit permission
+- **Restricted**: redistributable but with constraints (document)
+- **Exclude**: unknown / proprietary / unclear
+
+Tier-1/Tier-2 requires **OK** or **Restricted** with a concrete plan.
+
+### 1.3 Unmodified compatibility (normative)
+
+Tier-1/Tier-2 extensions must run **without manual source edits**.
+
+Allowed:
+- Deterministic compilation/transpilation (TS → JS)
+- Deterministic bundling (multi-file → single artifact)
+- Deterministic import/specifier rewrites (e.g. Node builtins → `pi:node/*`)
+- Pi-provided shims/connectors in the runtime (not per-extension hacks)
+
+Not allowed:
+- Editing the extension’s logic “just for Pi”
+- Per-extension special cases in the runtime (“if extension_id == X …”)
+- Patching emitted bundles post-hoc in a non-auditable way
+
+See `docs/ext-compat.md` (“Unmodified compatibility”) for the full contract.
+
+### 1.4 Determinism + reproducibility
+
+Tier-1/Tier-2 candidates must have at least one scenario that can run deterministically:
+- no real OAuth login, no real API keys, no flaky network requirements
+- if the extension is network-heavy, it must have an offline/error-path scenario or be VCR-able
+
+---
+
+## 2) Scoring Rubric (Base 0–100 + Risk Penalty)
+
+We compute a **base score (0–100)** and then subtract a **reliability‑risk penalty (0–15)**.
+
+**Base score = Popularity + Adoption + Coverage + Activity + Compatibility.**  
+**Final score = Base score – Risk penalty (floor at 0).**
+
+| Sub-score | Weight | What it measures |
+|---|---:|---|
+| Popularity | 30 | “How broadly visible is it?” |
+| Adoption | 15 | “Do real users install/use it?” |
+| Coverage | 20 | “How much new surface does it cover for our proof?” |
+| Activity | 15 | “Is it maintained enough to matter today?” |
+| Compatibility | 20 | “How close is it to unmodified compatibility?” |
+
+The inventory should store **all inputs** used to compute the score and a short rationale.
+
+### 2.1 Popularity (0–30)
+
+Add up the following components (cap at 30). Missing metrics remain explicit `null` in source
+data, score **0** for arithmetic, and are recorded in `missingSignals` so unknown data is
+auditable and does **not** silently masquerade as known zero.
+
+1) **Official / first‑party visibility (0–10)** (take the **max**, not sum)
+- Listed on `buildwithpi.ai/packages` (or official docs): +10
+- Shipped as a pi‑mono example extension: +8
+- badlogic‑authored gist referenced by official docs: +6
+
+2) **GitHub stars (0–10)** (repo or gist mirror if applicable)
+- ≥ 5,000: +10
+- ≥ 2,000: +9
+- ≥ 1,000: +8
+- ≥ 500: +6
+- ≥ 200: +4
+- ≥ 50: +2
+- otherwise: +0
+
+3) **Marketplace visibility (0–6)** (OpenClaw / ClawHub)
+- Rank ≤ 10: +6
+- Rank ≤ 50: +4
+- Rank ≤ 100: +2
+- otherwise: +0  
+**Featured badge:** +2 (cap at 6 total for marketplace visibility)
+
+4) **Community references (0–4)** (count distinct sources)
+- ≥ 10 distinct references: +4
+- ≥ 5: +3
+- ≥ 2: +2
+- otherwise: +0
+
+Examples of “references”: other repos linking it, blog posts, curated lists, Discord snippets with
+links. (The inventory must capture URLs.)
+
+### 2.2 Adoption (0–15)
+
+Pick the best available signals for the source type; store raw numbers. Missing metrics remain
+`null` in source data, score **0** for arithmetic, and are recorded in `missingSignals`.
+
+1) **npm downloads (0–8)** (if published on npm)
+- ≥ 50k / month: +8
+- ≥ 10k / month: +6
+- ≥ 2k / month: +4
+- ≥ 500 / month: +2
+- otherwise: +0
+
+2) **Marketplace installs (0–5)** (OpenClaw / ClawHub)
+- ≥ 10k / month: +5
+- ≥ 2k / month: +4
+- ≥ 500 / month: +2
+- ≥ 100 / month: +1
+- otherwise: +0
+
+3) **Forks / derivative usage (0–2)** (GitHub)
+- forks ≥ 500: +2
+- ≥ 200: +1
+- ≥ 50: +1
+- otherwise: +0
+
+### 2.3 Coverage (0–20)
+
+Coverage is about maximizing proof value, not “popularity”. Score by tags:
+
+1) **Runtime tier (0–6)**
+- pkg-with-deps **or** provider-ext: +6
+- multi-file: +4
+- legacy-js (single file): +2
+
+2) **Interaction model breadth (0–8)**
+- provider: +3
+- ui_integration: +2
+- event_hook: +2
+- slash_command: +1
+- tool_only: +1
+
+(cap at 8; use tags as in `docs/EXTENSION_SAMPLING_MATRIX.md`.)
+
+3) **Hostcall mix (0–6)** (capabilities used)
+- uses `exec`: +2
+- uses `http`: +2
+- uses `read`/`write`/`edit`: +1
+- uses `ui`: +1
+- uses session mutation APIs: +1
+
+### 2.4 Activity / Recency (0–15)
+
+Use the most relevant date for the source type (repo last commit, npm publish, gist update).
+
+- Updated ≤ 30 days: +15
+- ≤ 90 days: +12
+- ≤ 180 days: +9
+- ≤ 365 days: +6
+- ≤ 730 days: +3
+- otherwise: +0
+
+### 2.5 Compatibility (0–20)
+
+Compatibility is a **positive score** (not just a gate) so selection can favor
+extensions that are already close to unmodified parity.
+
+Suggested scoring (pick best matching level, then adjust ±2 for nuance):
+
+- **20** — Unmodified, passes static scan, no forbidden APIs, no extension‑specific shims.
+- **15** — Unmodified, but requires **generic** shims/rewrites (Node core, `pi:*` shims).
+- **10** — Unmodified but depends on **incomplete generic runtime features** (e.g. provider hooks
+  not fully wired yet); still plausible to land via runtime work.
+- **0** — Requires per‑extension edits or fails compatibility gates (blocked).
+
+### 2.6 Reliability Risk Penalty (0–15)
+
+Risk is a **penalty** (subtracted from base score). It captures “how likely this
+extension will be flaky, non‑deterministic, or expensive to support in CI.”
+
+Suggested penalty bands:
+
+- **0** — Deterministic, minimal deps, no network or fully VCR‑able.
+- **5** — Moderate deps or network use, but reproducible with mocks/VCR.
+- **10** — High risk: OAuth flows, heavy UI timing sensitivity, large dep trees.
+- **15** — Critical risk: native binaries, non‑deterministic side effects, unclear license.
+
+### 2.7 Worked Examples (marketplace signals)
+
+Assume `as_of = 2026‑02‑01` for Activity scoring.
+
+**Example A — “OpenClaw Featured Tool” (pkg‑with‑deps)**
+- Signals: GitHub stars **1,200**, marketplace rank **8**, featured **true**, references **6**
+- Popularity = 0 (official) + 8 (stars) + 6 (marketplace) + 3 (references) = **17**
+- Adoption = 6 (npm 12k/mo) + 5 (marketplace installs 15k/mo) + 1 (forks 220) = **12**
+- Coverage = 6 (runtime pkg‑with‑deps) + 5 (tool + event + UI) + 6 (exec+http+fs+ui) = **17**
+- Activity = **15** (updated 2026‑01‑15)
+- Compatibility = **15** (generic shims required)
+- Base = 17 + 12 + 17 + 15 + 15 = **76**
+- Risk penalty = **5** (moderate, network‑heavy)
+- **Final = 71 → Tier‑1**
+
+**Example B — “Niche GitHub Script” (legacy‑js)**
+- Signals: GitHub stars **120**, references **1**, no marketplace
+- Popularity = 0 (official) + 2 (stars) + 0 (marketplace) + 0 (refs) = **2**
+- Adoption = **0** (no npm/marketplace installs, forks 12)
+- Coverage = 2 (runtime legacy‑js) + 1 (tool_only) + 1 (fs) = **4**
+- Activity = **0** (updated 2023‑01‑01)
+- Compatibility = **20** (clean unmodified)
+- Base = 2 + 0 + 4 + 0 + 20 = **26**
+- Risk penalty = **0**
+- **Final = 26 → Excluded**
+
+**Example C — “Official pi‑mono Example”**
+- Signals: pi‑mono example **true**, GitHub stars **7,000**, references **12**
+- Popularity = 8 (official) + 10 (stars) + 0 (marketplace) + 4 (refs) = **22**
+- Adoption = **2** (forks 720)
+- Coverage = 2 (runtime legacy‑js) + 4 (event + UI) + 4 (exec+ui+session) = **10**
+- Activity = **15** (updated 2026‑01‑20)
+- Compatibility = **20** (clean unmodified)
+- Base = 22 + 2 + 10 + 15 + 20 = **69**
+- Risk penalty = **0**
+- **Final = 69 → Tier‑2 by score, but Tier‑0 baseline due to official status**
+
+---
+
+## 3) Tiering Rules
+
+Tiering uses both gates and score thresholds:
+
+| Tier | Requirements |
+|---|---|
+| Tier-1 | Pass all gates + **final score** ≥ 70 |
+| Tier-2 | Pass all gates + **final score** ≥ 50 |
+| Excluded | Fails a gate OR final score < 50 |
+
+Tie-breakers (when selecting a fixed-size set):
+1) prefer higher **Coverage** score (proof value)
+2) then higher **Popularity**
+3) then more recent
+
+### 3.1 Corpus Size Policy (Normative)
+
+- **Tier-0 baseline**: keep all official pi-mono extensions in coverage.
+- **Tier-1 must-pass corpus**: **>= 200** extensions.
+- **Tier-2 stretch corpus**: all additional eligible extensions after Tier-1 selection.
+
+If Tier-1 falls below 200 due to gate failures (license, deterministic scenario, pinned
+provenance, unmodified compatibility), emit a machine-readable shortfall report with:
+`required`, `selected`, `missing`, and per-gate reason counts.
+
+### 3.2 Executable Scoring Contract
+
+Normative implementation:
+- `src/bin/ext_popularity_snapshot.rs`
+- `src/extension_scoring.rs`
+- `src/bin/ext_score_candidates.rs`
+
+Example popularity snapshot run:
+
+```bash
+cargo run --bin ext_popularity_snapshot -- \
+  --input docs/extension-candidate-pool.json \
+  --out docs/extension-candidate-pool.json \
+  --log-jsonl tests/e2e_results/ext-popularity-snapshot.jsonl
+```
+
+Notes:
+- GitHub metrics use `GITHUB_TOKEN` when present, and otherwise fall back to `gh auth token` if
+  GitHub CLI authentication is available.
+- If neither token source is available, GitHub lookups are skipped and npm signals are still refreshed.
+- Use `--dry-run` to preview summary stats without writing files.
+
+Example run:
+
+```bash
+cargo run --bin ext_score_candidates -- \
+  --input docs/extension-candidate-pool.json \
+  --out docs/extension-priority.json \
+  --summary-out docs/extension-priority-summary.json \
+  --as-of 2026-02-06T00:00:00Z \
+  --generated-at 2026-02-06T00:00:00Z
+```
+
+Expected report schema: `pi.ext.scoring.v1`, including deterministic rank ordering and explicit
+`gates`, `missingSignals`, and per-criterion score breakdown.
+
+---
+
+## 4) Inventory Fields (schema guidance for bd-1o8j / bd-hhzv / bd-34io)
+
+The candidate inventory should be representable as JSON objects with these fields:
+
+```json
+{
+  "id": "stable-id",
+  "name": "display name",
+  "source": {
+    "kind": "repo|gist|npm|pi-mono|buildwithpi",
+    "url": "https://…",
+    "repo": "owner/name",
+    "commit": "sha-or-tag",
+    "path": "path/inside/repo",
+    "npm": { "name": "pkg", "version": "1.2.3" }
+  },
+  "license": { "spdx": "MIT", "redistribution": "ok|restricted|exclude", "notes": "" },
+  "tags": {
+    "runtime": "legacy-js|multi-file|pkg-with-deps|provider-ext",
+    "interaction": ["tool_only","slash_command","event_hook","ui_integration","provider"],
+    "capabilities": ["read","write","edit","exec","http","ui","session"]
+  },
+  "signals": {
+    "official_listing": false,
+    "pi_mono_example": false,
+    "badlogic_gist": false,
+    "github_stars": 0,
+    "github_forks": 0,
+    "npm_downloads_month": 0,
+    "references": ["https://…"],
+    "marketplace": {
+      "rank": 0,
+      "installs_month": 0,
+      "featured": false
+    }
+  },
+  "recency": { "updated_at": "2026-01-31T00:00:00Z" },
+  "compat": {
+    "status": "unmodified|requires_shims|runtime_gap|blocked",
+    "unmodified_required": true,
+    "blocked_reasons": [],
+    "required_shims": ["pi:node/fs", "pi:node/path"]
+  },
+  "gates": {
+    "provenance_pinned": true,
+    "deterministic": true
+  },
+  "score": {
+    "popularity": 0,
+    "adoption": 0,
+    "coverage": 0,
+    "activity": 0,
+    "compatibility": 0,
+    "risk_penalty": 0,
+    "base_total": 0,
+    "final_total": 0,
+    "tier": "tier-0|tier-1|tier-2|excluded",
+    "rationale": "1-3 sentences explaining the score.",
+    "risk_notes": "Optional: why the risk penalty was applied."
+  }
+}
+```
+
+Notes:
+- `required_shims` is descriptive (what the extension appears to need), not a per-extension hack list.
+- `blocked_reasons` must be objective and actionable (e.g. “license unknown”, “requires Node C++ addon”).

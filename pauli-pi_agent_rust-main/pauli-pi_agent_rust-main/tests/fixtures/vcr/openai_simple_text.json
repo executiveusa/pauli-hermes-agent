@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "test_name": "openai_simple_text",
+  "recorded_at": "2026-02-06T21:00:00.000Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "headers": [
+          ["Authorization", "[REDACTED]"],
+          ["Content-Type", "application/json"],
+          ["Accept", "text/event-stream"]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          ["Content-Type", "text/event-stream"]
+        ],
+        "body_chunks": [
+          "data: {\"id\":\"chatcmpl-vcr001\",\"object\":\"chat.completion.chunk\",\"created\":1738875600,\"model\":\"gpt-4o-mini\",\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\",\"content\":\"\"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-vcr001\",\"object\":\"chat.completion.chunk\",\"created\":1738875600,\"model\":\"gpt-4o-mini\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"p\"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-vcr001\",\"object\":\"chat.completion.chunk\",\"created\":1738875600,\"model\":\"gpt-4o-mini\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"ong\"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-vcr001\",\"object\":\"chat.completion.chunk\",\"created\":1738875600,\"model\":\"gpt-4o-mini\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":28,\"completion_tokens\":2,\"total_tokens\":30}}\n\n",
+          "data: [DONE]\n\n"
+        ]
+      }
+    }
+  ]
+}

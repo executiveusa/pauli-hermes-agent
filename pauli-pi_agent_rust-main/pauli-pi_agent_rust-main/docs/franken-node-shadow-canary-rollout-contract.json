@@ -1,0 +1,172 @@
+{
+  "schema": "pi.frankennode.shadow_canary_rollout_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.15",
+  "support_bead_id": "bd-3ar8v.7.15.1",
+  "support_bead_ids": [
+    "bd-3ar8v.7.15.1"
+  ],
+  "status": "active_blocking_policy",
+  "rollout_state_machine": {
+    "states": [
+      "shadow_disabled",
+      "shadow_observe",
+      "canary_5",
+      "canary_25",
+      "canary_50",
+      "canary_100",
+      "rollback_engaged"
+    ],
+    "allowed_transitions": [
+      {
+        "from": "shadow_disabled",
+        "to": "shadow_observe",
+        "guard": "policy_gates_passed"
+      },
+      {
+        "from": "shadow_observe",
+        "to": "canary_5",
+        "guard": "diff_stable_and_confident"
+      },
+      {
+        "from": "canary_5",
+        "to": "canary_25",
+        "guard": "divergence_within_threshold"
+      },
+      {
+        "from": "canary_25",
+        "to": "canary_50",
+        "guard": "divergence_within_threshold"
+      },
+      {
+        "from": "canary_50",
+        "to": "canary_100",
+        "guard": "divergence_within_threshold"
+      },
+      {
+        "from": "canary_100",
+        "to": "shadow_observe",
+        "guard": "manual_demotion_requested"
+      },
+      {
+        "from": "canary_5",
+        "to": "rollback_engaged",
+        "guard": "rollback_triggered"
+      },
+      {
+        "from": "canary_25",
+        "to": "rollback_engaged",
+        "guard": "rollback_triggered"
+      },
+      {
+        "from": "canary_50",
+        "to": "rollback_engaged",
+        "guard": "rollback_triggered"
+      },
+      {
+        "from": "canary_100",
+        "to": "rollback_engaged",
+        "guard": "rollback_triggered"
+      },
+      {
+        "from": "rollback_engaged",
+        "to": "shadow_observe",
+        "guard": "rollback_complete"
+      }
+    ],
+    "stage_percentages": [
+      5,
+      25,
+      50,
+      100
+    ],
+    "fail_closed_on_invalid_transition": true
+  },
+  "deterministic_diff_contract": {
+    "required_dimensions": [
+      "semantic_output_hash",
+      "latency_delta_ratio",
+      "rss_delta_ratio",
+      "error_rate_delta",
+      "policy_violation_count"
+    ],
+    "diff_hash_policy": "stable_input_ordered_hash",
+    "fail_closed_on_missing_dimension": true
+  },
+  "divergence_policy": {
+    "semantic_divergence_threshold": 0.0,
+    "max_latency_delta_ratio": 0.15,
+    "max_rss_delta_ratio": 0.2,
+    "max_error_rate_delta": 0.01,
+    "consecutive_breach_limit": 2,
+    "auto_actions": [
+      "rollback_to_previous_stage",
+      "demote_to_shadow_observe",
+      "emit_replay_bundle"
+    ],
+    "fail_closed": true
+  },
+  "rollback_contract": {
+    "required_triggers": [
+      "semantic_mismatch",
+      "policy_violation",
+      "latency_regression",
+      "error_spike"
+    ],
+    "rollback_target_state": "shadow_observe",
+    "service_continuity_mode": "fail_open_for_user_traffic_fail_closed_for_promotion",
+    "required_replay_artifacts": [
+      "tests/e2e_results/<run>/franken_node_shadow_canary_divergence_replay.json",
+      "tests/e2e_results/<run>/franken_node_shadow_canary_timeline.jsonl"
+    ]
+  },
+  "policy_gate_contract": {
+    "required_guard_artifacts": [
+      "docs/franken-node-security-sandbox-contract.json",
+      "docs/franken-node-benchmark-resource-gate-contract.json",
+      "docs/franken-node-claim-gating-contract.json"
+    ],
+    "require_machine_gate_approval": true,
+    "bypass_allowed": false
+  },
+  "structured_logging_contract": {
+    "required_fields": [
+      "run_id",
+      "correlation_id",
+      "rollout_state",
+      "candidate_state",
+      "decision",
+      "divergence_dimensions",
+      "rollback_reason",
+      "replay_artifact_path",
+      "timestamp_utc"
+    ],
+    "required_event_types": [
+      "rollout_state_entered",
+      "rollout_transition_evaluated",
+      "divergence_detected",
+      "rollback_triggered",
+      "rollback_completed"
+    ],
+    "require_linked_replay_ids": true
+  },
+  "release_blockers": [
+    "missing rollout transition guard",
+    "deterministic diff dimensions incomplete",
+    "rollback trigger set incomplete",
+    "policy gate bypass not fail-closed"
+  ],
+  "downstream_dependencies": {
+    "blocked_beads": [
+      "bd-3ar8v.7.11",
+      "bd-3ar8v.7.12",
+      "bd-3ar8v.7.13"
+    ],
+    "integration_contracts": [
+      "docs/franken-node-security-sandbox-contract.json",
+      "docs/franken-node-benchmark-resource-gate-contract.json",
+      "docs/franken-node-claim-gating-contract.json",
+      "docs/franken-node-deterministic-replay-contract.json"
+    ]
+  }
+}

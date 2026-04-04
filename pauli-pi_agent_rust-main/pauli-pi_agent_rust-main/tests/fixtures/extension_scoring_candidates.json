@@ -1,0 +1,97 @@
+[
+  {
+    "id": "openclaw-featured-tool",
+    "name": "OpenClaw Featured Tool",
+    "sourceTier": "npm-registry",
+    "signals": {
+      "officialListing": false,
+      "piMonoExample": false,
+      "badlogicGist": false,
+      "githubStars": 1200,
+      "githubForks": 220,
+      "npmDownloadsMonth": 12000,
+      "references": [
+        "https://example.com/ref-1",
+        "https://example.com/ref-2",
+        "https://example.com/ref-3",
+        "https://example.com/ref-4",
+        "https://example.com/ref-5",
+        "https://example.com/ref-6"
+      ],
+      "marketplace": {
+        "rank": 8,
+        "installsMonth": 15000,
+        "featured": true
+      }
+    },
+    "tags": {
+      "runtime": "pkg-with-deps",
+      "interaction": ["tool_only", "event_hook", "ui_integration"],
+      "capabilities": ["exec", "http", "read", "ui"]
+    },
+    "recency": { "updatedAt": "2026-01-15T00:00:00Z" },
+    "compat": { "status": "requires_shims" },
+    "license": { "redistribution": "ok" },
+    "gates": { "provenancePinned": true, "deterministic": true },
+    "risk": { "level": "moderate" }
+  },
+  {
+    "id": "niche-github-script",
+    "name": "Niche GitHub Script",
+    "sourceTier": "community",
+    "signals": {
+      "officialListing": false,
+      "piMonoExample": false,
+      "badlogicGist": false,
+      "githubStars": 120,
+      "githubForks": 12,
+      "references": ["https://example.com/ref-a"]
+    },
+    "tags": {
+      "runtime": "legacy-js",
+      "interaction": ["tool_only"],
+      "capabilities": ["read"]
+    },
+    "recency": { "updatedAt": "2023-01-01T00:00:00Z" },
+    "compat": { "status": "unmodified" },
+    "license": { "redistribution": "ok" },
+    "gates": { "provenancePinned": true, "deterministic": true },
+    "risk": { "level": "low" }
+  },
+  {
+    "id": "official-pi-mono-example",
+    "name": "Official pi-mono Example",
+    "sourceTier": "official-pi-mono",
+    "signals": {
+      "officialListing": false,
+      "piMonoExample": true,
+      "badlogicGist": false,
+      "githubStars": 7000,
+      "githubForks": 720,
+      "references": [
+        "https://example.com/ref-1",
+        "https://example.com/ref-2",
+        "https://example.com/ref-3",
+        "https://example.com/ref-4",
+        "https://example.com/ref-5",
+        "https://example.com/ref-6",
+        "https://example.com/ref-7",
+        "https://example.com/ref-8",
+        "https://example.com/ref-9",
+        "https://example.com/ref-10",
+        "https://example.com/ref-11",
+        "https://example.com/ref-12"
+      ]
+    },
+    "tags": {
+      "runtime": "legacy-js",
+      "interaction": ["event_hook", "ui_integration"],
+      "capabilities": ["exec", "ui", "session"]
+    },
+    "recency": { "updatedAt": "2026-01-20T00:00:00Z" },
+    "compat": { "status": "unmodified" },
+    "license": { "redistribution": "ok" },
+    "gates": { "provenancePinned": true, "deterministic": true },
+    "risk": { "level": "low" }
+  }
+]

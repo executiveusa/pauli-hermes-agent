@@ -1,0 +1,882 @@
+{
+  "snapshot_version": "2.0",
+  "generated_at_utc": "2026-02-13T04:48:33Z",
+  "normalization_rules": {
+    "provider_id_case": "lowercase",
+    "dedupe": "sorted unique by provider_id",
+    "opencode_effective_logic": "models.dev catalog + opencode enterprise alias + custom loader overlays"
+  },
+  "sources": {
+    "models_dev": {
+      "source_url": "https://models.dev/api.json",
+      "fetched_at_utc": "2026-02-13T04:48:33Z",
+      "content_sha256": "b0f6f5ba2e7e2d67b2f6750e6425d1596bd7c5bde505e9abc71cd0f9803359c9",
+      "provider_ids": [
+        "302ai",
+        "abacus",
+        "aihubmix",
+        "alibaba",
+        "alibaba-cn",
+        "amazon-bedrock",
+        "anthropic",
+        "azure",
+        "azure-cognitive-services",
+        "bailing",
+        "baseten",
+        "berget",
+        "cerebras",
+        "chutes",
+        "cloudflare-ai-gateway",
+        "cloudflare-workers-ai",
+        "cohere",
+        "cortecs",
+        "deepinfra",
+        "deepseek",
+        "fastrouter",
+        "fireworks-ai",
+        "firmware",
+        "friendli",
+        "github-copilot",
+        "github-models",
+        "gitlab",
+        "google",
+        "google-vertex",
+        "google-vertex-anthropic",
+        "groq",
+        "helicone",
+        "huggingface",
+        "iflowcn",
+        "inception",
+        "inference",
+        "io-net",
+        "jiekou",
+        "kimi-for-coding",
+        "llama",
+        "lmstudio",
+        "lucidquery",
+        "minimax",
+        "minimax-cn",
+        "minimax-cn-coding-plan",
+        "minimax-coding-plan",
+        "mistral",
+        "moark",
+        "modelscope",
+        "moonshotai",
+        "moonshotai-cn",
+        "morph",
+        "nano-gpt",
+        "nebius",
+        "nova",
+        "novita-ai",
+        "nvidia",
+        "ollama-cloud",
+        "openai",
+        "opencode",
+        "openrouter",
+        "ovhcloud",
+        "perplexity",
+        "poe",
+        "privatemode-ai",
+        "requesty",
+        "sap-ai-core",
+        "scaleway",
+        "siliconflow",
+        "siliconflow-cn",
+        "stackit",
+        "submodel",
+        "synthetic",
+        "togetherai",
+        "upstage",
+        "v0",
+        "venice",
+        "vercel",
+        "vivgrid",
+        "vultr",
+        "wandb",
+        "xai",
+        "xiaomi",
+        "zai",
+        "zai-coding-plan",
+        "zenmux",
+        "zhipuai",
+        "zhipuai-coding-plan"
+      ],
+      "count": 88
+    },
+    "opencode": {
+      "repo": "https://github.com/sst/opencode",
+      "ref": "b06afd657d59c2c88394513e3b633060ec6f454b",
+      "commit_date": "2026-02-13T10:46:45+08:00",
+      "provider_file": "packages/opencode/src/provider/provider.ts",
+      "provider_file_sha256": "11307de00a4202a15220da292ae149624392cb8354a16f650ea14bf2d889cd91",
+      "models_dev_backed_catalog": true,
+      "custom_loader_provider_ids": [
+        "amazon-bedrock",
+        "anthropic",
+        "azure",
+        "azure-cognitive-services",
+        "cerebras",
+        "cloudflare-ai-gateway",
+        "cloudflare-workers-ai",
+        "github-copilot",
+        "github-copilot-enterprise",
+        "gitlab",
+        "google-vertex",
+        "google-vertex-anthropic",
+        "openai",
+        "opencode",
+        "openrouter",
+        "sap-ai-core",
+        "vercel",
+        "zenmux"
+      ],
+      "custom_loader_count": 18,
+      "effective_provider_ids": [
+        "302ai",
+        "abacus",
+        "aihubmix",
+        "alibaba",
+        "alibaba-cn",
+        "amazon-bedrock",
+        "anthropic",
+        "azure",
+        "azure-cognitive-services",
+        "bailing",
+        "baseten",
+        "berget",
+        "cerebras",
+        "chutes",
+        "cloudflare-ai-gateway",
+        "cloudflare-workers-ai",
+        "cohere",
+        "cortecs",
+        "deepinfra",
+        "deepseek",
+        "fastrouter",
+        "fireworks-ai",
+        "firmware",
+        "friendli",
+        "github-copilot",
+        "github-copilot-enterprise",
+        "github-models",
+        "gitlab",
+        "google",
+        "google-vertex",
+        "google-vertex-anthropic",
+        "groq",
+        "helicone",
+        "huggingface",
+        "iflowcn",
+        "inception",
+        "inference",
+        "io-net",
+        "jiekou",
+        "kimi-for-coding",
+        "llama",
+        "lmstudio",
+        "lucidquery",
+        "minimax",
+        "minimax-cn",
+        "minimax-cn-coding-plan",
+        "minimax-coding-plan",
+        "mistral",
+        "moark",
+        "modelscope",
+        "moonshotai",
+        "moonshotai-cn",
+        "morph",
+        "nano-gpt",
+        "nebius",
+        "nova",
+        "novita-ai",
+        "nvidia",
+        "ollama-cloud",
+        "openai",
+        "opencode",
+        "openrouter",
+        "ovhcloud",
+        "perplexity",
+        "poe",
+        "privatemode-ai",
+        "requesty",
+        "sap-ai-core",
+        "scaleway",
+        "siliconflow",
+        "siliconflow-cn",
+        "stackit",
+        "submodel",
+        "synthetic",
+        "togetherai",
+        "upstage",
+        "v0",
+        "venice",
+        "vercel",
+        "vivgrid",
+        "vultr",
+        "wandb",
+        "xai",
+        "xiaomi",
+        "zai",
+        "zai-coding-plan",
+        "zenmux",
+        "zhipuai",
+        "zhipuai-coding-plan"
+      ],
+      "effective_count": 89
+    },
+    "code": {
+      "repo": "https://github.com/openai/codex",
+      "ref": "abeafbdca17f6102099ac5b792761b6883c52d35",
+      "commit_date": "2026-02-12T20:29:22-08:00",
+      "source_hashes": {
+        "codex-rs/core/src/model_provider_info.rs": "0ae2bca96acdaba5088aadc6cbb45ba195e5a9e2e326e49b35e008b5aad375e3",
+        "codex-rs/core/src/config/mod.rs": "f9086f2b0fff5d719fe8f182909c5e88769b0d475b8490ac8a666e5da69f9236",
+        "codex-rs/core/config.schema.json": "b9719d0dc58a76e7daea40de1bb086e3f22fd4f7d455c359b437296ae61647a4",
+        "docs/config.md": "9251ea6898e3b9051b4b70495d91d6541ac1591e6c43ce3d13bdf6ed94774d75"
+      },
+      "built_in_provider_ids": [
+        "lmstudio",
+        "ollama",
+        "openai"
+      ],
+      "count": 3
+    }
+  },
+  "combined": {
+    "union_provider_ids": [
+      "302ai",
+      "abacus",
+      "aihubmix",
+      "alibaba",
+      "alibaba-cn",
+      "amazon-bedrock",
+      "anthropic",
+      "azure",
+      "azure-cognitive-services",
+      "bailing",
+      "baseten",
+      "berget",
+      "cerebras",
+      "chutes",
+      "cloudflare-ai-gateway",
+      "cloudflare-workers-ai",
+      "cohere",
+      "cortecs",
+      "deepinfra",
+      "deepseek",
+      "fastrouter",
+      "fireworks-ai",
+      "firmware",
+      "friendli",
+      "github-copilot",
+      "github-copilot-enterprise",
+      "github-models",
+      "gitlab",
+      "google",
+      "google-vertex",
+      "google-vertex-anthropic",
+      "groq",
+      "helicone",
+      "huggingface",
+      "iflowcn",
+      "inception",
+      "inference",
+      "io-net",
+      "jiekou",
+      "kimi-for-coding",
+      "llama",
+      "lmstudio",
+      "lucidquery",
+      "minimax",
+      "minimax-cn",
+      "minimax-cn-coding-plan",
+      "minimax-coding-plan",
+      "mistral",
+      "moark",
+      "modelscope",
+      "moonshotai",
+      "moonshotai-cn",
+      "morph",
+      "nano-gpt",
+      "nebius",
+      "nova",
+      "novita-ai",
+      "nvidia",
+      "ollama",
+      "ollama-cloud",
+      "openai",
+      "opencode",
+      "openrouter",
+      "ovhcloud",
+      "perplexity",
+      "poe",
+      "privatemode-ai",
+      "requesty",
+      "sap-ai-core",
+      "scaleway",
+      "siliconflow",
+      "siliconflow-cn",
+      "stackit",
+      "submodel",
+      "synthetic",
+      "togetherai",
+      "upstage",
+      "v0",
+      "venice",
+      "vercel",
+      "vivgrid",
+      "vultr",
+      "wandb",
+      "xai",
+      "xiaomi",
+      "zai",
+      "zai-coding-plan",
+      "zenmux",
+      "zhipuai",
+      "zhipuai-coding-plan"
+    ],
+    "union_count": 90,
+    "source_presence": {
+      "302ai": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "abacus": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "aihubmix": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "alibaba": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "alibaba-cn": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "amazon-bedrock": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "anthropic": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "azure": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "azure-cognitive-services": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "bailing": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "baseten": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "berget": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "cerebras": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "chutes": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "cloudflare-ai-gateway": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "cloudflare-workers-ai": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "cohere": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "cortecs": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "deepinfra": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "deepseek": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "fastrouter": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "fireworks-ai": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "firmware": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "friendli": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "github-copilot": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "github-copilot-enterprise": {
+        "models_dev": false,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "github-models": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "gitlab": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "google": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "google-vertex": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "google-vertex-anthropic": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "groq": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "helicone": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "huggingface": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "iflowcn": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "inception": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "inference": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "io-net": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "jiekou": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "kimi-for-coding": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "llama": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "lmstudio": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": true
+      },
+      "lucidquery": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "minimax": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "minimax-cn": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "minimax-cn-coding-plan": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "minimax-coding-plan": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "mistral": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "moark": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "modelscope": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "moonshotai": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "moonshotai-cn": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "morph": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "nano-gpt": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "nebius": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "nova": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "novita-ai": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "nvidia": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "ollama": {
+        "models_dev": false,
+        "opencode_effective": false,
+        "opencode_custom_loader": false,
+        "code_built_in": true
+      },
+      "ollama-cloud": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "openai": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": true
+      },
+      "opencode": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "openrouter": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "ovhcloud": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "perplexity": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "poe": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "privatemode-ai": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "requesty": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "sap-ai-core": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "scaleway": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "siliconflow": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "siliconflow-cn": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "stackit": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "submodel": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "synthetic": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "togetherai": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "upstage": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "v0": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "venice": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "vercel": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "vivgrid": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "vultr": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "wandb": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "xai": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "xiaomi": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "zai": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "zai-coding-plan": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "zenmux": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": true,
+        "code_built_in": false
+      },
+      "zhipuai": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      },
+      "zhipuai-coding-plan": {
+        "models_dev": true,
+        "opencode_effective": true,
+        "opencode_custom_loader": false,
+        "code_built_in": false
+      }
+    }
+  }
+}

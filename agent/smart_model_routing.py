@@ -1,85 +1,10 @@
-"""Helpers for optional cheap-vs-strong model routing.
-
-Includes cost-law tiers for the Studio Orchestrator:
-  - trivial: greetings, simple lookups → mercury/gemini-flash
-  - standard: coding, analysis → sonnet/gpt-4o
-  - complex: architecture, long reasoning → opus/o1
-"""
+"""Helpers for optional cheap-vs-strong model routing."""
 
 from __future__ import annotations
 
 import os
 import re
 from typing import Any, Dict, Optional
-
-# ---------------------------------------------------------------------------
-# Cost-law tier classification (used by Studio Orchestrator cost-law skill)
-# ---------------------------------------------------------------------------
-
-COST_TIERS = {
-    "trivial": {
-        "description": "Simple chat, greetings, lookups",
-        "default_model": "openrouter/google/gemini-2.5-flash-preview",
-        "max_chars": 160,
-        "max_words": 28,
-    },
-    "standard": {
-        "description": "Coding, analysis, research",
-        "default_model": "anthropic/claude-sonnet-4-20250514",
-    },
-    "complex": {
-        "description": "Architecture, long reasoning, multi-step planning",
-        "default_model": "anthropic/claude-opus-4-20250514",
-    },
-}
-
-
-def classify_task_tier(message: str) -> str:
-    """Classify a user message into a cost tier: trivial, standard, or complex.
-
-    This is a heuristic classifier. The smart_model_routing config-based
-    system takes precedence — this is for informational/logging purposes
-    and for the cost-law skill's routing table.
-    """
-    text = (message or "").strip()
-    if not text:
-        return "trivial"
-
-    words = text.lower().split()
-    word_count = len(words)
-
-    # Complex indicators
-    complex_keywords = {
-        "architect", "architecture", "design", "redesign", "refactor",
-        "migrate", "migration", "plan", "planning", "strategy",
-        "multi-step", "multi-agent", "orchestrate", "deploy",
-        "production", "infrastructure", "kubernetes", "terraform",
-    }
-    if {w.strip(".,;:!?") for w in words} & complex_keywords:
-        return "complex"
-
-    # Long messages are likely complex
-    if word_count > 100 or len(text) > 800:
-        return "complex"
-
-    # Code blocks indicate standard+
-    if "```" in text or text.count("\n") > 5:
-        return "standard"
-
-    # Standard indicators
-    standard_keywords = {
-        "debug", "implement", "fix", "test", "analyze", "code",
-        "function", "class", "error", "exception", "optimize",
-        "review", "search", "write", "create", "build",
-    }
-    if {w.strip(".,;:!?") for w in words} & standard_keywords:
-        return "standard"
-
-    # Short simple messages
-    if word_count <= 28 and len(text) <= 160:
-        return "trivial"
-
-    return "standard"
 
 _COMPLEX_KEYWORDS = {
     "debug",

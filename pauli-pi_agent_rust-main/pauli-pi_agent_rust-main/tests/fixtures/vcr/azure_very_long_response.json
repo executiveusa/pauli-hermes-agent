@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "test_name": "azure_very_long_response",
+  "recorded_at": "2026-02-06T21:00:00.000Z",
+  "interactions": [
+    {
+      "request": {
+        "method": "POST",
+        "url": "https://test-resource.openai.azure.com/openai/deployments/test-deployment/chat/completions?api-version=2024-02-15-preview",
+        "headers": [
+          ["api-key", "[REDACTED]"],
+          ["Content-Type", "application/json"],
+          ["Accept", "text/event-stream"]
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": [
+          ["Content-Type", "text/event-stream"],
+          ["Cache-Control", "no-cache"]
+        ],
+        "body_chunks": [
+          "data: {\"id\":\"chatcmpl-azure-006\",\"object\":\"chat.completion.chunk\",\"created\":1738879200,\"model\":\"gpt-4o\",\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\",\"content\":\"\"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-azure-006\",\"object\":\"chat.completion.chunk\",\"created\":1738879200,\"model\":\"gpt-4o\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"Rust is a systems programming language focused on safety.\"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-azure-006\",\"object\":\"chat.completion.chunk\",\"created\":1738879200,\"model\":\"gpt-4o\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\" It prevents data races at compile time.\"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-azure-006\",\"object\":\"chat.completion.chunk\",\"created\":1738879200,\"model\":\"gpt-4o\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\" The borrow checker ensures memory safety.\"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-azure-006\",\"object\":\"chat.completion.chunk\",\"created\":1738879200,\"model\":\"gpt-4o\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\" Cargo is the official build tool and package manager.\"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-azure-006\",\"object\":\"chat.completion.chunk\",\"created\":1738879200,\"model\":\"gpt-4o\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\" Pattern matching makes code expressive and\"},\"finish_reason\":null}]}\n\n",
+          "data: {\"id\":\"chatcmpl-azure-006\",\"object\":\"chat.completion.chunk\",\"created\":1738879200,\"model\":\"gpt-4o\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"length\"}],\"usage\":{\"prompt_tokens\":35,\"completion_tokens\":64,\"total_tokens\":99}}\n\n",
+          "data: [DONE]\n\n"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "schema": "pi.frankennode.practical_finish_contract.v1",
+  "contract_version": "1.0.0",
+  "bead_id": "bd-3ar8v.7.12",
+  "support_bead_ids": [],
+  "status": "active_blocking_policy",
+  "effective_date_utc": "2026-02-17T10:00:00Z",
+  "scope": {
+    "target_project_root": "/dp/franken_node",
+    "source_project_root": "/data/projects/pi_agent_rust",
+    "objective": "Define completion criteria for FrankenNode Phase 6, emit practical-finish signal, and defer non-critical documentation to wrap-up stage."
+  },
+  "completion_criteria": {
+    "required_gate_contracts": [
+      "docs/franken-node-runtime-substrate-contract.json",
+      "docs/franken-node-security-sandbox-contract.json",
+      "docs/franken-node-benchmark-resource-gate-contract.json",
+      "docs/franken-node-unified-test-certification-contract.json",
+      "docs/franken-node-shadow-canary-rollout-contract.json",
+      "docs/franken-node-runtime-integration-contract.json"
+    ],
+    "all_gates_must_pass": true,
+    "residual_bead_threshold": 0,
+    "invariants": [
+      "Every required gate contract must exist and validate against its schema",
+      "Zero open child beads under bd-3ar8v.7 at practical-finish time",
+      "All certification dimensions at CERTIFIED or CONDITIONAL (max 1 waiver)",
+      "No release_blocker condition is active across any gate contract"
+    ]
+  },
+  "practical_finish_signal": {
+    "signal_artifact_path": "tests/full_suite_gate/franken_node_practical_finish.json",
+    "required_fields": [
+      "signal",
+      "timestamp_utc",
+      "frankennode_version",
+      "gate_results",
+      "open_beads_count",
+      "waiver_count",
+      "certification_verdict",
+      "emitted_by"
+    ],
+    "signal_values": ["PRACTICAL_FINISH", "NOT_READY"],
+    "invariants": [
+      "Signal is PRACTICAL_FINISH only when all completion_criteria are satisfied",
+      "Signal artifact is machine-readable JSON with all required fields",
+      "Signal includes the certification verdict from the unified test certification stack",
+      "Signal is idempotent — re-running produces identical result for same state"
+    ]
+  },
+  "docs_last_handoff": {
+    "deferred_documentation": [
+      "architecture_overview_guide",
+      "migration_quickstart",
+      "api_reference_generation",
+      "performance_tuning_guide",
+      "troubleshooting_runbook"
+    ],
+    "handoff_required_fields": [
+      "doc_id",
+      "priority",
+      "estimated_effort",
+      "owner",
+      "tracking_bead_id"
+    ],
+    "invariants": [
+      "No deferred documentation blocks the practical-finish signal",
+      "Every deferred doc has a tracking bead for post-finish completion",
+      "Documentation priority is ranked by user-facing impact",
+      "Handoff list is frozen at practical-finish time — no additions after signal"
+    ]
+  },
+  "release_blockers": [
+    "any required gate contract missing or failing validation",
+    "open child beads under bd-3ar8v.7 exceeding residual threshold",
+    "practical-finish signal artifact missing or malformed",
+    "certification verdict at FAILED",
+    "deferred documentation without tracking bead"
+  ],
+  "downstream_dependencies": {
+    "blocked_beads": [],
+    "integration_contracts": [
+      "docs/franken-node-unified-test-certification-contract.json",
+      "docs/franken-node-runtime-integration-contract.json"
+    ]
+  }
+}

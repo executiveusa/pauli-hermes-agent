@@ -40,7 +40,7 @@ _HERMES_CORE_TOOLS = [
     # MoA
     "mixture_of_agents",
     # Skills
-    "skills_list", "skill_view", "skill_manage",
+    "skills_list", "skill_view", "skill_manage", "skill_wizard",
     # Browser automation
     "browser_navigate", "browser_snapshot", "browser_click",
     "browser_type", "browser_scroll", "browser_back",
@@ -64,6 +64,10 @@ _HERMES_CORE_TOOLS = [
     "honcho_context", "honcho_profile", "honcho_search", "honcho_conclude",
     # Home Assistant smart home control (gated on HASS_TOKEN via check_fn)
     "ha_list_entities", "ha_get_state", "ha_list_services", "ha_call_service",
+    # Open Brain — Supabase persistent memory (gated on SUPABASE_URL + SUPABASE_KEY)
+    "brain_store", "brain_search", "brain_links", "brain_collections",
+    # Infisical — secrets management (gated on INFISICAL_TOKEN via check_fn)
+    "fetch_secret", "list_secrets", "rotate_secrets",
 ]
 
 
@@ -199,6 +203,12 @@ TOOLSETS = {
     "honcho": {
         "description": "Honcho AI-native memory for persistent cross-session user modeling",
         "tools": ["honcho_context", "honcho_profile", "honcho_search", "honcho_conclude"],
+        "includes": []
+    },
+
+    "infisical": {
+        "description": "Infisical centralized secrets management with hourly rotation and caching",
+        "tools": ["fetch_secret", "list_secrets", "rotate_secrets"],
         "includes": []
     },
 

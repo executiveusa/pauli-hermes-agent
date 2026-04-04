@@ -1,0 +1,122 @@
+{
+  "schema": "pi.provider_setup_guide.v1",
+  "bead_id": "bd-3uqg.11.12.1",
+  "provider_id": "openrouter",
+  "canonical_provider_id": "openrouter",
+  "last_verified_utc": "2026-02-13T10:00:00Z",
+
+  "quick_start": {
+    "description": "OpenRouter aggregates 300+ models behind a single OpenAI-compatible API. Uses Bearer auth with dynamic model catalog and provider-level routing/fallback.",
+    "auth_env": "OPENROUTER_API_KEY",
+    "base_url": "https://openrouter.ai/api/v1",
+    "api_type": "openai-completions",
+    "minimal_config": {
+      "steps": [
+        "1. Get an API key from https://openrouter.ai/settings/keys",
+        "2. Export: export OPENROUTER_API_KEY=sk-or-v1-...",
+        "3. Run: pi --provider openrouter --model openai/gpt-4o-mini"
+      ],
+      "example_env": {
+        "OPENROUTER_API_KEY": "sk-or-v1-your_api_key_here"
+      }
+    },
+    "advanced_config": {
+      "description": "Use provider routing preferences, model fallbacks, or attribution headers.",
+      "example_env": {
+        "OPENROUTER_API_KEY": "sk-or-v1-your_api_key_here"
+      },
+      "example_cli_options": [
+        "pi --provider openrouter --model anthropic/claude-sonnet-4  # Route through OpenRouter",
+        "pi --provider openrouter --model google/gemini-2.0-flash     # Gemini via OpenRouter",
+        "pi --provider openrouter --model meta-llama/llama-3.3-70b-instruct  # Open-source models"
+      ],
+      "notes": [
+        "Model IDs use org/model format (e.g., openai/gpt-4o, not gpt-4o).",
+        "GET /api/v1/models returns dynamic catalog with pricing and context_length.",
+        "HTTP-Referer and X-Title headers sent as attribution (configured in Pi settings).",
+        "Provider routing: allow_fallbacks=true by default — actual serving model may differ from requested.",
+        "Mid-stream errors appear as SSE payloads with finish_reason='error' (HTTP 200 status)."
+      ]
+    }
+  },
+
+  "caveats": [
+    {
+      "id": "openrouter-cav-001",
+      "severity": "warning",
+      "summary": "Serving model may differ from requested model",
+      "detail": "OpenRouter's fallback routing can serve a different model/provider than requested. response.model indicates the actual serving model. Pi logs this for diagnostics.",
+      "test_evidence": "docs/provider-openrouter-capability-profile.json routing_and_fallback_contract"
+    },
+    {
+      "id": "openrouter-cav-002",
+      "severity": "warning",
+      "summary": "Mid-stream errors use HTTP 200 with error SSE payload",
+      "detail": "When an upstream provider fails mid-stream, OpenRouter continues with HTTP 200 but sends an SSE payload with finish_reason='error' and error object. Pi must handle this as a terminal error.",
+      "test_evidence": "docs/provider-openrouter-capability-profile.json streaming_contract"
+    },
+    {
+      "id": "openrouter-cav-003",
+      "severity": "info",
+      "summary": "SSE comment frames must be ignored",
+      "detail": "OpenRouter sends ': OPENROUTER PROCESSING' comment frames during SSE streaming. These are not data events and must be ignored by the SSE parser.",
+      "test_evidence": "docs/provider-openrouter-capability-profile.json streaming_contract"
+    },
+    {
+      "id": "openrouter-cav-004",
+      "severity": "info",
+      "summary": "Unsupported parameters silently ignored",
+      "detail": "Unsupported request parameters may be ignored by the chosen upstream provider instead of returning hard validation failures.",
+      "test_evidence": "docs/provider-openrouter-capability-profile.json openai_compatibility_contract"
+    }
+  ],
+
+  "troubleshooting": [
+    {
+      "symptom": "HTTP 401 Invalid API key",
+      "cause": "OPENROUTER_API_KEY not set or invalid",
+      "fix": "Verify key at https://openrouter.ai/settings/keys. Re-export: export OPENROUTER_API_KEY=sk-or-v1-...",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_error_auth_all_families, tests/fixtures/vcr/verify_openrouter_error_auth_401.json"
+    },
+    {
+      "symptom": "HTTP 429 Rate limit exceeded",
+      "cause": "Request or credit rate limit hit",
+      "fix": "Wait and retry. Check x-ratelimit-remaining headers. Upgrade plan for higher limits.",
+      "test_evidence": "tests/e2e_provider_scenarios.rs::e2e_error_rate_limit_all_families"
+    },
+    {
+      "symptom": "HTTP 402 Payment required",
+      "cause": "Insufficient credits",
+      "fix": "Add credits at https://openrouter.ai/settings/credits. Some models are free-tier eligible.",
+      "test_evidence": "docs/provider-openrouter-capability-profile.json error_and_rate_limit_profile"
+    },
+    {
+      "symptom": "Model ID not found",
+      "cause": "Model ID must use org/model format",
+      "fix": "Use: pi --provider openrouter --model openai/gpt-4o-mini (not just gpt-4o-mini). Check /api/v1/models for available IDs.",
+      "test_evidence": "tests/provider_factory.rs (wave presets)"
+    },
+    {
+      "symptom": "Unexpected model in response",
+      "cause": "Provider fallback routing served a different model",
+      "fix": "Check response.model field. To pin to a specific provider, use the provider.only routing parameter.",
+      "test_evidence": "docs/provider-openrouter-capability-profile.json routing_and_fallback_contract"
+    }
+  ],
+
+  "test_coverage": {
+    "unit_contract": {
+      "file": "tests/provider_factory.rs",
+      "test_count": 144,
+      "scenarios": ["factory presets", "routing", "auth header", "compat config"]
+    },
+    "vcr_fixtures": {
+      "directory": "tests/fixtures/vcr/",
+      "scenarios": ["verify_openrouter_simple_text", "verify_openrouter_unicode_text", "verify_openrouter_tool_call_single", "verify_openrouter_error_auth_401"]
+    },
+    "e2e": {
+      "file": "tests/e2e_provider_scenarios.rs",
+      "scenarios": ["simple_text", "tool_call", "error_auth", "error_rate_limit", "schema_drift", "wave_preset", "determinism", "event_ordering", "request_body_stability", "comprehensive_report"]
+    }
+  }
+}

@@ -1,0 +1,369 @@
+{
+  "schema": "pi.provider_capability_profile.v1",
+  "schema_version": "1.0",
+  "bead_id": "bd-3uqg.11.7.1",
+  "provider_id": "openrouter",
+  "canonical_provider_id": "openrouter",
+  "verified_at_utc": "2026-02-13T08:44:14Z",
+  "source_snapshot": [
+    {
+      "label": "OpenRouter Quickstart",
+      "url": "https://openrouter.ai/docs/quickstart",
+      "key_points": [
+        "Primary chat endpoint uses https://openrouter.ai/api/v1/chat/completions",
+        "Bearer auth via OPENROUTER_API_KEY",
+        "HTTP-Referer and X-Title headers are documented as optional attribution headers",
+        "OpenAI SDK compatibility through baseURL https://openrouter.ai/api/v1"
+      ]
+    },
+    {
+      "label": "OpenRouter API Overview",
+      "url": "https://openrouter.ai/docs/api/reference/overview",
+      "key_points": [
+        "OpenAI-like schema with OpenRouter extensions (models, route, provider, transforms)",
+        "Model identifiers require organization/model prefix",
+        "Fallback to other providers on 5xx or rate-limit conditions",
+        "Finish reason normalization includes tool_calls, stop, length, content_filter, error",
+        "usage field includes prompt_tokens, completion_tokens, total_tokens with optional details and cost"
+      ]
+    },
+    {
+      "label": "OpenRouter Streaming",
+      "url": "https://openrouter.ai/docs/api/reference/streaming",
+      "key_points": [
+        "SSE streaming enabled with stream=true",
+        "SSE comments such as ': OPENROUTER PROCESSING' may appear and should be ignored",
+        "Mid-stream failures are surfaced as SSE payloads with finish_reason='error'",
+        "Pre-stream failures use normal JSON error responses and HTTP status codes"
+      ]
+    },
+    {
+      "label": "OpenRouter Provider Routing",
+      "url": "https://openrouter.ai/docs/guides/routing/provider-selection",
+      "key_points": [
+        "provider object supports order, allow_fallbacks, require_parameters, only, ignore, sort, max_price",
+        "Default behavior load-balances by price/uptime and keeps fallbacks enabled",
+        "tools/tool_choice requests are routed only to providers that support tool use",
+        "max_tokens-constrained requests route only to providers that can satisfy token length"
+      ]
+    },
+    {
+      "label": "OpenRouter Model Fallbacks",
+      "url": "https://openrouter.ai/docs/guides/routing/model-fallbacks",
+      "key_points": [
+        "models array enables ordered model failover",
+        "Fallbacks can be triggered by context-length errors, moderation filtering, rate-limits, and downtime",
+        "Final billed model is reported in response.model"
+      ]
+    },
+    {
+      "label": "OpenRouter Models API",
+      "url": "https://openrouter.ai/docs/api-reference/models/get-models",
+      "key_points": [
+        "GET /api/v1/models returns dynamic catalog with id, pricing, context_length, top_provider, and supported_parameters",
+        "Model IDs are canonicalized as provider/model slugs (for example openai/gpt-4)"
+      ]
+    },
+    {
+      "label": "OpenRouter Tool Calling",
+      "url": "https://openrouter.ai/docs/guides/features/tool-calling",
+      "key_points": [
+        "Tool-calling interface is normalized across models/providers",
+        "Tool result loop follows OpenAI function-calling shape",
+        "finish_reason='tool_calls' is expected when tool invocation is requested"
+      ]
+    }
+  ],
+  "endpoint_profile": {
+    "base_url": "https://openrouter.ai/api/v1",
+    "primary_chat_endpoint": "/chat/completions",
+    "models_catalog_endpoint": "/models",
+    "generation_stats_endpoint": "/generation?id=<generation_id>",
+    "openai_sdk_compatibility": {
+      "supported": true,
+      "openai_base_url": "https://openrouter.ai/api/v1"
+    }
+  },
+  "request_response_exemplars": {
+    "happy_path_chat_completions": {
+      "request": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "Bearer $OPENROUTER_API_KEY",
+          "HTTP-Referer": "https://pi-agent.local",
+          "X-Title": "Pi Agent Rust"
+        },
+        "json": {
+          "model": "openai/gpt-4o-mini",
+          "messages": [
+            {
+              "role": "user",
+              "content": "Return a one-word status."
+            }
+          ],
+          "stream": false
+        }
+      },
+      "response": {
+        "status": 200,
+        "json_shape": {
+          "id": "chatcmpl-*",
+          "model": "openai/gpt-4o-mini",
+          "choices[0].message.role": "assistant",
+          "choices[0].finish_reason": "stop",
+          "usage.prompt_tokens": 0,
+          "usage.completion_tokens": 0,
+          "usage.total_tokens": 0
+        }
+      }
+    },
+    "failure_path_pre_stream_rate_limit": {
+      "request": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "Bearer $OPENROUTER_API_KEY"
+        },
+        "json": {
+          "model": "openai/gpt-4o-mini",
+          "messages": [
+            {
+              "role": "user",
+              "content": "hi"
+            }
+          ],
+          "stream": false
+        }
+      },
+      "response": {
+        "status": 429,
+        "json_shape": {
+          "error.message": "string",
+          "error.code": "string_or_number",
+          "error.metadata": "object_optional"
+        }
+      }
+    },
+    "failure_path_mid_stream_provider_error": {
+      "request": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "headers": {
+          "Authorization": "Bearer $OPENROUTER_API_KEY"
+        },
+        "json": {
+          "model": "openai/gpt-4o-mini",
+          "messages": [
+            {
+              "role": "user",
+              "content": "Generate a long response."
+            }
+          ],
+          "stream": true
+        }
+      },
+      "stream_shape": [
+        ": OPENROUTER PROCESSING",
+        "data: {\"choices\":[{\"delta\":{\"content\":\"...\"}}]}",
+        "data: {\"choices\":[{\"finish_reason\":\"error\"}],\"error\":{\"message\":\"string\"}}"
+      ],
+      "pi_handling": [
+        "Ignore comment frame",
+        "Consume text deltas up to terminal error frame",
+        "Terminate turn as error with actionable diagnostics"
+      ]
+    }
+  },
+  "openai_compatibility_contract": {
+    "compatible": true,
+    "request_schema_baseline": "openai_chat_completions_like",
+    "model_id_format": "provider/model-slug",
+    "additional_openrouter_parameters": [
+      "models",
+      "route",
+      "provider",
+      "transforms",
+      "plugins",
+      "debug"
+    ],
+    "unsupported_or_partial_behavior": [
+      "Unsupported request parameters may be ignored by the chosen upstream model/provider instead of returning hard validation failures",
+      "Actual serving provider/model can differ from caller's first preference because of provider/model fallback routing"
+    ]
+  },
+  "routing_and_fallback_contract": {
+    "default_strategy": {
+      "mode": "price_weighted_load_balancing_with_uptime_bias",
+      "allow_fallbacks_default": true
+    },
+    "provider_preferences_supported": [
+      "order",
+      "allow_fallbacks",
+      "require_parameters",
+      "data_collection",
+      "zdr",
+      "enforce_distillable_text",
+      "only",
+      "ignore",
+      "quantizations",
+      "sort",
+      "preferred_min_throughput",
+      "preferred_max_latency",
+      "max_price"
+    ],
+    "model_fallbacks": {
+      "models_parameter_supported": true,
+      "fallback_trigger_examples": [
+        "context_length_validation_error",
+        "moderation_filtered",
+        "rate_limited",
+        "provider_downtime"
+      ]
+    },
+    "tool_routing_behavior": "When tools/tool_choice are present, routing is restricted to providers that support tool use"
+  },
+  "streaming_contract": {
+    "protocol": "server_sent_events",
+    "request_flag": "stream=true",
+    "heartbeat_comment_payloads": [
+      ": OPENROUTER PROCESSING"
+    ],
+    "pi_normalization_expectations": [
+      "Ignore SSE comment frames and continue stream assembly",
+      "Map normalized finish_reason values to Pi StopReason consistently",
+      "Handle mid-stream error payloads where HTTP status remains 200 and finish_reason is 'error'"
+    ],
+    "usage_delivery": "For streaming chat completions, usage can appear in a terminal chunk before stream completion",
+    "error_shapes": {
+      "pre_stream": "JSON error response with HTTP status code",
+      "mid_stream": "SSE payload with top-level error object and finish_reason='error'"
+    }
+  },
+  "tool_calling_contract": {
+    "supported": true,
+    "tool_choice_modes": [
+      "none",
+      "auto",
+      "function_name_object"
+    ],
+    "finish_reason_for_tool_invocation": "tool_calls",
+    "request_loop_requirements": [
+      "Include tools schema in initial request",
+      "Append assistant tool_calls response to message history",
+      "Append tool role result messages keyed by tool_call_id",
+      "Include tools schema again when sending tool results for follow-up inference"
+    ],
+    "pi_normalization_expectations": [
+      "Preserve tool call order and argument fragments in streaming assembly",
+      "Map OpenRouter-normalized tool call envelopes to Pi ToolCall blocks without losing id/name/arguments",
+      "Classify provider routing incompatibilities (missing tool support) as actionable diagnostics"
+    ]
+  },
+  "usage_and_cost_profile": {
+    "usage_fields": [
+      "prompt_tokens",
+      "completion_tokens",
+      "total_tokens",
+      "prompt_tokens_details",
+      "completion_tokens_details",
+      "cost",
+      "is_byok",
+      "cost_details",
+      "server_tool_use"
+    ],
+    "stats_endpoint": "/api/v1/generation?id=<generation_id>",
+    "model_catalog_pricing_fields": [
+      "pricing.prompt",
+      "pricing.completion",
+      "pricing.request",
+      "pricing.image"
+    ],
+    "pi_expectations": [
+      "Token accounting remains stable even when OpenRouter routes to alternate providers",
+      "Diagnostics should surface response.model and native_finish_reason when available for triage"
+    ]
+  },
+  "error_and_rate_limit_profile": {
+    "documented_pre_stream_http_statuses": [
+      400,
+      401,
+      402,
+      429,
+      502,
+      503
+    ],
+    "normalized_finish_reasons": [
+      "tool_calls",
+      "stop",
+      "length",
+      "content_filter",
+      "error"
+    ],
+    "fallback_relevant_error_classes": [
+      "5xx_provider_errors",
+      "rate_limit",
+      "model_validation_and_filtering_failures"
+    ],
+    "pi_expectations": [
+      "401 remains auth remediation with OPENROUTER_API_KEY guidance",
+      "429 remains retryable rate-limit diagnostic",
+      "Mid-stream SSE error payloads terminate assistant turn with StopReason::Error"
+    ]
+  },
+  "intentional_divergences_from_baseline_provider_contracts": [
+    {
+      "category": "routing",
+      "difference": "OpenRouter can change serving provider/model at runtime using provider/model fallback policies",
+      "impact": "Pi should treat response.model and native_finish_reason as authoritative runtime outputs"
+    },
+    {
+      "category": "request_shaping",
+      "difference": "Unsupported parameters may be ignored by upstream providers instead of hard-failing",
+      "impact": "Conformance should validate behavioral outcomes, not only request echo parity"
+    },
+    {
+      "category": "headers",
+      "difference": "HTTP-Referer and X-Title are optional in OpenRouter docs but Pi will treat attribution headers as required-by-policy for this provider wave",
+      "impact": "Auth/config bead must define deterministic defaults and precedence for attribution headers"
+    }
+  ],
+  "implementation_decisions_for_pi": [
+    {
+      "decision_id": "openrouter-spec-001",
+      "decision": "Keep OpenRouter on OpenAI-compatible chat-completions transport at base_url https://openrouter.ai/api/v1 with /chat/completions normalization.",
+      "rationale": "Quickstart and API overview define chat completions as the primary compatibility surface for third-party SDKs.",
+      "downstream_bead": "bd-3uqg.11.7.3"
+    },
+    {
+      "decision_id": "openrouter-spec-002",
+      "decision": "Add explicit auth/config contract for OPENROUTER_API_KEY plus deterministic HTTP-Referer/X-Title behavior in Pi settings/env precedence.",
+      "rationale": "OpenRouter supports optional attribution headers; this provider wave requires deterministic header behavior for compliance and reproducibility.",
+      "downstream_bead": "bd-3uqg.11.7.2"
+    },
+    {
+      "decision_id": "openrouter-spec-003",
+      "decision": "Treat models/provider routing fields as first-class request-shaping controls and preserve response.model/native_finish_reason in diagnostics.",
+      "rationale": "Routing/fallback behavior can alter serving endpoint and finish semantics without changing API endpoint.",
+      "downstream_bead": "bd-3uqg.11.7.3"
+    },
+    {
+      "decision_id": "openrouter-spec-004",
+      "decision": "Keep model catalog ingestion dynamic-capable by planning around GET /api/v1/models metadata fields (pricing/context/supported_parameters).",
+      "rationale": "OpenRouter model inventory is large and mutable; static hand-curated model lists are brittle.",
+      "downstream_bead": "bd-3uqg.11.7.4"
+    },
+    {
+      "decision_id": "openrouter-spec-005",
+      "decision": "Require test coverage for streaming comment frames, mid-stream error events, and tool-call finish_reason normalization.",
+      "rationale": "These are explicit OpenRouter protocol behaviors that can regress silently in OpenAI-compatible adapters.",
+      "downstream_bead": "bd-3uqg.11.7.5"
+    }
+  ],
+  "downstream_beads_unblocked": [
+    "bd-3pc3p",
+    "bd-3uqg.11.7.2",
+    "bd-3uqg.11.7.3",
+    "bd-3uqg.11.7.4"
+  ]
+}

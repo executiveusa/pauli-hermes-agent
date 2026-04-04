@@ -243,56 +243,6 @@ CONTEXT_TRUNCATE_TAIL_RATIO = 0.2
 
 
 # =========================================================================
-# Studio prompt loader
-# =========================================================================
-
-def load_studio_prompt() -> Optional[str]:
-    """Load the Studio Orchestrator prompt from ``prompts/system.txt``.
-
-    Returns the prompt text if the file exists in the project root, else None.
-    The prompt is stable per session (file is read once and cached) so it
-    doesn't break prompt caching.
-    """
-    if hasattr(load_studio_prompt, "_cache"):
-        return load_studio_prompt._cache
-
-    project_root = Path(__file__).parent.parent
-    prompt_file = project_root / "prompts" / "system.txt"
-    if not prompt_file.is_file():
-        load_studio_prompt._cache = None
-        return None
-
-    try:
-        content = prompt_file.read_text(encoding="utf-8").strip()
-        # Strip markdown comments (lines starting with #) at the very top
-        # that are just file metadata, but keep the actual content
-        content = _strip_yaml_frontmatter(content)
-        load_studio_prompt._cache = content
-        logger.debug("Loaded studio prompt from %s (%d chars)", prompt_file, len(content))
-        return content
-    except Exception as e:
-        logger.warning("Failed to load studio prompt: %s", e)
-        load_studio_prompt._cache = None
-        return None
-
-
-def load_studio_mode(mode_name: str) -> Optional[str]:
-    """Load a mode-specific prompt from ``prompts/modes/<mode>.md``.
-
-    Returns the prompt text if the file exists, else None.
-    """
-    project_root = Path(__file__).parent.parent
-    mode_file = project_root / "prompts" / "modes" / f"{mode_name}.md"
-    if not mode_file.is_file():
-        return None
-    try:
-        content = mode_file.read_text(encoding="utf-8").strip()
-        return _strip_yaml_frontmatter(content)
-    except Exception:
-        return None
-
-
-# =========================================================================
 # Skills index
 # =========================================================================
 

@@ -1,0 +1,426 @@
+{
+  "env_fingerprint_fields": [
+    {
+      "description": "Operating system name and version",
+      "field": "os"
+    },
+    {
+      "description": "CPU architecture (x86_64, aarch64)",
+      "field": "arch"
+    },
+    {
+      "description": "CPU model string from /proc/cpuinfo or sysinfo",
+      "field": "cpu_model"
+    },
+    {
+      "description": "Logical CPU core count",
+      "field": "cpu_cores"
+    },
+    {
+      "description": "Total system memory in megabytes",
+      "field": "mem_total_mb"
+    },
+    {
+      "description": "Cargo build profile: debug or release",
+      "field": "build_profile"
+    },
+    {
+      "description": "Short git commit hash of the build",
+      "field": "git_commit"
+    },
+    {
+      "description": "Active Cargo feature flags",
+      "field": "features"
+    },
+    {
+      "description": "SHA-256 of env fields for dedup",
+      "field": "config_hash"
+    }
+  ],
+  "protocol_contract": {
+    "evidence_labels": {
+      "confidence": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "evidence_class": [
+        "measured",
+        "inferred"
+      ]
+    },
+    "matched_state_scenarios": [
+      {
+        "replay_input": {
+          "extension_fixture_set": [
+            "hello",
+            "pirate",
+            "diff"
+          ],
+          "runs": 5
+        },
+        "scenario": "cold_start"
+      },
+      {
+        "replay_input": {
+          "extension_fixture_set": [
+            "hello",
+            "pirate",
+            "diff"
+          ],
+          "runs": 5
+        },
+        "scenario": "warm_start"
+      },
+      {
+        "replay_input": {
+          "extension_fixture_set": [
+            "hello",
+            "pirate",
+            "diff"
+          ],
+          "iterations": 500
+        },
+        "scenario": "tool_call"
+      },
+      {
+        "replay_input": {
+          "event_name": "before_agent_start",
+          "iterations": 500
+        },
+        "scenario": "event_dispatch"
+      }
+    ],
+    "partition_interpretation": {
+      "forbid_single_partition_conclusion": true,
+      "global_claim_requires_partitions": [
+        "matched-state",
+        "realistic"
+      ],
+      "interpretation_notes": {
+        "matched-state": "Use matched-state for controlled equivalence and attribution; do not generalize alone.",
+        "realistic": "Use realistic workloads as primary user-impact evidence and release-facing performance narrative."
+      },
+      "primary_partition": "realistic",
+      "secondary_partition": "matched-state"
+    },
+    "partition_tags": [
+      "matched-state",
+      "realistic"
+    ],
+    "partition_weighting": {
+      "matched-state": 0.3,
+      "realistic": 0.7,
+      "weights_sum_to": 1.0
+    },
+    "realistic_replay_inputs": [
+      {
+        "partition": "realistic",
+        "replay_input": {
+          "mode": "replay",
+          "seed": 7,
+          "transcript_fixture": "tests/artifacts/perf/session_100000.jsonl"
+        },
+        "scenario_id": "realistic/session_100000",
+        "session_messages": 100000
+      },
+      {
+        "partition": "realistic",
+        "replay_input": {
+          "mode": "replay",
+          "seed": 7,
+          "transcript_fixture": "tests/artifacts/perf/session_200000.jsonl"
+        },
+        "scenario_id": "realistic/session_200000",
+        "session_messages": 200000
+      },
+      {
+        "partition": "realistic",
+        "replay_input": {
+          "mode": "replay",
+          "seed": 7,
+          "transcript_fixture": "tests/artifacts/perf/session_500000.jsonl"
+        },
+        "scenario_id": "realistic/session_500000",
+        "session_messages": 500000
+      },
+      {
+        "partition": "realistic",
+        "replay_input": {
+          "mode": "replay",
+          "seed": 7,
+          "transcript_fixture": "tests/artifacts/perf/session_1000000.jsonl"
+        },
+        "scenario_id": "realistic/session_1000000",
+        "session_messages": 1000000
+      },
+      {
+        "partition": "realistic",
+        "replay_input": {
+          "mode": "replay",
+          "seed": 7,
+          "transcript_fixture": "tests/artifacts/perf/session_5000000.jsonl"
+        },
+        "scenario_id": "realistic/session_5000000",
+        "session_messages": 5000000
+      }
+    ],
+    "realistic_session_sizes": [
+      100000,
+      200000,
+      500000,
+      1000000,
+      5000000
+    ],
+    "required_metadata_fields": [
+      "runtime",
+      "build_profile",
+      "host",
+      "scenario_id",
+      "correlation_id"
+    ],
+    "scenario_sli_matrix": [
+      {
+        "partition": "matched-state",
+        "phase_validation_beads": [
+          "bd-3ar8v.1.5",
+          "bd-3ar8v.2.11"
+        ],
+        "scenario_id": "cold_start",
+        "sli_ids": [
+          "interactive_turn_p95_ms",
+          "resume_session_p95_ms",
+          "tail_stability_p99_over_p50_ratio"
+        ],
+        "ux_outcome": "First interaction after startup feels responsive."
+      },
+      {
+        "partition": "matched-state",
+        "phase_validation_beads": [
+          "bd-3ar8v.1.5",
+          "bd-3ar8v.2.11"
+        ],
+        "scenario_id": "warm_start",
+        "sli_ids": [
+          "interactive_turn_p95_ms",
+          "tail_stability_p99_over_p50_ratio"
+        ],
+        "ux_outcome": "Steady-state turn latency remains consistently snappy."
+      },
+      {
+        "partition": "matched-state",
+        "phase_validation_beads": [
+          "bd-3ar8v.2.11",
+          "bd-3ar8v.6.7"
+        ],
+        "scenario_id": "tool_call",
+        "sli_ids": [
+          "tool_roundtrip_p95_ms",
+          "interactive_turn_p95_ms",
+          "tail_stability_p99_over_p50_ratio"
+        ],
+        "ux_outcome": "Tool-assisted coding loop stays fluid."
+      },
+      {
+        "partition": "matched-state",
+        "phase_validation_beads": [
+          "bd-3ar8v.3.11",
+          "bd-3ar8v.6.7"
+        ],
+        "scenario_id": "event_dispatch",
+        "sli_ids": [
+          "extension_dispatch_p95_ms",
+          "tail_stability_p99_over_p50_ratio"
+        ],
+        "ux_outcome": "Extension events execute without perceptible stalls."
+      },
+      {
+        "partition": "realistic",
+        "phase_validation_beads": [
+          "bd-3ar8v.3.11",
+          "bd-3ar8v.6.7"
+        ],
+        "scenario_id": "realistic/session_100000",
+        "sli_ids": [
+          "interactive_turn_p95_ms",
+          "resume_session_p95_ms",
+          "tail_stability_p99_over_p50_ratio"
+        ],
+        "ux_outcome": "Large-session operations remain usable for humans under realistic transcript load."
+      },
+      {
+        "partition": "realistic",
+        "phase_validation_beads": [
+          "bd-3ar8v.3.11",
+          "bd-3ar8v.6.7"
+        ],
+        "scenario_id": "realistic/session_200000",
+        "sli_ids": [
+          "interactive_turn_p95_ms",
+          "resume_session_p95_ms",
+          "tail_stability_p99_over_p50_ratio"
+        ],
+        "ux_outcome": "Large-session operations remain usable for humans under realistic transcript load."
+      },
+      {
+        "partition": "realistic",
+        "phase_validation_beads": [
+          "bd-3ar8v.3.11",
+          "bd-3ar8v.6.7"
+        ],
+        "scenario_id": "realistic/session_500000",
+        "sli_ids": [
+          "interactive_turn_p95_ms",
+          "resume_session_p95_ms",
+          "tail_stability_p99_over_p50_ratio"
+        ],
+        "ux_outcome": "Large-session operations remain usable for humans under realistic transcript load."
+      },
+      {
+        "partition": "realistic",
+        "phase_validation_beads": [
+          "bd-3ar8v.3.11",
+          "bd-3ar8v.6.7"
+        ],
+        "scenario_id": "realistic/session_1000000",
+        "sli_ids": [
+          "interactive_turn_p95_ms",
+          "resume_session_p95_ms",
+          "tail_stability_p99_over_p50_ratio"
+        ],
+        "ux_outcome": "Large-session operations remain usable for humans under realistic transcript load."
+      },
+      {
+        "partition": "realistic",
+        "phase_validation_beads": [
+          "bd-3ar8v.3.11",
+          "bd-3ar8v.6.7"
+        ],
+        "scenario_id": "realistic/session_5000000",
+        "sli_ids": [
+          "interactive_turn_p95_ms",
+          "resume_session_p95_ms",
+          "tail_stability_p99_over_p50_ratio"
+        ],
+        "ux_outcome": "Large-session operations remain usable for humans under realistic transcript load."
+      }
+    ],
+    "schema": "pi.bench.protocol.v1",
+    "user_perceived_sli_catalog": [
+      {
+        "label": "Interactive turn latency (P95)",
+        "objective": {
+          "comparator": "<=",
+          "threshold": 1200
+        },
+        "sli_id": "interactive_turn_p95_ms",
+        "unit": "ms",
+        "ux_interpretation": {
+          "critical": "Workflow feels blocked; conversation rhythm breaks.",
+          "degraded": "Noticeable lag in turn-to-turn iteration speed.",
+          "good": "Feels responsive for normal coding dialogue."
+        }
+      },
+      {
+        "label": "Session resume latency (P95)",
+        "objective": {
+          "comparator": "<=",
+          "threshold": 1800
+        },
+        "sli_id": "resume_session_p95_ms",
+        "unit": "ms",
+        "ux_interpretation": {
+          "critical": "Resume delays materially slow task pickup.",
+          "degraded": "Resume feels sluggish but still tolerable.",
+          "good": "Project/session restore feels immediate after launch."
+        }
+      },
+      {
+        "label": "Extension hostcall dispatch latency (P95)",
+        "objective": {
+          "comparator": "<=",
+          "threshold": 350
+        },
+        "sli_id": "extension_dispatch_p95_ms",
+        "unit": "ms",
+        "ux_interpretation": {
+          "critical": "Extension UX appears stalled or unreliable.",
+          "degraded": "Extension interactions feel sticky/intermittent.",
+          "good": "Extension-backed actions feel near-instant."
+        }
+      },
+      {
+        "label": "Tool-call roundtrip latency (P95)",
+        "objective": {
+          "comparator": "<=",
+          "threshold": 900
+        },
+        "sli_id": "tool_roundtrip_p95_ms",
+        "unit": "ms",
+        "ux_interpretation": {
+          "critical": "Tool usage becomes a bottleneck.",
+          "degraded": "Tool feedback loop slows coding momentum.",
+          "good": "Tool invocation and result handoff feel tight."
+        }
+      },
+      {
+        "label": "Tail stability (P99/P50 ratio)",
+        "objective": {
+          "comparator": "<=",
+          "threshold": 4.0
+        },
+        "sli_id": "tail_stability_p99_over_p50_ratio",
+        "unit": "ratio",
+        "ux_interpretation": {
+          "critical": "Frequent latency spikes disrupt workflow trust.",
+          "degraded": "Intermittent long-tail pauses are noticeable.",
+          "good": "Latency is predictable with low surprise spikes."
+        }
+      }
+    ],
+    "version": "1.0.0"
+  },
+  "schema": "pi.bench.schema_registry.v1",
+  "schemas": [
+    {
+      "description": "Canonical benchmark protocol contract (partitions, datasets, metadata, replay inputs)",
+      "name": "pi.bench.protocol.v1"
+    },
+    {
+      "description": "Rust QuickJS extension benchmark event (load, tool call, event hook)",
+      "name": "pi.ext.rust_bench.v1"
+    },
+    {
+      "description": "Legacy pi-mono (Node.js) extension benchmark event",
+      "name": "pi.ext.legacy_bench.v1"
+    },
+    {
+      "description": "PiJS workload harness output (tool call throughput)",
+      "name": "pi.perf.workload.v1"
+    },
+    {
+      "description": "Performance budget check result",
+      "name": "pi.perf.budget.v1"
+    },
+    {
+      "description": "Aggregate budget summary with pass/fail counts",
+      "name": "pi.perf.budget_summary.v1"
+    },
+    {
+      "description": "Per-extension conformance report event",
+      "name": "pi.ext.conformance_report.v2"
+    },
+    {
+      "description": "Aggregate conformance summary with per-tier breakdowns",
+      "name": "pi.ext.conformance_summary.v2"
+    },
+    {
+      "description": "Layered extension benchmark artifact linking cold-load, per-call, and full E2E evidence with claim-integrity guards",
+      "name": "pi.perf.extension_benchmark_stratification.v1"
+    },
+    {
+      "description": "Phase-1 realistic/matched-state matrix validation with stage attribution and release-gate readiness",
+      "name": "pi.perf.phase1_matrix_validation.v1"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "extension": {
+    "id": "minimal_provider",
+    "source": {
+      "path": "tests/ext_conformance/artifacts/base_fixtures/minimal_provider/index.ts"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "scn-minimal-provider-001",
+      "kind": "provider",
+      "summary": "Registers a mock provider",
+      "provider_id": "mock-provider",
+      "expect": {
+        "provider_registered": true,
+        "models_contain": [
+          "mock-model"
+        ]
+      }
+    },
+    {
+      "id": "scn-minimal-provider-neg-001",
+      "kind": "provider",
+      "summary": "Negative: provider registration fails with missing API key",
+      "expect": {
+        "is_error": true
+      }
+    }
+  ]
+}

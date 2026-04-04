@@ -1,0 +1,256 @@
+{
+  "schema": "pi.qa.audit_evidence_index.v1",
+  "bead_id": "bd-3uqg.12.2.1",
+  "generated_at_utc": "2026-02-14T00:40:00Z",
+  "purpose": "Reproducible evidence index for provider parity audit — allows future agents to replay all verifications without session context",
+
+  "verification_commands": {
+    "upstream_parity": {
+      "description": "Verify 87 Pi canonical IDs match 90 upstream union IDs (after alias resolution)",
+      "commands": [
+        {
+          "step": "extract_pi_canonical_ids",
+          "command": "grep 'canonical_id:' src/provider_metadata.rs | wc -l",
+          "expected": "87 entries"
+        },
+        {
+          "step": "extract_upstream_union",
+          "command": "jq -r '.combined.union_provider_ids[]' docs/provider-upstream-catalog-snapshot.json | wc -l",
+          "expected": "90 entries"
+        },
+        {
+          "step": "verify_alias_resolution",
+          "command": "grep -A2 'aliases:' src/provider_metadata.rs | grep -v '^--$'",
+          "expected": "11 providers with 17 total aliases covering the 5 mismatched IDs"
+        },
+        {
+          "step": "run_metadata_tests",
+          "command": "cargo test provider_metadata_comprehensive",
+          "expected": "All tests pass — 112+ providers validated"
+        }
+      ],
+      "outcome": "100% coverage: 85 direct + 5 alias-resolved = 90/90"
+    },
+    "test_matrix": {
+      "description": "Validate test coverage claims against actual artifacts",
+      "commands": [
+        {
+          "step": "count_unit_tests",
+          "command": "cargo test --lib providers -- --list 2>&1 | grep 'test$' | wc -l",
+          "expected": "193 unit tests across 11 provider source files"
+        },
+        {
+          "step": "count_integration_suites",
+          "command": "ls tests/provider*.rs | wc -l",
+          "expected": "13 integration test suites"
+        },
+        {
+          "step": "count_vcr_cassettes",
+          "command": "ls tests/fixtures/vcr/verify_*.json tests/fixtures/vcr/provider_native_verify_*.json 2>/dev/null | wc -l",
+          "expected": "220+ verification cassettes"
+        },
+        {
+          "step": "run_provider_factory",
+          "command": "cargo test provider_factory",
+          "expected": "84+ providers dispatched (10 failures expected due to DISC-015)"
+        },
+        {
+          "step": "run_registry_guardrails",
+          "command": "cargo test provider_registry_guardrails",
+          "expected": "All pass — canonical ID uniqueness enforced"
+        }
+      ],
+      "outcome": "193 unit tests, 13 suites (18,734 lines), 103+ VCR cassettes, 8/10 fully covered"
+    },
+    "native_provider_verify": {
+      "description": "Run canonical scenarios against all native providers via VCR playback",
+      "commands": [
+        {
+          "step": "run_all_verify",
+          "command": "cargo test provider_native_verify",
+          "expected": "All 7 scenarios x all provider modules pass"
+        },
+        {
+          "step": "run_specific_provider",
+          "command": "cargo test provider_native_verify::anthropic_smoke",
+          "expected": "7 scenarios pass for Anthropic"
+        },
+        {
+          "step": "run_contract_tests",
+          "command": "cargo test provider_native_contract",
+          "expected": "Request/response shape validation passes"
+        }
+      ],
+      "scenarios": [
+        "simple_text", "unicode_text", "tool_call_single", "tool_call_multiple",
+        "error_auth_401", "error_bad_request_400", "error_rate_limit_429"
+      ]
+    }
+  },
+
+  "source_files": {
+    "metadata_authority": {
+      "path": "src/provider_metadata.rs",
+      "role": "Canonical provider ID registry with 87 entries, 17 aliases, auth env keys, routing defaults, test obligations",
+      "key_structure": "PROVIDER_METADATA: &[ProviderMetadata] — canonical_id, aliases, auth_env_keys, onboarding, routing_defaults, test_obligations"
+    },
+    "provider_implementations": {
+      "paths": [
+        "src/providers/anthropic.rs", "src/providers/openai.rs", "src/providers/gemini.rs",
+        "src/providers/cohere.rs", "src/providers/azure.rs", "src/providers/bedrock.rs",
+        "src/providers/vertex.rs", "src/providers/copilot.rs", "src/providers/gitlab.rs",
+        "src/providers/openai_responses.rs", "src/providers/sap_ai_core.rs"
+      ],
+      "role": "Native provider implementations with embedded unit tests"
+    },
+    "primary_verification_harness": {
+      "path": "tests/provider_native_verify.rs",
+      "role": "Primary E2E verification: 7 canonical scenarios across all providers via VCR playback",
+      "line_count": 5371
+    },
+    "integration_suites": [
+      {"path": "tests/provider_native_contract.rs", "lines": 2862, "role": "Contract-level request/response shape validation"},
+      {"path": "tests/provider_factory.rs", "lines": 2313, "role": "Provider factory dispatch for 84+ providers"},
+      {"path": "tests/provider_metadata_comprehensive.rs", "lines": 960, "role": "Metadata registration for 112+ providers"},
+      {"path": "tests/provider_backward_lock.rs", "lines": 1101, "role": "Regression lock for request payload shapes"},
+      {"path": "tests/provider_session_coverage.rs", "lines": 963, "role": "Provider integration with Session API"},
+      {"path": "tests/provider_smoke_matrix.rs", "lines": 1273, "role": "Smoke matrix: creation, streaming, errors"},
+      {"path": "tests/provider_error_paths.rs", "lines": 540, "role": "Error scenario testing (401, 400, 429, 500)"},
+      {"path": "tests/provider_live_verify.rs", "lines": 1093, "role": "Live API tests (requires credentials, skipped in CI)"},
+      {"path": "tests/provider_contract.rs", "lines": 769, "role": "Behavioral contract tests via VCR"},
+      {"path": "tests/provider_streaming.rs", "lines": 501, "role": "Streaming-specific (partial messages, SSE parsing)"},
+      {"path": "tests/provider_registry_guardrails.rs", "lines": 498, "role": "Registry integrity (duplicate detection)"},
+      {"path": "tests/provider_unit_checklist.rs", "lines": 490, "role": "Quality gate checklist per provider"}
+    ]
+  },
+
+  "artifact_inventory": {
+    "audit_reports": [
+      {"path": "docs/provider-parity-reconciliation-report.json", "bead": "bd-3uqg.14.3.1", "role": "Upstream parity verification"},
+      {"path": "docs/provider-test-matrix-validation-report.json", "bead": "bd-3uqg.14.3.2", "role": "Test matrix validation"},
+      {"path": "docs/provider-audit-reconciliation-ledger.json", "bead": "bd-3uqg.12.1.2", "role": "Consolidated discrepancy ledger (LilacCat)"},
+      {"path": "docs/provider-discrepancy-ledger.json", "bead": "bd-3uqg.12.1.1", "role": "Normalized 19-entry discrepancy ledger with root-cause classes (CopperBrook)"},
+      {"path": "docs/provider-discrepancy-classification.json", "bead": "bd-3uqg.14.3", "role": "Discrepancy classification"},
+      {"path": "docs/provider-remediation-routing-validation.json", "bead": "bd-3uqg.12.1.3", "role": "Routing validation: 3 issues, 2 duplicates closed (CopperBrook)"},
+      {"path": "docs/provider-remediation-manifest.json", "bead": "bd-3uqg.12.1.2", "role": "Manifest of 10 materialized remediation beads (LilacCat)"},
+      {"path": "docs/provider-native-parity-report.json", "bead": "bd-3uqg.8", "role": "Native provider parity report"},
+      {"path": "docs/provider-upstream-catalog-snapshot.json", "bead": "bd-3uqg.14.3.1", "role": "Upstream ID union snapshot"}
+    ],
+    "reference_data": [
+      {"path": "docs/provider-canonical-id-policy.json", "role": "Alias resolution policy and normalization algorithm"},
+      {"path": "docs/provider-canonical-id-table.json", "role": "Canonical ID to alias mapping table"},
+      {"path": "docs/provider-implementation-modes.json", "role": "Provider onboarding mode classification"},
+      {"path": "docs/provider-auth-crosswalk.json", "role": "Auth env key crosswalk across providers"},
+      {"path": "docs/provider-auth-redaction-diagnostics.json", "role": "Redaction verification diagnostics"}
+    ],
+    "provider_profiles": [
+      {"path": "docs/provider-groq-capability-profile.json", "bead": "bd-3uqg.14.1"},
+      {"path": "docs/provider-openrouter-capability-profile.json", "bead": "bd-3uqg.14.2"},
+      {"path": "docs/provider-qwen-capability-profile.json", "bead": "bd-3uqg.14.4"},
+      {"path": "docs/provider-cerebras-capability-profile.json", "bead": "bd-3uqg.14.5"},
+      {"path": "docs/provider-kimi-capability-profile.json", "bead": "bd-3uqg.14.6"}
+    ],
+    "setup_guides": [
+      {"path": "docs/provider-groq-setup.json"},
+      {"path": "docs/provider-openrouter-setup.json"},
+      {"path": "docs/provider-qwen-setup.json"},
+      {"path": "docs/provider-cerebras-setup.json"},
+      {"path": "docs/provider-kimi-setup.json"}
+    ],
+    "gate_reports": [
+      {"path": "docs/provider-gate-compiler-report.json", "role": "Compiler gate results"},
+      {"path": "docs/provider-gate-ubs-report.json", "role": "UBS scan results"},
+      {"path": "docs/provider-gate-tests-report.json", "role": "Test gate results"}
+    ]
+  },
+
+  "vcr_cassette_structure": {
+    "location": "tests/fixtures/vcr/",
+    "naming_conventions": {
+      "native": "{provider}_{scenario}.json",
+      "verification": "verify_{provider}_{scenario}.json",
+      "error": "verify_{provider}_error_{status}.json"
+    },
+    "cassette_format": {
+      "version": "1.0",
+      "test_name": "string",
+      "recorded_at": "ISO8601",
+      "interactions": [{"request": {"method": "POST", "url": "string", "headers": [], "body_text": "string"}, "response": {"status": 200, "headers": [], "body_chunks": ["string"]}}]
+    },
+    "per_provider_counts": {
+      "anthropic": 26, "openai": 17, "gemini": 16, "azure": 17,
+      "cohere": 6, "vertex": 6, "copilot": 6, "gitlab": 5, "bedrock": 4,
+      "openai_compatible_wave": "3 each (error scenarios)"
+    }
+  },
+
+  "reproducibility": {
+    "offline_replay": "All tests default to VCR_MODE=playback — no API credentials needed",
+    "deterministic_scenarios": "7 canonical scenarios replicated across all providers",
+    "timeline_validation": "Stream event sequences validated, not exact content",
+    "regression_lock": "provider_backward_lock.rs freezes request payload shapes",
+    "artifact_stability": "JSON reports enable cross-run and cross-provider diff"
+  },
+
+  "source_beads": {
+    "upstream_parity": "bd-3uqg.14.3.1 (closed)",
+    "test_matrix": "bd-3uqg.14.3.2 (closed)",
+    "log_schema": "bd-3uqg.14.3.3 (closed)",
+    "ux_discoverability": "bd-3uqg.14.3.4 (closed)",
+    "groq_audit": "bd-3uqg.14.1 (closed)",
+    "openrouter_audit": "bd-3uqg.14.2 (closed)",
+    "qwen_audit": "bd-3uqg.14.4 (closed)",
+    "cerebras_audit": "bd-3uqg.14.5 (closed)",
+    "kimi_audit": "bd-3uqg.14.6 (closed)",
+    "reconciliation_ledger": "bd-3uqg.12.1 (closed)",
+    "discrepancy_classify": "bd-3uqg.12.1.1 (closed)",
+    "remediation_followups": "bd-3uqg.12.1.2 (closed)",
+    "routing_validation": "bd-3uqg.12.1.3 (closed)"
+  },
+
+  "ux_discoverability_verification": {
+    "description": "Verify UX fixes from bd-3uqg.14.3.4 audit and subsequent remediation beads",
+    "commands": [
+      {
+        "step": "verify_alias_count",
+        "command": "grep -c 'aliases: &\\[\\]' src/provider_metadata.rs",
+        "expected": "~64 (was 78 before bd-tuh3g alias additions)"
+      },
+      {
+        "step": "verify_new_alias_resolution",
+        "command": "cargo test --lib metadata_resolves_ux_discoverability_aliases -- --quiet",
+        "expected": "1 test (14 assertions: together, grok, hf, nim, lm-studio, deep-seek, pplx, etc.)"
+      },
+      {
+        "step": "verify_model_selector_aliases",
+        "command": "cargo test --lib model_selector -- alias -- --quiet",
+        "expected": "5 alias-related tests pass (bd-1gi21)"
+      },
+      {
+        "step": "verify_provider_suggestions",
+        "command": "cargo test --lib suggest_similar_providers -- --quiet",
+        "expected": "4 tests pass (prefix, substring, gibberish, cap-at-3) (bd-1fgjj)"
+      },
+      {
+        "step": "verify_list_providers_flag",
+        "command": "grep 'list_providers' src/cli.rs | head -3",
+        "expected": "pub list_providers: bool with #[arg(long)] (bd-3gsk0)"
+      }
+    ],
+    "remediation_beads_completed": [
+      {"bead": "bd-tuh3g", "fix": "14 new aliases across 10 providers", "disc": "DISC-003"},
+      {"bead": "bd-1gi21", "fix": "Model selector searches provider aliases", "disc": "DISC-005"},
+      {"bead": "bd-1fgjj", "fix": "Provider-not-found shows suggestions", "disc": "DISC-006"},
+      {"bead": "bd-3gsk0", "fix": "--list-providers CLI command", "disc": "DISC-004"}
+    ]
+  },
+
+  "discrepancy_summary": {
+    "description": "High-level summary of all 19 classified discrepancies (details in provider-discrepancy-ledger.json)",
+    "by_severity": {"critical": 0, "high": 3, "medium": 6, "low": 8, "info": 2},
+    "by_root_cause": {"missing_implementation": 5, "alias_mismatch": 3, "test_evidence_gap": 4, "docs_mismatch": 3, "logging_schema_drift": 4},
+    "by_status": {"fixed": 5, "partially_fixed": 2, "open": 12},
+    "routing_issues": 3,
+    "routing_summary": "6 of 8 active remediation beads unnecessarily blocked by parent-track dependencies (ROUTE-001/002/003)"
+  }
+}

@@ -1,5 +1,0 @@
-supermemory
-openai
-anthropic
-httpx
-python-dotenv

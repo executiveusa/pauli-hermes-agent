@@ -1,5 +1,0 @@
-.dark img[src*="openai.svg"],
-.dark img[src*="pipecat.svg"],
-.dark img[src*="supermemory.svg"] {
-	filter: invert(1);
-}

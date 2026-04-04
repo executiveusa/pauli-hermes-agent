@@ -1,0 +1,333 @@
+{
+  "schema": "pi.dropin.sdk_contract.v1",
+  "bead_id": "bd-1it6z",
+  "version": "1.0.0",
+  "generated_at_utc": "2026-02-14T20:00:00Z",
+  "status": "normative_contract",
+  "baseline_reference": "docs/dropin-upstream-baseline.json",
+  "upstream_references": [
+    "legacy_pi_mono_code/pi-mono/packages/coding-agent/docs/sdk.md",
+    "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/sdk.ts",
+    "legacy_pi_mono_code/pi-mono/packages/coding-agent/src/core/agent-session.ts"
+  ],
+  "rust_references": [
+    "src/sdk.rs",
+    "src/lib.rs",
+    "src/agent.rs",
+    "tests/sdk_api.rs"
+  ],
+  "contract_scope": {
+    "goal": "Define required drop-in SDK behavior for non-CLI integrators and map each capability to concrete Rust API commitments and test obligations.",
+    "certification_gate": "G06-sdk-parity",
+    "parity_gap_reference": "gap-sdk-contract-shape"
+  },
+  "capabilities": [
+    {
+      "capability_id": "SDK-01-session-factory",
+      "upstream_surface": "createAgentSession(options) -> { session, extensionsResult, modelFallbackMessage? }",
+      "required_behavior": "Programmatic session creation with configurable model/tools/resources/session manager and deterministic defaults.",
+      "rust_commitment": {
+        "public_api_target": [
+          "pi::sdk::create_agent_session(...) -> Result<AgentSessionHandle>"
+        ],
+        "current_anchor": [
+          "src/sdk.rs (stable export surface)",
+          "src/agent.rs (AgentSession runtime core)"
+        ],
+        "status": "missing",
+        "owner_beads": [
+          "bd-1it6z",
+          "bd-c9usa",
+          "bd-2xhgm"
+        ]
+      },
+      "test_obligations": [
+        "Unit tests for default resolution and explicit-option overrides.",
+        "In-memory session creation smoke test with no filesystem writes.",
+        "Contract snapshot test proving returned handle fields/types are stable."
+      ]
+    },
+    {
+      "capability_id": "SDK-02-prompt-streaming-entry",
+      "upstream_surface": "session.prompt(text, options?)",
+      "required_behavior": "Prompt submission supports idle and streaming states, template expansion, and structured user content parity.",
+      "rust_commitment": {
+        "public_api_target": [
+          "AgentSessionHandle::prompt(text, options)",
+          "AgentSessionHandle::prompt_with_content(blocks, options)"
+        ],
+        "current_anchor": [
+          "src/agent.rs::run_text_with_abort",
+          "src/agent.rs::run_with_content_with_abort"
+        ],
+        "status": "partial",
+        "owner_beads": [
+          "bd-c9usa",
+          "bd-2ibww"
+        ]
+      },
+      "test_obligations": [
+        "Behavior tests for idle prompt execution and returned completion state.",
+        "Structured content/image path tests for content-block input handling.",
+        "Parity tests for prompt submission during streaming (error or queue behavior per contract)."
+      ]
+    },
+    {
+      "capability_id": "SDK-03-steer-followup-queues",
+      "upstream_surface": "session.steer(text), session.followUp(text)",
+      "required_behavior": "Steering interrupts after current tool; follow-up defers until idle, both with deterministic queue policy.",
+      "rust_commitment": {
+        "public_api_target": [
+          "AgentSessionHandle::steer(text)",
+          "AgentSessionHandle::follow_up(text)",
+          "AgentSessionHandle::set_queue_modes(steering, follow_up)"
+        ],
+        "current_anchor": [
+          "src/agent.rs::MessageQueue",
+          "src/agent.rs::Agent::queue_steering",
+          "src/agent.rs::Agent::queue_follow_up"
+        ],
+        "status": "partial",
+        "owner_beads": [
+          "bd-c9usa",
+          "bd-2ibww"
+        ]
+      },
+      "test_obligations": [
+        "Queue ordering tests for one-at-a-time vs all modes.",
+        "Streaming-turn delivery boundary tests (steer vs follow-up).",
+        "Regression test proving no message loss across rapid multi-queue injection."
+      ]
+    },
+    {
+      "capability_id": "SDK-04-event-subscription",
+      "upstream_surface": "session.subscribe(listener) -> unsubscribe",
+      "required_behavior": "Session event stream exposes agent/message/tool/turn lifecycle plus auto-compaction/retry events.",
+      "rust_commitment": {
+        "public_api_target": [
+          "AgentSessionHandle::subscribe(listener) -> SubscriptionId",
+          "AgentSessionEvent enum with stable serde shape"
+        ],
+        "current_anchor": [
+          "src/agent.rs::AgentEvent",
+          "src/rpc.rs event serialization"
+        ],
+        "status": "partial",
+        "owner_beads": [
+          "bd-2ibww",
+          "bd-2my4b",
+          "bd-15ggf"
+        ]
+      },
+      "test_obligations": [
+        "Schema compatibility tests for serialized event payloads.",
+        "Subscription lifecycle tests (subscribe/unsubscribe/re-subscribe).",
+        "Streaming delta conformance tests (message_update and tool_execution_*)."
+      ]
+    },
+    {
+      "capability_id": "SDK-05-model-thinking-controls",
+      "upstream_surface": "setModel, setThinkingLevel, cycleModel, cycleThinkingLevel",
+      "required_behavior": "Programmatic model/thinking control with capability-aware clamping and deterministic cycle behavior.",
+      "rust_commitment": {
+        "public_api_target": [
+          "AgentSessionHandle::set_model(model_ref)",
+          "AgentSessionHandle::set_thinking_level(level)",
+          "AgentSessionHandle::cycle_model(direction)",
+          "AgentSessionHandle::cycle_thinking_level()"
+        ],
+        "current_anchor": [
+          "src/agent.rs::apply_session_model_selection",
+          "src/models.rs model registry"
+        ],
+        "status": "partial",
+        "owner_beads": [
+          "bd-c9usa"
+        ]
+      },
+      "test_obligations": [
+        "Round-trip tests for model switching and stream credential refresh.",
+        "Thinking-level clamp tests for non-reasoning models.",
+        "Cycle determinism tests with scoped model subsets."
+      ]
+    },
+    {
+      "capability_id": "SDK-06-session-management",
+      "upstream_surface": "newSession, switchSession, fork, navigateTree",
+      "required_behavior": "Programmatic session lifecycle and branching semantics align with session persistence contract.",
+      "rust_commitment": {
+        "public_api_target": [
+          "AgentSessionHandle::new_session(opts)",
+          "AgentSessionHandle::switch_session(path)",
+          "AgentSessionHandle::fork(entry_id)",
+          "AgentSessionHandle::navigate_tree(target_id, opts)"
+        ],
+        "current_anchor": [
+          "src/session.rs",
+          "src/session_index.rs",
+          "src/interactive/tree.rs"
+        ],
+        "status": "missing",
+        "owner_beads": [
+          "bd-c9usa",
+          "bd-3fbzn"
+        ]
+      },
+      "test_obligations": [
+        "Branch/fork behavior parity tests across persisted sessions.",
+        "Switch-session correctness tests with model restoration.",
+        "Tree-navigation summary/label behavior tests where supported."
+      ]
+    },
+    {
+      "capability_id": "SDK-07-compaction-retry-abort",
+      "upstream_surface": "compact, abortCompaction, abort",
+      "required_behavior": "Consumers can trigger compaction and abort active operations with deterministic lifecycle events.",
+      "rust_commitment": {
+        "public_api_target": [
+          "AgentSessionHandle::compact(custom_instructions)",
+          "AgentSessionHandle::abort()",
+          "AgentSessionHandle::abort_compaction()"
+        ],
+        "current_anchor": [
+          "src/agent.rs::maybe_compact",
+          "src/agent.rs::AbortHandle/AbortSignal",
+          "src/compaction/*"
+        ],
+        "status": "partial",
+        "owner_beads": [
+          "bd-c9usa",
+          "bd-b4s4l"
+        ]
+      },
+      "test_obligations": [
+        "Compaction result-shape tests and persistence assertions.",
+        "Abort behavior tests for prompt/tool/compaction contexts.",
+        "Auto-compaction/retry event emission tests under JSON and SDK subscriptions."
+      ]
+    },
+    {
+      "capability_id": "SDK-08-tools-and-hooks",
+      "upstream_surface": "tools/customTools + extension hook interactions",
+      "required_behavior": "SDK consumers can configure built-in/custom tool surfaces and receive tool lifecycle hooks consistently.",
+      "rust_commitment": {
+        "public_api_target": [
+          "create_agent_session(options{tools, custom_tools, extension_policy})",
+          "AgentSessionHandle::set_active_tools(names)",
+          "Tool hook callbacks in streaming events"
+        ],
+        "current_anchor": [
+          "src/sdk.rs Tool/ToolRegistry exports",
+          "src/agent.rs::enable_extensions_with_policy",
+          "src/tools.rs"
+        ],
+        "status": "partial",
+        "owner_beads": [
+          "bd-2ibww",
+          "bd-1q70e"
+        ]
+      },
+      "test_obligations": [
+        "Custom tool registration and invocation tests via SDK entrypoint.",
+        "Tool enable/disable contract tests (default set and scoped sets).",
+        "Extension-policy interaction tests for tool call approval and denial paths."
+      ]
+    },
+    {
+      "capability_id": "SDK-09-transport-adapters",
+      "upstream_surface": "in-process session + rpc-client bridge",
+      "required_behavior": "SDK supports both in-process embedding and subprocess/RPC bridge for host integration choices.",
+      "rust_commitment": {
+        "public_api_target": [
+          "SdkTransport::InProcess",
+          "SdkTransport::RpcSubprocess",
+          "create_agent_session_with_transport(transport, opts)"
+        ],
+        "current_anchor": [
+          "src/rpc.rs",
+          "src/main.rs --mode rpc",
+          "src/agent.rs runtime core"
+        ],
+        "status": "missing",
+        "owner_beads": [
+          "bd-3fbzn",
+          "bd-2xhgm"
+        ]
+      },
+      "test_obligations": [
+        "Parity tests asserting equivalent semantics across in-process and RPC transports.",
+        "Transport failover/error-path tests with deterministic envelopes.",
+        "Cross-process integration tests for lifecycle, queueing, and event streaming."
+      ]
+    },
+    {
+      "capability_id": "SDK-10-contract-stability",
+      "upstream_surface": "stable documented SDK namespace",
+      "required_behavior": "Public SDK-facing exports are curated and versioned; unstable internals stay out of contract.",
+      "rust_commitment": {
+        "public_api_target": [
+          "pi::sdk module as stable namespace",
+          "Semver-governed compatibility for exported SDK symbols"
+        ],
+        "current_anchor": [
+          "src/sdk.rs",
+          "src/lib.rs",
+          "tests/sdk_api.rs"
+        ],
+        "status": "implemented_baseline",
+        "owner_beads": [
+          "bd-2km0n",
+          "bd-1it6z"
+        ]
+      },
+      "test_obligations": [
+        "Compile-time public-export smoke tests.",
+        "Trait and serde roundtrip tests for core exported message/event types.",
+        "API-diff guard to prevent accidental unstable export leakage."
+      ]
+    }
+  ],
+  "implementation_sequence": [
+    {
+      "phase": 1,
+      "focus": "Finalize SDK session factory and lifecycle primitives",
+      "target_beads": [
+        "bd-c9usa",
+        "bd-2xhgm"
+      ]
+    },
+    {
+      "phase": 2,
+      "focus": "Streaming callbacks/tool hooks and extension interactions",
+      "target_beads": [
+        "bd-2ibww",
+        "bd-1q70e"
+      ]
+    },
+    {
+      "phase": 3,
+      "focus": "Transport adapters and cross-process parity",
+      "target_beads": [
+        "bd-3fbzn"
+      ]
+    },
+    {
+      "phase": 4,
+      "focus": "Conformance evidence and release-readiness",
+      "target_beads": [
+        "bd-3ig1e",
+        "bd-2omnf",
+        "bd-28zrk"
+      ]
+    }
+  ],
+  "acceptance_mapping": {
+    "bd_1it6z_acceptance": "Contract document maps each required SDK capability to concrete rust API commitments and test obligations.",
+    "satisfaction": {
+      "capability_count": 10,
+      "commitment_mapping_present": true,
+      "test_obligations_present": true,
+      "owner_bead_mapping_present": true
+    }
+  }
+}
