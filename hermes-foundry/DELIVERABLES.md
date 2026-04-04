@@ -1,0 +1,17 @@
+# Hermes Foundry — Phase 2 Required Output
+
+1. Gap analysis — `docs/system-overview.md` + this checklist (Added)
+2. Existing modules kept — Rust workspace scaffold kept, Python bridge kept (Kept)
+3. Modules added/normalized — onboarding, tenant config, billing usage snapshots, admin/support endpoints, policy files (Added)
+4. Updated crate tree — `Cargo.toml` workspace + crates/* (Kept existing implementation)
+5. New migrations — `migrations/002_productization.sql` (Added)
+6. New policy services/files — `policies/*.json` + `foundry-policy` loader (Added)
+7. Billing + usage implementation — `foundry-billing` + `/v1/usage/:id` (Added)
+8. Observability implementation — `/metrics`, `/events`, run timeline fields (Added)
+9. Support/admin implementation — `/admin/...`, pause tenant, force close run, readonly impersonation (Added)
+10. Onboarding implementation — `/onboarding/tenant` + checklist + missing setup projection (Added)
+11. White-label/branding implementation — `BrandingConfig` + tenant config (Added)
+12. Deployment safety implementation — `/deployment-manifest.json`, `/openapi.json`, smoke hooks (Added)
+13. Testing/evals additions — smoke script enhanced and unit test scaffolds in crates (Added)
+14. Documentation additions — `docs/*` guides and runbooks (Added)
+15. Startup checks + operational checklist — `docs/operator-quickstart.md`, setup/backup guides (Added)

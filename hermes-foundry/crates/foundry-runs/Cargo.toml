@@ -1,0 +1,11 @@
+[package]
+name = "foundry-runs"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+chrono.workspace = true
+foundry-core = { path = "../foundry-core" }
+foundry-billing = { path = "../foundry-billing" }
+serde.workspace = true
+serde_json.workspace = true
