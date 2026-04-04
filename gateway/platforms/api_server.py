@@ -1367,12 +1367,190 @@ class APIServerAdapter(BasePlatformAdapter):
         return web.json_response({"error": "bead not found"}, status=404)
 
     async def _handle_list_agents(self, request: "web.Request") -> "web.Response":
-        """GET /v1/agents — List registered agents."""
-        agents = getattr(self, "_registered_agents", [
-            {"name": "hermes", "endpoint": f"http://{self._host}:{self._port}", "type": "hermes", "status": "online"},
-            {"name": "agent-zero", "endpoint": "http://localhost:8643", "type": "zero", "status": "offline"},
+        """GET /v1/agents — List registered agents from agents/registry.yaml."""
+        import yaml as _yaml
+        from pathlib import Path as _Path
+        registry_path = _Path(__file__).parent.parent.parent / "agents" / "registry.yaml"
+        agents = []
+        if registry_path.is_file():
+            try:
+                data = _yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+                agents = data.get("agents", [])
+                # Mark hermes as online since we're serving
+                for a in agents:
+                    if a.get("name") == "hermes":
+                        a["status"] = "online"
+                        a["endpoint"] = f"http://{self._host}:{self._port}"
+            except Exception:
+                pass
+        if not agents:
+            agents = [
+                {"name": "hermes", "display_name": "Hermes", "endpoint": f"http://{self._host}:{self._port}", "type": "hermes", "status": "online", "role": "Business orchestrator", "capabilities": ["coding", "research", "deployment"]},
+                {"name": "agent-zero", "display_name": "Agent Zero", "endpoint": "http://localhost:8643", "type": "zero", "status": "offline", "role": "Personal assistant", "capabilities": ["personal_memory"]},
+            ]
+        return web.json_response({"object": "list", "agents": agents})
+
+    async def _handle_list_tasks(self, request: "web.Request") -> "web.Response":
+        """GET /v1/tasks — List tasks (from beads log, filtered to actionable items)."""
+        tasks = []
+        for b in getattr(self, "_beads_log", []):
+            if b.get("type") in ("action", "milestone") or b.get("status") in ("open", "in_progress"):
+                tasks.append({
+                    "id": b.get("id", ""),
+                    "title": b.get("title", ""),
+                    "status": b.get("status", "open"),
+                    "agent": b.get("agent", ""),
+                    "created_at": b.get("created_at", ""),
+                })
+        return web.json_response({"object": "list", "tasks": tasks})
+
+    async def _handle_search_memories(self, request: "web.Request") -> "web.Response":
+        """GET /v1/memories — Search Open Brain memories via Supabase REST."""
+        query = request.query.get("query", "")
+        limit = min(int(request.query.get("limit", "20")), 50)
+        supa_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
+        supa_key = os.environ.get("SUPABASE_KEY", "")
+        if not supa_url or not supa_key:
+            return web.json_response({"memories": [], "error": "SUPABASE_URL/KEY not configured"})
+        params = {
+            "select": "id,title,content,collection,tags,created_at",
+            "order": "created_at.desc",
+            "limit": str(limit),
+        }
+        if query:
+            params["or"] = f"(title.ilike.*{query}*,content.ilike.*{query}*)"
+        headers = {"apikey": supa_key, "Authorization": f"Bearer {supa_key}"}
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{supa_url}/rest/v1/memories", headers=headers, params=params, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                    data = await resp.json()
+                    return web.json_response({"memories": data if isinstance(data, list) else []})
+        except Exception as e:
+            return web.json_response({"memories": [], "error": str(e)})
+
+    async def _handle_create_memory(self, request: "web.Request") -> "web.Response":
+        """POST /v1/memories — Store a new memory in Open Brain."""
+        body = await request.json()
+        supa_url = os.environ.get("SUPABASE_URL", "").rstrip("/")
+        supa_key = os.environ.get("SUPABASE_KEY", "")
+        if not supa_url or not supa_key:
+            return web.json_response({"error": "SUPABASE_URL/KEY not configured"}, status=500)
+        payload = {
+            "content": body.get("content", ""),
+            "title": body.get("title", body.get("content", "")[:80]),
+            "collection": body.get("collection", "general"),
+            "tags": body.get("tags", []),
+            "links": body.get("links", []),
+        }
+        headers = {"apikey": supa_key, "Authorization": f"Bearer {supa_key}", "Content-Type": "application/json", "Prefer": "return=representation"}
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(f"{supa_url}/rest/v1/memories", headers=headers, json=payload, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                    data = await resp.json()
+                    return web.json_response({"success": True, "memory": data[0] if isinstance(data, list) and data else data})
+        except Exception as e:
+            return web.json_response({"success": False, "error": str(e)}, status=500)
+
+    async def _handle_list_deploys(self, request: "web.Request") -> "web.Response":
+        """GET /v1/deploys — List known deployments (static + dynamic)."""
+        deploys = getattr(self, "_deploys_log", [
+            {"name": "pauli-hermes-agent.vercel.app", "environment": "production", "status": "ready", "platform": "vercel", "created_at": ""},
+            {"name": f"VPS {self._host}:{self._port}", "environment": "vps", "status": "ready", "platform": "docker", "created_at": ""},
         ])
-        return web.json_response({"object": "list", "data": agents})
+        return web.json_response({"object": "list", "deploys": deploys})
+
+    async def _handle_fetch_secret(self, request: "web.Request") -> "web.Response":
+        """GET /v1/secrets/{secret_path} — Fetch a secret from Infisical."""
+        try:
+            from tools.infisical_tool import fetch_secret
+            from model_tools import handle_function_call
+        except ImportError:
+            return web.json_response(
+                {"success": False, "error": "Infisical tool not available"}
+                , status=503
+            )
+
+        secret_path = request.match_info.get("secret_path", "")
+        environment = request.rel_url.query.get("environment", "production")
+
+        if not secret_path:
+            return web.json_response(
+                {"success": False, "error": "Missing secret_path parameter"},
+                status=400
+            )
+
+        try:
+            # Call the tool through the registry
+            result_json = handle_function_call(
+                "fetch_secret",
+                {"secret_path": secret_path, "environment": environment},
+                task_id=None
+            )
+            result = json.loads(result_json)
+            
+            if result.get("success"):
+                return web.json_response(result)
+            else:
+                status_code = result.get("code", 500)
+                return web.json_response(result, status=status_code)
+
+        except Exception as e:
+            return web.json_response(
+                {"success": False, "error": f"Error fetching secret: {str(e)[:100]}"},
+                status=500
+            )
+
+    async def _handle_cache_status(self, request: "web.Request") -> "web.Response":
+        """GET /v1/cache-status — Get Infisical cache status and TTL info."""
+        try:
+            from tools.infisical_tool import get_cache_status
+            from model_tools import handle_function_call
+        except ImportError:
+            return web.json_response(
+                {"success": False, "error": "Infisical tool not available"},
+                status=503
+            )
+
+        try:
+            result_json = handle_function_call(
+                "get_cache_status",
+                {},
+                task_id=None
+            )
+            result = json.loads(result_json)
+            return web.json_response(result)
+
+        except Exception as e:
+            return web.json_response(
+                {"success": False, "error": f"Error getting cache status: {str(e)[:100]}"},
+                status=500
+            )
+
+    async def _handle_rotate_secrets(self, request: "web.Request") -> "web.Response":
+        """POST /v1/rotate-secrets — Clear local cache and force fresh fetches."""
+        try:
+            from tools.infisical_tool import rotate_secrets
+            from model_tools import handle_function_call
+        except ImportError:
+            return web.json_response(
+                {"success": False, "error": "Infisical tool not available"},
+                status=503
+            )
+
+        try:
+            result_json = handle_function_call(
+                "rotate_secrets",
+                {},
+                task_id=None
+            )
+            result = json.loads(result_json)
+            return web.json_response(result)
+
+        except Exception as e:
+            return web.json_response(
+                {"success": False, "error": f"Error rotating secrets: {str(e)[:100]}"},
+                status=500
+            )
 
     # ------------------------------------------------------------------
     # BasePlatformAdapter interface
@@ -1416,6 +1594,14 @@ class APIServerAdapter(BasePlatformAdapter):
             self._app.router.add_post("/v1/beads", self._handle_beads_create)
             self._app.router.add_patch("/v1/beads/{bead_id}", self._handle_beads_update)
             self._app.router.add_get("/v1/agents", self._handle_list_agents)
+            self._app.router.add_get("/v1/tasks", self._handle_list_tasks)
+            self._app.router.add_get("/v1/memories", self._handle_search_memories)
+            self._app.router.add_post("/v1/memories", self._handle_create_memory)
+            self._app.router.add_get("/v1/deploys", self._handle_list_deploys)
+            # Infisical secrets management API
+            self._app.router.add_get("/v1/secrets/{secret_path}", self._handle_fetch_secret)
+            self._app.router.add_get("/v1/cache-status", self._handle_cache_status)
+            self._app.router.add_post("/v1/rotate-secrets", self._handle_rotate_secrets)
 
             self._runner = web.AppRunner(self._app)
             await self._runner.setup()

@@ -32,6 +32,10 @@ services:
       - API_SERVER_CORS_ORIGINS=${DASHBOARD_ORIGIN:-http://31.220.58.212:9000}
       # Agent working directory inside container
       - MESSAGING_CWD=/workspace
+      # Supabase (Open Brain)
+      - SUPABASE_URL=${SUPABASE_URL:-http://31.220.58.212:8001}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY:-}
     volumes:
       # Persist Hermes config & session data
       - hermes_home:/home/hermes/.hermes
