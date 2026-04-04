@@ -211,6 +211,51 @@
     .empty h3{font-size:12px;font-weight:500;color:var(--text-secondary);margin-bottom:3px}
     .empty p{font-size:11px}
 
+    /* Agent Grid */
+    .agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;padding:14px}
+    .agent-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px;transition:border-color .15s}
+    .agent-card:hover{border-color:var(--border-hi)}
+    .agent-card .ac-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .agent-card .ac-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .agent-card .ac-dot.online{background:var(--green);box-shadow:0 0 4px var(--green)}
+    .agent-card .ac-dot.offline{background:var(--text-dim)}
+    .agent-card .ac-dot.planned{background:var(--accent)}
+    .agent-card .ac-name{font-size:13px;font-weight:600}
+    .agent-card .ac-role{font-size:11px;color:var(--text-secondary);line-height:1.4}
+    .agent-card .ac-caps{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+    .agent-card .ac-cap{font-size:9px;padding:1px 5px;border-radius:8px;background:var(--blue-lo);color:var(--blue);border:1px solid rgba(96,165,250,.15)}
+
+    /* Task list */
+    .task-list{padding:8px 14px;display:flex;flex-direction:column;gap:6px}
+    .task-card{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);font-size:12px}
+    .task-card .tc-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .task-card .tc-status.open{background:var(--blue)}
+    .task-card .tc-status.in_progress{background:var(--accent);box-shadow:0 0 4px var(--accent)}
+    .task-card .tc-status.resolved,.task-card .tc-status.closed{background:var(--green)}
+    .task-card .tc-title{flex:1;color:var(--text)}
+    .task-card .tc-agent{font-size:10px;color:var(--text-dim)}
+    .task-card .tc-time{font-size:10px;color:var(--text-dim)}
+
+    /* Brain / Memory list */
+    .brain-list{padding:8px 14px;display:flex;flex-direction:column;gap:6px}
+    .brain-card{padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md)}
+    .brain-card .bc-title{font-size:12px;font-weight:600;margin-bottom:3px}
+    .brain-card .bc-content{font-size:11px;color:var(--text-secondary);line-height:1.5;max-height:60px;overflow:hidden}
+    .brain-card .bc-meta{display:flex;gap:8px;margin-top:5px;font-size:9px;color:var(--text-dim)}
+    .brain-card .bc-tag{font-size:9px;padding:1px 4px;border-radius:6px;background:var(--accent-lo);color:var(--accent)}
+
+    /* Deploy list */
+    .deploy-list{padding:8px 14px;display:flex;flex-direction:column;gap:6px}
+    .deploy-card{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);font-size:12px}
+    .deploy-card .dc-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .deploy-card .dc-status.ready{background:var(--green)}
+    .deploy-card .dc-status.building{background:var(--accent);animation:pulse 1.5s infinite}
+    .deploy-card .dc-status.error{background:var(--red)}
+    .deploy-card .dc-name{flex:1;font-weight:500}
+    .deploy-card .dc-env{font-size:10px;padding:1px 5px;border-radius:6px;background:var(--green-lo);color:var(--green)}
+    .deploy-card .dc-time{font-size:10px;color:var(--text-dim)}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
     /* Toast */
     .toast{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:5px 12px;font-size:11px;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
     .toast.show{opacity:1}.toast.err{border-color:var(--red);color:var(--red)}
@@ -273,6 +318,7 @@
       <div class="sb-label">Agent</div>
       <ul class="sb-nav">
         <li><button class="sb-item active" data-panel="chat"><span class="icon">&#9889;</span>Chat</button></li>
+        <li><button class="sb-item" data-panel="agents"><span class="icon">&#129302;</span>Agents<span class="badge" id="agentCount">-</span></button></li>
         <li><button class="sb-item" data-panel="skills"><span class="icon">&#10024;</span>Skills<span class="badge" id="skillCount">-</span></button></li>
         <li><button class="sb-item" data-panel="tools"><span class="icon">&#9881;</span>Tools<span class="badge" id="toolCount">-</span></button></li>
       </ul>
@@ -280,15 +326,18 @@
     <div class="sb-section">
       <div class="sb-label">Workspace</div>
       <ul class="sb-nav">
+        <li><button class="sb-item" data-panel="tasks"><span class="icon">&#9745;</span>Tasks</button></li>
         <li><button class="sb-item" data-panel="repos"><span class="icon">&#128193;</span>Repos<span class="badge" id="repoCount">-</span></button></li>
         <li><button class="sb-item" data-panel="procs"><span class="icon">&#9654;</span>Processes<span class="badge" id="procCount">-</span></button></li>
         <li><button class="sb-item" data-panel="sessions"><span class="icon">&#128340;</span>Sessions</button></li>
+        <li><button class="sb-item" data-panel="brain"><span class="icon">&#129504;</span>Memory</button></li>
       </ul>
     </div>
     <div class="sb-section">
       <div class="sb-label">System</div>
       <ul class="sb-nav">
         <li><button class="sb-item" data-panel="health"><span class="icon">&#128154;</span>Health</button></li>
+        <li><button class="sb-item" data-panel="deploys"><span class="icon">&#128640;</span>Deploys</button></li>
         <li><button class="sb-item" data-panel="crons"><span class="icon">&#128338;</span>Cron Jobs</button></li>
         <li><button class="sb-item" data-panel="beads"><span class="icon">&#128279;</span>Beads Log</button></li>
       </ul>
@@ -400,6 +449,38 @@
       <div class="panel-body">
         <div class="proc-list" id="beadsList"><div class="empty"><h3>No beads tracked yet</h3><p>Agent actions and errors will appear here</p></div></div>
       </div>
+    </div>
+
+    <!-- Agents -->
+    <div class="panel" id="p-agents">
+      <div class="panel-header"><span class="panel-title">Agent Grid</span><button class="h-btn" id="agentRefresh" title="Refresh"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button></div>
+      <div class="panel-body"><div class="agent-grid" id="agentGrid"><div class="empty"><h3>Loading agents...</h3></div></div></div>
+    </div>
+
+    <!-- Tasks -->
+    <div class="panel" id="p-tasks">
+      <div class="panel-header">
+        <span class="panel-title">Tasks</span>
+        <button class="h-btn" id="taskRefresh" title="Refresh"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
+      </div>
+      <div class="panel-body"><div class="task-list" id="taskList"><div class="empty"><h3>Loading tasks...</h3></div></div></div>
+    </div>
+
+    <!-- Memory (Open Brain) -->
+    <div class="panel" id="p-brain">
+      <div class="panel-header">
+        <span class="panel-title">Open Brain — Memory</span>
+      </div>
+      <div class="brain-search" style="padding:10px 14px;border-bottom:1px solid var(--border)">
+        <input class="sf-input" type="text" id="brainQuery" placeholder="Search memories..." style="width:100%">
+      </div>
+      <div class="panel-body"><div class="brain-list" id="brainList"><div class="empty"><h3>Search your Open Brain</h3><p>Enter a query to search stored memories</p></div></div></div>
+    </div>
+
+    <!-- Deploys -->
+    <div class="panel" id="p-deploys">
+      <div class="panel-header"><span class="panel-title">Deployments</span><button class="h-btn" id="deployRefresh" title="Refresh"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button></div>
+      <div class="panel-body"><div class="deploy-list" id="deployList"><div class="empty"><h3>Loading deployments...</h3></div></div></div>
     </div>
 
     <!-- Settings -->
@@ -628,6 +709,10 @@ function switchPanel(name){
   if(name==='health')loadHealthDashboard();
   if(name==='crons')loadCronJobs();
   if(name==='beads'){renderBeads();loadServerBeads()}
+  if(name==='agents')loadAgents();
+  if(name==='tasks')loadTasks();
+  if(name==='brain')loadBrain();
+  if(name==='deploys')loadDeploys();
   sidebar.classList.remove('open');
 }
 var sbItems=document.querySelectorAll('.sb-item[data-panel]');
@@ -1124,6 +1209,114 @@ document.addEventListener('keydown',function(e){
   if(e.key==='k'&&(e.ctrlKey||e.metaKey)){e.preventDefault();openCmd()}
   if(e.key==='Escape'&&cmdBackdrop.classList.contains('open'))closeCmd();
 });
+
+// -- Agents Panel --
+function loadAgents(){
+  var grid=$('agentGrid');
+  var url=cfg.apiUrl;
+  if(!url){grid.innerHTML='<div class="empty"><h3>Set API URL in Settings</h3></div>';return}
+  fetch(url+'/v1/agents',{headers:{'Authorization':'Bearer '+cfg.apiKey}})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      var agents=d.agents||d.data||d||[];
+      if(!agents.length){grid.innerHTML='<div class="empty"><h3>No agents registered</h3></div>';return}
+      var ac=$('agentCount');if(ac)ac.textContent=agents.length;
+      grid.innerHTML='';
+      for(var i=0;i<agents.length;i++){
+        var a=agents[i];
+        var card=document.createElement('div');card.className='agent-card';
+        var status=a.status||'offline';
+        var caps=(a.capabilities||[]).slice(0,5);
+        var capsHtml='';for(var j=0;j<caps.length;j++)capsHtml+='<span class="ac-cap">'+escHtml(caps[j])+'</span>';
+        card.innerHTML='<div class="ac-header"><span class="ac-dot '+status+'"></span><span class="ac-name">'+escHtml(a.display_name||a.name)+'</span></div>'
+          +'<div class="ac-role">'+escHtml(a.role||'')+'</div>'
+          +'<div class="ac-caps">'+capsHtml+'</div>';
+        grid.appendChild(card);
+      }
+    }).catch(function(e){grid.innerHTML='<div class="empty"><h3>Failed to load agents</h3><p>'+escHtml(e.message)+'</p></div>'});
+}
+$('agentRefresh').addEventListener('click',loadAgents);
+
+// -- Tasks Panel --
+function loadTasks(){
+  var list=$('taskList');
+  var url=cfg.apiUrl;
+  if(!url){list.innerHTML='<div class="empty"><h3>Set API URL in Settings</h3></div>';return}
+  fetch(url+'/v1/tasks',{headers:{'Authorization':'Bearer '+cfg.apiKey}})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      var tasks=d.tasks||d.data||d||[];
+      if(!tasks.length){list.innerHTML='<div class="empty"><h3>No tasks yet</h3><p>Tasks are created via beads or the agent</p></div>';return}
+      list.innerHTML='';
+      for(var i=0;i<tasks.length;i++){
+        var t=tasks[i];
+        var card=document.createElement('div');card.className='task-card';
+        var st=t.status||'open';
+        var time=t.created_at?new Date(t.created_at).toLocaleDateString():'';
+        card.innerHTML='<span class="tc-status '+st.replace(/ /g,'_')+'"></span>'
+          +'<span class="tc-title">'+escHtml(t.title||'Untitled')+'</span>'
+          +'<span class="tc-agent">'+escHtml(t.agent||'')+'</span>'
+          +'<span class="tc-time">'+time+'</span>';
+        list.appendChild(card);
+      }
+    }).catch(function(e){list.innerHTML='<div class="empty"><h3>Failed to load tasks</h3><p>'+escHtml(e.message)+'</p></div>'});
+}
+$('taskRefresh').addEventListener('click',loadTasks);
+
+// -- Brain/Memory Panel --
+function loadBrain(query){
+  var list=$('brainList');
+  var q=query||$('brainQuery').value||'';
+  if(!q){list.innerHTML='<div class="empty"><h3>Search your Open Brain</h3><p>Enter a query to search stored memories</p></div>';return}
+  var url=cfg.apiUrl;
+  if(!url){list.innerHTML='<div class="empty"><h3>Set API URL in Settings</h3></div>';return}
+  list.innerHTML='<div class="empty"><h3>Searching...</h3></div>';
+  fetch(url+'/v1/memories?query='+encodeURIComponent(q)+'&limit=20',{headers:{'Authorization':'Bearer '+cfg.apiKey}})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      var mems=d.memories||d.data||d||[];
+      if(!mems.length){list.innerHTML='<div class="empty"><h3>No memories found</h3><p>Try a different search term</p></div>';return}
+      list.innerHTML='';
+      for(var i=0;i<mems.length;i++){
+        var m=mems[i];
+        var card=document.createElement('div');card.className='brain-card';
+        var tags=(m.tags||[]);
+        var tagsHtml='';for(var j=0;j<tags.length;j++)tagsHtml+='<span class="bc-tag">'+escHtml(tags[j])+'</span>';
+        var date=m.created_at?new Date(m.created_at).toLocaleDateString():'';
+        card.innerHTML='<div class="bc-title">'+escHtml(m.title||'Untitled')+'</div>'
+          +'<div class="bc-content">'+escHtml((m.content||'').substring(0,200))+'</div>'
+          +'<div class="bc-meta"><span>'+escHtml(m.collection||'general')+'</span><span>'+date+'</span>'+tagsHtml+'</div>';
+        list.appendChild(card);
+      }
+    }).catch(function(e){list.innerHTML='<div class="empty"><h3>Failed to search</h3><p>'+escHtml(e.message)+'</p></div>'});
+}
+$('brainQuery').addEventListener('keydown',function(e){if(e.key==='Enter')loadBrain()});
+
+// -- Deploys Panel --
+function loadDeploys(){
+  var list=$('deployList');
+  var url=cfg.apiUrl;
+  if(!url){list.innerHTML='<div class="empty"><h3>Set API URL in Settings</h3></div>';return}
+  fetch(url+'/v1/deploys',{headers:{'Authorization':'Bearer '+cfg.apiKey}})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      var deploys=d.deploys||d.data||d||[];
+      if(!deploys.length){list.innerHTML='<div class="empty"><h3>No deployments recorded</h3></div>';return}
+      list.innerHTML='';
+      for(var i=0;i<deploys.length;i++){
+        var dp=deploys[i];
+        var card=document.createElement('div');card.className='deploy-card';
+        var st=dp.status||'ready';
+        var time=dp.created_at?new Date(dp.created_at).toLocaleString():'';
+        card.innerHTML='<span class="dc-status '+st+'"></span>'
+          +'<span class="dc-name">'+escHtml(dp.name||dp.url||'Deploy')+'</span>'
+          +'<span class="dc-env">'+escHtml(dp.environment||'production')+'</span>'
+          +'<span class="dc-time">'+time+'</span>';
+        list.appendChild(card);
+      }
+    }).catch(function(e){list.innerHTML='<div class="empty"><h3>Failed to load deploys</h3><p>'+escHtml(e.message)+'</p></div>'});
+}
+$('deployRefresh').addEventListener('click',loadDeploys);
 
 // -- Init --
 checkHealth();
