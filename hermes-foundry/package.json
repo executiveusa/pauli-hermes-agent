@@ -1,0 +1,25 @@
+{
+  "name": "hermes-foundry",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hermes Foundry — enterprise-grade agent OS desktop app",
+  "scripts": {
+    "dev":          "pnpm -F desktop dev",
+    "build":        "pnpm -F desktop build",
+    "build:tauri":  "pnpm -F desktop tauri build",
+    "preview":      "pnpm -F desktop preview",
+    "typecheck":    "pnpm -F desktop typecheck",
+    "lint":         "pnpm -F desktop lint",
+    "clean":        "pnpm -r exec -- rm -rf node_modules dist .turbo",
+    "setup":        "bash scripts/setup.sh",
+    "install-models": "bash scripts/install-models.sh"
+  },
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

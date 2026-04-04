@@ -1,0 +1,63 @@
+[package]
+name        = "hermes-desktop"
+version     = { workspace = true }
+edition     = { workspace = true }
+authors     = { workspace = true }
+license     = { workspace = true }
+description = "Hermes Foundry — Tauri desktop app Rust backend"
+
+[lib]
+name = "hermes_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "hermes-desktop"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { workspace = true }
+
+[dependencies]
+tauri                      = { workspace = true }
+tauri-plugin-shell         = { workspace = true }
+tauri-plugin-fs            = { workspace = true }
+tauri-plugin-dialog        = { workspace = true }
+tauri-plugin-notification  = { workspace = true }
+tauri-plugin-store         = { workspace = true }
+tauri-plugin-window-state  = { workspace = true }
+tauri-plugin-http          = { workspace = true }
+tauri-plugin-process       = { workspace = true }
+tauri-plugin-updater       = { workspace = true }
+
+tokio        = { workspace = true }
+tokio-stream = { workspace = true }
+futures      = { workspace = true }
+reqwest      = { workspace = true }
+serde        = { workspace = true }
+serde_json   = { workspace = true }
+anyhow       = { workspace = true }
+thiserror    = { workspace = true }
+tracing      = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid         = { workspace = true }
+chrono       = { workspace = true }
+ring         = { workspace = true }
+base64       = { workspace = true }
+zeroize      = { workspace = true }
+keyring      = { workspace = true }
+aes-gcm      = { workspace = true }
+argon2       = { workspace = true }
+rand         = { workspace = true }
+dirs         = { workspace = true }
+url          = { workspace = true }
+regex        = { workspace = true }
+
+hermes-types = { workspace = true }
+hermes-core  = { workspace = true }
+hermes-voice = { workspace = true }
+hermes-media = { workspace = true }
+hermes-llm   = { workspace = true }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

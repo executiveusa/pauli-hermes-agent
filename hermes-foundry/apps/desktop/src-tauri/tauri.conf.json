@@ -1,0 +1,124 @@
+{
+  "$schema": "https://schema.tauri.app/config/2.json",
+  "productName": "Hermes",
+  "version": "0.1.0",
+  "identifier": "ai.hermesagent.hermes",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Hermes",
+        "width": 1280,
+        "height": 860,
+        "minWidth": 960,
+        "minHeight": 640,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "decorations": true,
+        "transparent": false,
+        "visible": false
+      }
+    ],
+    "security": {
+      "csp": null,
+      "dangerousDisableAssetCspModification": false
+    },
+    "trayIcon": {
+      "iconPath": "icons/tray-icon.png",
+      "iconAsTemplate": true,
+      "menuOnLeftClick": false,
+      "title": "Hermes"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "externalBin": [
+      "binaries/whisper-server",
+      "binaries/llama-server",
+      "binaries/ffmpeg",
+      "binaries/hermes-api"
+    ],
+    "resources": {
+      "../../branding.json": "branding.json",
+      "../../vendor/atomic-llama-cpp-turboquant/models/.gitkeep": "models/.gitkeep"
+    },
+    "windows": {
+      "wix": {
+        "language": "en-US"
+      },
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "sidebarImage": "icons/installer-sidebar.bmp",
+        "displayLanguageSelector": false
+      }
+    },
+    "macOS": {
+      "entitlements": "entitlements.mac.plist",
+      "exceptionDomain": "127.0.0.1",
+      "minimumSystemVersion": "12.0",
+      "signingIdentity": null
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0", "libayatana-appindicator3-1"]
+      }
+    },
+    "updater": {
+      "active": true,
+      "dialog": true,
+      "windows": {
+        "installerArgs": [],
+        "installMode": "passive"
+      }
+    }
+  },
+  "plugins": {
+    "shell": {
+      "open": true,
+      "sidecar": true,
+      "scope": [
+        {
+          "name": "binaries/whisper-server",
+          "sidecar": true
+        },
+        {
+          "name": "binaries/llama-server",
+          "sidecar": true
+        },
+        {
+          "name": "binaries/ffmpeg",
+          "sidecar": false,
+          "args": true
+        },
+        {
+          "name": "binaries/hermes-api",
+          "sidecar": true
+        }
+      ]
+    },
+    "fs": {
+      "scope": {
+        "allow": ["$APPDATA/**", "$APPCONFIG/**", "$RESOURCE/**", "$HOME/.hermes/**"]
+      }
+    },
+    "updater": {
+      "pubkey": "",
+      "endpoints": ["https://updates.hermesagent.ai/{{target}}/{{arch}}/{{current_version}}"]
+    }
+  }
+}

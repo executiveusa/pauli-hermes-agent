@@ -1,0 +1,15 @@
+[package]
+name = "hermes-voice"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+hermes-types = { workspace = true }
+tokio        = { workspace = true }
+reqwest      = { workspace = true, features = ["multipart"] }
+anyhow       = { workspace = true }
+thiserror    = { workspace = true }
+tracing      = { workspace = true }
+serde        = { workspace = true }
+serde_json   = { workspace = true }

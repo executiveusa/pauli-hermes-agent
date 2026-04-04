@@ -1,0 +1,40 @@
+{
+  "app_name":         "Hermes",
+  "app_id":           "ai.hermesagent.hermes",
+  "app_version":      "0.1.0",
+  "window_title":     "Hermes — Agent OS",
+  "tray_tooltip":     "Hermes is running",
+  "support_url":      "https://hermesagent.ai/support",
+  "docs_url":         "https://docs.hermesagent.ai",
+  "marketing_tagline": "Your autonomous agent operating system",
+  "colors": {
+    "background":     "#0a0a0a",
+    "surface":        "#111111",
+    "surface_raised": "#161616",
+    "border":         "#222222",
+    "border_focus":   "#444444",
+    "text_primary":   "#f0f0f0",
+    "text_secondary": "#888888",
+    "text_muted":     "#555555",
+    "accent":         "#00e5ff",
+    "accent_hover":   "#33eaff",
+    "accent_dim":     "#00e5ff22",
+    "success":        "#10b981",
+    "warning":        "#f59e0b",
+    "error":          "#ef4444",
+    "critical":       "#dc2626"
+  },
+  "fonts": {
+    "ui":   "system-ui, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+    "mono": "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace"
+  },
+  "default_model":   "llama-3-8b-instruct-q4_k_m",
+  "default_voice_model": "base.en",
+  "welcome_message": "How can I help you today?",
+  "show_powered_by": true,
+  "allow_model_switching": true,
+  "allow_voice_input": true,
+  "allow_media_upload": true,
+  "company_name":    "AtomicBot AI",
+  "company_url":     "https://atomicbot.ai"
+}

@@ -1,0 +1,222 @@
+{
+  "version": "1.0.0",
+  "initialized": "2026-04-04",
+  "project": "hermes-foundry",
+  "features": [
+    {
+      "id": "F-001",
+      "title": "Rust Workspace Scaffold",
+      "phase": "P0",
+      "status": "complete",
+      "priority": "critical",
+      "description": "Root Cargo.toml workspace, all crate stubs, package.json monorepo",
+      "files": [
+        "Cargo.toml",
+        "package.json",
+        "crates/hermes-types/",
+        "crates/hermes-core/",
+        "crates/hermes-voice/",
+        "crates/hermes-media/",
+        "crates/hermes-llm/"
+      ],
+      "tests": [],
+      "commit": null,
+      "notes": "Workspace compiles with cargo check"
+    },
+    {
+      "id": "F-002",
+      "title": "Tauri Desktop App Shell",
+      "phase": "P1",
+      "status": "in-progress",
+      "priority": "critical",
+      "description": "Tauri v2 desktop app with React frontend, all command registrations, sidecar management",
+      "files": [
+        "apps/desktop/src-tauri/",
+        "apps/desktop/src/"
+      ],
+      "tests": [],
+      "commit": null,
+      "notes": ""
+    },
+    {
+      "id": "F-003",
+      "title": "Local LLM Integration (llama-server sidecar)",
+      "phase": "P1",
+      "status": "in-progress",
+      "priority": "critical",
+      "description": "hermes-llm crate + Tauri commands to start/stop llama-server, list models, stream completions",
+      "files": [
+        "crates/hermes-llm/",
+        "apps/desktop/src-tauri/src/commands/llm.rs",
+        "apps/desktop/src-tauri/src/sidecar.rs"
+      ],
+      "tests": [],
+      "commit": null,
+      "notes": "Uses OpenAI-compatible API from atomic-llama-cpp-turboquant"
+    },
+    {
+      "id": "F-004",
+      "title": "Voice Input (whisper-server sidecar)",
+      "phase": "P1",
+      "status": "in-progress",
+      "priority": "critical",
+      "description": "hermes-voice crate + Tauri commands to transcribe audio via whisper-server process",
+      "files": [
+        "crates/hermes-voice/",
+        "apps/desktop/src-tauri/src/commands/voice.rs"
+      ],
+      "tests": [],
+      "commit": null,
+      "notes": "Supports real-time streaming via WebSocket + file transcription"
+    },
+    {
+      "id": "F-005",
+      "title": "Media Processing (FFmpeg sidecar)",
+      "phase": "P1",
+      "status": "in-progress",
+      "priority": "high",
+      "description": "hermes-media crate wraps FFmpeg subprocess for audio extraction, transcoding, info probe",
+      "files": [
+        "crates/hermes-media/",
+        "apps/desktop/src-tauri/src/commands/media.rs"
+      ],
+      "tests": [],
+      "commit": null,
+      "notes": ""
+    },
+    {
+      "id": "F-006",
+      "title": "Hermes API Bridge (nightshift sidecar)",
+      "phase": "P1",
+      "status": "in-progress",
+      "priority": "critical",
+      "description": "Connect Tauri desktop to existing nightshift FastAPI services for agent runs, approvals, repos",
+      "files": [
+        "apps/desktop/src-tauri/src/commands/services.rs",
+        "apps/desktop/src/lib/api.ts"
+      ],
+      "tests": [],
+      "commit": null,
+      "notes": ""
+    },
+    {
+      "id": "F-007",
+      "title": "Chat UI with Streaming",
+      "phase": "P1",
+      "status": "in-progress",
+      "priority": "critical",
+      "description": "React chat panel with SSE streaming, tool call display, voice input button, file attach",
+      "files": [
+        "apps/desktop/src/components/Chat.tsx",
+        "apps/desktop/src/stores/chat.ts"
+      ],
+      "tests": [],
+      "commit": null,
+      "notes": ""
+    },
+    {
+      "id": "F-008",
+      "title": "Settings & White-label Config",
+      "phase": "P1",
+      "status": "in-progress",
+      "priority": "high",
+      "description": "Settings panel for API keys, model selection, branding overrides; backed by tauri-plugin-store",
+      "files": [
+        "apps/desktop/src/components/SettingsPanel.tsx",
+        "apps/desktop/src/stores/settings.ts",
+        "branding.json"
+      ],
+      "tests": [],
+      "commit": null,
+      "notes": ""
+    },
+    {
+      "id": "F-009",
+      "title": "Enterprise Security Layer",
+      "phase": "P2",
+      "status": "not-started",
+      "priority": "critical",
+      "description": "API key encryption via system keyring, audit log, RBAC for multi-user deployments",
+      "files": [
+        "apps/desktop/src-tauri/src/security.rs"
+      ],
+      "tests": [],
+      "commit": null,
+      "notes": ""
+    },
+    {
+      "id": "F-010",
+      "title": "One-click Installer & Auto-updater",
+      "phase": "P3",
+      "status": "not-started",
+      "priority": "high",
+      "description": "Tauri bundle targets (MSI, dmg, AppImage), bundled sidecar binaries, auto-update via tauri-plugin-updater",
+      "files": [
+        "apps/desktop/src-tauri/tauri.conf.json"
+      ],
+      "tests": [],
+      "commit": null,
+      "notes": "Requires code signing for macOS notarization"
+    },
+    {
+      "id": "F-011",
+      "title": "Postiz Social Publishing Integration",
+      "phase": "P4",
+      "status": "not-started",
+      "priority": "medium",
+      "description": "Agent can schedule/publish to social platforms via Postiz API",
+      "files": [],
+      "tests": [],
+      "commit": null,
+      "notes": ""
+    },
+    {
+      "id": "F-012",
+      "title": "StoryToolkitAI Video Intelligence",
+      "phase": "P4",
+      "status": "not-started",
+      "priority": "medium",
+      "description": "Video analysis, transcription, intelligent clip selection via StoryToolkitAI integration",
+      "files": [],
+      "tests": [],
+      "commit": null,
+      "notes": ""
+    },
+    {
+      "id": "F-013",
+      "title": "LightRAG Memory Subsystem",
+      "phase": "P4",
+      "status": "not-started",
+      "priority": "critical",
+      "description": "LightRAG-backed persistent memory for agent sessions; knowledge graph + vector retrieval",
+      "files": [],
+      "tests": [],
+      "commit": null,
+      "notes": ""
+    },
+    {
+      "id": "F-014",
+      "title": "Tenant / White-label Layer",
+      "phase": "P4",
+      "status": "not-started",
+      "priority": "high",
+      "description": "Multi-tenant isolation, domain routing, per-tenant branding, RBAC",
+      "files": [],
+      "tests": [],
+      "commit": null,
+      "notes": ""
+    },
+    {
+      "id": "F-015",
+      "title": "Billing & Metering",
+      "phase": "P5",
+      "status": "not-started",
+      "priority": "medium",
+      "description": "API call counting, subscription model enforcement, Stripe integration",
+      "files": [],
+      "tests": [],
+      "commit": null,
+      "notes": ""
+    }
+  ]
+}

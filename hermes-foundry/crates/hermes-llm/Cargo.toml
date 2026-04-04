@@ -1,0 +1,17 @@
+[package]
+name = "hermes-llm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+hermes-types = { workspace = true }
+tokio        = { workspace = true }
+reqwest      = { workspace = true }
+anyhow       = { workspace = true }
+thiserror    = { workspace = true }
+tracing      = { workspace = true }
+serde        = { workspace = true }
+serde_json   = { workspace = true }
+futures      = { workspace = true }
+tokio-stream = { workspace = true }
