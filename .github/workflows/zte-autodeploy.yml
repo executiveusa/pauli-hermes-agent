@@ -80,7 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref || github.ref_name }}
+          ref: ${{ github.sha }}
           token: ${{ secrets.GH_PAT || github.token }}
 
       - name: Install Emerald Tablets
@@ -108,7 +108,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref || github.ref_name }}
+          ref: ${{ github.sha }}
           token: ${{ secrets.GH_PAT || github.token }}
           fetch-depth: 0
 
@@ -332,7 +332,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref || github.ref_name }}
+          ref: ${{ github.sha }}
           token: ${{ secrets.GH_PAT || github.token }}
           fetch-depth: 0
 
