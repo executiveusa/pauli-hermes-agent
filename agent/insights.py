@@ -39,15 +39,6 @@ def _has_known_pricing(model_name: str, provider: str = None, base_url: str = No
     return has_known_pricing(model_name, provider=provider, base_url=base_url)
 
 
-def _get_pricing(model_name: str) -> Dict[str, float]:
-    """Look up pricing for a model. Uses fuzzy matching on model name.
-
-    Returns _DEFAULT_PRICING (zero cost) for unknown/custom models —
-    we can't assume costs for self-hosted endpoints, local inference, etc.
-    """
-    return get_pricing(model_name)
-
-
 def _estimate_cost(
     session_or_model: Dict[str, Any] | str,
     input_tokens: int = 0,
@@ -644,6 +635,9 @@ class InsightsEngine:
         lines.append(f"  Sessions:          {o['total_sessions']:<12}  Messages:        {o['total_messages']:,}")
         lines.append(f"  Tool calls:        {o['total_tool_calls']:<12,}  User messages:   {o['user_messages']:,}")
         lines.append(f"  Input tokens:      {o['total_input_tokens']:<12,}  Output tokens:   {o['total_output_tokens']:,}")
+        cache_total = o.get("total_cache_read_tokens", 0) + o.get("total_cache_write_tokens", 0)
+        if cache_total > 0:
+            lines.append(f"  Cache read:        {o['total_cache_read_tokens']:<12,}  Cache write:     {o['total_cache_write_tokens']:,}")
         cost_str = f"${o['estimated_cost']:.2f}"
         if o.get("models_without_pricing"):
             cost_str += " *"
@@ -666,7 +660,7 @@ class InsightsEngine:
                     cost_cell = "     N/A"
                 lines.append(f"  {model_name:<30} {m['sessions']:>8} {m['total_tokens']:>12,} {cost_cell}")
             if o.get("models_without_pricing"):
-                lines.append(f"  * Cost N/A for custom/self-hosted models")
+                lines.append("  * Cost N/A for custom/self-hosted models")
             lines.append("")
 
         # Platform breakdown
@@ -746,7 +740,11 @@ class InsightsEngine:
 
         # Overview
         lines.append(f"**Sessions:** {o['total_sessions']} | **Messages:** {o['total_messages']:,} | **Tool calls:** {o['total_tool_calls']:,}")
-        lines.append(f"**Tokens:** {o['total_tokens']:,} (in: {o['total_input_tokens']:,} / out: {o['total_output_tokens']:,})")
+        cache_total = o.get("total_cache_read_tokens", 0) + o.get("total_cache_write_tokens", 0)
+        if cache_total > 0:
+            lines.append(f"**Tokens:** {o['total_tokens']:,} (in: {o['total_input_tokens']:,} / out: {o['total_output_tokens']:,} / cache: {cache_total:,})")
+        else:
+            lines.append(f"**Tokens:** {o['total_tokens']:,} (in: {o['total_input_tokens']:,} / out: {o['total_output_tokens']:,})")
         cost_note = ""
         if o.get("models_without_pricing"):
             cost_note = " _(excludes custom/self-hosted models)_"

@@ -15,8 +15,10 @@ from hermes_cli.auth import AuthError, resolve_provider
 from hermes_cli.colors import Colors, color
 from hermes_cli.config import get_env_path, get_env_value, get_hermes_home, load_config
 from hermes_cli.models import provider_label
+from hermes_cli.nous_subscription import get_nous_subscription_features
 from hermes_cli.runtime_provider import resolve_requested_provider
 from hermes_constants import OPENROUTER_MODELS_URL
+from tools.tool_backend_helpers import managed_nous_tools_enabled
 
 def check_mark(ok: bool) -> str:
     if ok:
@@ -77,6 +79,9 @@ def _effective_provider_label() -> str:
     return provider_label(effective)
 
 
+from hermes_constants import is_termux as _is_termux
+
+
 def show_status(args):
     """Show status of all Hermes Agent components."""
     show_all = getattr(args, 'all', False)
@@ -121,7 +126,8 @@ def show_status(args):
         "MiniMax-CN": "MINIMAX_CN_API_KEY",
         "Firecrawl": "FIRECRAWL_API_KEY",
         "Tavily": "TAVILY_API_KEY",
-        "Browserbase": "BROWSERBASE_API_KEY",  # Optional — local browser works without this
+        "Browser Use": "BROWSER_USE_API_KEY",  # Optional — local browser works without this
+        "Browserbase": "BROWSERBASE_API_KEY",  # Optional — direct credentials only
         "FAL": "FAL_KEY",
         "Tinker": "TINKER_API_KEY",
         "WandB": "WANDB_API_KEY",
@@ -135,11 +141,8 @@ def show_status(args):
         display = redact_key(value) if not show_all else value
         print(f"  {name:<12}  {check_mark(has_key)} {display}")
 
-    anthropic_value = (
-        get_env_value("ANTHROPIC_TOKEN")
-        or get_env_value("ANTHROPIC_API_KEY")
-        or ""
-    )
+    from hermes_cli.auth import get_anthropic_key
+    anthropic_value = get_anthropic_key()
     anthropic_display = redact_key(anthropic_value) if not show_all else anthropic_value
     print(f"  {'Anthropic':<12}  {check_mark(bool(anthropic_value))} {anthropic_display}")
 
@@ -150,12 +153,14 @@ def show_status(args):
     print(color("◆ Auth Providers", Colors.CYAN, Colors.BOLD))
 
     try:
-        from hermes_cli.auth import get_nous_auth_status, get_codex_auth_status
+        from hermes_cli.auth import get_nous_auth_status, get_codex_auth_status, get_qwen_auth_status
         nous_status = get_nous_auth_status()
         codex_status = get_codex_auth_status()
+        qwen_status = get_qwen_auth_status()
     except Exception:
         nous_status = {}
         codex_status = {}
+        qwen_status = {}
 
     nous_logged_in = bool(nous_status.get("logged_in"))
     print(
@@ -185,6 +190,46 @@ def show_status(args):
         print(f"    Refreshed:  {codex_last_refresh}")
     if codex_status.get("error") and not codex_logged_in:
         print(f"    Error:      {codex_status.get('error')}")
+
+    qwen_logged_in = bool(qwen_status.get("logged_in"))
+    print(
+        f"  {'Qwen OAuth':<12}  {check_mark(qwen_logged_in)} "
+        f"{'logged in' if qwen_logged_in else 'not logged in (run: qwen auth qwen-oauth)'}"
+    )
+    qwen_auth_file = qwen_status.get("auth_file")
+    if qwen_auth_file:
+        print(f"    Auth file:  {qwen_auth_file}")
+    qwen_exp = qwen_status.get("expires_at_ms")
+    if qwen_exp:
+        from datetime import datetime, timezone
+        print(f"    Access exp: {datetime.fromtimestamp(int(qwen_exp) / 1000, tz=timezone.utc).isoformat()}")
+    if qwen_status.get("error") and not qwen_logged_in:
+        print(f"    Error:      {qwen_status.get('error')}")
+
+    # =========================================================================
+    # Nous Subscription Features
+    # =========================================================================
+    if managed_nous_tools_enabled():
+        features = get_nous_subscription_features(config)
+        print()
+        print(color("◆ Nous Subscription Features", Colors.CYAN, Colors.BOLD))
+        if not features.nous_auth_present:
+            print("  Nous Portal   ✗ not logged in")
+        else:
+            print("  Nous Portal   ✓ managed tools available")
+        for feature in features.items():
+            if feature.managed_by_nous:
+                state = "active via Nous subscription"
+            elif feature.active:
+                current = feature.current_provider or "configured provider"
+                state = f"active via {current}"
+            elif feature.included_by_default and features.nous_auth_present:
+                state = "included by subscription, not currently selected"
+            elif feature.key == "modal" and features.nous_auth_present:
+                state = "available via subscription (optional)"
+            else:
+                state = "not configured"
+            print(f"  {feature.label:<15} {check_mark(feature.available or feature.active or feature.managed_by_nous)} {state}")
 
     # =========================================================================
     # API-Key Providers
@@ -254,6 +299,12 @@ def show_status(args):
         "Slack": ("SLACK_BOT_TOKEN", None),
         "Email": ("EMAIL_ADDRESS", "EMAIL_HOME_ADDRESS"),
         "SMS": ("TWILIO_ACCOUNT_SID", "SMS_HOME_CHANNEL"),
+        "DingTalk": ("DINGTALK_CLIENT_ID", None),
+        "Feishu": ("FEISHU_APP_ID", "FEISHU_HOME_CHANNEL"),
+        "WeCom": ("WECOM_BOT_ID", "WECOM_HOME_CHANNEL"),
+        "WeCom Callback": ("WECOM_CALLBACK_CORP_ID", None),
+        "Weixin": ("WEIXIN_ACCOUNT_ID", "WEIXIN_HOME_CHANNEL"),
+        "BlueBubbles": ("BLUEBUBBLES_SERVER_URL", "BLUEBUBBLES_HOME_CHANNEL"),
     }
     
     for name, (token_var, home_var) in platforms.items():
@@ -276,33 +327,60 @@ def show_status(args):
     print()
     print(color("◆ Gateway Service", Colors.CYAN, Colors.BOLD))
     
-    if sys.platform.startswith('linux'):
+    if _is_termux():
+        try:
+            from hermes_cli.gateway import find_gateway_pids
+            gateway_pids = find_gateway_pids()
+        except Exception:
+            gateway_pids = []
+        is_running = bool(gateway_pids)
+        print(f"  Status:       {check_mark(is_running)} {'running' if is_running else 'stopped'}")
+        print("  Manager:      Termux / manual process")
+        if gateway_pids:
+            rendered = ", ".join(str(pid) for pid in gateway_pids[:3])
+            if len(gateway_pids) > 3:
+                rendered += ", ..."
+            print(f"  PID(s):       {rendered}")
+        else:
+            print("  Start with:   hermes gateway")
+            print("  Note:         Android may stop background jobs when Termux is suspended")
+
+    elif sys.platform.startswith('linux'):
         try:
             from hermes_cli.gateway import get_service_name
             _gw_svc = get_service_name()
         except Exception:
             _gw_svc = "hermes-gateway"
-        result = subprocess.run(
-            ["systemctl", "--user", "is-active", _gw_svc],
-            capture_output=True,
-            text=True
-        )
-        is_active = result.stdout.strip() == "active"
+        try:
+            result = subprocess.run(
+                ["systemctl", "--user", "is-active", _gw_svc],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            is_active = result.stdout.strip() == "active"
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            is_active = False
         print(f"  Status:       {check_mark(is_active)} {'running' if is_active else 'stopped'}")
-        print(f"  Manager:      systemd (user)")
+        print("  Manager:      systemd (user)")
         
     elif sys.platform == 'darwin':
-        result = subprocess.run(
-            ["launchctl", "list", "ai.hermes.gateway"],
-            capture_output=True,
-            text=True
-        )
-        is_loaded = result.returncode == 0
+        from hermes_cli.gateway import get_launchd_label
+        try:
+            result = subprocess.run(
+                ["launchctl", "list", get_launchd_label()],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+            is_loaded = result.returncode == 0
+        except subprocess.TimeoutExpired:
+            is_loaded = False
         print(f"  Status:       {check_mark(is_loaded)} {'loaded' if is_loaded else 'not loaded'}")
-        print(f"  Manager:      launchd")
+        print("  Manager:      launchd")
     else:
         print(f"  Status:       {color('N/A', Colors.DIM)}")
-        print(f"  Manager:      (not supported on this platform)")
+        print("  Manager:      (not supported on this platform)")
     
     # =========================================================================
     # Cron Jobs
@@ -320,9 +398,9 @@ def show_status(args):
                 enabled_jobs = [j for j in jobs if j.get("enabled", True)]
                 print(f"  Jobs:         {len(enabled_jobs)} active, {len(jobs)} total")
         except Exception:
-            print(f"  Jobs:         (error reading jobs file)")
+            print("  Jobs:         (error reading jobs file)")
     else:
-        print(f"  Jobs:         0")
+        print("  Jobs:         0")
     
     # =========================================================================
     # Sessions
@@ -338,9 +416,9 @@ def show_status(args):
                 data = json.load(f)
                 print(f"  Active:       {len(data)} session(s)")
         except Exception:
-            print(f"  Active:       (error reading sessions file)")
+            print("  Active:       (error reading sessions file)")
     else:
-        print(f"  Active:       0")
+        print("  Active:       0")
     
     # =========================================================================
     # Deep checks

@@ -13,21 +13,24 @@ import logging
 import os
 import json
 import re
+import threading
 import uuid
 from pathlib import Path
 from datetime import datetime, timedelta
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Any
 
 logger = logging.getLogger(__name__)
 
 
+def _now() -> datetime:
+    """Return the current local time."""
+    return datetime.now()
+
+
 # ---------------------------------------------------------------------------
 # PII redaction helpers
 # ---------------------------------------------------------------------------
-
-_PHONE_RE = re.compile(r"^\+?\d[\d\-\s]{6,}$")
-
 
 def _hash_id(value: str) -> str:
     """Deterministic 12-char hex hash of an identifier."""
@@ -52,14 +55,10 @@ def _hash_chat_id(value: str) -> str:
     return _hash_id(value)
 
 
-def _looks_like_phone(value: str) -> bool:
-    """Return True if *value* looks like a phone number (E.164 or similar)."""
-    return bool(_PHONE_RE.match(value.strip()))
-
 from .config import (
     Platform,
     GatewayConfig,
-    SessionResetPolicy,
+    SessionResetPolicy,  # noqa: F401 — re-exported via gateway/__init__.py
     HomeChannel,
 )
 
@@ -138,15 +137,6 @@ class SessionSource:
             chat_id_alt=data.get("chat_id_alt"),
         )
     
-    @classmethod
-    def local_cli(cls) -> "SessionSource":
-        """Create a source representing the local CLI."""
-        return cls(
-            platform=Platform.LOCAL,
-            chat_id="cli",
-            chat_name="CLI terminal",
-            chat_type="dm",
-        )
 
 
 @dataclass
@@ -187,6 +177,7 @@ _PII_SAFE_PLATFORMS = frozenset({
     Platform.WHATSAPP,
     Platform.SIGNAL,
     Platform.TELEGRAM,
+    Platform.BLUEBUBBLES,
 })
 """Platforms where user IDs can be safely redacted (no in-message mention system
 that requires raw IDs).  Discord is excluded because mentions use ``<@user_id>``
@@ -248,8 +239,22 @@ def build_session_context_prompt(
     if context.source.chat_topic:
         lines.append(f"**Channel Topic:** {context.source.chat_topic}")
 
-    # User identity (especially useful for WhatsApp where multiple people DM)
-    if context.source.user_name:
+    # User identity.
+    # In shared thread sessions (non-DM with thread_id), multiple users
+    # contribute to the same conversation.  Don't pin a single user name
+    # in the system prompt — it changes per-turn and would bust the prompt
+    # cache.  Instead, note that this is a multi-user thread; individual
+    # sender names are prefixed on each user message by the gateway.
+    _is_shared_thread = (
+        context.source.chat_type != "dm"
+        and context.source.thread_id
+    )
+    if _is_shared_thread:
+        lines.append(
+            "**Session type:** Multi-user thread — messages are prefixed "
+            "with [sender name]. Multiple users may participate."
+        )
+    elif context.source.user_name:
         lines.append(f"**User:** {context.source.user_name}")
     elif context.source.user_id:
         uid = context.source.user_id
@@ -358,6 +363,17 @@ class SessionEntry:
     auto_reset_reason: Optional[str] = None  # "idle" or "daily"
     reset_had_activity: bool = False  # whether the expired session had any messages
     
+    # Set by the background expiry watcher after it successfully flushes
+    # memories for this session.  Persisted to sessions.json so the flag
+    # survives gateway restarts (the old in-memory _pre_flushed_sessions
+    # set was lost on restart, causing redundant re-flushes).
+    memory_flushed: bool = False
+
+    # When True the next call to get_or_create_session() will auto-reset
+    # this session (create a new session_id) so the user starts fresh.
+    # Set by /stop to break stuck-resume loops (#7536).
+    suspended: bool = False
+    
     def to_dict(self) -> Dict[str, Any]:
         result = {
             "session_key": self.session_key,
@@ -375,6 +391,8 @@ class SessionEntry:
             "last_prompt_tokens": self.last_prompt_tokens,
             "estimated_cost_usd": self.estimated_cost_usd,
             "cost_status": self.cost_status,
+            "memory_flushed": self.memory_flushed,
+            "suspended": self.suspended,
         }
         if self.origin:
             result["origin"] = self.origin.to_dict()
@@ -410,10 +428,16 @@ class SessionEntry:
             last_prompt_tokens=data.get("last_prompt_tokens", 0),
             estimated_cost_usd=data.get("estimated_cost_usd", 0.0),
             cost_status=data.get("cost_status", "unknown"),
+            memory_flushed=data.get("memory_flushed", False),
+            suspended=data.get("suspended", False),
         )
 
 
-def build_session_key(source: SessionSource, group_sessions_per_user: bool = True) -> str:
+def build_session_key(
+    source: SessionSource,
+    group_sessions_per_user: bool = True,
+    thread_sessions_per_user: bool = False,
+) -> str:
     """Build a deterministic session key from a message source.
 
     This is the single source of truth for session key construction.
@@ -428,7 +452,11 @@ def build_session_key(source: SessionSource, group_sessions_per_user: bool = Tru
       - chat_id identifies the parent group/channel.
       - user_id/user_id_alt isolates participants within that parent chat when available when
         ``group_sessions_per_user`` is enabled.
-      - thread_id differentiates threads within that parent chat.
+      - thread_id differentiates threads within that parent chat.  When
+        ``thread_sessions_per_user`` is False (default), threads are *shared* across all
+        participants — user_id is NOT appended, so every user in the thread
+        shares a single session.  This is the expected UX for threaded
+        conversations (Telegram forum topics, Discord threads, Slack threads).
       - Without participant identifiers, or when isolation is disabled, messages fall back to one
         shared session per chat.
       - Without identifiers, messages fall back to one session per platform/chat_type.
@@ -450,7 +478,15 @@ def build_session_key(source: SessionSource, group_sessions_per_user: bool = Tru
         key_parts.append(source.chat_id)
     if source.thread_id:
         key_parts.append(source.thread_id)
-    if group_sessions_per_user and participant_id:
+
+    # In threads, default to shared sessions (all participants see the same
+    # conversation).  Per-user isolation only applies when explicitly enabled
+    # via thread_sessions_per_user, or when there is no thread (regular group).
+    isolate_user = group_sessions_per_user
+    if source.thread_id and not thread_sessions_per_user:
+        isolate_user = False
+
+    if isolate_user and participant_id:
         key_parts.append(str(participant_id))
 
     return ":".join(key_parts)
@@ -465,16 +501,13 @@ class SessionStore:
     """
     
     def __init__(self, sessions_dir: Path, config: GatewayConfig,
-                 has_active_processes_fn=None,
-                 on_auto_reset=None):
+                 has_active_processes_fn=None):
         self.sessions_dir = sessions_dir
         self.config = config
         self._entries: Dict[str, SessionEntry] = {}
         self._loaded = False
+        self._lock = threading.Lock()
         self._has_active_processes_fn = has_active_processes_fn
-        # on_auto_reset is deprecated — memory flush now runs proactively
-        # via the background session expiry watcher in GatewayRunner.
-        self._pre_flushed_sessions: set = set()  # session_ids already flushed by watcher
         
         # Initialize SQLite session database
         self._db = None
@@ -486,12 +519,17 @@ class SessionStore:
     
     def _ensure_loaded(self) -> None:
         """Load sessions index from disk if not already loaded."""
+        with self._lock:
+            self._ensure_loaded_locked()
+
+    def _ensure_loaded_locked(self) -> None:
+        """Load sessions index from disk. Must be called with self._lock held."""
         if self._loaded:
             return
-        
+
         self.sessions_dir.mkdir(parents=True, exist_ok=True)
         sessions_file = self.sessions_dir / "sessions.json"
-        
+
         if sessions_file.exists():
             try:
                 with open(sessions_file, "r", encoding="utf-8") as f:
@@ -504,7 +542,7 @@ class SessionStore:
                             continue
             except Exception as e:
                 print(f"[gateway] Warning: Failed to load sessions: {e}")
-        
+
         self._loaded = True
     
     def _save(self) -> None:
@@ -535,6 +573,7 @@ class SessionStore:
         return build_session_key(
             source,
             group_sessions_per_user=getattr(self.config, "group_sessions_per_user", True),
+            thread_sessions_per_user=getattr(self.config, "thread_sessions_per_user", False),
         )
     
     def _is_session_expired(self, entry: SessionEntry) -> bool:
@@ -556,7 +595,7 @@ class SessionStore:
         if policy.mode == "none":
             return False
 
-        now = datetime.now()
+        now = _now()
 
         if policy.mode in ("idle", "both"):
             idle_deadline = entry.updated_at + timedelta(minutes=policy.idle_minutes)
@@ -597,7 +636,7 @@ class SessionStore:
         if policy.mode == "none":
             return None
         
-        now = datetime.now()
+        now = _now()
         
         if policy.mode in ("idle", "both"):
             idle_deadline = entry.updated_at + timedelta(minutes=policy.idle_minutes)
@@ -637,186 +676,200 @@ class SessionStore:
                 pass  # fall through to heuristic
         # Fallback: check if sessions.json was loaded with existing data.
         # This covers the rare case where the DB is unavailable.
-        self._ensure_loaded()
-        return len(self._entries) > 1
-    
+        with self._lock:
+            self._ensure_loaded_locked()
+            return len(self._entries) > 1
+
     def get_or_create_session(
-        self, 
+        self,
         source: SessionSource,
         force_new: bool = False
     ) -> SessionEntry:
         """
         Get an existing session or create a new one.
-        
+
         Evaluates reset policy to determine if the existing session is stale.
         Creates a session record in SQLite when a new session starts.
         """
-        self._ensure_loaded()
-        
         session_key = self._generate_session_key(source)
-        now = datetime.now()
-        
-        if session_key in self._entries and not force_new:
-            entry = self._entries[session_key]
-            
-            reset_reason = self._should_reset(entry, source)
-            if not reset_reason:
-                entry.updated_at = now
-                self._save()
-                return entry
+        now = _now()
+
+        # SQLite calls are made outside the lock to avoid holding it during I/O.
+        # All _entries / _loaded mutations are protected by self._lock.
+        db_end_session_id = None
+        db_create_kwargs = None
+
+        with self._lock:
+            self._ensure_loaded_locked()
+
+            if session_key in self._entries and not force_new:
+                entry = self._entries[session_key]
+
+                # Auto-reset sessions marked as suspended (e.g. after /stop
+                # broke a stuck loop — #7536).
+                if entry.suspended:
+                    reset_reason = "suspended"
+                else:
+                    reset_reason = self._should_reset(entry, source)
+                if not reset_reason:
+                    entry.updated_at = now
+                    self._save()
+                    return entry
+                else:
+                    # Session is being auto-reset.
+                    was_auto_reset = True
+                    auto_reset_reason = reset_reason
+                    # Track whether the expired session had any real conversation
+                    reset_had_activity = entry.total_tokens > 0
+                    db_end_session_id = entry.session_id
             else:
-                # Session is being auto-reset.  The background expiry watcher
-                # should have already flushed memories proactively; discard
-                # the marker so it doesn't accumulate.
-                was_auto_reset = True
-                auto_reset_reason = reset_reason
-                # Track whether the expired session had any real conversation
-                reset_had_activity = entry.total_tokens > 0
-                self._pre_flushed_sessions.discard(entry.session_id)
-                if self._db:
-                    try:
-                        self._db.end_session(entry.session_id, "session_reset")
-                    except Exception as e:
-                        logger.debug("Session DB operation failed: %s", e)
-        else:
-            was_auto_reset = False
-            auto_reset_reason = None
-            reset_had_activity = False
-        
-        # Create new session
-        session_id = f"{now.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
-        
-        entry = SessionEntry(
-            session_key=session_key,
-            session_id=session_id,
-            created_at=now,
-            updated_at=now,
-            origin=source,
-            display_name=source.chat_name,
-            platform=source.platform,
-            chat_type=source.chat_type,
-            was_auto_reset=was_auto_reset,
-            auto_reset_reason=auto_reset_reason,
-            reset_had_activity=reset_had_activity,
-        )
-        
-        self._entries[session_key] = entry
-        self._save()
-        
-        # Create session in SQLite
-        if self._db:
+                was_auto_reset = False
+                auto_reset_reason = None
+                reset_had_activity = False
+
+            # Create new session
+            session_id = f"{now.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+
+            entry = SessionEntry(
+                session_key=session_key,
+                session_id=session_id,
+                created_at=now,
+                updated_at=now,
+                origin=source,
+                display_name=source.chat_name,
+                platform=source.platform,
+                chat_type=source.chat_type,
+                was_auto_reset=was_auto_reset,
+                auto_reset_reason=auto_reset_reason,
+                reset_had_activity=reset_had_activity,
+            )
+
+            self._entries[session_key] = entry
+            self._save()
+            db_create_kwargs = {
+                "session_id": session_id,
+                "source": source.platform.value,
+                "user_id": source.user_id,
+            }
+
+        # SQLite operations outside the lock
+        if self._db and db_end_session_id:
             try:
-                self._db.create_session(
-                    session_id=session_id,
-                    source=source.platform.value,
-                    user_id=source.user_id,
-                )
+                self._db.end_session(db_end_session_id, "session_reset")
+            except Exception as e:
+                logger.debug("Session DB operation failed: %s", e)
+
+        if self._db and db_create_kwargs:
+            try:
+                self._db.create_session(**db_create_kwargs)
             except Exception as e:
                 print(f"[gateway] Warning: Failed to create SQLite session: {e}")
-        
+
         return entry
-    
+
     def update_session(
-        self, 
+        self,
         session_key: str,
-        input_tokens: int = 0,
-        output_tokens: int = 0,
-        cache_read_tokens: int = 0,
-        cache_write_tokens: int = 0,
         last_prompt_tokens: int = None,
-        model: str = None,
-        estimated_cost_usd: Optional[float] = None,
-        cost_status: Optional[str] = None,
-        cost_source: Optional[str] = None,
-        provider: Optional[str] = None,
-        base_url: Optional[str] = None,
     ) -> None:
-        """Update a session's metadata after an interaction."""
-        self._ensure_loaded()
-        
-        if session_key in self._entries:
-            entry = self._entries[session_key]
-            entry.updated_at = datetime.now()
-            entry.input_tokens += input_tokens
-            entry.output_tokens += output_tokens
-            entry.cache_read_tokens += cache_read_tokens
-            entry.cache_write_tokens += cache_write_tokens
-            if last_prompt_tokens is not None:
-                entry.last_prompt_tokens = last_prompt_tokens
-            if estimated_cost_usd is not None:
-                entry.estimated_cost_usd += estimated_cost_usd
-            if cost_status:
-                entry.cost_status = cost_status
-            entry.total_tokens = (
-                entry.input_tokens
-                + entry.output_tokens
-                + entry.cache_read_tokens
-                + entry.cache_write_tokens
-            )
-            self._save()
-            
-            if self._db:
-                try:
-                    self._db.update_token_counts(
-                        entry.session_id,
-                        input_tokens=input_tokens,
-                        output_tokens=output_tokens,
-                        cache_read_tokens=cache_read_tokens,
-                        cache_write_tokens=cache_write_tokens,
-                        estimated_cost_usd=estimated_cost_usd,
-                        cost_status=cost_status,
-                        cost_source=cost_source,
-                        billing_provider=provider,
-                        billing_base_url=base_url,
-                        model=model,
-                    )
-                except Exception as e:
-                    logger.debug("Session DB operation failed: %s", e)
-    
+        """Update lightweight session metadata after an interaction."""
+        with self._lock:
+            self._ensure_loaded_locked()
+
+            if session_key in self._entries:
+                entry = self._entries[session_key]
+                entry.updated_at = _now()
+                if last_prompt_tokens is not None:
+                    entry.last_prompt_tokens = last_prompt_tokens
+                self._save()
+
+    def suspend_session(self, session_key: str) -> bool:
+        """Mark a session as suspended so it auto-resets on next access.
+
+        Used by ``/stop`` to prevent stuck sessions from being resumed
+        after a gateway restart (#7536).  Returns True if the session
+        existed and was marked.
+        """
+        with self._lock:
+            self._ensure_loaded_locked()
+            if session_key in self._entries:
+                self._entries[session_key].suspended = True
+                self._save()
+                return True
+        return False
+
+    def suspend_recently_active(self, max_age_seconds: int = 120) -> int:
+        """Mark recently-active sessions as suspended.
+
+        Called on gateway startup to prevent sessions that were likely
+        in-flight when the gateway last exited from being blindly resumed
+        (#7536).  Only suspends sessions updated within *max_age_seconds*
+        to avoid resetting long-idle sessions that are harmless to resume.
+        Returns the number of sessions that were suspended.
+        """
+        from datetime import timedelta
+
+        cutoff = _now() - timedelta(seconds=max_age_seconds)
+        count = 0
+        with self._lock:
+            self._ensure_loaded_locked()
+            for entry in self._entries.values():
+                if not entry.suspended and entry.updated_at >= cutoff:
+                    entry.suspended = True
+                    count += 1
+            if count:
+                self._save()
+        return count
+
     def reset_session(self, session_key: str) -> Optional[SessionEntry]:
         """Force reset a session, creating a new session ID."""
-        self._ensure_loaded()
-        
-        if session_key not in self._entries:
-            return None
-        
-        old_entry = self._entries[session_key]
-        
-        # End old session in SQLite
-        if self._db:
+        db_end_session_id = None
+        db_create_kwargs = None
+        new_entry = None
+
+        with self._lock:
+            self._ensure_loaded_locked()
+
+            if session_key not in self._entries:
+                return None
+
+            old_entry = self._entries[session_key]
+            db_end_session_id = old_entry.session_id
+
+            now = _now()
+            session_id = f"{now.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+
+            new_entry = SessionEntry(
+                session_key=session_key,
+                session_id=session_id,
+                created_at=now,
+                updated_at=now,
+                origin=old_entry.origin,
+                display_name=old_entry.display_name,
+                platform=old_entry.platform,
+                chat_type=old_entry.chat_type,
+            )
+
+            self._entries[session_key] = new_entry
+            self._save()
+            db_create_kwargs = {
+                "session_id": session_id,
+                "source": old_entry.platform.value if old_entry.platform else "unknown",
+                "user_id": old_entry.origin.user_id if old_entry.origin else None,
+            }
+
+        if self._db and db_end_session_id:
             try:
-                self._db.end_session(old_entry.session_id, "session_reset")
+                self._db.end_session(db_end_session_id, "session_reset")
             except Exception as e:
                 logger.debug("Session DB operation failed: %s", e)
-        
-        now = datetime.now()
-        session_id = f"{now.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
-        
-        new_entry = SessionEntry(
-            session_key=session_key,
-            session_id=session_id,
-            created_at=now,
-            updated_at=now,
-            origin=old_entry.origin,
-            display_name=old_entry.display_name,
-            platform=old_entry.platform,
-            chat_type=old_entry.chat_type,
-        )
-        
-        self._entries[session_key] = new_entry
-        self._save()
-        
-        # Create new session in SQLite
-        if self._db:
+
+        if self._db and db_create_kwargs:
             try:
-                self._db.create_session(
-                    session_id=session_id,
-                    source=old_entry.platform.value if old_entry.platform else "unknown",
-                    user_id=old_entry.origin.user_id if old_entry.origin else None,
-                )
+                self._db.create_session(**db_create_kwargs)
             except Exception as e:
                 logger.debug("Session DB operation failed: %s", e)
-        
+
         return new_entry
 
     def switch_session(self, session_key: str, target_session_id: str) -> Optional[SessionEntry]:
@@ -827,52 +880,58 @@ class SessionStore:
         generating a fresh session ID, re-uses ``target_session_id`` so the
         old transcript is loaded on the next message.
         """
-        self._ensure_loaded()
+        db_end_session_id = None
+        new_entry = None
 
-        if session_key not in self._entries:
-            return None
+        with self._lock:
+            self._ensure_loaded_locked()
 
-        old_entry = self._entries[session_key]
+            if session_key not in self._entries:
+                return None
 
-        # Don't switch if already on that session
-        if old_entry.session_id == target_session_id:
-            return old_entry
+            old_entry = self._entries[session_key]
 
-        # End the current session in SQLite
-        if self._db:
+            # Don't switch if already on that session
+            if old_entry.session_id == target_session_id:
+                return old_entry
+
+            db_end_session_id = old_entry.session_id
+
+            now = _now()
+            new_entry = SessionEntry(
+                session_key=session_key,
+                session_id=target_session_id,
+                created_at=now,
+                updated_at=now,
+                origin=old_entry.origin,
+                display_name=old_entry.display_name,
+                platform=old_entry.platform,
+                chat_type=old_entry.chat_type,
+            )
+
+            self._entries[session_key] = new_entry
+            self._save()
+
+        if self._db and db_end_session_id:
             try:
-                self._db.end_session(old_entry.session_id, "session_switch")
+                self._db.end_session(db_end_session_id, "session_switch")
             except Exception as e:
                 logger.debug("Session DB end_session failed: %s", e)
 
-        now = datetime.now()
-        new_entry = SessionEntry(
-            session_key=session_key,
-            session_id=target_session_id,
-            created_at=now,
-            updated_at=now,
-            origin=old_entry.origin,
-            display_name=old_entry.display_name,
-            platform=old_entry.platform,
-            chat_type=old_entry.chat_type,
-        )
-
-        self._entries[session_key] = new_entry
-        self._save()
         return new_entry
 
     def list_sessions(self, active_minutes: Optional[int] = None) -> List[SessionEntry]:
         """List all sessions, optionally filtered by activity."""
-        self._ensure_loaded()
-        
-        entries = list(self._entries.values())
-        
+        with self._lock:
+            self._ensure_loaded_locked()
+            entries = list(self._entries.values())
+
         if active_minutes is not None:
-            cutoff = datetime.now() - timedelta(minutes=active_minutes)
+            cutoff = _now() - timedelta(minutes=active_minutes)
             entries = [e for e in entries if e.updated_at >= cutoff]
-        
+
         entries.sort(key=lambda e: e.updated_at, reverse=True)
-        
+
         return entries
     
     def get_transcript_path(self, session_id: str) -> Path:
@@ -918,13 +977,17 @@ class SessionStore:
             try:
                 self._db.clear_messages(session_id)
                 for msg in messages:
+                    role = msg.get("role", "unknown")
                     self._db.append_message(
                         session_id=session_id,
-                        role=msg.get("role", "unknown"),
+                        role=role,
                         content=msg.get("content"),
                         tool_name=msg.get("tool_name"),
                         tool_calls=msg.get("tool_calls"),
                         tool_call_id=msg.get("tool_call_id"),
+                        reasoning=msg.get("reasoning") if role == "assistant" else None,
+                        reasoning_details=msg.get("reasoning_details") if role == "assistant" else None,
+                        codex_reasoning_items=msg.get("codex_reasoning_items") if role == "assistant" else None,
                     )
             except Exception as e:
                 logger.debug("Failed to rewrite transcript in DB: %s", e)
@@ -937,35 +1000,51 @@ class SessionStore:
 
     def load_transcript(self, session_id: str) -> List[Dict[str, Any]]:
         """Load all messages from a session's transcript."""
+        db_messages = []
         # Try SQLite first
         if self._db:
             try:
-                messages = self._db.get_messages_as_conversation(session_id)
-                if messages:
-                    return messages
+                db_messages = self._db.get_messages_as_conversation(session_id)
             except Exception as e:
                 logger.debug("Could not load messages from DB: %s", e)
-        
-        # Fall back to legacy JSONL
+
+        # Load legacy JSONL transcript (may contain more history than SQLite
+        # for sessions created before the DB layer was introduced).
         transcript_path = self.get_transcript_path(session_id)
-        
-        if not transcript_path.exists():
-            return []
-        
-        messages = []
-        with open(transcript_path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    try:
-                        messages.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        logger.warning(
-                            "Skipping corrupt line in transcript %s: %s",
-                            session_id, line[:120],
-                        )
-        
-        return messages
+        jsonl_messages = []
+        if transcript_path.exists():
+            with open(transcript_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        try:
+                            jsonl_messages.append(json.loads(line))
+                        except json.JSONDecodeError:
+                            logger.warning(
+                                "Skipping corrupt line in transcript %s: %s",
+                                session_id, line[:120],
+                            )
+
+        # Prefer whichever source has more messages.
+        #
+        # Background: when a session pre-dates SQLite storage (or when the DB
+        # layer was added while a long-lived session was already active), the
+        # first post-migration turn writes only the *new* messages to SQLite
+        # (because _flush_messages_to_session_db skips messages already in
+        # conversation_history, assuming they're persisted).  On the *next*
+        # turn load_transcript returns those few SQLite rows and ignores the
+        # full JSONL history — the model sees a context of 1-4 messages instead
+        # of hundreds.  Using the longer source prevents this silent truncation.
+        if len(jsonl_messages) > len(db_messages):
+            if db_messages:
+                logger.debug(
+                    "Session %s: JSONL has %d messages vs SQLite %d — "
+                    "using JSONL (legacy session not yet fully migrated)",
+                    session_id, len(jsonl_messages), len(db_messages),
+                )
+            return jsonl_messages
+
+        return db_messages
 
 
 def build_session_context(

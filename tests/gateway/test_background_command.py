@@ -38,6 +38,7 @@ def _make_runner():
     runner._provider_routing = {}
     runner._fallback_model = None
     runner._running_agents = {}
+    runner._background_tasks = set()
 
     mock_store = MagicMock()
     runner.session_store = mock_store
@@ -307,6 +308,7 @@ class TestBackgroundInCLICommands:
 
     def test_background_autocompletes(self):
         """The /background command appears in autocomplete results."""
+        pytest.importorskip("prompt_toolkit")
         from hermes_cli.commands import SlashCommandCompleter
         from prompt_toolkit.document import Document
 

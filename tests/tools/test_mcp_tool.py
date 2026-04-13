@@ -2750,3 +2750,314 @@ class TestMCPSelectiveToolLoading:
 
         assert connect_called == []
         assert result == []
+
+
+# ---------------------------------------------------------------------------
+# Tool name collision protection
+# ---------------------------------------------------------------------------
+
+class TestRegistryCollisionWarning:
+    """registry.register() warns when a tool name is overwritten by a different toolset."""
+
+    def test_overwrite_different_toolset_logs_warning(self, caplog):
+        """Overwriting a tool from a different toolset emits a warning."""
+        from tools.registry import ToolRegistry
+        import logging
+
+        reg = ToolRegistry()
+        schema = {"name": "my_tool", "description": "test", "parameters": {"type": "object", "properties": {}}}
+        handler = lambda args, **kw: "{}"
+
+        reg.register(name="my_tool", toolset="builtin", schema=schema, handler=handler)
+
+        with caplog.at_level(logging.WARNING, logger="tools.registry"):
+            reg.register(name="my_tool", toolset="mcp-ext", schema=schema, handler=handler)
+
+        assert any("collision" in r.message.lower() for r in caplog.records)
+        assert any("builtin" in r.message and "mcp-ext" in r.message for r in caplog.records)
+
+    def test_overwrite_same_toolset_no_warning(self, caplog):
+        """Re-registering within the same toolset is silent (e.g. reconnect)."""
+        from tools.registry import ToolRegistry
+        import logging
+
+        reg = ToolRegistry()
+        schema = {"name": "my_tool", "description": "test", "parameters": {"type": "object", "properties": {}}}
+        handler = lambda args, **kw: "{}"
+
+        reg.register(name="my_tool", toolset="mcp-server", schema=schema, handler=handler)
+
+        with caplog.at_level(logging.WARNING, logger="tools.registry"):
+            reg.register(name="my_tool", toolset="mcp-server", schema=schema, handler=handler)
+
+        assert not any("collision" in r.message.lower() for r in caplog.records)
+
+
+class TestMCPBuiltinCollisionGuard:
+    """MCP tools that collide with built-in tool names are skipped."""
+
+    def test_mcp_tool_skipped_when_builtin_exists(self):
+        """An MCP tool whose prefixed name collides with a built-in is skipped."""
+        from tools.registry import ToolRegistry
+        from tools.mcp_tool import _discover_and_register_server, _servers, MCPServerTask
+
+        mock_registry = ToolRegistry()
+
+        # Pre-register a "built-in" tool with the name that the MCP tool would produce.
+        # Server "abc", tool "search" → mcp_abc_search
+        builtin_schema = {
+            "name": "mcp_abc_search",
+            "description": "A hypothetical built-in",
+            "parameters": {"type": "object", "properties": {}},
+        }
+        mock_registry.register(
+            name="mcp_abc_search", toolset="web",
+            schema=builtin_schema, handler=lambda a, **k: "{}",
+        )
+
+        mock_tools = [_make_mcp_tool("search", "Search the web")]
+        mock_session = MagicMock()
+
+        async def fake_connect(name, config):
+            server = MCPServerTask(name)
+            server.session = mock_session
+            server._tools = mock_tools
+            return server
+
+        with patch("tools.mcp_tool._connect_server", side_effect=fake_connect), \
+             patch("tools.registry.registry", mock_registry):
+            registered = asyncio.run(
+                _discover_and_register_server("abc", {"command": "test", "args": []})
+            )
+
+        # The MCP tool should have been skipped — built-in preserved.
+        assert "mcp_abc_search" not in registered
+        assert mock_registry.get_toolset_for_tool("mcp_abc_search") == "web"
+
+        _servers.pop("abc", None)
+
+    def test_mcp_tool_registered_when_no_builtin_collision(self):
+        """MCP tools register normally when there's no collision."""
+        from tools.registry import ToolRegistry
+        from tools.mcp_tool import _discover_and_register_server, _servers, MCPServerTask
+
+        mock_registry = ToolRegistry()
+        mock_tools = [_make_mcp_tool("web_search", "Search the web")]
+        mock_session = MagicMock()
+
+        async def fake_connect(name, config):
+            server = MCPServerTask(name)
+            server.session = mock_session
+            server._tools = mock_tools
+            return server
+
+        with patch("tools.mcp_tool._connect_server", side_effect=fake_connect), \
+             patch("tools.registry.registry", mock_registry):
+            registered = asyncio.run(
+                _discover_and_register_server("minimax", {"command": "test", "args": []})
+            )
+
+        assert "mcp_minimax_web_search" in registered
+        assert mock_registry.get_toolset_for_tool("mcp_minimax_web_search") == "mcp-minimax"
+
+        _servers.pop("minimax", None)
+
+    def test_mcp_tool_allowed_when_collision_is_another_mcp(self):
+        """Collision between two MCP toolsets is allowed (last wins)."""
+        from tools.registry import ToolRegistry
+        from tools.mcp_tool import _discover_and_register_server, _servers, MCPServerTask
+
+        mock_registry = ToolRegistry()
+
+        # Pre-register an MCP tool from a different server.
+        mcp_schema = {
+            "name": "mcp_srv_do_thing",
+            "description": "From another MCP server",
+            "parameters": {"type": "object", "properties": {}},
+        }
+        mock_registry.register(
+            name="mcp_srv_do_thing", toolset="mcp-old",
+            schema=mcp_schema, handler=lambda a, **k: "{}",
+        )
+
+        mock_tools = [_make_mcp_tool("do_thing", "Do a thing")]
+        mock_session = MagicMock()
+
+        async def fake_connect(name, config):
+            server = MCPServerTask(name)
+            server.session = mock_session
+            server._tools = mock_tools
+            return server
+
+        with patch("tools.mcp_tool._connect_server", side_effect=fake_connect), \
+             patch("tools.registry.registry", mock_registry):
+            registered = asyncio.run(
+                _discover_and_register_server("srv", {"command": "test", "args": []})
+            )
+
+        # MCP-to-MCP collision is allowed — the new server wins.
+        assert "mcp_srv_do_thing" in registered
+        assert mock_registry.get_toolset_for_tool("mcp_srv_do_thing") == "mcp-srv"
+
+        _servers.pop("srv", None)
+
+
+# ---------------------------------------------------------------------------
+# sanitize_mcp_name_component
+# ---------------------------------------------------------------------------
+
+
+class TestSanitizeMcpNameComponent:
+    """Verify sanitize_mcp_name_component handles all edge cases."""
+
+    def test_hyphens_replaced(self):
+        from tools.mcp_tool import sanitize_mcp_name_component
+        assert sanitize_mcp_name_component("my-server") == "my_server"
+
+    def test_dots_replaced(self):
+        from tools.mcp_tool import sanitize_mcp_name_component
+        assert sanitize_mcp_name_component("ai.exa") == "ai_exa"
+
+    def test_slashes_replaced(self):
+        from tools.mcp_tool import sanitize_mcp_name_component
+        assert sanitize_mcp_name_component("ai.exa/exa") == "ai_exa_exa"
+
+    def test_mixed_special_characters(self):
+        from tools.mcp_tool import sanitize_mcp_name_component
+        assert sanitize_mcp_name_component("@scope/my-pkg.v2") == "_scope_my_pkg_v2"
+
+    def test_alphanumeric_and_underscores_preserved(self):
+        from tools.mcp_tool import sanitize_mcp_name_component
+        assert sanitize_mcp_name_component("my_server_123") == "my_server_123"
+
+    def test_empty_string(self):
+        from tools.mcp_tool import sanitize_mcp_name_component
+        assert sanitize_mcp_name_component("") == ""
+
+    def test_none_returns_empty(self):
+        from tools.mcp_tool import sanitize_mcp_name_component
+        assert sanitize_mcp_name_component(None) == ""
+
+    def test_slash_in_convert_mcp_schema(self):
+        """Server names with slashes produce valid tool names via _convert_mcp_schema."""
+        from tools.mcp_tool import _convert_mcp_schema
+
+        mcp_tool = _make_mcp_tool(name="search")
+        schema = _convert_mcp_schema("ai.exa/exa", mcp_tool)
+        assert schema["name"] == "mcp_ai_exa_exa_search"
+        # Must match Anthropic's pattern: ^[a-zA-Z0-9_-]{1,128}$
+        import re
+        assert re.match(r"^[a-zA-Z0-9_-]{1,128}$", schema["name"])
+
+    def test_slash_in_build_utility_schemas(self):
+        """Server names with slashes produce valid utility tool names."""
+        from tools.mcp_tool import _build_utility_schemas
+
+        schemas = _build_utility_schemas("ai.exa/exa")
+        for s in schemas:
+            name = s["schema"]["name"]
+            assert "/" not in name
+            assert "." not in name
+
+    def test_slash_in_sync_mcp_toolsets(self):
+        """_sync_mcp_toolsets uses sanitize consistently with _convert_mcp_schema."""
+        from tools.mcp_tool import sanitize_mcp_name_component
+
+        # Verify the prefix generation matches what _convert_mcp_schema produces
+        server_name = "ai.exa/exa"
+        safe_prefix = f"mcp_{sanitize_mcp_name_component(server_name)}_"
+        assert safe_prefix == "mcp_ai_exa_exa_"
+
+
+# ---------------------------------------------------------------------------
+# register_mcp_servers public API
+# ---------------------------------------------------------------------------
+
+
+class TestRegisterMcpServers:
+    """Verify the new register_mcp_servers() public API."""
+
+    def test_empty_servers_returns_empty(self):
+        from tools.mcp_tool import register_mcp_servers
+
+        with patch("tools.mcp_tool._MCP_AVAILABLE", True):
+            result = register_mcp_servers({})
+        assert result == []
+
+    def test_mcp_not_available_returns_empty(self):
+        from tools.mcp_tool import register_mcp_servers
+
+        with patch("tools.mcp_tool._MCP_AVAILABLE", False):
+            result = register_mcp_servers({"srv": {"command": "test"}})
+        assert result == []
+
+    def test_skips_already_connected_servers(self):
+        from tools.mcp_tool import register_mcp_servers, _servers
+
+        mock_server = _make_mock_server("existing")
+        _servers["existing"] = mock_server
+
+        try:
+            with patch("tools.mcp_tool._MCP_AVAILABLE", True), \
+                 patch("tools.mcp_tool._existing_tool_names", return_value=["mcp_existing_tool"]):
+                result = register_mcp_servers({"existing": {"command": "test"}})
+            assert result == ["mcp_existing_tool"]
+        finally:
+            _servers.pop("existing", None)
+
+    def test_skips_disabled_servers(self):
+        from tools.mcp_tool import register_mcp_servers, _servers
+
+        try:
+            with patch("tools.mcp_tool._MCP_AVAILABLE", True), \
+                 patch("tools.mcp_tool._existing_tool_names", return_value=[]):
+                result = register_mcp_servers({"srv": {"command": "test", "enabled": False}})
+            assert result == []
+        finally:
+            _servers.pop("srv", None)
+
+    def test_connects_new_servers(self):
+        from tools.mcp_tool import register_mcp_servers, _servers, _ensure_mcp_loop
+
+        fake_config = {"my_server": {"command": "npx", "args": ["test"]}}
+
+        async def fake_register(name, cfg):
+            server = _make_mock_server(name)
+            server._registered_tool_names = ["mcp_my_server_tool1"]
+            _servers[name] = server
+            return ["mcp_my_server_tool1"]
+
+        with patch("tools.mcp_tool._MCP_AVAILABLE", True), \
+             patch("tools.mcp_tool._discover_and_register_server", side_effect=fake_register), \
+             patch("tools.mcp_tool._existing_tool_names", return_value=["mcp_my_server_tool1"]):
+            _ensure_mcp_loop()
+            result = register_mcp_servers(fake_config)
+
+        assert "mcp_my_server_tool1" in result
+        _servers.pop("my_server", None)
+
+    def test_logs_summary_on_success(self):
+        from tools.mcp_tool import register_mcp_servers, _servers, _ensure_mcp_loop
+
+        fake_config = {"srv": {"command": "npx", "args": ["test"]}}
+
+        async def fake_register(name, cfg):
+            server = _make_mock_server(name)
+            server._registered_tool_names = ["mcp_srv_t1", "mcp_srv_t2"]
+            _servers[name] = server
+            return ["mcp_srv_t1", "mcp_srv_t2"]
+
+        with patch("tools.mcp_tool._MCP_AVAILABLE", True), \
+             patch("tools.mcp_tool._discover_and_register_server", side_effect=fake_register), \
+             patch("tools.mcp_tool._existing_tool_names", return_value=["mcp_srv_t1", "mcp_srv_t2"]):
+            _ensure_mcp_loop()
+
+            with patch("tools.mcp_tool.logger") as mock_logger:
+                register_mcp_servers(fake_config)
+
+                info_calls = [str(c) for c in mock_logger.info.call_args_list]
+                assert any("2 tool(s)" in c and "1 server(s)" in c for c in info_calls), (
+                    f"Summary should report 2 tools from 1 server, got: {info_calls}"
+                )
+
+        _servers.pop("srv", None)

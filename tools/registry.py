@@ -16,7 +16,7 @@ Import chain (circular-import safe):
 
 import json
 import logging
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Callable, Dict, List, Optional, Set
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +27,12 @@ class ToolEntry:
     __slots__ = (
         "name", "toolset", "schema", "handler", "check_fn",
         "requires_env", "is_async", "description", "emoji",
+        "max_result_size_chars",
     )
 
     def __init__(self, name, toolset, schema, handler, check_fn,
-                 requires_env, is_async, description, emoji):
+                 requires_env, is_async, description, emoji,
+                 max_result_size_chars=None):
         self.name = name
         self.toolset = toolset
         self.schema = schema
@@ -40,6 +42,7 @@ class ToolEntry:
         self.is_async = is_async
         self.description = description
         self.emoji = emoji
+        self.max_result_size_chars = max_result_size_chars
 
 
 class ToolRegistry:
@@ -64,8 +67,16 @@ class ToolRegistry:
         is_async: bool = False,
         description: str = "",
         emoji: str = "",
+        max_result_size_chars: int | float | None = None,
     ):
         """Register a tool.  Called at module-import time by each tool file."""
+        existing = self._tools.get(name)
+        if existing and existing.toolset != toolset:
+            logger.warning(
+                "Tool name collision: '%s' (toolset '%s') is being "
+                "overwritten by toolset '%s'",
+                name, existing.toolset, toolset,
+            )
         self._tools[name] = ToolEntry(
             name=name,
             toolset=toolset,
@@ -76,9 +87,27 @@ class ToolRegistry:
             is_async=is_async,
             description=description or schema.get("description", ""),
             emoji=emoji,
+            max_result_size_chars=max_result_size_chars,
         )
         if check_fn and toolset not in self._toolset_checks:
             self._toolset_checks[toolset] = check_fn
+
+    def deregister(self, name: str) -> None:
+        """Remove a tool from the registry.
+
+        Also cleans up the toolset check if no other tools remain in the
+        same toolset.  Used by MCP dynamic tool discovery to nuke-and-repave
+        when a server sends ``notifications/tools/list_changed``.
+        """
+        entry = self._tools.pop(name, None)
+        if entry is None:
+            return
+        # Drop the toolset check if this was the last tool in that toolset
+        if entry.toolset in self._toolset_checks and not any(
+            e.toolset == entry.toolset for e in self._tools.values()
+        ):
+            self._toolset_checks.pop(entry.toolset, None)
+        logger.debug("Deregistered tool: %s", name)
 
     # ------------------------------------------------------------------
     # Schema retrieval
@@ -91,21 +120,26 @@ class ToolRegistry:
         are included.
         """
         result = []
+        check_results: Dict[Callable, bool] = {}
         for name in sorted(tool_names):
             entry = self._tools.get(name)
             if not entry:
                 continue
             if entry.check_fn:
-                try:
-                    if not entry.check_fn():
+                if entry.check_fn not in check_results:
+                    try:
+                        check_results[entry.check_fn] = bool(entry.check_fn())
+                    except Exception:
+                        check_results[entry.check_fn] = False
                         if not quiet:
-                            logger.debug("Tool %s unavailable (check failed)", name)
-                        continue
-                except Exception:
+                            logger.debug("Tool %s check raised; skipping", name)
+                if not check_results[entry.check_fn]:
                     if not quiet:
-                        logger.debug("Tool %s check raised; skipping", name)
+                        logger.debug("Tool %s unavailable (check failed)", name)
                     continue
-            result.append({"type": "function", "function": entry.schema})
+            # Ensure schema always has a "name" field — use entry.name as fallback
+            schema_with_name = {**entry.schema, "name": entry.name}
+            result.append({"type": "function", "function": schema_with_name})
         return result
 
     # ------------------------------------------------------------------
@@ -135,9 +169,28 @@ class ToolRegistry:
     # Query helpers  (replace redundant dicts in model_tools.py)
     # ------------------------------------------------------------------
 
+    def get_max_result_size(self, name: str, default: int | float | None = None) -> int | float:
+        """Return per-tool max result size, or *default* (or global default)."""
+        entry = self._tools.get(name)
+        if entry and entry.max_result_size_chars is not None:
+            return entry.max_result_size_chars
+        if default is not None:
+            return default
+        from tools.budget_config import DEFAULT_RESULT_SIZE_CHARS
+        return DEFAULT_RESULT_SIZE_CHARS
+
     def get_all_tool_names(self) -> List[str]:
         """Return sorted list of all registered tool names."""
         return sorted(self._tools.keys())
+
+    def get_schema(self, name: str) -> Optional[dict]:
+        """Return a tool's raw schema dict, bypassing check_fn filtering.
+
+        Useful for token estimation and introspection where availability
+        doesn't matter — only the schema content does.
+        """
+        entry = self._tools.get(name)
+        return entry.schema if entry else None
 
     def get_toolset_for_tool(self, name: str) -> Optional[str]:
         """Return the toolset a tool belongs to, or None."""
@@ -235,3 +288,48 @@ class ToolRegistry:
 
 # Module-level singleton
 registry = ToolRegistry()
+
+
+# ---------------------------------------------------------------------------
+# Helpers for tool response serialization
+# ---------------------------------------------------------------------------
+# Every tool handler must return a JSON string.  These helpers eliminate the
+# boilerplate ``json.dumps({"error": msg}, ensure_ascii=False)`` that appears
+# hundreds of times across tool files.
+#
+# Usage:
+#   from tools.registry import registry, tool_error, tool_result
+#
+#   return tool_error("something went wrong")
+#   return tool_error("not found", code=404)
+#   return tool_result(success=True, data=payload)
+#   return tool_result(items)            # pass a dict directly
+
+
+def tool_error(message, **extra) -> str:
+    """Return a JSON error string for tool handlers.
+
+    >>> tool_error("file not found")
+    '{"error": "file not found"}'
+    >>> tool_error("bad input", success=False)
+    '{"error": "bad input", "success": false}'
+    """
+    result = {"error": str(message)}
+    if extra:
+        result.update(extra)
+    return json.dumps(result, ensure_ascii=False)
+
+
+def tool_result(data=None, **kwargs) -> str:
+    """Return a JSON result string for tool handlers.
+
+    Accepts a dict positional arg *or* keyword arguments (not both):
+
+    >>> tool_result(success=True, count=42)
+    '{"success": true, "count": 42}'
+    >>> tool_result({"key": "value"})
+    '{"key": "value"}'
+    """
+    if data is not None:
+        return json.dumps(data, ensure_ascii=False)
+    return json.dumps(kwargs, ensure_ascii=False)
