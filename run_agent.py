@@ -109,6 +109,14 @@ from agent.trajectory import (
 )
 from utils import atomic_json_write, env_var_enabled
 
+TASK_MODE_PROMPTS = {
+    "deploy_apps": (
+        "You are an autonomous deployment agent. Given a repo, decide: "
+        "Is it deployable? What stack? Should it be deployed now? "
+        "Use tools when needed."
+    ),
+}
+
 
 
 class _SafeWriter:
@@ -675,6 +683,7 @@ class AIAgent:
         checkpoint_max_snapshots: int = 50,
         pass_session_id: bool = False,
         persist_session: bool = True,
+        task_mode: str | None = None,
     ):
         """
         Initialize the AI Agent.
@@ -717,6 +726,7 @@ class AIAgent:
             skip_context_files (bool): If True, skip auto-injection of SOUL.md, AGENTS.md, and .cursorrules
                 into the system prompt. Use this for batch processing and data generation to avoid
                 polluting trajectories with user-specific persona or project instructions.
+            task_mode (str | None): Optional task mode to append specialized guidance to the system prompt.
         """
         _install_safe_stdio()
 
@@ -742,6 +752,7 @@ class AIAgent:
         self.skip_context_files = skip_context_files
         self.pass_session_id = pass_session_id
         self.persist_session = persist_session
+        self.task_mode = task_mode
         self._credential_pool = credential_pool
         self.log_prefix_chars = log_prefix_chars
         self.log_prefix = f"{log_prefix} " if log_prefix else ""
@@ -3860,6 +3871,11 @@ class AIAgent:
         platform_key = (self.platform or "").lower().strip()
         if platform_key in PLATFORM_HINTS:
             prompt_parts.append(PLATFORM_HINTS[platform_key])
+
+        if self.task_mode:
+            mode_prompt = TASK_MODE_PROMPTS.get(self.task_mode)
+            if mode_prompt:
+                prompt_parts.append(mode_prompt)
 
         return "\n\n".join(p.strip() for p in prompt_parts if p.strip())
 
