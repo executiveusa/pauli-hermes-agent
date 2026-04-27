@@ -1,14 +1,17 @@
-# P0 → Release Task Grid
+# P0 → Release Task Grid (Snapshot: 2026-04-23)
 
-| Workstream | Current State | Planned Deliverables | Exit Criteria |
+| Workstream | Current State | Completed in This PR | Remaining to Reach Done |
 |---|---|---|---|
-| A Discovery | Completed in this PR | Inventory + risk + env/workflow docs | Artifacts updated and versioned |
-| B Upgrade Hygiene | Blocked by upstream fetch policy | Upstream merge branch + conflict notes | Upstream sync verified + green tests |
-| C GitHub Operator | Partial (skills/auth only) | Dedicated adapter, indexing workers, workflow trigger tools, audit log | End-to-end GitHub repo ops tested |
-| D Vercel Operator | Partial (provider alias only) | Vercel adapter, deployment diagnostics, redeploy actions, dashboard card | Deployment issue triage tested |
-| E Infisical | Missing | bootstrap + machine auth + secret sync + health checks | Secret plane active without leaking values |
-| F Twilio Voice | Missing (SMS exists) | voice inbound/outbound + STT/TTS + session transcript persistence | successful phone conversation loop |
-| G Dashboard UX | Existing dashboard base | operator widgets (repo/deploy/secret/voice health) | usability pass + docs |
-| H Knowledge Plane | Partial (memory plugins) | ingestion/indexing/search/attribution pipeline | reproducible ingest+query with sources |
-| I Hostinger/Coolify | Partial (Dockerfile only) | compose/coolify config + runbooks + healthchecks | successful deployment rehearsal |
-| J CI/CD | Existing workflows | PR gate docs + operator tests + security/lint/type/build parity | required checks green |
+| A Discovery | In progress before this update | Discovery artifacts refreshed and aligned with current repo state | Keep artifacts updated as code lands |
+| B Upgrade Hygiene | Blocked | Branch/worktree/conflict status documented | Add/fetch upstream remote and execute merge/rebase workflow |
+| C GitHub Operator | Partial | Gap analysis documented | Implement auth adapter, repo indexing, workflow inspect/trigger, webhooks, audit logs, tests |
+| D Vercel Operator | Partial | Gap analysis documented | Implement Vercel adapter, deploy diagnostics, redeploy actions, dashboard surfacing, tests |
+| E Infisical | Missing | Bootstrap policy documented | Implement machine auth, secret sync, secret health checks, docs + tests |
+| F Twilio Voice | Missing (SMS-only baseline) | Voice gap documented | Implement inbound/outbound voice, STT/TTS bridge, session/transcript persistence, failure handling |
+| G Dashboard UX | Partial | Operator UX requirements captured | Add production operator cards for repo/deploy/secret/voice/job health |
+| H Knowledge Plane | Partial | Ingestion/search requirements clarified | Implement ingestion pipeline with chunking/index/search/attribution + tests |
+| I Hostinger/Coolify | Partial | Runbook path preserved | Validate compose/coolify stack with real project/env and add smoke checks |
+| J CI/CD | Existing base | Workflow inventory updated | Add operator capability CI jobs + enforce required check contract |
+
+## Program Gate
+Current branch is **not merge-ready for the full mission objective** because multiple P0 implementation workstreams remain open and external credentials/access are required for end-to-end validation.
