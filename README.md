@@ -171,6 +171,7 @@ scripts/run_tests.sh
 - 📚 [Skills Hub](https://agentskills.io)
 - 🐛 [Issues](https://github.com/NousResearch/hermes-agent/issues)
 - 🔌 [HermesClaw](https://github.com/AaronWong1999/hermesclaw) — Community WeChat bridge: Run Hermes Agent and OpenClaw on the same WeChat account.
+- 📖 [OpenChronicle](https://github.com/Einsia/OpenChronicle) — Open-source project for preserving and organizing AI interaction history.
 
 ---
 
