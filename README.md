@@ -173,6 +173,15 @@ scripts/run_tests.sh
 - 🔌 [HermesClaw](https://github.com/AaronWong1999/hermesclaw) — Community WeChat bridge: Run Hermes Agent and OpenClaw on the same WeChat account.
 - 📖 [OpenChronicle](https://github.com/Einsia/OpenChronicle) — Open-source project for preserving and organizing AI interaction history.
 
+### Why OpenChronicle matters for Hermes
+
+OpenChronicle can help Hermes users who need long-horizon visibility into agent behavior across sessions.
+
+- **How it helps:** provides a structured timeline of interactions so users can audit decisions, revisit context, and improve prompts/workflows over time.
+- **Where it is used:** currently as an **external companion project** (linked here for discovery), not yet wired into Hermes core runtime/tooling in this repository.
+- **How it would be used:** users run OpenChronicle separately and correlate Hermes sessions/logs with chronicle entries for analysis and retrospective reviews.
+- **When to use it:** especially useful for debugging regressions, postmortems on failed automations, and tracking behavior changes after config/model updates.
+
 ---
 
 ## License
