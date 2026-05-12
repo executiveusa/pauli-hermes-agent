@@ -1,0 +1,84 @@
+# ============================================================
+# Hermes Rolodex™ — config_patch.yaml
+# Paste these blocks into ~/.hermes/config.yaml
+# Replace /path/to/pauli-hermes-agent with your actual repo path
+# ============================================================
+
+# ── MCP SERVER BLOCK ─────────────────────────────────────────
+# Add this under the existing `mcp_servers:` key.
+# If no mcp_servers key exists yet, add the key too.
+
+mcp_servers:
+  hermes-rolodex:
+    # stdio transport — server runs as a local subprocess
+    command: "python3"
+    args:
+      - "/path/to/pauli-hermes-agent/mcp-servers/hermes-rolodex/server.py"
+    env:
+      # Override DB location (optional — defaults to ~/.hermes/rolodex.db)
+      ROLODEX_DB_PATH: "~/.hermes/rolodex.db"
+    description: >
+      Hermes Rolodex™ — relationship graph with FTS5 fuzzy recall,
+      strength decay, graph traversal, and meeting briefs.
+      11 tools: add_person, fuzzy_recall, get_person, add_memory,
+      set_reminder, meeting_brief, draft_outreach, fading_check,
+      upcoming_events, graph_query, queue_unknown.
+    timeout: 60
+    connect_timeout: 30
+
+# ── CRON JOBS BLOCK ──────────────────────────────────────────
+# Add these under the existing `cron_jobs:` key.
+# Requires hermes cron (pip install 'hermes-agent[cron]')
+
+cron_jobs:
+  # Daily 9am: surface fading relationships
+  rolodex_daily_decay:
+    schedule: "0 9 * * *"
+    task: >
+      Run rolodex_fading_check for contacts not reached in 30+ days.
+      For the top 3 fading contacts, use rolodex_draft_outreach to
+      prepare a re-engagement note. Surface as a brief morning report.
+    platform: "cli"   # or "telegram" / "discord" / "slack"
+
+  # Every Monday 8am: weekly relationship brief
+  rolodex_monday_brief:
+    schedule: "0 8 * * 1"
+    task: >
+      Use rolodex_upcoming_events (7 days) and rolodex_fading_check (14 days)
+      to generate a "Relationship Week Ahead" brief:
+      - Upcoming birthdays and meetings
+      - Top 3 people to reconnect with this week
+      - One warm outreach suggestion using rolodex_draft_outreach
+    platform: "cli"
+
+  # Daily 8am: birthday alert
+  rolodex_birthday_alert:
+    schedule: "0 8 * * *"
+    task: >
+      Run rolodex_upcoming_events with days=7.
+      If any BIRTHDAY events are found, draft a personalized birthday
+      message using rolodex_meeting_brief for context, then
+      rolodex_draft_outreach with tone=warm.
+      Alert: "🎂 Birthday alert: [Name] in [N] days"
+    platform: "cli"
+
+# ============================================================
+# INSTALLATION STEPS
+# ============================================================
+# 1. Copy skill:
+#    cp skills/hermes-rolodex/SKILL.md ~/.hermes/skills/hermes-rolodex/SKILL.md
+#
+# 2. Paste MCP block above into ~/.hermes/config.yaml under mcp_servers:
+#    Update the /path/to/ with your actual repo path.
+#
+# 3. Paste cron_jobs block into ~/.hermes/config.yaml under cron_jobs:
+#
+# 4. Verify:
+#    hermes mcp test hermes-rolodex
+#    → Should show: 11 tools discovered
+#
+# 5. Test live:
+#    "Add Marcus Chen — bonsai collector, CTO in Boston, Stanford classmate"
+#    "Remember that bonsai guy from Boston"
+#    → Marcus Chen (confidence: HIGH)
+# ============================================================
