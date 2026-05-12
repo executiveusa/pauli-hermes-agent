@@ -468,7 +468,7 @@ class TestOutputParsers:
 # ---------------------------------------------------------------------------
 
 
-def _env_get_no_ollama(extra_env: dict) -> callable:
+def _env_get_no_ollama(extra_env: dict) -> "Any":
     """
     Return a side_effect for os.environ.get that omits OLLAMA_HOST
     but honours extra_env for provider keys.
