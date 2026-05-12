@@ -13,8 +13,11 @@ Hermes calls this **no-agent mode**. It's the cron system minus the LLM.
 ```
    ┌──────────────────┐
    │ scheduler tick   │
-   │ (every N min)    │──▶  run script (bash or python)
-   └──────────────────┘
+   │ (every N min)    │
+   └────────┬─────────┘
+            │
+            ▼
+     run script (bash or python)
                                           │
                                           │ stdout
                                           ▼
