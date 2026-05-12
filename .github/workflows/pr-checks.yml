@@ -118,13 +118,11 @@ jobs:
 
       - name: Check for conflict markers
         run: |
-          if git diff --check HEAD 2>&1 | grep -q "leftover conflict"; then
-            echo "❌ Conflict markers found"
-            exit 1
-          fi
-          # Scan tracked files for conflict markers
-          if git grep -l "<<<<<<< " -- "*.py" "*.ts" "*.tsx" "*.yml" "*.yaml" "*.json" "*.sql" 2>/dev/null; then
-            echo "❌ Conflict markers in source files"
+          # Use a variable so the pattern string itself isn't a conflict marker
+          MARKER="<<<<<<<"
+          if git grep -rl "${MARKER}" -- "*.py" "*.ts" "*.tsx" "*.yml" "*.yaml" "*.json" "*.sql" "*.md" 2>/dev/null \
+              | grep -v ".github/workflows/pr-checks.yml"; then
+            echo "❌ Conflict markers found in source files"
             exit 1
           fi
           echo "✅ No conflict markers found"

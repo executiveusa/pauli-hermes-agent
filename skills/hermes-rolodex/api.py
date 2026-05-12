@@ -8,8 +8,8 @@ import asyncio
 import json
 from typing import Any, Dict, Optional
 from pathlib import Path
+from datetime import datetime, timedelta, timezone
 import aiosqlite
-from datetime import datetime, timedelta
 
 # Database connection
 DB_PATH = Path.home() / ".hermes" / "rolodex.db"
@@ -163,7 +163,7 @@ async def add_person(name: str, email: Optional[str] = None, phone: Optional[str
     """
     db = await get_db()
     try:
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
 
         cursor = await db.execute("""
             INSERT INTO people (name, email, phone, strength, strength_label, last_contact_at)
@@ -203,7 +203,7 @@ async def add_memory(person_id: str, content: str, context: Optional[str] = None
     """
     db = await get_db()
     try:
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
 
         cursor = await db.execute("""
             INSERT INTO memory_items (person_id, content, context, created_at)
@@ -239,7 +239,7 @@ async def upcoming_events(days_ahead: int = 30) -> Dict[str, Any]:
     """
     db = await get_db()
     try:
-        future_date = (datetime.utcnow() + timedelta(days=days_ahead)).isoformat()
+        future_date = (datetime.now(timezone.utc) + timedelta(days=days_ahead)).isoformat()
 
         cursor = await db.execute("""
             SELECT pe.id, p.id, p.name, pe.event_type, pe.event_date, pe.description
@@ -326,7 +326,7 @@ async def meeting_brief() -> Dict[str, Any]:
 
         return {
             "brief": {
-                "generated_at": datetime.utcnow().isoformat(),
+                "generated_at": datetime.now(timezone.utc).isoformat(),
                 "active_relationships": active,
                 "fading_relationships": fading,
                 "summary": {
