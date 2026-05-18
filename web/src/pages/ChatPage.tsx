@@ -31,6 +31,7 @@ import { createPortal } from "react-dom";
 import { useSearchParams } from "react-router-dom";
 
 import { ChatSidebar } from "@/components/ChatSidebar";
+import { AppPanel } from "@/components/AppPanel";
 import { usePageHeader } from "@/contexts/usePageHeader";
 import { useI18n } from "@/i18n";
 import { PluginSlot } from "@/plugins";
@@ -40,10 +41,23 @@ function buildWsUrl(
   resume: string | null,
   channel: string,
 ): string {
-  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  let host = window.location.host;
+  let proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  
+  const customBackend = typeof window !== "undefined" ? localStorage.getItem("HERMES_BACKEND_URL") || "" : "";
+  if (customBackend) {
+    try {
+      const parsed = new URL(customBackend);
+      host = parsed.host;
+      proto = parsed.protocol === "https:" ? "wss:" : "ws:";
+    } catch (e) {
+      console.warn("Invalid custom backend URL for PTY WebSocket:", customBackend);
+    }
+  }
+
   const qs = new URLSearchParams({ token, channel });
   if (resume) qs.set("resume", resume);
-  return `${proto}//${window.location.host}/api/pty?${qs.toString()}`;
+  return `${proto}//${host}/api/pty?${qs.toString()}`;
 }
 
 // Channel id ties this chat tab's PTY child (publisher) to its sidebar
@@ -115,12 +129,13 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
   // Lazy-init: the missing-token check happens at construction so the effect
   // body doesn't have to setState (React 19's set-state-in-effect rule).
   const [banner, setBanner] = useState<string | null>(() =>
-    typeof window !== "undefined" && !window.__HERMES_SESSION_TOKEN__
-      ? "Session token unavailable. Open this page through `hermes dashboard`, not directly."
+    typeof window !== "undefined" && !window.__HERMES_SESSION_TOKEN__ && !localStorage.getItem("HERMES_SESSION_TOKEN")
+      ? "Session token unavailable. Open this page through `hermes dashboard`, not directly, or configure a Remote Connection."
       : null,
   );
   const [copyState, setCopyState] = useState<"idle" | "copied">("idle");
   const copyResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [appPanelOpen, setAppPanelOpen] = useState(false);
   // Raw state for the mobile side-sheet + a derived value that force-
   // closes whenever the chat tab isn't active.  The *derived* value is
   // what side-effects (body-scroll lock, keydown listener, portal render)
@@ -236,7 +251,7 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
     const host = hostRef.current;
     if (!host) return;
 
-    const token = window.__HERMES_SESSION_TOKEN__;
+    const token = window.__HERMES_SESSION_TOKEN__ || localStorage.getItem("HERMES_SESSION_TOKEN");
     // Banner already initialised above; just bail before wiring xterm/WS.
     if (!token) {
       return;
@@ -784,30 +799,59 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
             className="hermes-chat-xterm-host min-h-0 min-w-0 flex-1"
           />
 
-          <Button
-            ghost
-            onClick={handleCopyLast}
-            title="Copy last assistant response as raw markdown"
-            aria-label="Copy last assistant response"
-            className={cn(
-              "absolute z-10",
-              "rounded border border-current/30",
-              "bg-black/20 backdrop-blur-sm",
-              "opacity-60 hover:opacity-100 hover:border-current/60",
-              "transition-opacity duration-150 normal-case font-normal tracking-normal",
-              "bottom-2 right-2 px-2 py-1 text-[0.65rem] sm:bottom-3 sm:right-3 sm:px-2.5 sm:py-1.5 sm:text-xs",
-              "lg:bottom-4 lg:right-4",
-            )}
-            style={{ color: TERMINAL_THEME.foreground }}
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <Copy className="h-3 w-3 shrink-0" />
-              <span className="hidden min-[400px]:inline tracking-wide">
-                {copyState === "copied" ? "copied" : "copy last response"}
+          {/* Floating actions container */}
+          <div className="absolute z-10 bottom-2 right-2 flex items-center gap-1.5 sm:bottom-3 sm:right-3 lg:bottom-4 lg:right-4">
+            <Button
+              ghost
+              onClick={() => setAppPanelOpen(!appPanelOpen)}
+              title="Toggle MCP Apps Canvas"
+              className={cn(
+                "rounded border border-current/30",
+                "bg-black/20 backdrop-blur-sm",
+                "opacity-60 hover:opacity-100 hover:border-current/60",
+                "transition-opacity duration-150 normal-case font-normal tracking-normal",
+                "px-2 py-1 text-[0.65rem] sm:px-2.5 sm:py-1.5 sm:text-xs",
+              )}
+              style={{ color: TERMINAL_THEME.foreground }}
+            >
+              <span className="inline-flex items-center gap-1.5">
+                <PanelRight className="h-3 w-3 shrink-0" />
+                <span className="hidden min-[400px]:inline tracking-wide">
+                  {appPanelOpen ? "hide canvas" : "show canvas"}
+                </span>
               </span>
-            </span>
-          </Button>
+            </Button>
+
+            <Button
+              ghost
+              onClick={handleCopyLast}
+              title="Copy last assistant response as raw markdown"
+              aria-label="Copy last assistant response"
+              className={cn(
+                "rounded border border-current/30",
+                "bg-black/20 backdrop-blur-sm",
+                "opacity-60 hover:opacity-100 hover:border-current/60",
+                "transition-opacity duration-150 normal-case font-normal tracking-normal",
+                "px-2 py-1 text-[0.65rem] sm:px-2.5 sm:py-1.5 sm:text-xs",
+              )}
+              style={{ color: TERMINAL_THEME.foreground }}
+            >
+              <span className="inline-flex items-center gap-1.5">
+                <Copy className="h-3 w-3 shrink-0" />
+                <span className="hidden min-[400px]:inline tracking-wide">
+                  {copyState === "copied" ? "copied" : "copy last response"}
+                </span>
+              </span>
+            </Button>
+          </div>
         </div>
+
+        {/* Premium AppPanel Split-screen Canvas */}
+        {appPanelOpen && (
+          <div className="flex min-h-0 shrink-0 flex-col overflow-hidden rounded-lg w-full lg:h-full lg:w-[480px] xl:w-[600px] border border-current/20 shadow-2xl">
+            <AppPanel channel={channel} onClose={() => setAppPanelOpen(false)} />
+          </div>
+        )}
 
         {!narrow && (
           <div

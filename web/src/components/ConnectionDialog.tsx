@@ -11,8 +11,12 @@ export function ConnectionDialog({ onClose }: { onClose: () => void }) {
   const [token, setToken] = useState(localStorage.getItem("HERMES_SESSION_TOKEN") || "");
 
   const handleSave = () => {
-    setBackendUrl(url);
-    setManualToken(token);
+    let normalizedUrl = url.trim();
+    if (normalizedUrl && !/^https?:\/\//i.test(normalizedUrl)) {
+      normalizedUrl = `http://${normalizedUrl}`;
+    }
+    setBackendUrl(normalizedUrl);
+    setManualToken(token.trim());
     onClose();
     window.location.reload(); // Reload to apply new connection settings
   };

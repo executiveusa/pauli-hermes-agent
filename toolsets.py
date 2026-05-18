@@ -47,7 +47,7 @@ _HERMES_CORE_TOOLS = [
     # Text-to-speech
     "text_to_speech",
     # Planning & memory
-    "todo", "memory",
+    "todo", "memory", "graphify_rebuild", "graphify_query",
     # Session history search
     "session_search",
     # Clarifying questions

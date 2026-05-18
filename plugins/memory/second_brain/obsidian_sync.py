@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 from typing import Dict, Any, List
 
+from .headless_client import ObsidianHeadlessClient
+
 logger = logging.getLogger(__name__)
 
 def sanitize_filename(name: str) -> str:
@@ -87,6 +89,11 @@ class ObsidianSyncer:
         try:
             self._ensure_vault_exists()
             
+            headless_client = ObsidianHeadlessClient(self.vault_path)
+            # Step 1: Pull remote changes (two-way sync)
+            logger.info("Pulling remote Obsidian changes...")
+            headless_client.sync()
+            
             memories = self._fetch_all_memories()
             tag_map = self._fetch_memory_tags()
             link_map = self._fetch_memory_links()
@@ -128,11 +135,16 @@ class ObsidianSyncer:
                     f.write(content)
                 files_written += 1
                 
+            # Step 2: Push local changes back up to Obsidian Sync
+            logger.info("Pushing local Hermes memories to Obsidian Sync...")
+            sync_res = headless_client.sync()
+                
             return {
                 "success": True, 
                 "message": f"Successfully synced {files_written} memories to {self.vault_path}",
                 "vault_path": str(self.vault_path),
-                "files_written": files_written
+                "files_written": files_written,
+                "remote_sync": sync_res.get("success", False)
             }
             
         except Exception as e:

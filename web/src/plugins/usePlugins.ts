@@ -40,10 +40,13 @@ export function usePlugins() {
 
     const injectedScripts: HTMLScriptElement[] = [];
 
+    const customBackend = typeof window !== "undefined" ? localStorage.getItem("HERMES_BACKEND_URL") || "" : "";
+    const pluginsRoot = customBackend ? `${customBackend.replace(/\/$/, "")}/dashboard-plugins` : "/dashboard-plugins";
+
     for (const manifest of manifests) {
       // Inject CSS if specified.
       if (manifest.css) {
-        const cssUrl = `/dashboard-plugins/${manifest.name}/${manifest.css}`;
+        const cssUrl = `${pluginsRoot}/${manifest.name}/${manifest.css}`;
         if (!document.querySelector(`link[href="${cssUrl}"]`)) {
           const link = document.createElement("link");
           link.rel = "stylesheet";
@@ -55,7 +58,7 @@ export function usePlugins() {
       // Load JS bundle. In dev, cache-bust so Vite HMR can clear the
       // in-memory registry while the browser would otherwise never
       // re-execute a previously cached <script> URL.
-      const baseUrl = `/dashboard-plugins/${manifest.name}/${manifest.entry}`;
+      const baseUrl = `${pluginsRoot}/${manifest.name}/${manifest.entry}`;
       const scriptSrc = import.meta.env.DEV
         ? `${baseUrl}?hermes_dv=${Date.now()}`
         : baseUrl;
