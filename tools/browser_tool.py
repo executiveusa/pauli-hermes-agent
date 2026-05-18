@@ -2209,6 +2209,23 @@ def browser_navigate(url: str, task_id: Optional[str] = None) -> str:
         except Exception as e:
             logger.debug("Auto-snapshot after navigate failed: %s", e)
 
+        # Policy: include visual context for browser tasks by default so all
+        # agents get a current screenshot-grounded view, not just text a11y.
+        try:
+            vision_raw = browser_vision(
+                question="Summarize the key visible UI state for next browser actions.",
+                annotate=False,
+                task_id=nav_session_key,
+            )
+            vision_data = json.loads(vision_raw)
+            if vision_data.get("success"):
+                response["visual_context"] = {
+                    "analysis": vision_data.get("analysis", ""),
+                    "screenshot_path": vision_data.get("screenshot_path", ""),
+                }
+        except Exception as e:
+            logger.debug("Auto-vision after navigate failed: %s", e)
+
         return json.dumps(response, ensure_ascii=False)
     else:
         return json.dumps({
@@ -2263,6 +2280,23 @@ def browser_snapshot(
             "element_count": len(refs) if refs else 0
         }
         _copy_fallback_warning(response, result)
+
+        # Policy: include visual context in snapshots so browser workflows keep
+        # a screenshot-grounded view available to every agent turn.
+        try:
+            vision_raw = browser_vision(
+                question="Summarize the key visible UI state for next browser actions.",
+                annotate=False,
+                task_id=effective_task_id,
+            )
+            vision_data = json.loads(vision_raw)
+            if vision_data.get("success"):
+                response["visual_context"] = {
+                    "analysis": vision_data.get("analysis", ""),
+                    "screenshot_path": vision_data.get("screenshot_path", ""),
+                }
+        except Exception as e:
+            logger.debug("Auto-vision after snapshot failed: %s", e)
 
         # Merge supervisor state (pending dialogs + frame tree) when a CDP
         # supervisor is attached to this task. No-op otherwise. See
