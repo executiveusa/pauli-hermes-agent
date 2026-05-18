@@ -69,6 +69,7 @@ from agent.usage_pricing import (
     format_duration_compact,
     format_token_count_compact,
 )
+from agent.pauli_skill_router import route_skills_for_task, router_available
 # NOTE: `from agent.account_usage import ...` is deliberately NOT at module
 # top — it transitively pulls the OpenAI SDK chain (~230 ms cold) and is only
 # needed when the user runs `/limits`. Lazy-imported inside the handler below.
@@ -12332,6 +12333,10 @@ def main(
         toolsets_list = sorted(_get_platform_tools(CLI_CONFIG, "cli"))
     
     parsed_skills = _parse_skills_argument(skills)
+    pauli_profile = (
+        os.environ.get("HERMES_PAULI_PROFILE")
+        or ((CLI_CONFIG.get("agent") or {}).get("pauli_profile"))
+    )
 
     # Create CLI instance
     cli = HermesCLI(
@@ -12349,9 +12354,34 @@ def main(
         ignore_rules=ignore_rules,
     )
 
-    if parsed_skills:
+    routed_skill_identifiers = list(parsed_skills)
+    if router_available() and query:
+        route_result = route_skills_for_task(
+            query,
+            explicit_skills=parsed_skills,
+            profile=pauli_profile,
+            repo_root=Path(__file__).parent,
+        )
+        routed_skill_identifiers = route_result["resolved_skill_identifiers"]
+        if route_result["selection_reasons"]:
+            logger.info(
+                "Pauli skill router reasons: %s",
+                "; ".join(route_result["selection_reasons"]),
+            )
+        if route_result["approval_required"]:
+            logger.info("Pauli skill router marked this task as approval-gated.")
+    elif pauli_profile and not parsed_skills:
+        route_result = route_skills_for_task(
+            "",
+            explicit_skills=[],
+            profile=pauli_profile,
+            repo_root=Path(__file__).parent,
+        )
+        routed_skill_identifiers = route_result["resolved_skill_identifiers"]
+
+    if routed_skill_identifiers:
         skills_prompt, loaded_skills, missing_skills = build_preloaded_skills_prompt(
-            parsed_skills,
+            routed_skill_identifiers,
             task_id=cli.session_id,
         )
         if missing_skills:

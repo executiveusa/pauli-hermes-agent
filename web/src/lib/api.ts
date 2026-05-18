@@ -1,4 +1,20 @@
 const BASE = "";
+let _backendUrl = typeof window !== "undefined" ? localStorage.getItem("HERMES_BACKEND_URL") || "" : "";
+let _manualToken = typeof window !== "undefined" ? localStorage.getItem("HERMES_SESSION_TOKEN") || "" : "";
+
+export function setBackendUrl(url: string) {
+  _backendUrl = url;
+  if (typeof window !== "undefined") localStorage.setItem("HERMES_BACKEND_URL", url);
+}
+
+export function setManualToken(token: string) {
+  _manualToken = token;
+  if (typeof window !== "undefined") localStorage.setItem("HERMES_SESSION_TOKEN", token);
+}
+
+function getBase() {
+  return _backendUrl || BASE;
+}
 
 import type { DashboardTheme } from "@/themes/types";
 
@@ -21,11 +37,12 @@ function setSessionHeader(headers: Headers, token: string): void {
 export async function fetchJSON<T>(url: string, init?: RequestInit): Promise<T> {
   // Inject the session token into all /api/ requests.
   const headers = new Headers(init?.headers);
-  const token = window.__HERMES_SESSION_TOKEN__;
+  const token = _manualToken || window.__HERMES_SESSION_TOKEN__;
   if (token) {
     setSessionHeader(headers, token);
   }
-  const res = await fetch(`${BASE}${url}`, { ...init, headers });
+  const base = getBase();
+  const res = await fetch(`${base}${url}`, { ...init, headers });
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
     throw new Error(`${res.status}: ${text}`);
@@ -35,12 +52,12 @@ export async function fetchJSON<T>(url: string, init?: RequestInit): Promise<T> 
 
 async function getSessionToken(): Promise<string> {
   if (_sessionToken) return _sessionToken;
-  const injected = window.__HERMES_SESSION_TOKEN__;
-  if (injected) {
-    _sessionToken = injected;
+  const token = _manualToken || window.__HERMES_SESSION_TOKEN__;
+  if (token) {
+    _sessionToken = token;
     return _sessionToken;
   }
-  throw new Error("Session token not available — page must be served by the Hermes dashboard server");
+  throw new Error("Session token not available — please set it in connection settings");
 }
 
 export const api = {

@@ -1,0 +1,33 @@
+pauli-prime:
+  role: orchestrator
+  default_loaded_skills:
+    - zero-touch-engineer
+    - plan
+    - writing-plans
+    - native-mcp
+  max_context_skills: 3
+
+pauli-engineer:
+  role: repo_code_deploy_worker
+  default_loaded_skills:
+    - github-auth
+    - github-pr-workflow
+    - systematic-debugging
+    - test-driven-development
+  max_context_skills: 5
+
+pauli-studio:
+  role: design_video_content_worker
+  default_loaded_skills:
+    - claude-design
+    - popular-web-designs
+    - pauli-taste-skill
+  max_context_skills: 5
+
+pauli-memory:
+  role: second_brain_worker
+  default_loaded_skills:
+    - obsidian
+    - ocr-and-documents
+    - pauli-supabase-memory
+  max_context_skills: 4

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "sync-assets": "rm -rf public/fonts public/ds-assets && cp -r node_modules/@nous-research/ui/dist/fonts public/fonts && cp -r node_modules/@nous-research/ui/dist/assets public/ds-assets",
+    "sync-assets": "rm -rf public/fonts public/ds-assets && mkdir -p public/fonts public/ds-assets && cp -r node_modules/@nous-research/ui/dist/fonts/* public/fonts/ || true && cp -r node_modules/@nous-research/ui/dist/assets/* public/ds-assets/ || true",
     "predev": "npm run sync-assets",
     "prebuild": "npm run sync-assets",
     "dev": "vite",
@@ -47,6 +47,7 @@
     "three": "^0.180.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vite-plugin-pwa": "^0.21.1"
   }
 }

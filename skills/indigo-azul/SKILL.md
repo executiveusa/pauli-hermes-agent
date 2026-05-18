@@ -75,7 +75,7 @@ In **nonprofit mode**: prioritize mission alignment, activate full skill stack, 
 ## Payment Stack
 
 | Purpose | Platform |
-|---------|---------|
+|---------|----------|
 | Nonprofit donations | Zeffy (primary) |
 | Crypto donations | BTCPay Server (self-hosted) |
 | Agent services / SaaS | Creem.io |

@@ -869,6 +869,65 @@ def skill_view(
     """
     try:
         local_category_name: str | None = None
+        absolute_target = Path(name).expanduser()
+        if absolute_target.is_absolute():
+            skill_dir = None
+            skill_md = None
+            if absolute_target.is_dir() and (absolute_target / "SKILL.md").exists():
+                skill_dir = absolute_target
+                skill_md = absolute_target / "SKILL.md"
+            elif absolute_target.is_file() and absolute_target.name == "SKILL.md":
+                skill_dir = absolute_target.parent
+                skill_md = absolute_target
+            if skill_md is not None:
+                content = skill_md.read_text(encoding="utf-8")
+                frontmatter, body = _parse_frontmatter(content)
+                if not skill_matches_platform(frontmatter):
+                    return json.dumps(
+                        {
+                            "success": False,
+                            "error": f"Skill '{name}' is not supported on this platform.",
+                        },
+                        ensure_ascii=False,
+                    )
+                if file_path:
+                    return _serve_skill_file(skill_dir, file_path)
+                description = str(frontmatter.get("description", "")).strip()
+                readiness = check_skills_requirements(frontmatter, body)
+                rendered_content = content
+                if preprocess:
+                    try:
+                        from agent.skill_preprocessing import preprocess_skill_content
+
+                        rendered_content = preprocess_skill_content(
+                            content,
+                            skill_dir,
+                            session_id=task_id,
+                        )
+                    except Exception:
+                        logger.debug(
+                            "Could not preprocess absolute-path skill %s",
+                            name,
+                            exc_info=True,
+                        )
+                return json.dumps(
+                    {
+                        "success": True,
+                        "name": frontmatter.get("name", skill_dir.name),
+                        "path": str(skill_md),
+                        "skill_dir": str(skill_dir),
+                        "content": rendered_content,
+                        "raw_content": content,
+                        "description": description,
+                        "linked_files": _discover_linked_files(skill_dir),
+                        "readiness_status": readiness["status"],
+                        "setup_needed": readiness.get("setup_needed", False),
+                        "setup_note": readiness.get("setup_note"),
+                        "setup_skipped": readiness.get("setup_skipped", False),
+                        "gateway_setup_hint": readiness.get("gateway_setup_hint"),
+                    },
+                    ensure_ascii=False,
+                )
         # ── Qualified name dispatch (plugin skills) ──────────────────
         # Names containing ':' are routed to the plugin skill registry.
         # Bare names fall through to the existing flat-tree scan below.

@@ -177,6 +177,22 @@ from agent.trajectory import (
 from utils import atomic_json_write, base_url_host_matches, base_url_hostname, env_var_enabled, normalize_proxy_url
 from hermes_cli.config import cfg_get
 
+TASK_MODE_PROMPTS = {
+    "deploy_apps": (
+        "You are an autonomous deployment agent. Given a repo, decide: "
+        "Is it deployable? What stack? Should it be deployed now? "
+        "Use tools when needed."
+    ),
+}
+
+TASK_MODE_PROMPTS = {
+    "deploy_apps": (
+        "You are an autonomous deployment agent. Given a repo, decide: "
+        "Is it deployable? What stack? Should it be deployed now? "
+        "Use tools when needed."
+    ),
+}
+
 
 
 class _SafeWriter:
@@ -5094,6 +5110,16 @@ class AIAgent:
                     prompt_parts.append(_entry.platform_hint)
             except Exception:
                 pass
+
+        if self.task_mode:
+            mode_prompt = TASK_MODE_PROMPTS.get(self.task_mode)
+            if mode_prompt:
+                prompt_parts.append(mode_prompt)
+
+        if self.task_mode:
+            mode_prompt = TASK_MODE_PROMPTS.get(self.task_mode)
+            if mode_prompt:
+                prompt_parts.append(mode_prompt)
 
         return "\n\n".join(p.strip() for p in prompt_parts if p.strip())
 

@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS people (
 );
 
 -- FTS5 virtual table for full-text search across all recall fields
--- Not a content table — managed explicitly to allow arbitrary updates
 CREATE VIRTUAL TABLE IF NOT EXISTS people_fts
     USING fts5(
         id UNINDEXED,
@@ -30,15 +29,15 @@ CREATE VIRTUAL TABLE IF NOT EXISTS people_fts
         role,
         company,
         notes,
-        context_tags_flat          -- flattened array string for FTS
+        context_tags_flat
     );
 
 CREATE TABLE IF NOT EXISTS connections (
     id              TEXT PRIMARY KEY,
     person_a_id     TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE,
     person_b_id     TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE,
-    connection_type TEXT,           -- introduced_by | met_at | works_with | friend
-    context         TEXT,           -- "Introduced at SV Summit 2023"
+    connection_type TEXT,
+    context         TEXT,
     strength        REAL DEFAULT 0.5,
     created_at      TEXT DEFAULT (datetime('now')),
     UNIQUE(person_a_id, person_b_id)
@@ -48,17 +47,17 @@ CREATE TABLE IF NOT EXISTS memory_items (
     id          TEXT PRIMARY KEY,
     person_id   TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE,
     text        TEXT NOT NULL,
-    source      TEXT DEFAULT 'HERMES',  -- MANUAL|HERMES|VOICE|PHOTO|CALENDAR
-    context     TEXT,               -- "Austin AI Week 2025"
+    source      TEXT DEFAULT 'HERMES',
+    context     TEXT,
     timestamp   TEXT DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS person_events (
     id          TEXT PRIMARY KEY,
     person_id   TEXT NOT NULL REFERENCES people(id) ON DELETE CASCADE,
-    type        TEXT NOT NULL,      -- BIRTHDAY|MEETING|REMINDER|AMBIENT
+    type        TEXT NOT NULL,
     title       TEXT NOT NULL,
-    date        TEXT NOT NULL,      -- ISO: YYYY-MM-DD
+    date        TEXT NOT NULL,
     fired       INTEGER DEFAULT 0,
     fired_at    TEXT,
     created_at  TEXT DEFAULT (datetime('now'))
@@ -66,7 +65,7 @@ CREATE TABLE IF NOT EXISTS person_events (
 
 CREATE TABLE IF NOT EXISTS unknown_queue (
     id          TEXT PRIMARY KEY,
-    description TEXT NOT NULL,      -- unresolved person description
+    description TEXT NOT NULL,
     session_id  TEXT,
     created_at  TEXT DEFAULT (datetime('now')),
     resolved    INTEGER DEFAULT 0

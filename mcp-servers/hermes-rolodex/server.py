@@ -202,7 +202,7 @@ def _parse_tags(raw) -> list:
 
 
 # ---------------------------------------------------------------------------
-# Tool handlers — all return plain dict (no MCP types here)
+# Tool handlers
 # ---------------------------------------------------------------------------
 
 def _handle_add_person(conn: sqlite3.Connection, args: dict) -> dict:
