@@ -16,7 +16,7 @@ Gmail, Calendar, Drive, Docs, Sheets via gws CLI or Python.
 |---|---|
 | Source | Bundled (installed by default) |
 | Path | `skills/productivity/google-workspace` |
-| Version | `1.0.0` |
+| Version | `1.0.1` |
 | Author | Nous Research |
 | License | MIT |
 | Tags | `Google`, `Gmail`, `Calendar`, `Drive`, `Sheets`, `Docs`, `Contacts`, `Email`, `OAuth` |
