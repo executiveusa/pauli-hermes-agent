@@ -85,6 +85,46 @@ def test_build_native_request_uses_original_function_name_for_tool_result():
     assert tool_response["name"] == "get_weather"
 
 
+def test_build_native_request_strips_json_schema_only_fields_from_tool_parameters():
+    from agent.gemini_native_adapter import build_gemini_request
+
+    request = build_gemini_request(
+        messages=[{"role": "user", "content": "Hello"}],
+        tools=[
+            {
+                "type": "function",
+                "function": {
+                    "name": "lookup_weather",
+                    "description": "Weather lookup",
+                    "parameters": {
+                        "$schema": "https://json-schema.org/draft/2020-12/schema",
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "city": {
+                                "type": "string",
+                                "$schema": "ignored",
+                                "description": "City name",
+                            }
+                        },
+                        "required": ["city"],
+                    },
+                },
+            }
+        ],
+        tool_choice=None,
+    )
+
+    params = request["tools"][0]["functionDeclarations"][0]["parameters"]
+    assert "$schema" not in params
+    assert "additionalProperties" not in params
+    assert params["type"] == "object"
+    assert params["properties"]["city"] == {
+        "type": "string",
+        "description": "City name",
+    }
+
+
 def test_translate_native_response_surfaces_reasoning_and_tool_calls():
     from agent.gemini_native_adapter import translate_gemini_response
 
@@ -192,6 +232,19 @@ def test_native_client_accepts_injected_http_client():
     injected = SimpleNamespace(close=lambda: None)
     client = GeminiNativeClient(api_key="AIza-test", http_client=injected)
     assert client._http is injected
+
+
+def test_native_client_rejects_empty_api_key_with_actionable_message():
+    """Empty/whitespace api_key must raise at construction, not produce a cryptic
+    Google GFE 'Error 400 (Bad Request)!!1' HTML page on the first request."""
+    from agent.gemini_native_adapter import GeminiNativeClient
+
+    for bad in ("", "   ", None):
+        with pytest.raises(RuntimeError) as excinfo:
+            GeminiNativeClient(api_key=bad)  # type: ignore[arg-type]
+        msg = str(excinfo.value)
+        assert "GOOGLE_API_KEY" in msg and "GEMINI_API_KEY" in msg
+        assert "aistudio.google.com" in msg
 
 
 @pytest.mark.asyncio

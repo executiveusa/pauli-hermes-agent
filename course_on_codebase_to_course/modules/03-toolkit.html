@@ -1,0 +1,69 @@
+<section class="module" id="module-3">
+  <div class="container">
+    <div class="screen" data-screen="1">
+      <h2 class="animate-in">The Toolkit: Assets over Boilerplate</h2>
+      <p class="animate-in">The magic of this methodology lies in its <strong>Reference System</strong>. Instead of the AI inventing a new UI every time, it uses a pre-built set of "Lego bricks."</p>
+      
+      <div class="pattern-cards animate-in">
+        <div class="pattern-card" style="border-top: 3px solid #2A7B9B">
+          <div class="pattern-icon" style="background: #2A7B9B">🎨</div>
+          <h4 class="pattern-title">styles.css</h4>
+          <p class="pattern-desc">The "Look & Feel." Contains all the colors, spacing, and animations. Copied verbatim so AI never messes with the design.</p>
+        </div>
+        <div class="pattern-card" style="border-top: 3px solid #E8836C">
+          <div class="pattern-icon" style="background: #E8836C">⚙️</div>
+          <h4 class="pattern-title">main.js</h4>
+          <p class="pattern-desc">The "Brain." Handles all the interactive elements—quizzes, animations, and tooltips—automatically.</p>
+        </div>
+        <div class="pattern-card" style="border-top: 3px solid #2D8B55">
+          <div class="pattern-icon" style="background: #2D8B55">🐚</div>
+          <h4 class="pattern-title">_base.html</h4>
+          <p class="pattern-desc">The "Shell." The HTML structure that wraps your course and provides the progress bar and navigation.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" data-screen="2">
+      <h2 class="animate-in">No Setup Required</h2>
+      <p class="animate-in">Because the CSS and JS are bundled locally, the resulting course is a <strong>single directory</strong> you can open in any browser. No servers, no `npm install`, no friction.</p>
+
+      <div class="callout callout-info animate-in">
+        <div class="callout-icon">ℹ️</div>
+        <div class="callout-content">
+          <strong class="callout-title">The "Offline-First" Advantage</strong>
+          <p>By using standard web technologies without heavy frameworks, these courses are lightweight, searchable, and will still work 10 years from now.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" data-screen="3">
+      <h2 class="animate-in">Technical Vocabulary Check</h2>
+      <p class="animate-in">Let's see if you've been paying attention to the tooltips!</p>
+      
+      <div class="quiz-container animate-in" id="quiz-toolkit">
+        <div class="quiz-question-block"
+             data-correct="option-a"
+             data-explanation-right="Correct! Styles.css is the design source of truth."
+             data-explanation-wrong="Remember: the goal is to keep the AI from having to write repetitive design code.">
+          <h3 class="quiz-question">Which file ensures the AI doesn't have to reinvent the design for every module?</h3>
+          <div class="quiz-options">
+            <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>styles.css</span>
+            </button>
+            <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>main.js</span>
+            </button>
+            <button class="quiz-option" data-value="option-c" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>build.sh</span>
+            </button>
+          </div>
+          <div class="quiz-feedback"></div>
+        </div>
+        <button class="quiz-check-btn" onclick="checkQuiz('quiz-toolkit')">Check Answer</button>
+      </div>
+    </div>
+  </div>
+</section>

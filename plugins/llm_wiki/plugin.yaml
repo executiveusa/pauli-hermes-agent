@@ -1,0 +1,7 @@
+name: llm_wiki
+version: "1.0.0"
+description: "LLM Wiki server to visualize the Second Brain knowledge graph"
+author: "Hermes"
+dependencies:
+  - fastapi
+  - uvicorn

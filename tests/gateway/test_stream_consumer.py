@@ -133,6 +133,43 @@ class TestFinalizeCapabilityGate:
         assert picky.edit_message.call_args[1]["finalize"] is True
 
 
+class TestEditMessageFinalizeSignature:
+    """Every concrete platform adapter must accept the ``finalize`` kwarg.
+
+    stream_consumer._send_or_edit always passes ``finalize=`` to
+    ``adapter.edit_message(...)`` (see gateway/stream_consumer.py).  An
+    adapter that overrides edit_message without accepting finalize raises
+    TypeError the first time streaming hits a segment break or final edit.
+    Guard the contract with an explicit signature check so it cannot
+    silently regress — existing tests use MagicMock which swallows any
+    kwarg and cannot catch this.
+    """
+
+    @pytest.mark.parametrize(
+        "module_path,class_name",
+        [
+            ("gateway.platforms.telegram", "TelegramAdapter"),
+            ("gateway.platforms.discord", "DiscordAdapter"),
+            ("gateway.platforms.slack", "SlackAdapter"),
+            ("gateway.platforms.matrix", "MatrixAdapter"),
+            ("gateway.platforms.mattermost", "MattermostAdapter"),
+            ("gateway.platforms.feishu", "FeishuAdapter"),
+            ("gateway.platforms.whatsapp", "WhatsAppAdapter"),
+            ("gateway.platforms.dingtalk", "DingTalkAdapter"),
+        ],
+    )
+    def test_edit_message_accepts_finalize(self, module_path, class_name):
+        import inspect
+
+        module = pytest.importorskip(module_path)
+        cls = getattr(module, class_name)
+        params = inspect.signature(cls.edit_message).parameters
+        assert "finalize" in params, (
+            f"{class_name}.edit_message must accept 'finalize' kwarg; "
+            f"stream_consumer._send_or_edit passes it unconditionally"
+        )
+
+
 class TestSendOrEditMediaStripping:
     """Verify _send_or_edit strips MEDIA: before sending to the platform."""
 
@@ -1300,3 +1337,159 @@ class TestCursorStrippingOnFallback:
         assert consumer._already_sent is True
         # _last_sent_text must NOT be updated when the edit failed
         assert consumer._last_sent_text == "Hello ▉"
+
+
+# ── on_new_message callback (tool-progress linearization) ─────────────
+
+
+class TestOnNewMessageCallback:
+    """The on_new_message callback fires whenever a fresh content bubble
+    lands on the platform. Gateway uses this to close off the current
+    tool-progress bubble so the next tool.started opens a new bubble
+    below the content — preserving chronological order in the chat.
+
+    Before this callback existed (post PR #7885), content messages got
+    their own bubbles after segment breaks, but the tool-progress task
+    kept editing the ORIGINAL progress bubble above all new content.
+    Result: tool lines appeared stacked in the upper bubble while
+    content messages lined up below, making the timeline look scrambled.
+    """
+
+    @pytest.mark.asyncio
+    async def test_callback_fires_on_first_send(self):
+        """First-send of a new content bubble fires on_new_message."""
+        adapter = MagicMock()
+        adapter.send = AsyncMock(return_value=SimpleNamespace(success=True, message_id="msg_1"))
+        adapter.edit_message = AsyncMock(return_value=SimpleNamespace(success=True))
+        adapter.MAX_MESSAGE_LENGTH = 4096
+
+        events = []
+        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=1)
+        consumer = GatewayStreamConsumer(
+            adapter, "chat", config,
+            on_new_message=lambda: events.append("reset"),
+        )
+
+        consumer.on_delta("Hello")
+        consumer.finish()
+        await consumer.run()
+
+        assert events == ["reset"]
+
+    @pytest.mark.asyncio
+    async def test_callback_fires_once_per_segment(self):
+        """A new first-send fires the callback again after segment break."""
+        adapter = MagicMock()
+        msg_counter = iter(["msg_1", "msg_2", "msg_3"])
+        adapter.send = AsyncMock(
+            side_effect=lambda **kw: SimpleNamespace(success=True, message_id=next(msg_counter))
+        )
+        adapter.edit_message = AsyncMock(return_value=SimpleNamespace(success=True))
+        adapter.MAX_MESSAGE_LENGTH = 4096
+
+        events = []
+        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=1)
+        consumer = GatewayStreamConsumer(
+            adapter, "chat", config,
+            on_new_message=lambda: events.append("reset"),
+        )
+
+        consumer.on_delta("A")
+        consumer.on_delta(None)
+        consumer.on_delta("B")
+        consumer.on_delta(None)
+        consumer.on_delta("C")
+        consumer.finish()
+        await consumer.run()
+
+        # Three content bubbles ⇒ three reset notifications
+        assert events == ["reset", "reset", "reset"]
+
+    @pytest.mark.asyncio
+    async def test_callback_not_fired_on_edit(self):
+        """Subsequent edits of the same bubble do NOT fire the callback."""
+        adapter = MagicMock()
+        adapter.send = AsyncMock(return_value=SimpleNamespace(success=True, message_id="msg_1"))
+        adapter.edit_message = AsyncMock(return_value=SimpleNamespace(success=True))
+        adapter.MAX_MESSAGE_LENGTH = 4096
+
+        events = []
+        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=1)
+        consumer = GatewayStreamConsumer(
+            adapter, "chat", config,
+            on_new_message=lambda: events.append("reset"),
+        )
+
+        consumer.on_delta("Hello")
+        task = asyncio.create_task(consumer.run())
+        await asyncio.sleep(0.05)
+        consumer.on_delta(" world")
+        await asyncio.sleep(0.05)
+        consumer.on_delta(" more")
+        await asyncio.sleep(0.05)
+        consumer.finish()
+        await task
+
+        # Only one first-send happened; edits do not re-fire.
+        assert events == ["reset"]
+
+    @pytest.mark.asyncio
+    async def test_callback_fires_on_commentary(self):
+        """Commentary messages are fresh bubbles too — fire the callback."""
+        adapter = MagicMock()
+        adapter.send = AsyncMock(return_value=SimpleNamespace(success=True, message_id="msg_1"))
+        adapter.edit_message = AsyncMock(return_value=SimpleNamespace(success=True))
+        adapter.MAX_MESSAGE_LENGTH = 4096
+
+        events = []
+        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=1)
+        consumer = GatewayStreamConsumer(
+            adapter, "chat", config,
+            on_new_message=lambda: events.append("reset"),
+        )
+
+        consumer.on_commentary("I'll search for that first.")
+        consumer.finish()
+        await consumer.run()
+
+        assert events == ["reset"]
+
+    @pytest.mark.asyncio
+    async def test_callback_error_swallowed(self):
+        """Exceptions in the callback do not crash the consumer."""
+        adapter = MagicMock()
+        adapter.send = AsyncMock(return_value=SimpleNamespace(success=True, message_id="msg_1"))
+        adapter.edit_message = AsyncMock(return_value=SimpleNamespace(success=True))
+        adapter.MAX_MESSAGE_LENGTH = 4096
+
+        def raiser():
+            raise RuntimeError("boom")
+
+        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=1)
+        consumer = GatewayStreamConsumer(
+            adapter, "chat", config,
+            on_new_message=raiser,
+        )
+
+        consumer.on_delta("Hello")
+        consumer.finish()
+        await consumer.run()  # must not raise
+
+        assert consumer.already_sent is True
+
+    @pytest.mark.asyncio
+    async def test_no_callback_when_none(self):
+        """Consumer works correctly when on_new_message is None (default)."""
+        adapter = MagicMock()
+        adapter.send = AsyncMock(return_value=SimpleNamespace(success=True, message_id="msg_1"))
+        adapter.edit_message = AsyncMock(return_value=SimpleNamespace(success=True))
+        adapter.MAX_MESSAGE_LENGTH = 4096
+
+        config = StreamConsumerConfig(edit_interval=0.01, buffer_threshold=1)
+        consumer = GatewayStreamConsumer(adapter, "chat", config)  # no callback
+
+        consumer.on_delta("Hello")
+        consumer.finish()
+        await consumer.run()
+
+        assert consumer.already_sent is True
