@@ -202,26 +202,22 @@ class WebhookAdapter(BasePlatformAdapter):
         if deliver_type == "github_comment":
             return await self._deliver_github_comment(content, delivery)
 
-        # Cross-platform delivery — any platform with a gateway adapter
-        if self.gateway_runner and deliver_type in (
-            "telegram",
-            "discord",
-            "slack",
-            "signal",
-            "sms",
-            "whatsapp",
-            "matrix",
-            "mattermost",
-            "homeassistant",
-            "email",
-            "dingtalk",
-            "feishu",
-            "wecom",
-            "wecom_callback",
-            "weixin",
-            "bluebubbles",
-            "qqbot",
-        ):
+        # Cross-platform delivery — any platform with a gateway adapter.
+        # Check both built-in names and plugin-registered platforms.
+        _BUILTIN_DELIVER_PLATFORMS = {
+            "telegram", "discord", "slack", "signal", "sms", "whatsapp",
+            "matrix", "mattermost", "homeassistant", "email", "dingtalk",
+            "feishu", "wecom", "wecom_callback", "weixin", "bluebubbles",
+            "qqbot", "yuanbao",
+        }
+        _is_known_platform = deliver_type in _BUILTIN_DELIVER_PLATFORMS
+        if not _is_known_platform:
+            try:
+                from gateway.platform_registry import platform_registry
+                _is_known_platform = platform_registry.is_registered(deliver_type)
+            except Exception:
+                pass
+        if self.gateway_runner and _is_known_platform:
             return await self._deliver_cross_platform(
                 deliver_type, content, delivery
             )
@@ -313,24 +309,14 @@ class WebhookAdapter(BasePlatformAdapter):
                 {"error": "Payload too large"}, status=413
             )
 
-        # ── Rate limiting ────────────────────────────────────────
-        now = time.time()
-        window = self._rate_counts.setdefault(route_name, [])
-        window[:] = [t for t in window if now - t < 60]
-        if len(window) >= self._rate_limit:
-            return web.json_response(
-                {"error": "Rate limit exceeded"}, status=429
-            )
-        window.append(now)
-
-        # Read body
+        # Read body (must be done before any validation)
         try:
             raw_body = await request.read()
         except Exception as e:
             logger.error("[webhook] Failed to read body: %s", e)
             return web.json_response({"error": "Bad request"}, status=400)
 
-        # Validate HMAC signature (skip for INSECURE_NO_AUTH testing mode)
+        # Validate HMAC signature FIRST (skip for INSECURE_NO_AUTH testing mode)
         secret = route_config.get("secret", self._global_secret)
         if secret and secret != _INSECURE_NO_AUTH:
             if not self._validate_signature(request, raw_body, secret):
@@ -340,6 +326,16 @@ class WebhookAdapter(BasePlatformAdapter):
                 return web.json_response(
                     {"error": "Invalid signature"}, status=401
                 )
+
+        # ── Rate limiting (after auth) ───────────────────────────
+        now = time.time()
+        window = self._rate_counts.setdefault(route_name, [])
+        window[:] = [t for t in window if now - t < 60]
+        if len(window) >= self._rate_limit:
+            return web.json_response(
+                {"error": "Rate limit exceeded"}, status=429
+            )
+        window.append(now)
 
         # Parse payload
         try:

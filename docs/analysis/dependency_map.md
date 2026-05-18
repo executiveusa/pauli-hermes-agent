@@ -1,25 +1,24 @@
-# Dependency Map
+# Dependency Map (Snapshot: 2026-04-23)
 
-## Package Managers
-- Python: `pyproject.toml`, `requirements.txt`, `uv.lock`
-- Node: `package.json`, `package-lock.json`, `ui-tui/package.json`
-- Nix: `flake.nix`, `flake.lock`
+## Package Managers and Lockfiles
+- Python: `pyproject.toml`, `requirements.txt`, `uv.lock`.
+- Node.js (root): `package.json`, `package-lock.json`.
+- Node.js (subprojects): `ui-tui/package.json`, `web/package.json`, `website/package.json`, `scripts/whatsapp-bridge/package.json`.
+- Nix: `flake.nix`, `flake.lock`.
 
-## Core Runtime Layers
-- Kernel/agent loop: `run_agent.py`, `model_tools.py`, `toolsets.py`
-- Tooling: `tools/` registry + handlers
-- CLI: `cli.py`, `hermes_cli/`
-- Messaging Gateway: `gateway/`
-- TUI: `ui-tui/` + `tui_gateway/`
-- Web Dashboard/API: `hermes_cli/web_server.py`, `web/`
+## Runtime Surfaces
+- Kernel orchestration: `run_agent.py`, `model_tools.py`, `toolsets.py`.
+- Tooling layer: `tools/registry.py` + `tools/*.py`.
+- CLI: `cli.py` + `hermes_cli/*`.
+- Gateway/messaging: `gateway/*`.
+- TUI stack: `ui-tui/*` + `tui_gateway/*`.
+- Dashboard/API: `hermes_cli/web_server.py` + `web/*`.
 
-## Key External Integrations Detected
-- GitHub API usage in skills publishing and auth/model flows (`hermes_cli/skills_hub.py`, `hermes_cli/auth.py`, `hermes_cli/models.py`)
-- Twilio SMS platform adapter (`gateway/platforms/sms.py`)
-- Webhook ingestion (`gateway/platforms/webhook.py`, `hermes_cli/webhook.py`)
-- Vercel AI Gateway provider aliasing (`hermes_cli/providers.py`, `hermes_cli/auth.py`)
+## Integration Capability Snapshot
+- GitHub: present in auth/model/skills and CI workflows; no first-class dedicated GitHub operator module under `tools/` yet.
+- Vercel: deploy hook used in `.github/workflows/deploy-site.yml`; no first-class Vercel deployment operator module under `tools/` yet.
+- Twilio: SMS platform adapter exists (`gateway/platforms/sms.py`); no first-class voice operator pipeline detected.
+- Infisical: no dedicated adapter/service module detected in current code tree.
 
-## Not Yet First-class in Core
-- No dedicated Infisical adapter module found
-- No dedicated Vercel deployment operator module found
-- No dedicated GitHub repo/workflow operator module in `tools/` found (MCP can bridge externally)
+## Operational Conclusion
+The repository is a strong Hermes kernel with many extension points already in place, but P0 operator capabilities (GitHub repo operations, Vercel deployment diagnosis/redeploy, Infisical secret plane, Twilio voice) still need dedicated implementation modules and tests.

@@ -1,0 +1,11 @@
+node_modules
+dist
+.hermes
+venv
+.venv
+agent.log
+errors.log
+gateway.log
+*.db
+*.pyc
+__pycache__
