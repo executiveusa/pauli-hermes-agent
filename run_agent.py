@@ -185,6 +185,14 @@ TASK_MODE_PROMPTS = {
     ),
 }
 
+TASK_MODE_PROMPTS = {
+    "deploy_apps": (
+        "You are an autonomous deployment agent. Given a repo, decide: "
+        "Is it deployable? What stack? Should it be deployed now? "
+        "Use tools when needed."
+    ),
+}
+
 
 
 class _SafeWriter:
@@ -5102,6 +5110,11 @@ class AIAgent:
                     prompt_parts.append(_entry.platform_hint)
             except Exception:
                 pass
+
+        if self.task_mode:
+            mode_prompt = TASK_MODE_PROMPTS.get(self.task_mode)
+            if mode_prompt:
+                prompt_parts.append(mode_prompt)
 
         if self.task_mode:
             mode_prompt = TASK_MODE_PROMPTS.get(self.task_mode)
