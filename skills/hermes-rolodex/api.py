@@ -4,43 +4,29 @@ Hermes Rolodex API endpoints for web UI integration.
 Provides REST API wrappers around the MCP server tools for the Hermes Rolodex UI.
 """
 
-import asyncio
-import json
+import uuid
 from typing import Any, Dict, Optional
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 import aiosqlite
 
-# Database connection
 DB_PATH = Path.home() / ".hermes" / "rolodex.db"
 
 
 async def get_db() -> aiosqlite.Connection:
-    """Get async SQLite connection to rolodex database."""
     db = await aiosqlite.connect(str(DB_PATH))
     await db.execute("PRAGMA foreign_keys=ON")
     return db
 
 
 async def fuzzy_recall(query: str, limit: int = 10) -> Dict[str, Any]:
-    """
-    Search for people using fuzzy matching.
-
-    Args:
-        query: Search query (name, email, or notes)
-        limit: Maximum number of results
-
-    Returns:
-        Dictionary with matches list
-    """
     db = await get_db()
     try:
-        # Use FTS5 for fuzzy search
         cursor = await db.execute("""
             SELECT p.id, p.name, p.email, p.phone, p.strength, p.strength_label, p.last_contact_at
-            FROM people p
-            LEFT JOIN people_fts fts ON p.id = fts.rowid
-            WHERE fts.people_fts MATCH ?
+            FROM people_fts fts
+            JOIN people p ON p.id = fts.id
+            WHERE people_fts MATCH ?
             ORDER BY rank, p.strength DESC
             LIMIT ?
         """, (query.replace(" ", " AND "), limit))
@@ -65,18 +51,8 @@ async def fuzzy_recall(query: str, limit: int = 10) -> Dict[str, Any]:
 
 
 async def get_person(person_id_or_name: str) -> Dict[str, Any]:
-    """
-    Get full person details including memories and connections.
-
-    Args:
-        person_id_or_name: Person ID or name
-
-    Returns:
-        Dictionary with person data and related information
-    """
     db = await get_db()
     try:
-        # Get person
         cursor = await db.execute("""
             SELECT id, name, email, phone, strength, strength_label, last_contact_at, notes
             FROM people
@@ -100,12 +76,12 @@ async def get_person(person_id_or_name: str) -> Dict[str, Any]:
             "notes": person_row[7],
         }
 
-        # Get memories
+        # memory_items uses: id, person_id, text, source, context, timestamp
         cursor = await db.execute("""
-            SELECT id, person_id, content, context, created_at
+            SELECT id, person_id, text, context, timestamp
             FROM memory_items
             WHERE person_id = ?
-            ORDER BY created_at DESC
+            ORDER BY timestamp DESC
             LIMIT 20
         """, (person_id,))
 
@@ -120,11 +96,11 @@ async def get_person(person_id_or_name: str) -> Dict[str, Any]:
             for row in await cursor.fetchall()
         ]
 
-        # Get connections
+        # connections uses: id, person_a_id, person_b_id, connection_type, context, strength
         cursor = await db.execute("""
-            SELECT id, target_person_id, relationship_type, strength, description
+            SELECT id, person_b_id, connection_type, strength, context
             FROM connections
-            WHERE source_person_id = ?
+            WHERE person_a_id = ?
             ORDER BY strength DESC
             LIMIT 10
         """, (person_id,))
@@ -150,39 +126,33 @@ async def get_person(person_id_or_name: str) -> Dict[str, Any]:
 
 
 async def add_person(name: str, email: Optional[str] = None, phone: Optional[str] = None) -> Dict[str, Any]:
-    """
-    Add a new person to the rolodex.
-
-    Args:
-        name: Person's name
-        email: Optional email address
-        phone: Optional phone number
-
-    Returns:
-        Dictionary with created person
-    """
     db = await get_db()
     try:
         now = datetime.now(timezone.utc).isoformat()
+        person_id = str(uuid.uuid4())
 
-        cursor = await db.execute("""
-            INSERT INTO people (name, email, phone, strength, strength_label, last_contact_at)
-            VALUES (?, ?, ?, 0.5, 'WARM', ?)
-            RETURNING id, name, email, phone, strength, strength_label, last_contact_at
-        """, (name, email, phone, now))
+        await db.execute("""
+            INSERT INTO people (id, name, email, phone, strength, strength_label, last_contact_at)
+            VALUES (?, ?, ?, ?, 0.5, 'WARM', ?)
+        """, (person_id, name, email, phone, now))
 
-        row = await cursor.fetchone()
+        # Sync FTS — people_fts is not a content= table so we manage it explicitly
+        await db.execute("""
+            INSERT INTO people_fts (id, name, role, company, notes, context_tags_flat)
+            VALUES (?, ?, '', '', '', '')
+        """, (person_id, name))
+
         await db.commit()
 
         return {
             "person": {
-                "id": row[0],
-                "name": row[1],
-                "email": row[2],
-                "phone": row[3],
-                "strength": row[4],
-                "strength_label": row[5],
-                "last_contact_at": row[6],
+                "id": person_id,
+                "name": name,
+                "email": email,
+                "phone": phone,
+                "strength": 0.5,
+                "strength_label": "WARM",
+                "last_contact_at": now,
             }
         }
     finally:
@@ -190,37 +160,26 @@ async def add_person(name: str, email: Optional[str] = None, phone: Optional[str
 
 
 async def add_memory(person_id: str, content: str, context: Optional[str] = None) -> Dict[str, Any]:
-    """
-    Add a memory about a person.
-
-    Args:
-        person_id: ID of the person
-        content: Memory content
-        context: Optional context information
-
-    Returns:
-        Dictionary with created memory
-    """
     db = await get_db()
     try:
         now = datetime.now(timezone.utc).isoformat()
+        memory_id = str(uuid.uuid4())
 
-        cursor = await db.execute("""
-            INSERT INTO memory_items (person_id, content, context, created_at)
-            VALUES (?, ?, ?, ?)
-            RETURNING id, person_id, content, context, created_at
-        """, (person_id, content, context, now))
+        # memory_items schema: id, person_id, text, source, context, timestamp
+        await db.execute("""
+            INSERT INTO memory_items (id, person_id, text, source, context, timestamp)
+            VALUES (?, ?, ?, 'HERMES', ?, ?)
+        """, (memory_id, person_id, content, context, now))
 
-        row = await cursor.fetchone()
         await db.commit()
 
         return {
             "memory": {
-                "id": row[0],
-                "person_id": row[1],
-                "content": row[2],
-                "context": row[3],
-                "created_at": row[4],
+                "id": memory_id,
+                "person_id": person_id,
+                "content": content,
+                "context": context,
+                "created_at": now,
             }
         }
     finally:
@@ -228,25 +187,17 @@ async def add_memory(person_id: str, content: str, context: Optional[str] = None
 
 
 async def upcoming_events(days_ahead: int = 30) -> Dict[str, Any]:
-    """
-    Get upcoming events for the next N days.
-
-    Args:
-        days_ahead: Number of days to look ahead
-
-    Returns:
-        Dictionary with upcoming events
-    """
     db = await get_db()
     try:
         future_date = (datetime.now(timezone.utc) + timedelta(days=days_ahead)).isoformat()
 
+        # person_events schema: id, person_id, type, title, date, fired, fired_at, created_at
         cursor = await db.execute("""
-            SELECT pe.id, p.id, p.name, pe.event_type, pe.event_date, pe.description
+            SELECT pe.id, p.id, p.name, pe.type, pe.date, pe.title
             FROM person_events pe
             JOIN people p ON pe.person_id = p.id
-            WHERE pe.event_date <= ? AND pe.event_date >= datetime('now')
-            ORDER BY pe.event_date ASC
+            WHERE pe.date <= ? AND pe.date >= datetime('now')
+            ORDER BY pe.date ASC
         """, (future_date,))
 
         events = [
@@ -267,15 +218,8 @@ async def upcoming_events(days_ahead: int = 30) -> Dict[str, Any]:
 
 
 async def meeting_brief() -> Dict[str, Any]:
-    """
-    Generate a weekly meeting brief.
-
-    Returns:
-        Dictionary with meeting brief data
-    """
     db = await get_db()
     try:
-        # Get ACTIVE relationships
         cursor = await db.execute("""
             SELECT id, name, email, strength, last_contact_at
             FROM people
@@ -295,7 +239,6 @@ async def meeting_brief() -> Dict[str, Any]:
             for row in await cursor.fetchall()
         ]
 
-        # Get FADING relationships
         cursor = await db.execute("""
             SELECT id, name, email, strength, last_contact_at
             FROM people
@@ -315,7 +258,6 @@ async def meeting_brief() -> Dict[str, Any]:
             for row in await cursor.fetchall()
         ]
 
-        # Count by strength
         cursor = await db.execute("""
             SELECT strength_label, COUNT(*) as count
             FROM people
@@ -340,16 +282,6 @@ async def meeting_brief() -> Dict[str, Any]:
 
 
 async def call_mcp_tool(tool_name: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Call an MCP tool with the given input.
-
-    Args:
-        tool_name: Name of the tool to call
-        input_data: Input parameters for the tool
-
-    Returns:
-        Result from the tool
-    """
     handlers = {
         "fuzzy_recall": lambda: fuzzy_recall(**input_data),
         "get_person": lambda: get_person(**input_data),
