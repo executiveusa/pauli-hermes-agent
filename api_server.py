@@ -102,7 +102,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
 
 async def call_mercury_api(message: str) -> str:
     """Call Mercury Inception Labs API if enabled."""
-    mercury_token = os.getenv("MERCURY_API_KEY", "sk_5917d05c1126bf0f5af161adf566e68c")
+    mercury_token = os.getenv("MERCURY_API_KEY")
     if not mercury_token:
         return None
 
