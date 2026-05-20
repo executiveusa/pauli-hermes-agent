@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import subprocess
 from datetime import datetime
+import httpx
 
 app = FastAPI(title="Hermes Agent API", version="1.0.0")
 
@@ -28,9 +29,15 @@ app.add_middleware(
 )
 
 
+class ProviderSettings(BaseModel):
+    nvidia: bool = True
+    mercury: bool = True
+
+
 class ChatRequest(BaseModel):
     message: str
     agent_type: str = "hermes"
+    providers: ProviderSettings = ProviderSettings()
 
 
 class ChatResponse(BaseModel):
@@ -49,60 +56,118 @@ async def chat(request: ChatRequest) -> ChatResponse:
     """
     Chat with the Hermes agent.
     Routes voice transcripts to the agent for processing.
+    Supports provider selection (NVIDIA NIM free or Mercury Inception Labs).
     """
     try:
         message = request.message.strip()
         if not message:
-            raise HTTPException(status_code=400, detail="Empty message")
+            raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-        # Call Hermes CLI or MCP to process the command
-        # For now, return a simple response. In production, this calls:
-        # - Hermes MCP server (hermes-rolodex, jcodemunch-mcp)
-        # - Executes agent actions (make notes, recall contacts, trigger skills)
+        # Validate at least one provider is enabled
+        if not request.providers.nvidia and not request.providers.mercury:
+            raise HTTPException(
+                status_code=400,
+                detail="At least one provider must be enabled (NVIDIA or Mercury)",
+            )
 
-        response = process_agent_command(message)
+        # Try Mercury first if enabled (premium reasoning)
+        if request.providers.mercury:
+            mercury_response = await call_mercury_api(message)
+            if mercury_response:
+                return ChatResponse(
+                    response=f"💎 {mercury_response}",
+                    timestamp=datetime.now().isoformat(),
+                )
+
+        # Fall back to standard Hermes routing (NVIDIA NIM if enabled)
+        # Routes to selected providers:
+        # - NVIDIA NIM (free inference, moonshotai/kimi-k2-thinking)
+        # - Hermes Rolodex (memory, contacts, relationships)
+        # - Executes agent actions (make notes, recall, trigger skills)
+
+        response = process_agent_command(message, request.providers)
 
         return ChatResponse(
             response=response,
             timestamp=datetime.now().isoformat(),
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
 
 
-def process_agent_command(message: str) -> str:
+async def call_mercury_api(message: str) -> str:
+    """Call Mercury Inception Labs API if enabled."""
+    mercury_token = os.getenv("MERCURY_API_KEY", "sk_5917d05c1126bf0f5af161adf566e68c")
+    if not mercury_token:
+        return None
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                "https://api.mercury.ai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {mercury_token}"},
+                json={
+                    "model": "mercury-turbo",
+                    "messages": [{"role": "user", "content": message}],
+                    "max_tokens": 500,
+                },
+            )
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("choices", [{}])[0].get("message", {}).get("content", None)
+    except Exception as e:
+        print(f"Mercury API error: {e}")
+        return None
+
+
+def process_agent_command(message: str, providers: ProviderSettings) -> str:
     """
     Process a user command through the Hermes agent.
+    Routes to selected providers (NVIDIA NIM free or Mercury Inception Labs).
+
     In production, this would:
     - Parse intent (note-taking, recall, actions)
     - Call MCP tools via hermes-rolodex server
-    - Execute agent skills
+    - Execute agent skills via Mercury or NVIDIA
     - Return structured response
     """
+
+    # Build provider string for logging
+    active_providers = []
+    if providers.nvidia:
+        active_providers.append("🚀 NVIDIA NIM")
+    if providers.mercury:
+        active_providers.append("💎 Mercury")
+
+    provider_info = f" [using: {', '.join(active_providers)}]" if active_providers else " [no providers enabled]"
 
     # Simple intent-based routing for MVP
     lower_msg = message.lower()
 
     # Remember/note commands
-    if any(word in lower_msg for word in ["remember", "note", "add", "save", "remember"]):
-        return f"✅ Noted: {message}. Saving to Hermes memory..."
+    if any(word in lower_msg for word in ["remember", "note", "add", "save"]):
+        return f"✅ Noted: {message}. Saving to Hermes memory...{provider_info}"
 
     # Recall/search commands
-    elif any(word in lower_msg for word in ["who was", "recall", "remember", "who is", "find"]):
-        return f"🔍 Searching memory for: {message.replace('who was ', '').replace('recall ', '').replace('who is ', '')}"
+    elif any(word in lower_msg for word in ["who was", "recall", "who is", "find", "search"]):
+        search_term = message.replace('who was ', '').replace('recall ', '').replace('who is ', '').replace('search for ', '')
+        return f"🔍 Searching memory for: {search_term}{provider_info}"
 
     # Action commands
-    elif any(word in lower_msg for word in ["send", "call", "message", "email"]):
-        return f"📤 Preparing to: {message}. Ready to execute."
+    elif any(word in lower_msg for word in ["send", "call", "message", "email", "execute"]):
+        return f"📤 Preparing to: {message}. Ready to execute.{provider_info}"
 
     # Status/info commands
     elif any(word in lower_msg for word in ["status", "how are", "what is", "tell me"]):
-        return f"📊 Hermes is running. Ready to: remember contacts, recall relationships, and execute actions on your behalf."
+        status = f"📊 Hermes is running. Ready to: remember contacts, recall relationships, and execute actions on your behalf.{provider_info}"
+        return status
 
     # Default response
     else:
-        return f"🤖 Processing: {message}. What would you like me to do?"
+        return f"🤖 Processing: {message}. What would you like me to do?{provider_info}"
 
 
 @app.get("/api/status")

@@ -7,6 +7,9 @@ export default function VoiceAgent(): JSX.Element {
   const [response, setResponse] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [useMercury, setUseMercury] = useState(true); // Mercury toggle
+  const [useNvidia, setUseNvidia] = useState(true); // NVIDIA NIM toggle
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<any>(null);
 
@@ -83,6 +86,7 @@ export default function VoiceAgent(): JSX.Element {
     if (!transcript.trim()) return;
 
     setIsProcessing(true);
+    setError(null);
     try {
       const res = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',
@@ -90,18 +94,28 @@ export default function VoiceAgent(): JSX.Element {
         body: JSON.stringify({
           message: transcript,
           agent_type: 'hermes',
+          providers: {
+            mercury: useMercury,
+            nvidia: useNvidia,
+          },
         }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        const agentResponse = data.response || data.message || 'Done';
-        setResponse(agentResponse);
-        await speakResponse(agentResponse);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(errorData.detail || `API error: ${res.status}`);
       }
+
+      const data = await res.json();
+      const agentResponse = data.response || data.message || 'Done';
+      setResponse(agentResponse);
+      await speakResponse(agentResponse);
     } catch (error) {
-      console.error('API error:', error);
-      setResponse('Error communicating with agent');
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('API error:', errorMsg);
+      setError(`❌ ${errorMsg}`);
+      setResponse(`Error: ${errorMsg}`);
+      await speakResponse(`Error: ${errorMsg}`);
     } finally {
       setIsProcessing(false);
     }
@@ -135,6 +149,33 @@ export default function VoiceAgent(): JSX.Element {
                 ? '🔊 Speaking...'
                 : '💬 Ready'}
             </div>
+          </div>
+
+          {error && (
+            <div style={styles.errorBox}>
+              {error}
+            </div>
+          )}
+
+          <div style={styles.toggleContainer}>
+            <label style={styles.toggleLabel}>
+              <input
+                type="checkbox"
+                checked={useNvidia}
+                onChange={(e) => setUseNvidia(e.target.checked)}
+                style={styles.toggleInput}
+              />
+              <span style={styles.toggleText}>🚀 NVIDIA NIM (Free)</span>
+            </label>
+            <label style={styles.toggleLabel}>
+              <input
+                type="checkbox"
+                checked={useMercury}
+                onChange={(e) => setUseMercury(e.target.checked)}
+                style={styles.toggleInput}
+              />
+              <span style={styles.toggleText}>💎 Mercury Inception Labs</span>
+            </label>
           </div>
 
           <div style={styles.transcript}>
@@ -303,5 +344,42 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: 'center',
     color: '#999',
     fontSize: '13px',
+  },
+  errorBox: {
+    background: '#ffebee',
+    border: '2px solid #f44336',
+    borderRadius: '8px',
+    padding: '12px',
+    marginBottom: '15px',
+    color: '#c62828',
+    fontSize: '14px',
+    fontWeight: 'bold',
+  },
+  toggleContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    marginBottom: '20px',
+    padding: '12px',
+    background: '#f9f9f9',
+    borderRadius: '10px',
+    border: '1px solid #e0e0e0',
+  },
+  toggleLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    cursor: 'pointer',
+    userSelect: 'none',
+  },
+  toggleInput: {
+    width: '18px',
+    height: '18px',
+    cursor: 'pointer',
+  },
+  toggleText: {
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#333',
   },
 };
