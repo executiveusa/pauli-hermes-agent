@@ -1,8 +1,17 @@
 // Vercel serverless function — proxies voice agent requests to the VPS
 // Browser calls /api/chat (HTTPS) → this function → VPS:8642 (HTTP, server-side OK)
 
+const ALLOWED_ORIGINS = [
+  'https://pauli-hermes-agent.vercel.app',
+];
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin || '';
+  const isAllowed = ALLOWED_ORIGINS.includes(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin);
+
+  if (isAllowed) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -14,10 +23,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const VPS_URL = 'http://31.220.58.212:8642';
+  const vpsUrl = 'http://31.220.58.212:8642';
 
   try {
-    const response = await fetch(`${VPS_URL}/api/chat`, {
+    const response = await fetch(`${vpsUrl}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req.body),

@@ -23,8 +23,8 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:8642",
         "https://pauli-hermes-agent.vercel.app",
-        "https://*.vercel.app",
     ],
+    allow_origin_regex=r"^https://.*\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -209,6 +209,8 @@ async def hostinger_vps_list():
             else:
                 raise HTTPException(status_code=response.status_code, detail="Hostinger API error")
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"VPS list error: {str(e)}")
 
@@ -233,6 +235,8 @@ async def hostinger_domains_list():
             else:
                 raise HTTPException(status_code=response.status_code, detail="Hostinger API error")
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Domains error: {str(e)}")
 
@@ -257,6 +261,8 @@ async def hostinger_account_info():
             else:
                 raise HTTPException(status_code=response.status_code, detail="Hostinger API error")
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Account error: {str(e)}")
 

@@ -13,15 +13,13 @@ export default function VoiceAgent(): React.ReactElement {
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<any>(null);
 
-  // Always use relative /api/chat — Vercel serverless function proxies to VPS
-  // This avoids mixed-content HTTPS→HTTP browser block
-  const API_BASE = '';
+  const apiBase = '';
 
   useEffect(() => {
     // Initialize Web Speech API
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      recognitionRef.current = new SpeechRecognition();
+    const speechRecognitionCtor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (speechRecognitionCtor) {
+      recognitionRef.current = new speechRecognitionCtor();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
@@ -86,7 +84,7 @@ export default function VoiceAgent(): React.ReactElement {
     setIsProcessing(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/chat`, {
+      const res = await fetch(`${apiBase}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -100,8 +98,9 @@ export default function VoiceAgent(): React.ReactElement {
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ detail: res.statusText }));
-        throw new Error(errorData.detail || `API error: ${res.status}`);
+        let errorData: { detail?: string; error?: string } = {};
+        try { errorData = await res.json(); } catch { errorData = { detail: res.statusText }; }
+        throw new Error(errorData.error || errorData.detail || `API error: ${res.status}`);
       }
 
       const data = await res.json();

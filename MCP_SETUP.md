@@ -35,7 +35,7 @@ Open your `claude_desktop_config.json` and add this to the `mcpServers` section:
         "hostinger-api-mcp@latest"
       ],
       "env": {
-        "API_TOKEN": "dxjqNKHgu3j7z5NQql4yHfBUfyykH7uWcE0RtA0Eb61085a4"
+        "API_TOKEN": "${HOSTINGER_API_KEY}"
       }
     },
     "hermes-rolodex": {
@@ -99,7 +99,7 @@ Your full `claude_desktop_config.json` should look like:
       "command": "npx",
       "args": ["hostinger-api-mcp@latest"],
       "env": {
-        "API_TOKEN": "dxjqNKHgu3j7z5NQql4yHfBUfyykH7uWcE0RtA0Eb61085a4"
+        "API_TOKEN": "${HOSTINGER_API_KEY}"
       }
     },
     "hermes-rolodex": {
@@ -146,7 +146,7 @@ Claude will use the MCP tools to execute everything automatically.
 - Run: `npm install -g @modelcontextprotocol/server-nodejs`
 
 **"API connection failed"**
-- Verify your API token: `dxjqNKHgu3j7z5NQql4yHfBUfyykH7uWcE0RtA0Eb61085a4`
+- Verify your API token: `${HOSTINGER_API_KEY}`
 - Check that it matches your Hostinger account
 
 **MCP not loading in Claude**

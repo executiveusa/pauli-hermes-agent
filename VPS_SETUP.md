@@ -47,17 +47,17 @@ cd ../..
 mkdir -p ~/.hermes
 cat > ~/.hermes/.env << 'EOF'
 # NVIDIA NIM (free inference)
-NVIDIA_NIM_API_KEY=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
+NVIDIA_NIM_API_KEY=<YOUR_NVIDIA_NIM_API_KEY>
 
 # Telegram bot
-TELEGRAM_BOT_TOKEN=8109182922:AAGboyOOL_sqVwHr0ecU307WwkwRifAVgZg
+TELEGRAM_BOT_TOKEN=<YOUR_TELEGRAM_BOT_TOKEN>
 
 # API Server
 API_SERVER_PORT=8642
 API_SERVER_HOST=0.0.0.0
 
 # ElevenLabs TTS (optional, for voice responses)
-ELEVENLABS_API_KEY=db6c47f76da24c42a2a8c58f265ba6c8
+ELEVENLABS_API_KEY=<YOUR_ELEVENLABS_API_KEY>
 
 # Other keys from your setup...
 EOF
