@@ -220,12 +220,23 @@ else
 fi
 
 echo ""
+
+# Step 7: Deploy AionUI (full-featured mobile agent interface)
+echo "📱 Setting up AionUI mobile interface (port 3001)..."
+if bash "$REPO_DIR/services/aion-ui/setup.sh" 2>&1; then
+    echo "✅ AionUI deployed on port 3001"
+else
+    echo "⚠️  AionUI setup had issues — run manually: bash $REPO_DIR/services/aion-ui/setup.sh"
+fi
+echo ""
+
 echo "╔═══════════════════════════════════════════════════════════╗"
 echo "║                  ✅ DEPLOYMENT COMPLETE                   ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
-echo "🎤 Voice Agent (Web UI):"
-echo "   📱 Phone: https://pauli-hermes-agent.vercel.app/agent"
+echo "📱 Agent Interfaces:"
+echo "   🎤 Voice Agent:  https://pauli-hermes-agent.vercel.app/agent"
+echo "   💬 Full Chat UI: http://$VPS_IP:3001  (AionUI — open on phone)"
 echo ""
 echo "💻 API Endpoints (Your VPS):"
 echo "   🤖 API Server: http://$VPS_IP:8642"
