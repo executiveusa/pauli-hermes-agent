@@ -91,19 +91,28 @@ fi
 echo "✅ Environment configured"
 echo ""
 
-# Step 4: Install Python dependencies
-echo "📚 Installing Python dependencies..."
-pip install --upgrade pip setuptools wheel
+# Step 4: Set up Python virtual environment + install dependencies
+echo "📚 Setting up Python virtual environment..."
+VENV_DIR="/opt/hermes-venv"
 
-# Install API server dependencies
-pip install fastapi uvicorn pydantic httpx
+apt-get install -y python3-venv python3-full 2>/dev/null || true
+
+if [ ! -d "$VENV_DIR" ]; then
+    python3 -m venv "$VENV_DIR"
+fi
+
+# Activate venv for this script
+source "$VENV_DIR/bin/activate"
+
+pip install --upgrade pip setuptools wheel
+pip install fastapi uvicorn pydantic httpx python-dotenv aiolimiter
 
 # Install NIM proxy dependencies
 cd "$REPO_DIR/services/nim-proxy"
-pip install -q -r ../nim-proxy-requirements.txt
+pip install -q -r ../nim-proxy-requirements.txt 2>/dev/null || pip install fastapi uvicorn httpx pydantic python-dotenv openai
 cd "$REPO_DIR"
 
-echo "✅ Dependencies installed"
+echo "✅ Virtual environment ready at $VENV_DIR"
 echo ""
 
 # Step 5: Create systemd services for auto-restart
@@ -122,7 +131,7 @@ Type=simple
 User=root
 WorkingDirectory=/opt/pauli-hermes-agent
 EnvironmentFile=/root/.hermes/.env
-ExecStart=/usr/bin/python3 /opt/pauli-hermes-agent/api_server.py
+ExecStart=/opt/hermes-venv/bin/python3 /opt/pauli-hermes-agent/api_server.py
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
@@ -145,7 +154,7 @@ Type=simple
 User=root
 WorkingDirectory=/opt/pauli-hermes-agent/services/nim-proxy
 EnvironmentFile=/root/.hermes/.env
-ExecStart=/usr/bin/python3 -m uvicorn server:app --host 0.0.0.0 --port 8082 --log-level warning
+ExecStart=/opt/hermes-venv/bin/python3 -m uvicorn server:app --host 0.0.0.0 --port 8082 --log-level warning
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal

@@ -7,7 +7,7 @@
         "hostinger-api-mcp@latest"
       ],
       "env": {
-        "API_TOKEN": "dxjqNKHgu3j7z5NQql4yHfBUfyykH7uWcE0RtA0Eb61085a4"
+        "API_TOKEN": "${HOSTINGER_API_KEY}"
       }
     },
     "hermes-rolodex": {

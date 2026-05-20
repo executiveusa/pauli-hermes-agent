@@ -3,7 +3,11 @@
 # Add Hostinger API key to environment and test connectivity
 # Usage: bash hostinger-integration.sh
 
-HOSTINGER_API_KEY="dxjqNKHgu3j7z5NQql4yHfBUfyykH7uWcE0RtA0Eb61085a4"
+HOSTINGER_API_KEY="${HOSTINGER_API_KEY:-$(grep -E '^HOSTINGER_API_KEY=' ~/.hermes/.env 2>/dev/null | tail -n1 | cut -d= -f2-)}"
+if [ -z "$HOSTINGER_API_KEY" ]; then
+  echo "❌ HOSTINGER_API_KEY not set. Add it to ~/.hermes/.env or export it."
+  exit 1
+fi
 
 echo "╔═══════════════════════════════════════════════════════════╗"
 echo "║       Hostinger API Integration for Hermes Agent          ║"

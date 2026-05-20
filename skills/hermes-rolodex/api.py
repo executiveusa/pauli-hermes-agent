@@ -98,12 +98,14 @@ async def get_person(person_id_or_name: str) -> Dict[str, Any]:
 
         # connections uses: id, person_a_id, person_b_id, connection_type, context, strength
         cursor = await db.execute("""
-            SELECT id, person_b_id, connection_type, strength, context
+            SELECT id,
+                   CASE WHEN person_a_id = ? THEN person_b_id ELSE person_a_id END,
+                   connection_type, strength, context
             FROM connections
-            WHERE person_a_id = ?
+            WHERE person_a_id = ? OR person_b_id = ?
             ORDER BY strength DESC
             LIMIT 10
-        """, (person_id,))
+        """, (person_id, person_id, person_id))
 
         connections = [
             {
@@ -189,16 +191,17 @@ async def add_memory(person_id: str, content: str, context: Optional[str] = None
 async def upcoming_events(days_ahead: int = 30) -> Dict[str, Any]:
     db = await get_db()
     try:
-        future_date = (datetime.now(timezone.utc) + timedelta(days=days_ahead)).isoformat()
+        today = datetime.now(timezone.utc).date().isoformat()
+        future_date = (datetime.now(timezone.utc).date() + timedelta(days=days_ahead)).isoformat()
 
         # person_events schema: id, person_id, type, title, date, fired, fired_at, created_at
         cursor = await db.execute("""
             SELECT pe.id, p.id, p.name, pe.type, pe.date, pe.title
             FROM person_events pe
             JOIN people p ON pe.person_id = p.id
-            WHERE pe.date <= ? AND pe.date >= datetime('now')
+            WHERE pe.date BETWEEN ? AND ? AND pe.fired = 0
             ORDER BY pe.date ASC
-        """, (future_date,))
+        """, (today, future_date))
 
         events = [
             {

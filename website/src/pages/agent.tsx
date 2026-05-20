@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Layout from '@theme/Layout';
 
-export default function VoiceAgent(): JSX.Element {
+export default function VoiceAgent(): React.ReactElement {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [response, setResponse] = useState('');
@@ -13,17 +13,13 @@ export default function VoiceAgent(): JSX.Element {
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<any>(null);
 
-  // For production, connect to your VPS; for local dev, use localhost
-  const API_BASE =
-    typeof window !== 'undefined' && window.location.hostname !== 'localhost'
-      ? `https://${window.location.hostname}:8642`
-      : 'http://localhost:8642';
+  const apiBase = '';
 
   useEffect(() => {
     // Initialize Web Speech API
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      recognitionRef.current = new SpeechRecognition();
+    const speechRecognitionCtor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (speechRecognitionCtor) {
+      recognitionRef.current = new speechRecognitionCtor();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
@@ -88,7 +84,7 @@ export default function VoiceAgent(): JSX.Element {
     setIsProcessing(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/chat`, {
+      const res = await fetch(`${apiBase}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -102,8 +98,9 @@ export default function VoiceAgent(): JSX.Element {
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ detail: res.statusText }));
-        throw new Error(errorData.detail || `API error: ${res.status}`);
+        let errorData: { detail?: string; error?: string } = {};
+        try { errorData = await res.json(); } catch { errorData = { detail: res.statusText }; }
+        throw new Error(errorData.error || errorData.detail || `API error: ${res.status}`);
       }
 
       const data = await res.json();
