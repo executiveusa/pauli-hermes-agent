@@ -55,25 +55,36 @@ if [ ! -f ~/.hermes/.env ]; then
 # Hermes Agent Environment Configuration
 # ⚠️  UPDATE THESE WITH YOUR ACTUAL API KEYS
 
-# NVIDIA NIM (Free Claude Code Inference)
-# Get key from: https://build.nvidia.com
-NVIDIA_NIM_API_KEY=nvapi-your-key-here
+# ── Synthia Gateway (PRIMARY — fastest real AI via OpenAI/Groq) ───────────────
+# Run synthia-gateway on this VPS (see services/synthia-gateway/docker-compose.yml)
+SYNTHIA_GATEWAY_URL=http://localhost:3000
+# Secret key to authenticate against the gateway (set same value in gateway .env)
+SYNTHIA_GATEWAY_KEY=
+# Model to use (gpt-4o-mini is fast + cheap; llama-3.3-70b-versatile for free Groq)
+SYNTHIA_MODEL=gpt-4o-mini
 
-# Mercury Inception Labs
-# Get key from: https://mercury.ai
-MERCURY_API_KEY=sk_your-key-here
+# ── OpenAI (used by Synthia Gateway or directly) ─────────────────────────────
+# API key from https://platform.openai.com/api-keys
+OPENAI_API_KEY=
 
-# Telegram Bot
-# Create bot at: https://t.me/BotFather
-TELEGRAM_BOT_TOKEN=your-bot-token-here
+# ── Groq (blazing fast free inference — alternative to OpenAI) ───────────────
+# Free key from https://console.groq.com — use model: llama-3.3-70b-versatile
+GROQ_API_KEY=
 
-# API Server
+# ── Mercury Inception Labs (diffusion model, fallback) ────────────────────────
+MERCURY_API_KEY=
+
+# ── NVIDIA NIM (free Claude inference proxy, last resort) ────────────────────
+NVIDIA_NIM_API_KEY=
+
+# ── Telegram Bot ──────────────────────────────────────────────────────────────
+TELEGRAM_BOT_TOKEN=
+
+# ── API Server ────────────────────────────────────────────────────────────────
 API_SERVER_PORT=8642
 API_SERVER_HOST=0.0.0.0
-API_SERVER_CORS_ORIGINS=https://pauli-hermes-agent.vercel.app,http://localhost:3000,http://localhost:8642
 
-# Other APIs (optional, add as needed)
-OPENAI_API_KEY=
+# ── Other (optional) ─────────────────────────────────────────────────────────
 ELEVENLABS_API_KEY=
 GOOGLE_API_KEY=
 VERCEL_TOKEN=
@@ -115,7 +126,28 @@ cd "$REPO_DIR"
 echo "✅ Virtual environment ready at $VENV_DIR"
 echo ""
 
-# Step 5: Create systemd services for auto-restart
+# Step 5a: Deploy Synthia Gateway via Docker (fast AI inference)
+echo "🤖 Setting up Synthia Gateway..."
+if command -v docker &> /dev/null; then
+    cd "$REPO_DIR/services/synthia-gateway"
+    # Source env for OPENAI_API_KEY / GROQ_API_KEY / SYNTHIA_GATEWAY_KEY
+    set -a; source /root/.hermes/.env 2>/dev/null || true; set +a
+    docker compose up -d --build 2>&1 | tail -5
+    echo "✅ Synthia Gateway running on port 3000"
+    cd "$REPO_DIR"
+else
+    echo "⚠️  Docker not found — installing..."
+    curl -fsSL https://get.docker.com | sh
+    systemctl enable --now docker
+    cd "$REPO_DIR/services/synthia-gateway"
+    set -a; source /root/.hermes/.env 2>/dev/null || true; set +a
+    docker compose up -d --build 2>&1 | tail -5
+    echo "✅ Synthia Gateway running on port 3000"
+    cd "$REPO_DIR"
+fi
+echo ""
+
+# Step 5b: Create systemd services for auto-restart
 echo "🔧 Setting up systemd services..."
 
 # API Server service

@@ -5,6 +5,7 @@ export default function VoiceAgent(): React.ReactElement {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [response, setResponse] = useState('');
+  const [provider, setProvider] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -105,6 +106,7 @@ export default function VoiceAgent(): React.ReactElement {
 
       const data = await res.json();
       const agentResponse = data.response || data.message || 'Done';
+      setProvider(data.provider || '');
       setResponse(agentResponse);
       await speakResponse(agentResponse);
     } catch (error) {
@@ -183,7 +185,14 @@ export default function VoiceAgent(): React.ReactElement {
           </div>
 
           <div style={styles.response}>
-            <strong>Agent:</strong>
+            <div style={styles.responseHeader}>
+              <strong>Agent:</strong>
+              {provider && (
+                <span style={styles.providerBadge}>
+                  {provider === 'synthia' ? '⚡ OpenAI via Synthia' : provider === 'mercury' ? '💎 Mercury' : provider === 'nvidia-nim' ? '🚀 NVIDIA NIM' : provider}
+                </span>
+              )}
+            </div>
             <p style={styles.responseText}>
               {response || '(agent response will appear here...)'}
             </p>
@@ -220,6 +229,7 @@ export default function VoiceAgent(): React.ReactElement {
               onClick={() => {
                 setTranscript('');
                 setResponse('');
+                setProvider('');
               }}
               style={styles.button}
             >
@@ -301,6 +311,21 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '10px',
     marginBottom: '20px',
     minHeight: '60px',
+  },
+  responseHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '4px',
+  },
+  providerBadge: {
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#fff',
+    background: '#4CAF50',
+    borderRadius: '12px',
+    padding: '2px 8px',
+    letterSpacing: '0.3px',
   },
   responseText: {
     margin: '5px 0 0 0',
