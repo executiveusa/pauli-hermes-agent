@@ -1,6 +1,7 @@
 """
 Hermes Agent API Server - Voice agent endpoint for web UI.
 Runs on port 8642, routes agent commands to Hermes MCP server.
+Integrates with Hostinger API for VPS management.
 """
 
 import os
@@ -11,6 +12,7 @@ from pydantic import BaseModel
 import subprocess
 from datetime import datetime
 import httpx
+import asyncio
 
 app = FastAPI(title="Hermes Agent API", version="1.0.0")
 
@@ -181,9 +183,82 @@ async def status():
             "memory_recall",
             "action_execution",
             "relationship_strength",
+            "hostinger_integration",
         ],
         "api_version": "1.0.0",
     }
+
+
+@app.get("/api/hostinger/vps")
+async def hostinger_vps_list():
+    """Get list of VPS instances from Hostinger"""
+    try:
+        api_key = os.getenv("HOSTINGER_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="HOSTINGER_API_KEY not configured")
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://api.hostinger.com/v1/vps",
+                headers={"Authorization": f"Bearer {api_key}"},
+                timeout=30.0,
+            )
+
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise HTTPException(status_code=response.status_code, detail="Hostinger API error")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"VPS list error: {str(e)}")
+
+
+@app.get("/api/hostinger/domains")
+async def hostinger_domains_list():
+    """Get list of domains from Hostinger"""
+    try:
+        api_key = os.getenv("HOSTINGER_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="HOSTINGER_API_KEY not configured")
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://api.hostinger.com/v1/domains",
+                headers={"Authorization": f"Bearer {api_key}"},
+                timeout=30.0,
+            )
+
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise HTTPException(status_code=response.status_code, detail="Hostinger API error")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Domains error: {str(e)}")
+
+
+@app.get("/api/hostinger/account")
+async def hostinger_account_info():
+    """Get Hostinger account information"""
+    try:
+        api_key = os.getenv("HOSTINGER_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=400, detail="HOSTINGER_API_KEY not configured")
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://api.hostinger.com/v1/account",
+                headers={"Authorization": f"Bearer {api_key}"},
+                timeout=30.0,
+            )
+
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise HTTPException(status_code=response.status_code, detail="Hostinger API error")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Account error: {str(e)}")
 
 
 if __name__ == "__main__":
