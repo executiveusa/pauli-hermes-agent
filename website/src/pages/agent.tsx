@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Layout from '@theme/Layout';
 
-export default function VoiceAgent(): JSX.Element {
+export default function VoiceAgent(): React.ReactElement {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [response, setResponse] = useState('');
@@ -13,11 +13,9 @@ export default function VoiceAgent(): JSX.Element {
   const recognitionRef = useRef<any>(null);
   const synthesisRef = useRef<any>(null);
 
-  // For production, connect to your VPS; for local dev, use localhost
-  const API_BASE =
-    typeof window !== 'undefined' && window.location.hostname !== 'localhost'
-      ? `https://${window.location.hostname}:8642`
-      : 'http://localhost:8642';
+  // Always use relative /api/chat — Vercel serverless function proxies to VPS
+  // This avoids mixed-content HTTPS→HTTP browser block
+  const API_BASE = '';
 
   useEffect(() => {
     // Initialize Web Speech API

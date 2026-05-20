@@ -2,5 +2,13 @@
   "buildCommand": "cd website && npm install && npm run build",
   "outputDirectory": "website/build",
   "installCommand": "cd website && npm install",
-  "framework": null
+  "framework": null,
+  "functions": {
+    "website/api/chat.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/chat", "destination": "/website/api/chat.js" }
+  ]
 }
