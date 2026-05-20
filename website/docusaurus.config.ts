@@ -7,11 +7,11 @@ const config: Config = {
   tagline: 'The self-improving AI agent',
   favicon: 'img/favicon.ico',
 
-  url: 'https://hermes-agent.nousresearch.com',
-  baseUrl: '/docs/',
+  url: 'https://pauli-hermes-agent.vercel.app',
+  baseUrl: '/',
 
-  organizationName: 'NousResearch',
-  projectName: 'hermes-agent',
+  organizationName: 'executiveusa',
+  projectName: 'pauli-hermes-agent',
 
   onBrokenLinks: 'warn',
 
@@ -71,9 +71,9 @@ const config: Config = {
       'classic',
       {
         docs: {
-          routeBasePath: '/',  // Docs at the root of /docs/
+          routeBasePath: '/',  // Docs at the root
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/NousResearch/hermes-agent/edit/main/website/',
+          editUrl: 'https://github.com/executiveusa/pauli-hermes-agent/edit/main/website/',
         },
         blog: false,
         theme: {
