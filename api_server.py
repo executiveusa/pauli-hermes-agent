@@ -1,22 +1,20 @@
 """
 Hermes Agent API Server - Voice agent endpoint for web UI.
-Runs on port 8642, routes agent commands to Hermes MCP server.
-Integrates with Hostinger API for VPS management.
+Runs on port 8642. Provider priority:
+  1. Synthia Gateway  (OpenAI/Groq/etc. — fast, real AI)
+  2. Mercury          (Inception Labs diffusion model)
+  3. NVIDIA NIM       (free moonshotai/kimi-k2-thinking)
 """
 
 import os
-import json
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import subprocess
 from datetime import datetime
 import httpx
-import asyncio
 
-app = FastAPI(title="Hermes Agent API", version="1.0.0")
+app = FastAPI(title="Hermes Agent API", version="2.0.0")
 
-# CORS middleware for web UI access
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -28,6 +26,13 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+HERMES_SYSTEM_PROMPT = (
+    "You are Hermes, a personal AI agent. You help remember contacts, "
+    "recall relationships, take notes, and execute actions on behalf of the user. "
+    "Be concise — your responses will be read aloud via text-to-speech. "
+    "Keep replies under 3 sentences unless the user asks for more detail."
 )
 
 
@@ -44,55 +49,40 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     response: str
+    provider: str
     timestamp: str
 
 
 @app.get("/health")
 async def health():
-    """Health check endpoint."""
-    return {"status": "ok", "service": "hermes-agent-api"}
+    return {"status": "ok", "service": "hermes-agent-api", "version": "2.0.0"}
 
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest) -> ChatResponse:
-    """
-    Chat with the Hermes agent.
-    Routes voice transcripts to the agent for processing.
-    Supports provider selection (NVIDIA NIM free or Mercury Inception Labs).
-    """
+    message = request.message.strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+
     try:
-        message = request.message.strip()
-        if not message:
-            raise HTTPException(status_code=400, detail="Message cannot be empty")
+        # 1 — Synthia Gateway (OpenAI-compatible, fastest real AI)
+        result = await call_synthia_gateway(message)
+        if result:
+            return ChatResponse(response=result, provider="synthia", timestamp=datetime.now().isoformat())
 
-        # Validate at least one provider is enabled
-        if not request.providers.nvidia and not request.providers.mercury:
-            raise HTTPException(
-                status_code=400,
-                detail="At least one provider must be enabled (NVIDIA or Mercury)",
-            )
-
-        # Try Mercury first if enabled (premium reasoning)
+        # 2 — Mercury Inception Labs
         if request.providers.mercury:
-            mercury_response = await call_mercury_api(message)
-            if mercury_response:
-                return ChatResponse(
-                    response=f"💎 {mercury_response}",
-                    timestamp=datetime.now().isoformat(),
-                )
+            result = await call_mercury_api(message)
+            if result:
+                return ChatResponse(response=f"💎 {result}", provider="mercury", timestamp=datetime.now().isoformat())
 
-        # Fall back to standard Hermes routing (NVIDIA NIM if enabled)
-        # Routes to selected providers:
-        # - NVIDIA NIM (free inference, moonshotai/kimi-k2-thinking)
-        # - Hermes Rolodex (memory, contacts, relationships)
-        # - Executes agent actions (make notes, recall, trigger skills)
+        # 3 — NVIDIA NIM proxy
+        if request.providers.nvidia:
+            result = await call_nim_proxy(message)
+            if result:
+                return ChatResponse(response=f"🚀 {result}", provider="nvidia-nim", timestamp=datetime.now().isoformat())
 
-        response = process_agent_command(message, request.providers)
-
-        return ChatResponse(
-            response=response,
-            timestamp=datetime.now().isoformat(),
-        )
+        raise HTTPException(status_code=503, detail="No AI provider available. Check API keys in ~/.hermes/.env")
 
     except HTTPException:
         raise
@@ -100,115 +90,142 @@ async def chat(request: ChatRequest) -> ChatResponse:
         raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
 
 
-async def call_mercury_api(message: str) -> str:
-    """Call Mercury Inception Labs API if enabled."""
-    mercury_token = os.getenv("MERCURY_API_KEY")
-    if not mercury_token:
+async def call_synthia_gateway(message: str) -> str | None:
+    """
+    Call Synthia Gateway (OpenAI-compatible BYOK proxy).
+    Routes to OpenAI, Groq, Anthropic, etc. based on SYNTHIA_MODEL.
+    Set SYNTHIA_GATEWAY_URL and SYNTHIA_GATEWAY_KEY in ~/.hermes/.env.
+    """
+    gateway_url = os.getenv("SYNTHIA_GATEWAY_URL", "http://localhost:3000")
+    gateway_key = os.getenv("SYNTHIA_GATEWAY_KEY") or os.getenv("OPENAI_API_KEY")
+    if not gateway_key:
+        return None
+
+    model = os.getenv("SYNTHIA_MODEL", "gpt-4o-mini")
+
+    headers = {
+        "Authorization": f"Bearer {gateway_key}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(
+                f"{gateway_url}/v1/chat/completions",
+                headers=headers,
+                json={
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": HERMES_SYSTEM_PROMPT},
+                        {"role": "user", "content": message},
+                    ],
+                    "max_tokens": 300,
+                    "temperature": 0.7,
+                },
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                return data["choices"][0]["message"]["content"].strip()
+            print(f"Synthia Gateway error {resp.status_code}: {resp.text[:200]}")
+    except Exception as e:
+        print(f"Synthia Gateway unreachable: {e}")
+    return None
+
+
+async def call_mercury_api(message: str) -> str | None:
+    """Call Mercury Inception Labs diffusion model."""
+    token = os.getenv("MERCURY_API_KEY")
+    if not token:
         return None
 
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                "https://api.mercury.ai/v1/chat/completions",
-                headers={"Authorization": f"Bearer {mercury_token}"},
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            resp = await client.post(
+                "https://api.inceptionlabs.ai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {token}"},
                 json={
-                    "model": "mercury-turbo",
-                    "messages": [{"role": "user", "content": message}],
-                    "max_tokens": 500,
+                    "model": "mercury-coder-small",
+                    "messages": [
+                        {"role": "system", "content": HERMES_SYSTEM_PROMPT},
+                        {"role": "user", "content": message},
+                    ],
+                    "max_tokens": 300,
                 },
             )
-            if response.status_code == 200:
-                data = response.json()
-                return data.get("choices", [{}])[0].get("message", {}).get("content", None)
+            if resp.status_code == 200:
+                data = resp.json()
+                return data["choices"][0]["message"]["content"].strip()
+            print(f"Mercury error {resp.status_code}: {resp.text[:200]}")
     except Exception as e:
         print(f"Mercury API error: {e}")
-        return None
+    return None
 
 
-def process_agent_command(message: str, providers: ProviderSettings) -> str:
-    """
-    Process a user command through the Hermes agent.
-    Routes to selected providers (NVIDIA NIM free or Mercury Inception Labs).
+async def call_nim_proxy(message: str) -> str | None:
+    """Call NVIDIA NIM proxy (moonshotai/kimi-k2-thinking, free tier)."""
+    nim_url = os.getenv("NIM_PROXY_URL", "http://localhost:8082")
+    nim_key = os.getenv("NVIDIA_NIM_API_KEY", "dummy")
 
-    In production, this would:
-    - Parse intent (note-taking, recall, actions)
-    - Call MCP tools via hermes-rolodex server
-    - Execute agent skills via Mercury or NVIDIA
-    - Return structured response
-    """
-
-    # Build provider string for logging
-    active_providers = []
-    if providers.nvidia:
-        active_providers.append("🚀 NVIDIA NIM")
-    if providers.mercury:
-        active_providers.append("💎 Mercury")
-
-    provider_info = f" [using: {', '.join(active_providers)}]" if active_providers else " [no providers enabled]"
-
-    # Simple intent-based routing for MVP
-    lower_msg = message.lower()
-
-    # Remember/note commands
-    if any(word in lower_msg for word in ["remember", "note", "add", "save"]):
-        return f"✅ Noted: {message}. Saving to Hermes memory...{provider_info}"
-
-    # Recall/search commands
-    elif any(word in lower_msg for word in ["who was", "recall", "who is", "find", "search"]):
-        search_term = message.replace('who was ', '').replace('recall ', '').replace('who is ', '').replace('search for ', '')
-        return f"🔍 Searching memory for: {search_term}{provider_info}"
-
-    # Action commands
-    elif any(word in lower_msg for word in ["send", "call", "message", "email", "execute"]):
-        return f"📤 Preparing to: {message}. Ready to execute.{provider_info}"
-
-    # Status/info commands
-    elif any(word in lower_msg for word in ["status", "how are", "what is", "tell me"]):
-        status = f"📊 Hermes is running. Ready to: remember contacts, recall relationships, and execute actions on your behalf.{provider_info}"
-        return status
-
-    # Default response
-    else:
-        return f"🤖 Processing: {message}. What would you like me to do?{provider_info}"
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.post(
+                f"{nim_url}/v1/messages",
+                headers={
+                    "Authorization": f"Bearer {nim_key}",
+                    "anthropic-version": "2023-06-01",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": "claude-3-5-sonnet-20241022",
+                    "max_tokens": 300,
+                    "system": HERMES_SYSTEM_PROMPT,
+                    "messages": [{"role": "user", "content": message}],
+                },
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                content = data.get("content", [])
+                if content:
+                    return content[0].get("text", "").strip()
+            print(f"NIM proxy error {resp.status_code}: {resp.text[:200]}")
+    except Exception as e:
+        print(f"NIM proxy error: {e}")
+    return None
 
 
 @app.get("/api/status")
 async def status():
-    """Get agent status."""
+    gateway_url = os.getenv("SYNTHIA_GATEWAY_URL", "http://localhost:3000")
+    has_synthia = bool(os.getenv("SYNTHIA_GATEWAY_KEY") or os.getenv("OPENAI_API_KEY"))
+    has_mercury = bool(os.getenv("MERCURY_API_KEY"))
+    has_nim = bool(os.getenv("NVIDIA_NIM_API_KEY"))
     return {
         "agent": "Hermes",
+        "version": "2.0.0",
         "status": "active",
-        "features": [
-            "voice_control",
-            "memory_recall",
-            "action_execution",
-            "relationship_strength",
-            "hostinger_integration",
-        ],
-        "api_version": "1.0.0",
+        "providers": {
+            "synthia_gateway": {"url": gateway_url, "ready": has_synthia},
+            "mercury": {"ready": has_mercury},
+            "nvidia_nim": {"ready": has_nim},
+        },
+        "features": ["voice_control", "memory_recall", "action_execution", "synthia_gateway"],
     }
 
 
 @app.get("/api/hostinger/vps")
 async def hostinger_vps_list():
-    """Get list of VPS instances from Hostinger"""
     try:
         api_key = os.getenv("HOSTINGER_API_KEY")
         if not api_key:
             raise HTTPException(status_code=400, detail="HOSTINGER_API_KEY not configured")
-
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.get(
                 "https://api.hostinger.com/v1/vps",
                 headers={"Authorization": f"Bearer {api_key}"},
-                timeout=30.0,
             )
-
-            if response.status_code == 200:
-                return response.json()
-            else:
-                raise HTTPException(status_code=response.status_code, detail="Hostinger API error")
-
+            if resp.status_code == 200:
+                return resp.json()
+            raise HTTPException(status_code=resp.status_code, detail="Hostinger API error")
     except HTTPException:
         raise
     except Exception as e:
@@ -217,24 +234,18 @@ async def hostinger_vps_list():
 
 @app.get("/api/hostinger/domains")
 async def hostinger_domains_list():
-    """Get list of domains from Hostinger"""
     try:
         api_key = os.getenv("HOSTINGER_API_KEY")
         if not api_key:
             raise HTTPException(status_code=400, detail="HOSTINGER_API_KEY not configured")
-
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.get(
                 "https://api.hostinger.com/v1/domains",
                 headers={"Authorization": f"Bearer {api_key}"},
-                timeout=30.0,
             )
-
-            if response.status_code == 200:
-                return response.json()
-            else:
-                raise HTTPException(status_code=response.status_code, detail="Hostinger API error")
-
+            if resp.status_code == 200:
+                return resp.json()
+            raise HTTPException(status_code=resp.status_code, detail="Hostinger API error")
     except HTTPException:
         raise
     except Exception as e:
@@ -243,24 +254,18 @@ async def hostinger_domains_list():
 
 @app.get("/api/hostinger/account")
 async def hostinger_account_info():
-    """Get Hostinger account information"""
     try:
         api_key = os.getenv("HOSTINGER_API_KEY")
         if not api_key:
             raise HTTPException(status_code=400, detail="HOSTINGER_API_KEY not configured")
-
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            resp = await client.get(
                 "https://api.hostinger.com/v1/account",
                 headers={"Authorization": f"Bearer {api_key}"},
-                timeout=30.0,
             )
-
-            if response.status_code == 200:
-                return response.json()
-            else:
-                raise HTTPException(status_code=response.status_code, detail="Hostinger API error")
-
+            if resp.status_code == 200:
+                return resp.json()
+            raise HTTPException(status_code=resp.status_code, detail="Hostinger API error")
     except HTTPException:
         raise
     except Exception as e:
@@ -269,9 +274,8 @@ async def hostinger_account_info():
 
 if __name__ == "__main__":
     import uvicorn
-
     port = int(os.getenv("API_SERVER_PORT", 8642))
     host = os.getenv("API_SERVER_HOST", "0.0.0.0")
-
-    print(f"🚀 Hermes Agent API starting on {host}:{port}")
+    print(f"🚀 Hermes Agent API v2 starting on {host}:{port}")
+    print(f"   Synthia Gateway: {os.getenv('SYNTHIA_GATEWAY_URL', 'http://localhost:3000')}")
     uvicorn.run(app, host=host, port=port, log_level="info")

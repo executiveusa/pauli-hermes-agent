@@ -1,382 +1,330 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Layout from '@theme/Layout';
 
-export default function VoiceAgent(): React.ReactElement {
-  const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const [response, setResponse] = useState('');
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [useMercury, setUseMercury] = useState(true); // Mercury toggle
-  const [useNvidia, setUseNvidia] = useState(true); // NVIDIA NIM toggle
-  const recognitionRef = useRef<any>(null);
-  const synthesisRef = useRef<any>(null);
+interface Message {
+  id: string;
+  role: 'user' | 'agent';
+  text: string;
+  provider?: string;
+}
 
-  const apiBase = '';
+export default function VoiceAgent(): React.ReactElement {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [inputText, setInputText] = useState('');
+  const [interimText, setInterimText] = useState('');
+  const recognitionRef = useRef<any>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pendingTextRef = useRef('');
 
   useEffect(() => {
-    // Initialize Web Speech API
-    const speechRecognitionCtor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (speechRecognitionCtor) {
-      recognitionRef.current = new speechRecognitionCtor();
-      recognitionRef.current.continuous = false;
-      recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'en-US';
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, interimText]);
 
-      recognitionRef.current.onstart = () => setIsListening(true);
-      recognitionRef.current.onend = () => setIsListening(false);
+  useEffect(() => {
+    const Ctor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!Ctor) return;
+    const rec = new Ctor();
+    rec.continuous = false;
+    rec.interimResults = true;
+    rec.lang = 'en-US';
 
-      recognitionRef.current.onresult = (event: any) => {
-        let interim = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcriptPart = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            setTranscript((prev) => prev + transcriptPart + ' ');
-          } else {
-            interim += transcriptPart;
-          }
-        }
-      };
+    rec.onstart = () => setIsListening(true);
 
-      recognitionRef.current.onerror = (event: any) => {
-        console.error('Speech recognition error', event.error);
-      };
-    }
+    rec.onresult = (event: any) => {
+      let final = '';
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) final += event.results[i][0].transcript;
+        else interim += event.results[i][0].transcript;
+      }
+      if (final) pendingTextRef.current += final + ' ';
+      setInterimText(interim);
+    };
+
+    rec.onend = () => {
+      setIsListening(false);
+      setInterimText('');
+      const text = pendingTextRef.current.trim();
+      pendingTextRef.current = '';
+      if (text) sendMessage(text);
+    };
+
+    recognitionRef.current = rec;
   }, []);
 
-  const startListening = () => {
-    if (recognitionRef.current) {
-      setTranscript('');
+  const speakText = (text: string) => {
+    setIsSpeaking(true);
+    const clean = text.replace(/^[💎🚀⚡]\s*/, '');
+    const utt = new SpeechSynthesisUtterance(clean);
+    utt.rate = 1.0;
+    utt.onend = () => setIsSpeaking(false);
+    utt.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utt);
+  };
+
+  const sendMessage = useCallback(async (text: string) => {
+    if (!text || isProcessing) return;
+    setInputText('');
+
+    setMessages(prev => [...prev, { id: `u-${Date.now()}`, role: 'user', text }]);
+    setIsProcessing(true);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          agent_type: 'hermes',
+          providers: { mercury: true, nvidia: true },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || data.error || `Error ${res.status}`);
+
+      const reply = data.response || 'Done';
+      setMessages(prev => [
+        ...prev,
+        { id: `a-${Date.now()}`, role: 'agent', text: reply, provider: data.provider },
+      ]);
+      speakText(reply);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      setMessages(prev => [...prev, { id: `e-${Date.now()}`, role: 'agent', text: `Error: ${msg}` }]);
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [isProcessing]);
+
+  const startListening = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    if (recognitionRef.current && !isListening && !isProcessing) {
+      pendingTextRef.current = '';
       recognitionRef.current.start();
     }
   };
 
-  const stopListening = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
+  const stopListening = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    recognitionRef.current?.stop();
   };
 
-  const speakResponse = async (text: string) => {
-    setIsSpeaking(true);
-    try {
-      // Use browser's native text-to-speech API
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.95;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-
-      window.speechSynthesis.cancel(); // Cancel any ongoing speech
-      window.speechSynthesis.speak(utterance);
-    } catch (error) {
-      console.error('TTS error:', error);
-      setIsSpeaking(false);
-    }
+  const handleSend = () => {
+    const text = inputText.trim();
+    if (text) sendMessage(text);
   };
 
-  const sendMessage = async () => {
-    if (!transcript.trim()) return;
-
-    setIsProcessing(true);
-    setError(null);
-    try {
-      const res = await fetch(`${apiBase}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: transcript,
-          agent_type: 'hermes',
-          providers: {
-            mercury: useMercury,
-            nvidia: useNvidia,
-          },
-        }),
-      });
-
-      if (!res.ok) {
-        let errorData: { detail?: string; error?: string } = {};
-        try { errorData = await res.json(); } catch { errorData = { detail: res.statusText }; }
-        throw new Error(errorData.error || errorData.detail || `API error: ${res.status}`);
-      }
-
-      const data = await res.json();
-      const agentResponse = data.response || data.message || 'Done';
-      setResponse(agentResponse);
-      await speakResponse(agentResponse);
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      console.error('API error:', errorMsg);
-      setError(`❌ ${errorMsg}`);
-      setResponse(`Error: ${errorMsg}`);
-      await speakResponse(`Error: ${errorMsg}`);
-    } finally {
-      setIsProcessing(false);
-    }
+  const providerLabel = (p?: string) => {
+    if (!p) return null;
+    const map: Record<string, string> = { synthia: '⚡ Groq/OpenAI', mercury: '💎 Mercury', 'nvidia-nim': '🚀 NVIDIA' };
+    return map[p] || p;
   };
+
+  const status = isListening ? '🎙️ Listening…' : isProcessing ? '⏳ Thinking…' : isSpeaking ? '🔊 Speaking…' : 'Hermes';
 
   return (
-    <Layout
-      title="Hermes Voice Agent"
-      description="Talk to your AI agent — no typing required"
-    >
-      <div style={styles.container}>
-        <div style={styles.card}>
-          <h1 style={styles.title}>🎤 Hermes Voice Agent</h1>
-          <p style={styles.subtitle}>Speak naturally. Agent listens and acts.</p>
+    <Layout title="Hermes" description="AI voice agent">
+      <div style={S.root}>
+        <div style={S.topBar}>
+          <span style={S.topTitle}>{status}</span>
+          {messages.length > 0 && (
+            <button style={S.clearBtn} onClick={() => { setMessages([]); window.speechSynthesis.cancel(); }}>
+              Clear
+            </button>
+          )}
+        </div>
 
-          <div style={styles.visualizer}>
-            <div
-              style={{
-                ...styles.waveform,
-                opacity: isListening ? 1 : 0.3,
-              }}
-            >
-              🌊
+        <div style={S.feed}>
+          {messages.length === 0 && (
+            <div style={S.empty}>Hold the mic and speak a command</div>
+          )}
+          {messages.map(m => (
+            <div key={m.id} style={{ ...S.row, ...(m.role === 'user' ? S.rowUser : {}) }}>
+              <div style={{ ...S.bubble, ...(m.role === 'user' ? S.bubbleUser : S.bubbleAgent) }}>
+                <span>{m.text}</span>
+                {m.provider && <span style={S.badge}>{providerLabel(m.provider)}</span>}
+              </div>
             </div>
-            <div style={styles.status}>
-              {isListening
-                ? '👂 Listening...'
-                : isProcessing
-                ? '⚙️ Processing...'
-                : isSpeaking
-                ? '🔊 Speaking...'
-                : '💬 Ready'}
-            </div>
-          </div>
-
-          {error && (
-            <div style={styles.errorBox}>
-              {error}
+          ))}
+          {isListening && interimText && (
+            <div style={{ ...S.row, ...S.rowUser }}>
+              <div style={{ ...S.bubble, ...S.bubbleUser, opacity: 0.55 }}>{interimText}</div>
             </div>
           )}
+          {isProcessing && (
+            <div style={S.row}>
+              <div style={{ ...S.bubble, ...S.bubbleAgent, color: '#888' }}>…</div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
 
-          <div style={styles.toggleContainer}>
-            <label style={styles.toggleLabel}>
-              <input
-                type="checkbox"
-                checked={useNvidia}
-                onChange={(e) => setUseNvidia(e.target.checked)}
-                style={styles.toggleInput}
-              />
-              <span style={styles.toggleText}>🚀 NVIDIA NIM (Free)</span>
-            </label>
-            <label style={styles.toggleLabel}>
-              <input
-                type="checkbox"
-                checked={useMercury}
-                onChange={(e) => setUseMercury(e.target.checked)}
-                style={styles.toggleInput}
-              />
-              <span style={styles.toggleText}>💎 Mercury Inception Labs</span>
-            </label>
-          </div>
+        <div style={S.bar}>
+          <input
+            style={S.input}
+            value={inputText}
+            onChange={e => setInputText(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSend()}
+            placeholder="Type a message…"
+            disabled={isProcessing}
+          />
+          <button
+            style={{ ...S.sendBtn, opacity: inputText.trim() && !isProcessing ? 1 : 0.35 }}
+            onClick={handleSend}
+            disabled={!inputText.trim() || isProcessing}
+          >
+            ↑
+          </button>
+        </div>
 
-          <div style={styles.transcript}>
-            <strong>You:</strong>
-            <p style={styles.transcriptText}>
-              {transcript || '(waiting for speech...)'}
-            </p>
-          </div>
-
-          <div style={styles.response}>
-            <strong>Agent:</strong>
-            <p style={styles.responseText}>
-              {response || '(agent response will appear here...)'}
-            </p>
-          </div>
-
-          <div style={styles.buttonGroup}>
-            <button
-              onMouseDown={startListening}
-              onMouseUp={stopListening}
-              onTouchStart={startListening}
-              onTouchEnd={stopListening}
-              style={{
-                ...styles.button,
-                ...styles.micButton,
-                ...(isListening && styles.activeButton),
-              }}
-            >
-              🎙️ Hold to Speak
-            </button>
-
-            <button
-              onClick={sendMessage}
-              disabled={!transcript.trim() || isProcessing}
-              style={{
-                ...styles.button,
-                ...styles.sendButton,
-                opacity: !transcript.trim() || isProcessing ? 0.5 : 1,
-              }}
-            >
-              {isProcessing ? '⏳ Sending...' : '✈️ Send'}
-            </button>
-
-            <button
-              onClick={() => {
-                setTranscript('');
-                setResponse('');
-              }}
-              style={styles.button}
-            >
-              🔄 Clear
-            </button>
-          </div>
-
-          <div style={styles.info}>
-            <small>
-              💡 Tip: Hold the microphone button, speak your command, and release. The agent will respond with voice.
-            </small>
-          </div>
+        <div style={S.micZone}>
+          <button
+            onMouseDown={startListening}
+            onMouseUp={stopListening}
+            onTouchStart={startListening}
+            onTouchEnd={stopListening}
+            style={{ ...S.mic, ...(isListening ? S.micOn : {}) }}
+            disabled={isProcessing}
+          >
+            {isListening ? '🔴' : '🎙️'}
+          </button>
+          <div style={S.hint}>{isListening ? 'Release to send' : 'Hold to speak'}</div>
         </div>
       </div>
     </Layout>
   );
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    padding: '20px',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  },
-  card: {
-    background: 'white',
-    borderRadius: '20px',
-    padding: '40px',
-    maxWidth: '500px',
-    width: '100%',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-  },
-  title: {
-    textAlign: 'center',
-    fontSize: '32px',
-    margin: '0 0 10px 0',
-    color: '#333',
-  },
-  subtitle: {
-    textAlign: 'center',
-    color: '#666',
-    marginBottom: '30px',
-    fontSize: '16px',
-  },
-  visualizer: {
-    textAlign: 'center',
-    marginBottom: '30px',
-  },
-  waveform: {
-    fontSize: '48px',
-    marginBottom: '10px',
-    transition: 'opacity 0.2s',
-  },
-  status: {
-    fontSize: '18px',
-    fontWeight: 'bold',
-    color: '#667eea',
-    minHeight: '24px',
-  },
-  transcript: {
-    background: '#f5f5f5',
-    padding: '15px',
-    borderRadius: '10px',
-    marginBottom: '15px',
-    minHeight: '60px',
-  },
-  transcriptText: {
-    margin: '5px 0 0 0',
-    color: '#333',
-    fontSize: '14px',
-    fontStyle: 'italic',
-  },
-  response: {
-    background: '#e8f5e9',
-    padding: '15px',
-    borderRadius: '10px',
-    marginBottom: '20px',
-    minHeight: '60px',
-  },
-  responseText: {
-    margin: '5px 0 0 0',
-    color: '#333',
-    fontSize: '14px',
-  },
-  buttonGroup: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '10px',
-    marginBottom: '20px',
-  },
-  button: {
-    padding: '12px 20px',
-    fontSize: '16px',
-    border: 'none',
-    borderRadius: '10px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
-    transition: 'all 0.2s',
-    background: '#667eea',
-    color: 'white',
-  },
-  micButton: {
-    gridColumn: '1 / -1',
-    padding: '20px',
-    fontSize: '18px',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  },
-  sendButton: {
-    background: '#4CAF50',
-  },
-  activeButton: {
-    background: '#ff5252',
-    transform: 'scale(0.95)',
-  },
-  info: {
-    textAlign: 'center',
-    color: '#999',
-    fontSize: '13px',
-  },
-  errorBox: {
-    background: '#ffebee',
-    border: '2px solid #f44336',
-    borderRadius: '8px',
-    padding: '12px',
-    marginBottom: '15px',
-    color: '#c62828',
-    fontSize: '14px',
-    fontWeight: 'bold',
-  },
-  toggleContainer: {
+const S: Record<string, React.CSSProperties> = {
+  root: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '10px',
-    marginBottom: '20px',
-    padding: '12px',
-    background: '#f9f9f9',
-    borderRadius: '10px',
-    border: '1px solid #e0e0e0',
+    height: 'calc(100dvh - 60px)',
+    background: '#0d0d14',
+    color: '#eee',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    overflow: 'hidden',
   },
-  toggleLabel: {
+  topBar: {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '10px 16px',
+    background: '#16161f',
+    borderBottom: '1px solid #252535',
+    flexShrink: 0,
+  },
+  topTitle: { fontSize: '15px', fontWeight: 600, color: '#ccc' },
+  clearBtn: {
+    background: 'none',
+    border: '1px solid #333',
+    color: '#888',
+    borderRadius: '6px',
+    padding: '4px 10px',
+    fontSize: '12px',
+    cursor: 'pointer',
+  },
+  feed: {
+    flex: 1,
+    overflowY: 'auto',
+    padding: '16px 12px 8px',
+    display: 'flex',
+    flexDirection: 'column',
     gap: '8px',
-    cursor: 'pointer',
-    userSelect: 'none',
-  },
-  toggleInput: {
-    width: '18px',
-    height: '18px',
-    cursor: 'pointer',
-  },
-  toggleText: {
+    WebkitOverflowScrolling: 'touch',
+  } as React.CSSProperties,
+  empty: {
+    textAlign: 'center',
+    color: '#44445a',
     fontSize: '14px',
-    fontWeight: '500',
-    color: '#333',
+    marginTop: '60px',
   },
+  row: { display: 'flex', justifyContent: 'flex-start' },
+  rowUser: { justifyContent: 'flex-end' },
+  bubble: {
+    maxWidth: '78%',
+    padding: '10px 14px',
+    borderRadius: '18px',
+    fontSize: '15px',
+    lineHeight: 1.45,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '5px',
+    wordBreak: 'break-word',
+  },
+  bubbleUser: {
+    background: '#3a5f99',
+    color: '#fff',
+    borderBottomRightRadius: '5px',
+  },
+  bubbleAgent: {
+    background: '#1c1c2a',
+    color: '#dde',
+    border: '1px solid #2a2a40',
+    borderBottomLeftRadius: '5px',
+  },
+  badge: { fontSize: '10px', color: '#666', alignSelf: 'flex-end' },
+  bar: {
+    display: 'flex',
+    gap: '8px',
+    padding: '8px 12px',
+    background: '#16161f',
+    borderTop: '1px solid #252535',
+    flexShrink: 0,
+  },
+  input: {
+    flex: 1,
+    padding: '11px 16px',
+    borderRadius: '22px',
+    border: '1px solid #2e2e42',
+    background: '#21212e',
+    color: '#eee',
+    fontSize: '15px',
+    outline: 'none',
+  },
+  sendBtn: {
+    width: '44px',
+    height: '44px',
+    borderRadius: '50%',
+    border: 'none',
+    background: '#3a5f99',
+    color: '#fff',
+    fontSize: '20px',
+    cursor: 'pointer',
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  micZone: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '14px 0 20px',
+    background: '#16161f',
+    flexShrink: 0,
+  },
+  mic: {
+    width: '70px',
+    height: '70px',
+    borderRadius: '50%',
+    border: 'none',
+    background: 'linear-gradient(145deg, #3a5f99, #5a3faa)',
+    fontSize: '30px',
+    cursor: 'pointer',
+    boxShadow: '0 4px 20px rgba(58,95,153,0.45)',
+    transition: 'all 0.15s ease',
+    WebkitTapHighlightColor: 'transparent',
+    userSelect: 'none',
+  } as React.CSSProperties,
+  micOn: {
+    background: 'linear-gradient(145deg, #b02020, #d03030)',
+    boxShadow: '0 4px 30px rgba(180,30,30,0.7)',
+    transform: 'scale(0.94)',
+  },
+  hint: { marginTop: '7px', fontSize: '12px', color: '#555' },
 };
