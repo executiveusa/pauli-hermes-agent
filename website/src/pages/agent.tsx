@@ -11,6 +11,10 @@ interface Message {
 export default function VoiceAgent(): React.ReactElement {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [response, setResponse] = useState('');
+  const [provider, setProvider] = useState('');
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -84,17 +88,16 @@ export default function VoiceAgent(): React.ReactElement {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || data.error || `Error ${res.status}`);
-
-      const reply = data.response || 'Done';
-      setMessages(prev => [
-        ...prev,
-        { id: `a-${Date.now()}`, role: 'agent', text: reply, provider: data.provider },
-      ]);
-      speakText(reply);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      setMessages(prev => [...prev, { id: `e-${Date.now()}`, role: 'agent', text: `Error: ${msg}` }]);
+      const agentResponse = data.response || data.message || 'Done';
+      setProvider(data.provider || '');
+      setResponse(agentResponse);
+      await speakResponse(agentResponse);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('API error:', errorMsg);
+      setError(`❌ ${errorMsg}`);
+      setResponse(`Error: ${errorMsg}`);
+      await speakResponse(`Error: ${errorMsg}`);
     } finally {
       setIsProcessing(false);
     }
@@ -124,7 +127,19 @@ export default function VoiceAgent(): React.ReactElement {
     return map[p] || p;
   };
 
-  const status = isListening ? '🎙️ Listening…' : isProcessing ? '⏳ Thinking…' : isSpeaking ? '🔊 Speaking…' : 'Hermes';
+          <div style={styles.response}>
+            <div style={styles.responseHeader}>
+              <strong>Agent:</strong>
+              {provider && (
+                <span style={styles.providerBadge}>
+                  {provider === 'synthia' ? '⚡ OpenAI via Synthia' : provider === 'mercury' ? '💎 Mercury' : provider === 'nvidia-nim' ? '🚀 NVIDIA NIM' : provider}
+                </span>
+              )}
+            </div>
+            <p style={styles.responseText}>
+              {response || '(agent response will appear here...)'}
+            </p>
+          </div>
 
   return (
     <Layout title="Hermes" description="AI voice agent">
@@ -163,23 +178,17 @@ export default function VoiceAgent(): React.ReactElement {
           <div ref={messagesEndRef} />
         </div>
 
-        <div style={S.bar}>
-          <input
-            style={S.input}
-            value={inputText}
-            onChange={e => setInputText(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSend()}
-            placeholder="Type a message…"
-            disabled={isProcessing}
-          />
-          <button
-            style={{ ...S.sendBtn, opacity: inputText.trim() && !isProcessing ? 1 : 0.35 }}
-            onClick={handleSend}
-            disabled={!inputText.trim() || isProcessing}
-          >
-            ↑
-          </button>
-        </div>
+            <button
+              onClick={() => {
+                setTranscript('');
+                setResponse('');
+                setProvider('');
+              }}
+              style={styles.button}
+            >
+              🔄 Clear
+            </button>
+          </div>
 
         <div style={S.micZone}>
           <button
@@ -267,14 +276,25 @@ const S: Record<string, React.CSSProperties> = {
     border: '1px solid #2a2a40',
     borderBottomLeftRadius: '5px',
   },
-  badge: { fontSize: '10px', color: '#666', alignSelf: 'flex-end' },
-  bar: {
+  responseHeader: {
     display: 'flex',
+    alignItems: 'center',
     gap: '8px',
-    padding: '8px 12px',
-    background: '#16161f',
-    borderTop: '1px solid #252535',
-    flexShrink: 0,
+    marginBottom: '4px',
+  },
+  providerBadge: {
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#fff',
+    background: '#4CAF50',
+    borderRadius: '12px',
+    padding: '2px 8px',
+    letterSpacing: '0.3px',
+  },
+  responseText: {
+    margin: '5px 0 0 0',
+    color: '#333',
+    fontSize: '14px',
   },
   input: {
     flex: 1,
