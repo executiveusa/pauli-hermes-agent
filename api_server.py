@@ -7,7 +7,7 @@ Runs on port 8642. Provider priority:
 """
 
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
@@ -24,9 +24,26 @@ app.add_middleware(
     ],
     allow_origin_regex=r"^https://.*\.vercel\.app$",
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Hermes-Key"],
 )
+
+
+def verify_api_key(request: Request) -> None:
+    """Verify the X-Hermes-Key header matches the configured API key."""
+    api_key = os.getenv("HERMES_API_KEY")
+    if not api_key:
+        raise HTTPException(
+            status_code=500,
+            detail="HERMES_API_KEY not configured on server",
+        )
+
+    provided_key = request.headers.get("X-Hermes-Key", "")
+    if provided_key != api_key:
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized: Invalid or missing X-Hermes-Key header",
+        )
 
 HERMES_SYSTEM_PROMPT = (
     "You are Hermes, a personal AI agent. You help remember contacts, "
@@ -59,10 +76,14 @@ async def health():
 
 
 @app.post("/api/chat")
-async def chat(request: ChatRequest) -> ChatResponse:
+async def chat(request: ChatRequest, _: None = Depends(verify_api_key)) -> ChatResponse:
     message = request.message.strip()
+
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
+
+    if len(message) > 4000:
+        raise HTTPException(status_code=400, detail="Message too long (max 4000 characters)")
 
     try:
         # 1 — Synthia Gateway (OpenAI-compatible, fastest real AI)
@@ -194,7 +215,7 @@ async def call_nim_proxy(message: str) -> str | None:
 
 
 @app.get("/api/status")
-async def status():
+async def status(_: None = Depends(verify_api_key)):
     gateway_url = os.getenv("SYNTHIA_GATEWAY_URL", "http://localhost:3000")
     has_synthia = bool(os.getenv("SYNTHIA_GATEWAY_KEY") or os.getenv("OPENAI_API_KEY"))
     has_mercury = bool(os.getenv("MERCURY_API_KEY"))
@@ -213,7 +234,7 @@ async def status():
 
 
 @app.get("/api/hostinger/vps")
-async def hostinger_vps_list():
+async def hostinger_vps_list(_: None = Depends(verify_api_key)):
     try:
         api_key = os.getenv("HOSTINGER_API_KEY")
         if not api_key:
@@ -233,7 +254,7 @@ async def hostinger_vps_list():
 
 
 @app.get("/api/hostinger/domains")
-async def hostinger_domains_list():
+async def hostinger_domains_list(_: None = Depends(verify_api_key)):
     try:
         api_key = os.getenv("HOSTINGER_API_KEY")
         if not api_key:
@@ -253,7 +274,7 @@ async def hostinger_domains_list():
 
 
 @app.get("/api/hostinger/account")
-async def hostinger_account_info():
+async def hostinger_account_info(_: None = Depends(verify_api_key)):
     try:
         api_key = os.getenv("HOSTINGER_API_KEY")
         if not api_key:
