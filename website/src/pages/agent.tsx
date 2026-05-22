@@ -16,7 +16,6 @@ export default function VoiceAgent(): React.ReactElement {
   const [provider, setProvider] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const [inputText, setInputText] = useState('');
   const [interimText, setInterimText] = useState('');
   const recognitionRef = useRef<any>(null);
@@ -89,15 +88,14 @@ export default function VoiceAgent(): React.ReactElement {
       });
       const data = await res.json();
       const agentResponse = data.response || data.message || 'Done';
-      setProvider(data.provider || '');
-      setResponse(agentResponse);
-      await speakResponse(agentResponse);
+      const provider = data.provider || '';
+      setMessages(prev => [...prev, { id: `a-${Date.now()}`, role: 'agent', text: agentResponse, provider }]);
+      speakText(agentResponse);
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       console.error('API error:', errorMsg);
-      setError(`❌ ${errorMsg}`);
-      setResponse(`Error: ${errorMsg}`);
-      await speakResponse(`Error: ${errorMsg}`);
+      setMessages(prev => [...prev, { id: `a-${Date.now()}`, role: 'agent', text: `Error: ${errorMsg}` }]);
+      speakText(`Error: ${errorMsg}`);
     } finally {
       setIsProcessing(false);
     }
@@ -127,25 +125,11 @@ export default function VoiceAgent(): React.ReactElement {
     return map[p] || p;
   };
 
-          <div style={styles.response}>
-            <div style={styles.responseHeader}>
-              <strong>Agent:</strong>
-              {provider && (
-                <span style={styles.providerBadge}>
-                  {provider === 'synthia' ? '⚡ OpenAI via Synthia' : provider === 'mercury' ? '💎 Mercury' : provider === 'nvidia-nim' ? '🚀 NVIDIA NIM' : provider}
-                </span>
-              )}
-            </div>
-            <p style={styles.responseText}>
-              {response || '(agent response will appear here...)'}
-            </p>
-          </div>
-
   return (
     <Layout title="Hermes" description="AI voice agent">
       <div style={S.root}>
         <div style={S.topBar}>
-          <span style={S.topTitle}>{status}</span>
+          <span style={S.topTitle}>Hermes Agent</span>
           {messages.length > 0 && (
             <button style={S.clearBtn} onClick={() => { setMessages([]); window.speechSynthesis.cancel(); }}>
               Clear
@@ -177,18 +161,6 @@ export default function VoiceAgent(): React.ReactElement {
           )}
           <div ref={messagesEndRef} />
         </div>
-
-            <button
-              onClick={() => {
-                setTranscript('');
-                setResponse('');
-                setProvider('');
-              }}
-              style={styles.button}
-            >
-              🔄 Clear
-            </button>
-          </div>
 
         <div style={S.micZone}>
           <button
