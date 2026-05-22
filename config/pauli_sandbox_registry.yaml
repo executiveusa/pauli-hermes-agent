@@ -1,0 +1,66 @@
+default_sandbox_policy:
+  enabled: true
+  default_for_coding_tasks: true
+  direct_host_execution_allowed: false
+  no_sandbox_allowed: false
+  require_branch_per_bead: true
+  require_tests_before_merge: true
+  require_human_approval_before_merge: true
+  require_human_approval_before_deploy: true
+  require_human_approval_before_paid_model: true
+
+providers:
+  preferred_order:
+    - vercel
+    - docker
+    - podman
+
+  vercel:
+    enabled_env: VERCEL_SANDBOX_ENABLED
+    required_env:
+      - VERCEL_TOKEN
+      - VERCEL_TEAM_ID
+    type: firecracker_microvm
+    default_for_cloud: true
+    description: "Vercel Firecracker microVM (fastest, cloud-based)"
+
+  docker:
+    enabled_env: DOCKER_SANDBOX_ENABLED
+    required_binaries:
+      - docker
+    type: local_container
+    default_for_local: true
+    description: "Docker container (local, requires daemon)"
+
+  podman:
+    enabled_env: PODMAN_SANDBOX_ENABLED
+    required_binaries:
+      - podman
+    type: local_rootless_container
+    description: "Podman rootless container (local, no daemon)"
+
+branching:
+  pattern: "agent/{{bead_id}}-{{slug}}"
+  strategy: branch
+  never_use_head_directly: true
+
+limits:
+  max_parallel_sandboxes: 3
+  default_max_iterations: 5
+  idle_timeout_seconds: 600
+  max_runtime_minutes: 45
+  max_log_bytes: 5000000
+
+observability:
+  stream_events: true
+  persist_logs: true
+  persist_commits: true
+  persist_patch_summary: true
+  redact_secrets: true
+
+approval_gates:
+  merge: required
+  deploy: required
+  paid_model: required
+  destructive_action: required
+  no_sandbox: forbidden

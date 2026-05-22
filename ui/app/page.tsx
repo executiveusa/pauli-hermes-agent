@@ -7,6 +7,7 @@ import FreeModeToggle from '@/components/FreeModeToggle';
 const CARDS = [
   { href: '/chat', icon: '💬', title: 'Chat', desc: 'Text conversation with Hermes', color: '#3a5f99' },
   { href: '/voice', icon: '🎙️', title: 'Voice', desc: 'Hold-to-talk voice interface', color: '#5a3faa' },
+  { href: '/sandbox', icon: '🏰', title: 'Sandbox', desc: 'Safe agent execution & monitoring', color: '#0d7377' },
   { href: '/skills', icon: '⚙️', title: 'Skills', desc: 'Enable/disable agent capabilities', color: '#0d7377' },
   { href: '/models', icon: '🧠', title: 'Models', desc: 'Choose inference provider', color: '#7a3f60' },
 ];
