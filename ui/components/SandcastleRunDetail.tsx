@@ -37,6 +37,7 @@ export default function SandcastleRunDetail({ runId, onClose }: SandcastleRunDet
           if (
             runData.status === 'completed' ||
             runData.status === 'failed' ||
+            runData.status === 'stopped' ||
             runData.status === 'discarded'
           ) {
             setPollInterval(0);
@@ -91,6 +92,8 @@ export default function SandcastleRunDetail({ runId, onClose }: SandcastleRunDet
       ? '#ef4444'
       : run?.status === 'running' || run?.status === 'tests_running'
       ? '#3a5f99'
+      : run?.status === 'stopped'
+      ? '#ef4444'
       : '#eab308';
 
   if (loading) {
@@ -451,7 +454,7 @@ export default function SandcastleRunDetail({ runId, onClose }: SandcastleRunDet
           </>
         )}
 
-        {(run.status === 'completed' || run.status === 'discarded') && (
+        {(run.status === 'completed' || run.status === 'discarded' || run.status === 'stopped') && (
           <button
             onClick={onClose}
             style={{
