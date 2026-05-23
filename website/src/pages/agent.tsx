@@ -263,10 +263,14 @@ const S: Record<string, React.CSSProperties> = {
     padding: '2px 8px',
     letterSpacing: '0.3px',
   },
-  responseText: {
-    margin: '5px 0 0 0',
-    color: '#333',
-    fontSize: '14px',
+  badge: { fontSize: '10px', color: '#666', alignSelf: 'flex-end' },
+  bar: {
+    display: 'flex',
+    gap: '8px',
+    padding: '8px 12px',
+    background: '#16161f',
+    borderTop: '1px solid #252535',
+    flexShrink: 0,
   },
   input: {
     flex: 1,

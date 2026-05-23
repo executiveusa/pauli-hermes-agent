@@ -52,6 +52,13 @@ HERMES_SYSTEM_PROMPT = (
     "Keep replies under 3 sentences unless the user asks for more detail."
 )
 
+HERMES_SYSTEM_PROMPT = (
+    "You are Hermes, a personal AI agent. You help remember contacts, "
+    "recall relationships, take notes, and execute actions on behalf of the user. "
+    "Be concise — your responses will be read aloud via text-to-speech. "
+    "Keep replies under 3 sentences unless the user asks for more detail."
+)
+
 
 class ProviderSettings(BaseModel):
     nvidia: bool = True
