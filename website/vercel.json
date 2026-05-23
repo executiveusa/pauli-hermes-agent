@@ -5,7 +5,7 @@
   "framework": "docusaurus",
   "git": {
     "deploymentEnabled": {
-      "main": true
+      "main": false
     }
   }
 }
