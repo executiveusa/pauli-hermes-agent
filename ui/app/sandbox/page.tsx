@@ -2,33 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { SandcastleProvider, SandcastleRun, SandcastleHealth } from '@/lib/schemas/sandcastle';
-import SandcastleRunDetail from '@/components/SandcastleRunDetail';
 
 export default function SandboxPage() {
   const [health, setHealth] = useState<SandcastleHealth | null>(null);
   const [providers, setProviders] = useState<SandcastleProvider[]>([]);
-  const [runs, setRuns] = useState<SandcastleRun[]>([]);
-  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchStatus = async () => {
       try {
-        const [statusRes, runsRes] = await Promise.all([
-          fetch('/api/sandcastle/status'),
-          fetch('/api/sandcastle/runs?status=running'),
-        ]);
-
-        if (!statusRes.ok) throw new Error('Failed to fetch status');
-        const statusData = await statusRes.json();
-        setProviders(statusData.providers);
-        setHealth(statusData);
-
-        if (runsRes.ok) {
-          const runsData = await runsRes.json();
-          setRuns(runsData.runs || []);
-        }
+        const res = await fetch('/api/sandcastle/status');
+        if (!res.ok) throw new Error('Failed to fetch status');
+        const data = await res.json();
+        setProviders(data.providers);
+        setHealth(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -36,8 +24,8 @@ export default function SandboxPage() {
       }
     };
 
-    fetchData();
-    const interval = setInterval(fetchData, 3000);
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -124,88 +112,6 @@ export default function SandboxPage() {
         ))}
       </div>
 
-      {/* Active Runs */}
-      {runs.length > 0 && (
-        <div style={{ marginBottom: '28px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 600, color: '#444', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
-            Active Runs
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '12px' }}>
-            {runs.map(run => (
-              <div
-                key={run.id}
-                onClick={() => setSelectedRunId(run.id)}
-                style={{
-                  background: '#16161f',
-                  border: '1px solid #252535',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = '#3a5f99';
-                  e.currentTarget.style.background = '#1a1a28';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = '#252535';
-                  e.currentTarget.style.background = '#16161f';
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#eee' }}>{run.title}</h3>
-                  <span
-                    style={{
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      background:
-                        run.status === 'completed'
-                          ? '#22c55e22'
-                          : run.status === 'failed' || run.status === 'discarded'
-                          ? '#ef444422'
-                          : '#3a5f9922',
-                      color:
-                        run.status === 'completed'
-                          ? '#22c55e'
-                          : run.status === 'failed' || run.status === 'discarded'
-                          ? '#ef4444'
-                          : '#7aa0cc',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                    }}
-                  >
-                    {run.status.replace(/_/g, ' ').toUpperCase()}
-                  </span>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', fontSize: '11px' }}>
-                  <div>
-                    <div style={{ color: '#555', marginBottom: '2px' }}>Branch</div>
-                    <div style={{ color: '#ccc', fontFamily: 'monospace', fontSize: '10px' }}>{run.branch}</div>
-                  </div>
-                  <div>
-                    <div style={{ color: '#555', marginBottom: '2px' }}>Provider</div>
-                    <div style={{ color: '#ccc', fontSize: '10px' }}>{run.provider}</div>
-                  </div>
-                  <div>
-                    <div style={{ color: '#555', marginBottom: '2px' }}>Files</div>
-                    <div style={{ color: '#ccc' }}>{run.changedFiles.length}</div>
-                  </div>
-                  <div>
-                    <div style={{ color: '#555', marginBottom: '2px' }}>Commits</div>
-                    <div style={{ color: '#ccc' }}>{run.commits.length}</div>
-                  </div>
-                </div>
-
-                <div style={{ marginTop: '12px', fontSize: '11px', color: '#555' }}>
-                  Click to view details
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Explainer */}
       <div style={{ background: '#16161f', border: '1px solid #252535', borderRadius: '8px', padding: '16px' }}>
         <div style={{ fontSize: '12px', fontWeight: 600, color: '#444', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
@@ -228,14 +134,6 @@ export default function SandboxPage() {
           ))}
         </div>
       </div>
-
-      {/* Run Detail Panel */}
-      {selectedRunId && (
-        <SandcastleRunDetail
-          runId={selectedRunId}
-          onClose={() => setSelectedRunId(null)}
-        />
-      )}
     </div>
   );
 }
