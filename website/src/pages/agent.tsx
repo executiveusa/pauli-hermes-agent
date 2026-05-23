@@ -11,8 +11,11 @@ interface Message {
 export default function VoiceAgent(): React.ReactElement {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isListening, setIsListening] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [response, setResponse] = useState('');
+  const [provider, setProvider] = useState('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [inputText, setInputText] = useState('');
   const [interimText, setInterimText] = useState('');
   const recognitionRef = useRef<any>(null);
@@ -84,17 +87,15 @@ export default function VoiceAgent(): React.ReactElement {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || data.error || `Error ${res.status}`);
-
-      const reply = data.response || 'Done';
-      setMessages(prev => [
-        ...prev,
-        { id: `a-${Date.now()}`, role: 'agent', text: reply, provider: data.provider },
-      ]);
-      speakText(reply);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      setMessages(prev => [...prev, { id: `e-${Date.now()}`, role: 'agent', text: `Error: ${msg}` }]);
+      const agentResponse = data.response || data.message || 'Done';
+      const provider = data.provider || '';
+      setMessages(prev => [...prev, { id: `a-${Date.now()}`, role: 'agent', text: agentResponse, provider }]);
+      speakText(agentResponse);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('API error:', errorMsg);
+      setMessages(prev => [...prev, { id: `a-${Date.now()}`, role: 'agent', text: `Error: ${errorMsg}` }]);
+      speakText(`Error: ${errorMsg}`);
     } finally {
       setIsProcessing(false);
     }
@@ -124,13 +125,11 @@ export default function VoiceAgent(): React.ReactElement {
     return map[p] || p;
   };
 
-  const status = isListening ? '🎙️ Listening…' : isProcessing ? '⏳ Thinking…' : isSpeaking ? '🔊 Speaking…' : 'Hermes';
-
   return (
     <Layout title="Hermes" description="AI voice agent">
       <div style={S.root}>
         <div style={S.topBar}>
-          <span style={S.topTitle}>{status}</span>
+          <span style={S.topTitle}>Hermes Agent</span>
           {messages.length > 0 && (
             <button style={S.clearBtn} onClick={() => { setMessages([]); window.speechSynthesis.cancel(); }}>
               Clear
@@ -161,24 +160,6 @@ export default function VoiceAgent(): React.ReactElement {
             </div>
           )}
           <div ref={messagesEndRef} />
-        </div>
-
-        <div style={S.bar}>
-          <input
-            style={S.input}
-            value={inputText}
-            onChange={e => setInputText(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSend()}
-            placeholder="Type a message…"
-            disabled={isProcessing}
-          />
-          <button
-            style={{ ...S.sendBtn, opacity: inputText.trim() && !isProcessing ? 1 : 0.35 }}
-            onClick={handleSend}
-            disabled={!inputText.trim() || isProcessing}
-          >
-            ↑
-          </button>
         </div>
 
         <div style={S.micZone}>
@@ -266,6 +247,21 @@ const S: Record<string, React.CSSProperties> = {
     color: '#dde',
     border: '1px solid #2a2a40',
     borderBottomLeftRadius: '5px',
+  },
+  responseHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '4px',
+  },
+  providerBadge: {
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#fff',
+    background: '#4CAF50',
+    borderRadius: '12px',
+    padding: '2px 8px',
+    letterSpacing: '0.3px',
   },
   badge: { fontSize: '10px', color: '#666', alignSelf: 'flex-end' },
   bar: {
