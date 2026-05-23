@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   healthcheckSandcastle,
   listSandcastleProviders,
-} from '@/../../sandbox/sandcastle/runner';
+} from '@/lib/sandcastle/runner';
 
 export async function GET(req: NextRequest) {
   try {
