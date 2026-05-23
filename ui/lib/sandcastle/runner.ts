@@ -211,7 +211,7 @@ export async function runSandcastleTask(input: SandcastleRunInput): Promise<Sand
 
   // Simulate sandbox startup
   run.status = 'preparing';
-  emitEvent(runId, 'sandbox_starting', 'Starting sandbox...');
+  emitEvent(runId, 'prompt_loaded', 'Loading prompt...');
 
   await new Promise(r => setTimeout(r, 500));
 
@@ -293,6 +293,9 @@ export async function retrySandcastleRun(runId: string): Promise<SandcastleRunRe
     prompt: originalRun.prompt,
     agent: originalRun.agent,
     modelRoute: originalRun.modelRoute,
+    maxIterations: 5,
+    requireTests: true,
+    requireApproval: true,
   });
 }
 
