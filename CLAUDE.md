@@ -259,3 +259,38 @@ claude --version
 ```
 
 That's it. Every Claude CLI session will route through the free proxy.
+
+---
+
+## Command-Code Agent Integration
+
+Hermes can now control the command-code agent for autonomous code execution and command management.
+
+**Agent Control Setup:**
+
+```bash
+# Command-code is installed globally
+which command-code
+# /opt/node22/bin/command-code
+
+# Version
+command-code --version
+```
+
+**API Key Location:**
+The command-code agent API key is stored at:
+```
+E:\THE PAULI FILES\.ENV
+```
+
+Hermes can use this to authenticate and control the command-code agent for:
+- Running code autonomously
+- Managing commands and tasks
+- Executing shell operations safely
+- Controlling the Claude Code CLI remotely
+
+**How Hermes Uses It:**
+1. Hermes reads the API key from `E:\THE PAULI FILES\.ENV`
+2. Hermes invokes `command-code` with the API key
+3. Commands are executed securely through the agent
+4. Results are returned to Hermes for further processing

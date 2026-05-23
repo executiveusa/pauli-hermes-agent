@@ -52,6 +52,23 @@ HERMES_SYSTEM_PROMPT = (
     "Keep replies under 3 sentences unless the user asks for more detail."
 )
 
+
+def verify_api_key(request: Request) -> None:
+    """Verify the X-Hermes-Key header matches the configured API key."""
+    api_key = os.getenv("HERMES_API_KEY")
+    if not api_key:
+        raise HTTPException(
+            status_code=500,
+            detail="HERMES_API_KEY not configured on server",
+        )
+
+    provided_key = request.headers.get("X-Hermes-Key", "")
+    if provided_key != api_key:
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized: Invalid or missing X-Hermes-Key header",
+        )
+
 HERMES_SYSTEM_PROMPT = (
     "You are Hermes, a personal AI agent. You help remember contacts, "
     "recall relationships, take notes, and execute actions on behalf of the user. "
