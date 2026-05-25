@@ -1,0 +1,9 @@
+{
+  "upstreamRepo": "https://github.com/NousResearch/hermes-agent.git",
+  "upstreamBranch": "main",
+  "lastSyncedCommit": "b62af47da8f1de5cfdbae423caaff5b64c060c9a",
+  "lastSyncedAt": "2026-05-25T00:00:00Z",
+  "protectedPrefixes": [
+    "apps/"
+  ]
+}
