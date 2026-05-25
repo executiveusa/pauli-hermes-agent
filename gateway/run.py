@@ -277,6 +277,39 @@ logger = logging.getLogger(__name__)
 _AGENT_PENDING_SENTINEL = object()
 
 
+def merge_pending_message_event(adapter: Any, session_key: str, event: MessageEvent) -> Optional[MessageEvent]:
+    """Merge *event* into the adapter pending queue for *session_key*."""
+    if not adapter:
+        return event
+
+    pending_messages = getattr(adapter, "_pending_messages", None)
+    if not isinstance(pending_messages, dict):
+        return event
+
+    existing = pending_messages.get(session_key)
+    if existing is None:
+        pending_messages[session_key] = event
+        return event
+
+    if getattr(existing, "message_type", None) == MessageType.PHOTO and event.message_type == MessageType.PHOTO:
+        existing.media_urls.extend(event.media_urls)
+        existing.media_types.extend(event.media_types)
+        if event.text:
+            if not existing.text:
+                existing.text = event.text
+            elif event.text not in existing.text:
+                existing.text = f"{existing.text}\n\n{event.text}".strip()
+        return existing
+
+    if getattr(existing, "text", None) and event.text:
+        if event.text not in existing.text:
+            existing.text = f"{existing.text}\n\n{event.text}".strip()
+        return existing
+
+    pending_messages[session_key] = event
+    return event
+
+
 def _resolve_runtime_agent_kwargs() -> dict:
     """Resolve provider credentials for gateway-created AIAgent instances."""
     from hermes_cli.runtime_provider import (
@@ -1837,12 +1870,7 @@ class GatewayRunner:
                 if adapter:
                     adapter._pending_messages[_quick_key] = event
                 return None
-            logger.debug("PRIORITY interrupt for session %s", _quick_key[:20])
-            running_agent.interrupt(event.text)
-            if _quick_key in self._pending_messages:
-                self._pending_messages[_quick_key] += "\n" + event.text
-            else:
-                self._pending_messages[_quick_key] = event.text
+            await self._handle_active_session_busy_message(event, _quick_key)
             return None
 
         # Check for commands
@@ -2069,6 +2097,80 @@ class GatewayRunner:
             # not linger or the session would be permanently locked out.
             if self._running_agents.get(_quick_key) is _AGENT_PENDING_SENTINEL:
                 del self._running_agents[_quick_key]
+
+    async def _handle_active_session_busy_message(self, event: MessageEvent, session_key: str) -> bool:
+        """Handle a new message while a session already has a running agent."""
+        adapter = self.adapters.get(event.source.platform)
+        running_agent = self._running_agents.get(session_key)
+        busy_mode = getattr(self, "_busy_input_mode", "interrupt")
+        if not hasattr(self, "_pending_messages") or not isinstance(self._pending_messages, dict):
+            self._pending_messages = {}
+        demoted_for_subagents = (
+            busy_mode == "interrupt"
+            and self._agent_has_active_subagents(running_agent)
+        )
+
+        if busy_mode == "steer":
+            steer_text = (event.text or "").strip()
+            if running_agent and hasattr(running_agent, "steer") and steer_text:
+                try:
+                    running_agent.steer(steer_text)
+                except Exception as exc:
+                    logger.debug("Failed to steer busy session %s: %s", session_key, exc)
+            if adapter and hasattr(adapter, "_send_with_retry"):
+                await adapter._send_with_retry(
+                    chat_id=event.source.chat_id,
+                    content="Steered into the current run - your message will be considered on the next turn.",
+                    metadata=getattr(event, "metadata", None),
+                )
+            return True
+
+        if busy_mode == "queue" or demoted_for_subagents:
+            merge_pending_message_event(adapter, session_key, event)
+            if event.text:
+                existing_text = getattr(self, "_pending_messages", {}).get(session_key, "")
+                if existing_text:
+                    self._pending_messages[session_key] = f"{existing_text}\n{event.text}"
+                else:
+                    self._pending_messages[session_key] = event.text
+            if adapter and hasattr(adapter, "_send_with_retry"):
+                if demoted_for_subagents:
+                    ack = (
+                        "Subagent working - your message is queued for when it finishes "
+                        "(use /stop to cancel everything)."
+                    )
+                else:
+                    ack = (
+                        "Queued for the next turn - we'll respond once the current task finishes."
+                    )
+                await adapter._send_with_retry(
+                    chat_id=event.source.chat_id,
+                    content=ack,
+                    metadata=getattr(event, "metadata", None),
+                )
+            return True
+
+        if running_agent and running_agent is not _AGENT_PENDING_SENTINEL:
+            try:
+                running_agent.interrupt(event.text)
+            except Exception as exc:
+                logger.debug("Failed to interrupt busy session %s: %s", session_key, exc)
+
+        merge_pending_message_event(adapter, session_key, event)
+        if event.text:
+            existing_text = getattr(self, "_pending_messages", {}).get(session_key, "")
+            if existing_text:
+                self._pending_messages[session_key] = f"{existing_text}\n{event.text}"
+            else:
+                self._pending_messages[session_key] = event.text
+
+        if adapter and hasattr(adapter, "_send_with_retry"):
+            await adapter._send_with_retry(
+                chat_id=event.source.chat_id,
+                content="Interrupting current task - your message will be processed once it finishes.",
+                metadata=getattr(event, "metadata", None),
+            )
+        return True
 
     async def _handle_message_with_agent(self, event, source, _quick_key: str):
         """Inner handler that runs under the _running_agents sentinel guard."""
@@ -5240,6 +5342,27 @@ class GatewayRunner:
         logger.debug("Process watcher ended: %s", session_id)
 
     _MAX_INTERRUPT_DEPTH = 3  # Cap recursive interrupt handling (#816)
+
+    @staticmethod
+    def _agent_has_active_subagents(running_agent: Any) -> bool:
+        """Return True when *running_agent* is currently driving subagents."""
+        if running_agent is None or running_agent is _AGENT_PENDING_SENTINEL:
+            return False
+
+        children = getattr(running_agent, "_active_children", None)
+        if not isinstance(children, (list, tuple, set)):
+            return False
+        if not children:
+            return False
+
+        lock = getattr(running_agent, "_active_children_lock", None)
+        try:
+            if lock is not None:
+                with lock:
+                    return bool(children)
+            return bool(children)
+        except Exception:
+            return False
 
     @staticmethod
     def _agent_config_signature(

@@ -417,6 +417,10 @@ class ProcessRegistry:
 
     # ----- Query Methods -----
 
+    def count_running(self) -> int:
+        """Return the number of currently running background processes."""
+        return len(self._running)
+
     def get(self, session_id: str) -> Optional[ProcessSession]:
         """Get a session by ID (running or finished)."""
         with self._lock:

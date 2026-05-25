@@ -1328,7 +1328,15 @@ class HermesCLI:
             "session_total_tokens": 0,
             "session_api_calls": 0,
             "compressions": 0,
+            "active_background_tasks": len(getattr(self, "_background_tasks", {}) or {}),
+            "active_background_processes": 0,
         }
+
+        try:
+            from tools.process_registry import process_registry
+            snapshot["active_background_processes"] = process_registry.count_running()
+        except Exception:
+            pass
 
         agent = getattr(self, "agent", None)
         if not agent:
@@ -1416,6 +1424,12 @@ class HermesCLI:
                 return self._trim_status_bar_text(text, width)
             if width < 76:
                 parts = [f"⚕ {snapshot['model_short']}", percent_label]
+                bg_count = snapshot.get("active_background_tasks", 0)
+                if bg_count:
+                    parts.append(f"▶ {bg_count}")
+                bg_proc_count = snapshot.get("active_background_processes", 0)
+                if bg_proc_count:
+                    parts.append(f"⚙ {bg_proc_count}")
                 parts.append(duration_label)
                 return self._trim_status_bar_text(" · ".join(parts), width)
 
@@ -1427,6 +1441,12 @@ class HermesCLI:
                 context_label = "ctx --"
 
             parts = [f"⚕ {snapshot['model_short']}", context_label, percent_label]
+            bg_count = snapshot.get("active_background_tasks", 0)
+            if bg_count:
+                parts.append(f"▶ {bg_count}")
+            bg_proc_count = snapshot.get("active_background_processes", 0)
+            if bg_proc_count:
+                parts.append(f"⚙ {bg_proc_count}")
             parts.append(duration_label)
             return self._trim_status_bar_text(" │ ".join(parts), width)
         except Exception:
@@ -1467,6 +1487,10 @@ class HermesCLI:
                         ("class:status-bar-dim", " · "),
                         (self._status_bar_context_style(percent), percent_label),
                         ("class:status-bar-dim", " · "),
+                        ("class:status-bar-strong", f"▶ {snapshot.get('active_background_tasks', 0)}"),
+                        ("class:status-bar-dim", " │ "),
+                        ("class:status-bar-strong", f"⚙ {snapshot.get('active_background_processes', 0)}"),
+                        ("class:status-bar-dim", " │ "),
                         ("class:status-bar-dim", duration_label),
                         ("class:status-bar", " "),
                     ]
@@ -1488,6 +1512,10 @@ class HermesCLI:
                         (bar_style, self._build_context_bar(percent)),
                         ("class:status-bar-dim", " "),
                         (bar_style, percent_label),
+                        ("class:status-bar-dim", " │ "),
+                        ("class:status-bar-strong", f"▶ {snapshot.get('active_background_tasks', 0)}"),
+                        ("class:status-bar-dim", " │ "),
+                        ("class:status-bar-strong", f"⚙ {snapshot.get('active_background_processes', 0)}"),
                         ("class:status-bar-dim", " │ "),
                         ("class:status-bar-dim", duration_label),
                         ("class:status-bar", " "),
@@ -6817,7 +6845,8 @@ class HermesCLI:
             if pasted_text:
                 line_count = pasted_text.count('\n')
                 buf = event.current_buffer
-                if line_count >= 5 and not buf.text.strip().startswith('/'):
+                threshold = self.config.get("paste_collapse_threshold", 5)
+                if threshold > 0 and line_count >= threshold and not buf.text.strip().startswith('/'):
                     _paste_counter[0] += 1
                     paste_dir = _hermes_home / "pastes"
                     paste_dir.mkdir(parents=True, exist_ok=True)
@@ -6946,7 +6975,8 @@ class HermesCLI:
             newlines_added = line_count - _prev_newline_count[0]
             _prev_newline_count[0] = line_count
             is_paste = chars_added > 1 or newlines_added >= 4
-            if line_count >= 5 and is_paste and not text.startswith('/'):
+            threshold = self.config.get("paste_collapse_threshold_fallback", 0)
+            if threshold > 0 and line_count >= threshold and is_paste and not text.startswith('/'):
                 _paste_counter[0] += 1
                 # Save to temp file
                 paste_dir = _hermes_home / "pastes"
