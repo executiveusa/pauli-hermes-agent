@@ -14,6 +14,7 @@ dependencies = [
   # Core — pinned to known-good ranges to limit supply chain attack surface
   "openai>=2.21.0,<3",
   "anthropic>=0.39.0,<1",
+  "fastapi>=0.104.0,<1",
   "python-dotenv>=1.2.1,<2",
   "fire>=0.7.1,<1",
   "httpx>=0.28.1,<1",
@@ -110,3 +111,6 @@ markers = [
     "integration: marks tests requiring external services (API keys, Modal, etc.)",
 ]
 addopts = "-m 'not integration' -n auto"
+
+[tool.vercel]
+entrypoint = "api_server:app"
