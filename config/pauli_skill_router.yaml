@@ -1,0 +1,15 @@
+version: 1
+default_profile: hermes_operator
+profiles:
+  hermes_operator:
+    required_skills:
+      - zero-touch-engineer-prime-directive
+      - pauli-agent-operating-contract
+      - memory-routing-policy
+      - secret-safety-policy
+      - tool-use-budget-policy
+    optional_skills:
+      - repo-audit-prd
+      - visual-inspection
+router:
+  strict_missing_required: true
