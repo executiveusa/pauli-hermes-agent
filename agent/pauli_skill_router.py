@@ -6,16 +6,20 @@ classifies tasks for safety-sensitive execution.
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import yaml
 
+from agent.skill_commands import build_preloaded_skills_prompt
 from pauli.openclaude.dispatcher import load_worker_registry
 
-DEFAULT_ROUTER_PATH = Path("config/pauli_skill_router.yaml")
-DEFAULT_SKILL_ROOT = Path("skills/pauli")
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_ROUTER_PATH = _REPO_ROOT / "config" / "pauli_skill_router.yaml"
+DEFAULT_SKILL_ROOT = _REPO_ROOT / "skills" / "pauli"
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -51,6 +55,35 @@ def load_router_config(path: str | Path = DEFAULT_ROUTER_PATH) -> dict[str, Any]
     if not isinstance(data, dict):
         return {}
     return data
+
+
+def load_pauli_agent_policy(config: dict[str, Any] | None = None) -> dict[str, bool]:
+    """Read the Pauli agent routing gates from a Hermes config payload."""
+    agent_cfg = {}
+    if isinstance(config, dict):
+        agent_cfg = config.get("agent") or {}
+        if not isinstance(agent_cfg, dict):
+            agent_cfg = {}
+
+    def _bool(name: str, default: bool = False) -> bool:
+        value = agent_cfg.get(name, default)
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, (int, float)):
+            return bool(value)
+        if isinstance(value, str):
+            lowered = value.strip().lower()
+            if lowered in {"true", "1", "yes", "on"}:
+                return True
+            if lowered in {"false", "0", "no", "off"}:
+                return False
+        return default
+
+    return {
+        "pauli_profile": _bool("pauli_profile", False),
+        "pauli_gateway_routing": _bool("pauli_gateway_routing", False),
+        "pauli_required_skills_strict": _bool("pauli_required_skills_strict", False),
+    }
 
 
 def _dedupe(items: list[str]) -> list[str]:
@@ -91,17 +124,23 @@ def _classify_task(task: str, registry: dict[str, Any]) -> str:
 
 def route_task(
     task: str,
-    strict: bool = False,
+    strict: bool | None = None,
     config_path: str | Path = DEFAULT_ROUTER_PATH,
-    worker_registry_path: str | Path = Path("config/pauli_worker_registry.yaml"),
+    worker_registry_path: str | Path = _REPO_ROOT / "config" / "pauli_worker_registry.yaml",
     skill_root: str | Path = DEFAULT_SKILL_ROOT,
 ) -> dict[str, Any]:
     config = load_router_config(config_path)
     registry = load_worker_registry(worker_registry_path)
+    router_cfg = config.get("router") or {}
+    if not isinstance(router_cfg, dict):
+        router_cfg = {}
+    if strict is None:
+        strict = bool(router_cfg.get("strict_missing_required", False))
+
     selected_skills = _dedupe(_select_required_skills(config))
     required_skills = list(selected_skills)
     missing_skills = [skill for skill in required_skills if not _skill_exists(skill, Path(skill_root))]
-    skipped_skills: list[str] = []
+    skipped_skills = list(missing_skills)
     task_type = _classify_task(task, registry)
     blocked = task_type == "destructive"
     block_reason = "destructive task blocked by Pauli policy" if blocked else ""
@@ -120,3 +159,120 @@ def route_task(
         blocked=blocked,
         block_reason=block_reason,
     ).to_dict()
+
+
+def build_pauli_turn_context(
+    task: str,
+    context_prompt: str = "",
+    *,
+    task_id: str | None = None,
+    config: dict[str, Any] | None = None,
+    config_path: str | Path = DEFAULT_ROUTER_PATH,
+    worker_registry_path: str | Path = _REPO_ROOT / "config" / "pauli_worker_registry.yaml",
+    skill_root: str | Path = DEFAULT_SKILL_ROOT,
+) -> dict[str, Any]:
+    """Build the gateway turn payload after applying Pauli routing rules."""
+    policy = load_pauli_agent_policy(config)
+    route = route_task(
+        task,
+        strict=policy["pauli_required_skills_strict"],
+        config_path=config_path,
+        worker_registry_path=worker_registry_path,
+        skill_root=skill_root,
+    )
+
+    if route["blocked"]:
+        logger.info(
+            "Pauli route blocked for task %r: selected_skills=%s required_skills=%s missing_skills=%s skipped_skills=%s block_reason=%s",
+            task,
+            route["selected_skills"],
+            route["required_skills"],
+            route["missing_skills"],
+            route["skipped_skills"],
+            route["block_reason"],
+        )
+        return {
+            "enabled": policy["pauli_profile"],
+            "gateway_routing": policy["pauli_gateway_routing"],
+            "strict_required_skills": policy["pauli_required_skills_strict"],
+            "route": route,
+            "selected_skills": route["selected_skills"],
+            "required_skills": route["required_skills"],
+            "missing_skills": route["missing_skills"],
+            "skipped_skills": route["skipped_skills"],
+            "loaded_skills": [],
+            "skills_prompt": "",
+            "combined_ephemeral": context_prompt,
+            "blocked": True,
+            "block_reason": route["block_reason"],
+        }
+
+    if not (policy["pauli_profile"] and policy["pauli_gateway_routing"]):
+        logger.info(
+            "Pauli routing disabled for task %r: enabled=%s gateway_routing=%s selected_skills=%s required_skills=%s missing_skills=%s skipped_skills=%s",
+            task,
+            policy["pauli_profile"],
+            policy["pauli_gateway_routing"],
+            route["selected_skills"],
+            route["required_skills"],
+            route["missing_skills"],
+            route["skipped_skills"],
+        )
+        return {
+            "enabled": policy["pauli_profile"],
+            "gateway_routing": policy["pauli_gateway_routing"],
+            "strict_required_skills": policy["pauli_required_skills_strict"],
+            "route": route,
+            "selected_skills": route["selected_skills"],
+            "required_skills": route["required_skills"],
+            "missing_skills": route["missing_skills"],
+            "skipped_skills": route["skipped_skills"],
+            "loaded_skills": [],
+            "skills_prompt": "",
+            "combined_ephemeral": context_prompt,
+            "blocked": False,
+            "block_reason": "",
+        }
+
+    skills_prompt, loaded_skills, missing_skills = build_preloaded_skills_prompt(
+        route["selected_skills"],
+        task_id=task_id,
+    )
+    if missing_skills and not policy["pauli_required_skills_strict"]:
+        logger.warning(
+            "Pauli routing missing optional skill files for task %r: missing_skills=%s selected_skills=%s skipped_skills=%s",
+            task,
+            missing_skills,
+            route["selected_skills"],
+            route["skipped_skills"],
+        )
+
+    combined_ephemeral = context_prompt or ""
+    if skills_prompt:
+        combined_ephemeral = (combined_ephemeral + "\n\n" + skills_prompt).strip()
+
+    logger.info(
+        "Pauli route applied for task %r: selected_skills=%s required_skills=%s missing_skills=%s skipped_skills=%s loaded_skills=%s",
+        task,
+        route["selected_skills"],
+        route["required_skills"],
+        missing_skills,
+        route["skipped_skills"],
+        loaded_skills,
+    )
+
+    return {
+        "enabled": policy["pauli_profile"],
+        "gateway_routing": policy["pauli_gateway_routing"],
+        "strict_required_skills": policy["pauli_required_skills_strict"],
+        "route": route,
+        "selected_skills": route["selected_skills"],
+        "required_skills": route["required_skills"],
+        "missing_skills": missing_skills,
+        "skipped_skills": route["skipped_skills"],
+        "loaded_skills": loaded_skills,
+        "skills_prompt": skills_prompt,
+        "combined_ephemeral": combined_ephemeral,
+        "blocked": False,
+        "block_reason": "",
+    }

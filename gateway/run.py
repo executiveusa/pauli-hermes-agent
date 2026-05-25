@@ -4049,6 +4049,20 @@ class GatewayRunner:
             max_iterations = int(os.getenv("HERMES_MAX_ITERATIONS", "90"))
             reasoning_config = self._load_reasoning_config()
             self._reasoning_config = reasoning_config
+            from agent.pauli_skill_router import build_pauli_turn_context
+            pauli_turn = build_pauli_turn_context(
+                prompt,
+                context_prompt="",
+                task_id=task_id,
+                config=user_config,
+            )
+            if pauli_turn["blocked"]:
+                await adapter.send(
+                    source.chat_id,
+                    f"❌ Background task blocked by Pauli policy: {pauli_turn['block_reason']}",
+                    metadata=_thread_metadata,
+                )
+                return
             turn_route = self._resolve_turn_agent_config(prompt, model, runtime_kwargs)
 
             def run_sync():
@@ -4059,6 +4073,7 @@ class GatewayRunner:
                     quiet_mode=True,
                     verbose_logging=False,
                     enabled_toolsets=enabled_toolsets,
+                    ephemeral_system_prompt=pauli_turn["combined_ephemeral"] or None,
                     reasoning_config=reasoning_config,
                     providers_allowed=pr.get("only"),
                     providers_ignored=pr.get("ignore"),
@@ -5705,6 +5720,28 @@ class GatewayRunner:
             honcho_manager, honcho_config = self._get_or_create_gateway_honcho(session_key)
             reasoning_config = self._load_reasoning_config()
             self._reasoning_config = reasoning_config
+            from agent.pauli_skill_router import build_pauli_turn_context
+            pauli_turn = build_pauli_turn_context(
+                message,
+                context_prompt=combined_ephemeral,
+                task_id=session_id,
+                config=user_config,
+            )
+            if pauli_turn["blocked"]:
+                blocked_result = {
+                    "final_response": f"⚠️ Pauli routing blocked this turn: {pauli_turn['block_reason']}",
+                    "messages": [],
+                    "api_calls": 0,
+                    "tools": [],
+                    "pauli_route": pauli_turn["route"],
+                    "selected_skills": pauli_turn["selected_skills"],
+                    "required_skills": pauli_turn["required_skills"],
+                    "missing_skills": pauli_turn["missing_skills"],
+                    "skipped_skills": pauli_turn["skipped_skills"],
+                }
+                result_holder[0] = blocked_result
+                return blocked_result
+            combined_ephemeral = pauli_turn["combined_ephemeral"]
             # Set up streaming consumer if enabled
             _stream_consumer = None
             _stream_delta_cb = None

@@ -207,6 +207,9 @@ DEFAULT_CONFIG = {
         # (force on/off for all models), or a list of model-name substrings
         # to match (e.g. ["gpt", "codex", "gemini", "qwen"]).
         "tool_use_enforcement": "auto",
+        "pauli_profile": False,
+        "pauli_gateway_routing": False,
+        "pauli_required_skills_strict": False,
     },
     
     "terminal": {
