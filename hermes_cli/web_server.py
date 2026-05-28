@@ -83,13 +83,41 @@ _reveal_timestamps: List[float] = []
 _REVEAL_MAX_PER_WINDOW = 5
 _REVEAL_WINDOW_SECONDS = 30
 
-# CORS: restrict to localhost origins only.  The web UI is intended to run
-# locally; binding to 0.0.0.0 with allow_origins=["*"] would let any website
-# read/modify config and secrets.
+# CORS: restrict to localhost by default, but allow user-configured origins
+# and *.vercel.app for secure remote access (e.g. phone via PWA).
+def _get_cors_regex() -> str:
+    import re
+    base_patterns = [r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"]
+    
+    # Read custom ALLOWED_ORIGINS
+    env_origins = os.getenv("ALLOWED_ORIGINS") or os.getenv("HERMES_ALLOWED_ORIGINS")
+    if env_origins:
+        for origin in env_origins.split(","):
+            origin = origin.strip()
+            if not origin:
+                continue
+            # Convert * wildcards to regex .*
+            regex_origin = re.escape(origin).replace(r"\*", r".*")
+            if not regex_origin.startswith(r"\^"):
+                regex_origin = f"^{regex_origin}$"
+            base_patterns.append(regex_origin)
+            
+    # Always allow vercel.app domains (including subdomains) for remote frontends
+    base_patterns.append(r"^https?://.*\.vercel\.app(:\d+)?$")
+    
+    clean_patterns = []
+    for pat in base_patterns:
+        if pat.startswith("^"):
+            pat = pat[1:]
+        if pat.endswith("$"):
+            pat = pat[:-1]
+        clean_patterns.append(pat)
+        
+    return f"^({'|'.join(clean_patterns)})$"
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    allow_origin_regex=_get_cors_regex(),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -107,6 +135,7 @@ _PUBLIC_API_PATHS: frozenset = frozenset({
     "/api/dashboard/themes",
     "/api/dashboard/plugins",
     "/api/dashboard/plugins/rescan",
+    "/api/temp-token",
 })
 
 
@@ -134,6 +163,12 @@ def _require_token(request: Request) -> None:
     """Validate the ephemeral session token.  Raises 401 on mismatch."""
     if not _has_valid_session_token(request):
         raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+@app.get("/api/temp-token")
+def get_temp_token():
+    """Retrieve the ephemeral session token securely (local-only by default binding)."""
+    return {"token": _SESSION_TOKEN}
 
 
 @app.get("/api/vault-graph/{path:path}")

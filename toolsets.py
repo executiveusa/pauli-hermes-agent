@@ -48,6 +48,8 @@ _HERMES_CORE_TOOLS = [
     "text_to_speech",
     # Planning & memory
     "todo", "memory", "graphify_rebuild", "graphify_query",
+    # Ralphy Flywheel & VPS Control
+    "vps_ssh_execute", "ralphy_run_task", "ralphy_prd_sync",
     # Session history search
     "session_search",
     # Clarifying questions

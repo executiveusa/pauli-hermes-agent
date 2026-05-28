@@ -26,13 +26,17 @@ Design constraints:
 from __future__ import annotations
 
 import errno
-import fcntl
+try:
+    import fcntl
+    import termios
+except ImportError:
+    fcntl = None
+    termios = None
 import os
 import select
 import signal
 import struct
 import sys
-import termios
 import time
 from typing import Optional, Sequence
 
@@ -187,7 +191,7 @@ class PtyBridge:
 
     def resize(self, cols: int, rows: int) -> None:
         """Forward a terminal resize to the child via ``TIOCSWINSZ``."""
-        if self._closed:
+        if self._closed or fcntl is None or termios is None:
             return
         # struct winsize: rows, cols, xpixel, ypixel (all unsigned short)
         winsize = struct.pack("HHHH", max(1, rows), max(1, cols), 0, 0)
