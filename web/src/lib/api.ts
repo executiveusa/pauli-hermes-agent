@@ -23,6 +23,12 @@ import type { DashboardTheme } from "@/themes/types";
 declare global {
   interface Window {
     __HERMES_SESSION_TOKEN__?: string;
+    __HERMES_BASE_PATH__?: string;
+    /** Server-injected flag: ``true`` when the dashboard's OAuth gate is
+     * engaged (public bind, no ``--insecure``). Toggles the SPA's
+     * WS-upgrade path from legacy ``?token=`` to single-use ``?ticket=``
+     * fetched via :func:`getWsTicket`. */
+    __HERMES_AUTH_REQUIRED__?: boolean;
   }
 }
 let _sessionToken: string | null = null;
@@ -50,6 +56,11 @@ export async function fetchJSON<T>(url: string, init?: RequestInit): Promise<T> 
   return res.json();
 }
 
+/** Encode a plugin registry key for URL paths (preserves `/` segment separators). */
+function pluginPath(name: string): string {
+  return name.split("/").map(encodeURIComponent).join("/");
+}
+
 async function getSessionToken(): Promise<string> {
   if (_sessionToken) return _sessionToken;
   const token = _manualToken || window.__HERMES_SESSION_TOKEN__;
@@ -60,12 +71,74 @@ async function getSessionToken(): Promise<string> {
   throw new Error("Session token not available — please set it in connection settings");
 }
 
+/**
+ * Fetch a single-use ticket for a WebSocket upgrade in gated mode.
+ *
+ * The dashboard's gated-mode WS auth (``hermes_cli.web_server._ws_auth_ok``)
+ * rejects the legacy ``?token=<_SESSION_TOKEN>`` path and only accepts
+ * ``?ticket=<minted>`` consumed against the in-memory ticket store. Browsers
+ * can't set ``Authorization`` on a WS upgrade, so this round-trip via the
+ * authenticated REST endpoint is the bridge from cookie auth to WS auth.
+ *
+ * Tickets are single-use and TTL=30s — every WS connect attempt must
+ * fetch a fresh ticket.
+ */
+export async function getWsTicket(): Promise<{ ticket: string; ttl_seconds: number }> {
+  const res = await fetch(`${BASE}/api/auth/ws-ticket`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    throw new Error(`/api/auth/ws-ticket: HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+/**
+ * Resolve the auth query-param pair (``[name, value]``) for a WebSocket
+ * connect. In gated mode mints a fresh single-use ticket; in loopback
+ * mode returns the injected session token.
+ */
+export async function buildWsAuthParam(): Promise<[string, string]> {
+  if (window.__HERMES_AUTH_REQUIRED__) {
+    const { ticket } = await getWsTicket();
+    return ["ticket", ticket];
+  }
+  const token = window.__HERMES_SESSION_TOKEN__ ?? "";
+  return ["token", token];
+}
+
 export const api = {
   getStatus: () => fetchJSON<StatusResponse>("/api/status"),
+  /**
+   * Identity probe for the dashboard auth gate (Phase 7).
+   *
+   * Returns the verified Session as JSON when gated mode is active and a
+   * valid cookie is attached. Loopback mode is unaffected — the endpoint
+   * still exists but is never useful there (no Session, no cookie). The
+   * AuthWidget component swallows 401s from this call: if the gate isn't
+   * engaged, /api/auth/me returns 401 and the widget renders nothing.
+   */
+  getAuthMe: () => fetchJSON<AuthMeResponse>("/api/auth/me"),
+  logout: () =>
+    fetch(`${BASE}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    }).then((r) => {
+      // /auth/logout returns 302 → /login. Follow that with a full-page
+      // navigation rather than letting fetch() opaquely consume the
+      // redirect — the SPA needs to leave the protected area.
+      window.location.assign("/login");
+      return r;
+    }),
   getSessions: (limit = 20, offset = 0) =>
     fetchJSON<PaginatedSessions>(`/api/sessions?limit=${limit}&offset=${offset}`),
   getSessionMessages: (id: string) =>
     fetchJSON<SessionMessagesResponse>(`/api/sessions/${encodeURIComponent(id)}/messages`),
+  getSessionLatestDescendant: (id: string) =>
+    fetchJSON<SessionLatestDescendantResponse>(
+      `/api/sessions/${encodeURIComponent(id)}/latest-descendant`,
+    ),
   deleteSession: (id: string) =>
     fetchJSON<{ ok: boolean }>(`/api/sessions/${encodeURIComponent(id)}`, {
       method: "DELETE",
@@ -133,21 +206,22 @@ export const api = {
   },
 
   // Cron jobs
-  getCronJobs: () => fetchJSON<CronJob[]>("/api/cron/jobs"),
-  createCronJob: (job: { prompt: string; schedule: string; name?: string; deliver?: string }) =>
-    fetchJSON<CronJob>("/api/cron/jobs", {
+  getCronJobs: (profile = "all") =>
+    fetchJSON<CronJob[]>(`/api/cron/jobs?profile=${encodeURIComponent(profile)}`),
+  createCronJob: (job: { prompt: string; schedule: string; name?: string; deliver?: string }, profile = "default") =>
+    fetchJSON<CronJob>(`/api/cron/jobs?profile=${encodeURIComponent(profile)}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(job),
     }),
-  pauseCronJob: (id: string) =>
-    fetchJSON<{ ok: boolean }>(`/api/cron/jobs/${id}/pause`, { method: "POST" }),
-  resumeCronJob: (id: string) =>
-    fetchJSON<{ ok: boolean }>(`/api/cron/jobs/${id}/resume`, { method: "POST" }),
-  triggerCronJob: (id: string) =>
-    fetchJSON<{ ok: boolean }>(`/api/cron/jobs/${id}/trigger`, { method: "POST" }),
-  deleteCronJob: (id: string) =>
-    fetchJSON<{ ok: boolean }>(`/api/cron/jobs/${id}`, { method: "DELETE" }),
+  pauseCronJob: (id: string, profile = "default") =>
+    fetchJSON<CronJob>(`/api/cron/jobs/${encodeURIComponent(id)}/pause?profile=${encodeURIComponent(profile)}`, { method: "POST" }),
+  resumeCronJob: (id: string, profile = "default") =>
+    fetchJSON<CronJob>(`/api/cron/jobs/${encodeURIComponent(id)}/resume?profile=${encodeURIComponent(profile)}`, { method: "POST" }),
+  triggerCronJob: (id: string, profile = "default") =>
+    fetchJSON<CronJob>(`/api/cron/jobs/${encodeURIComponent(id)}/trigger?profile=${encodeURIComponent(profile)}`, { method: "POST" }),
+  deleteCronJob: (id: string, profile = "default") =>
+    fetchJSON<{ ok: boolean }>(`/api/cron/jobs/${encodeURIComponent(id)}?profile=${encodeURIComponent(profile)}`, { method: "DELETE" }),
 
   // Profiles (minimal)
   getProfiles: () =>
@@ -287,25 +361,25 @@ export const api = {
 
   enableAgentPlugin: (name: string) =>
     fetchJSON<{ ok: boolean; name: string; unchanged?: boolean }>(
-      `/api/dashboard/agent-plugins/${encodeURIComponent(name)}/enable`,
+      `/api/dashboard/agent-plugins/${pluginPath(name)}/enable`,
       { method: "POST" },
     ),
 
   disableAgentPlugin: (name: string) =>
     fetchJSON<{ ok: boolean; name: string; unchanged?: boolean }>(
-      `/api/dashboard/agent-plugins/${encodeURIComponent(name)}/disable`,
+      `/api/dashboard/agent-plugins/${pluginPath(name)}/disable`,
       { method: "POST" },
     ),
 
   updateAgentPlugin: (name: string) =>
     fetchJSON<AgentPluginUpdateResponse>(
-      `/api/dashboard/agent-plugins/${encodeURIComponent(name)}/update`,
+      `/api/dashboard/agent-plugins/${pluginPath(name)}/update`,
       { method: "POST" },
     ),
 
   removeAgentPlugin: (name: string) =>
     fetchJSON<{ ok: boolean; name: string }>(
-      `/api/dashboard/agent-plugins/${encodeURIComponent(name)}`,
+      `/api/dashboard/agent-plugins/${pluginPath(name)}`,
       { method: "DELETE" },
     ),
 
@@ -318,7 +392,7 @@ export const api = {
 
   setPluginVisibility: (name: string, hidden: boolean) =>
     fetchJSON<{ ok: boolean; name: string; hidden: boolean }>(
-      `/api/dashboard/plugins/${encodeURIComponent(name)}/visibility`,
+      `/api/dashboard/plugins/${pluginPath(name)}/visibility`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -336,6 +410,23 @@ export const api = {
       body: JSON.stringify({ name }),
     }),
 };
+
+/** Identity payload returned by ``GET /api/auth/me`` (Phase 7).
+ *
+ * Returned by the dashboard's gated middleware when a valid session cookie
+ * is attached. ``email`` and ``display_name`` are empty strings under the
+ * Nous Portal contract V1 (the access token has no email/name claims —
+ * see Contract Anchor C4 in the plan). The AuthWidget surfaces a
+ * truncated ``user_id`` instead.
+ */
+export interface AuthMeResponse {
+  user_id: string;
+  email: string;
+  display_name: string;
+  org_id: string;
+  provider: string;
+  expires_at: number;
+}
 
 export interface ActionResponse {
   name: string;
@@ -360,6 +451,14 @@ export interface PlatformStatus {
 
 export interface StatusResponse {
   active_sessions: number;
+  /** Phase 7: ``true`` when the dashboard's OAuth gate is engaged
+   * (public bind, no ``--insecure``). Read alongside ``auth_providers``
+   * to render a "gated / loopback" badge. */
+  auth_required?: boolean;
+  /** Phase 7: registered ``DashboardAuthProvider`` names (e.g. ``["nous"]``).
+   * Empty in loopback mode; empty + ``auth_required=true`` is a
+   * fail-closed state (the dashboard will refuse to bind). */
+  auth_providers?: string[];
   config_path: string;
   config_version: number;
   env_path: string;
@@ -390,6 +489,14 @@ export interface SessionInfo {
   input_tokens: number;
   output_tokens: number;
   preview: string | null;
+  parent_session_id?: string | null;
+}
+
+export interface SessionLatestDescendantResponse {
+  requested_session_id: string;
+  session_id: string;
+  path: string[];
+  changed: boolean;
 }
 
 export interface PaginatedSessions {
@@ -540,13 +647,18 @@ export interface ModelsAnalyticsResponse {
 
 export interface CronJob {
   id: string;
-  name?: string;
-  prompt: string;
-  schedule: { kind: string; expr: string; display: string };
-  schedule_display: string;
+  profile?: string | null;
+  profile_name?: string | null;
+  hermes_home?: string | null;
+  is_default_profile?: boolean;
+  name?: string | null;
+  prompt?: string | null;
+  script?: string | null;
+  schedule?: { kind?: string; expr?: string; display?: string };
+  schedule_display?: string | null;
   enabled: boolean;
-  state: string;
-  deliver?: string;
+  state?: string | null;
+  deliver?: string | null;
   last_run_at?: string | null;
   next_run_at?: string | null;
   last_error?: string | null;
