@@ -294,3 +294,101 @@ Hermes can use this to authenticate and control the command-code agent for:
 2. Hermes invokes `command-code` with the API key
 3. Commands are executed securely through the agent
 4. Results are returned to Hermes for further processing
+
+---
+
+## 🔐 SECRET AGENT: Automatic FREE MODE Activation
+
+Once you upload secret files (API keys in `.env`), the system automatically detects them and wires everything up.
+
+### How It Works
+
+When agents see the request **"activate secret agent"** or similar:
+
+```bash
+bash free-mode/scripts/activate-secret-agent.sh
+```
+
+This one command:
+1. ✅ Detects `.env` file with API keys
+2. ✅ Starts LiteLLM proxy (Docker)
+3. ✅ Exports all FREE MODE environment variables
+4. ✅ Verifies proxy health
+5. ✅ Prints activation status
+
+### For Agents: What to Do When User Says "Activate Secret Agent"
+
+**You should:**
+1. Check if `.env` exists with secrets
+2. Run: `bash free-mode/scripts/activate-secret-agent.sh`
+3. Source the output to activate environment: `source <(bash free-mode/scripts/activate-secret-agent.sh)`
+4. Confirm all Hermes Agent calls now route through FREE MODE
+
+**Expected Output:**
+```
+✅ FREE MODE Secret Agent Activated!
+
+Environment status:
+  FREE_MODE=true
+  ANTHROPIC_BASE_URL=http://127.0.0.1:4000
+  Provider: auto
+  Model: free-auto
+
+✓ API keys loaded from .env
+```
+
+### Agent Instructions
+
+**When you see these requests, use SECRET AGENT activation:**
+- "activate secret agent, man"
+- "wire up free mode with my secrets"
+- "activate free inference"
+- "setup the proxy"
+- Any variation about enabling FREE MODE after secrets uploaded
+
+**Steps (in order):**
+1. Verify `.env` exists: `ls -la .env` (should show file)
+2. Run activation: `bash free-mode/scripts/activate-secret-agent.sh`
+3. Source environment: `source <(bash free-mode/scripts/activate-secret-agent.sh)`
+4. Verify: `echo $FREE_MODE` (should print: true)
+5. Report success to user
+
+**Troubleshooting for agents:**
+- If `.env` not found → "Please upload .env with API keys first"
+- If proxy fails to start → "Docker not running, try: docker compose -f docker-compose.free-mode.yml up -d litellm"
+- If health check times out → "Proxy is starting, this is normal - it will be ready in 10 seconds"
+
+### Configuration Options
+
+After activation, agents can adjust via environment variables:
+
+```bash
+# Use specific provider (auto, groq, gemini, openai, anthropic)
+export FREE_MODE_PROVIDER=groq
+export FREE_MODE_MODEL=free-groq
+
+# Change proxy URL (if proxy running elsewhere)
+export FREE_MODE_PROXY_BASE_URL=http://your-proxy:4000
+
+# Set explicit master key
+export LITELLM_MASTER_KEY=your-master-key-here
+```
+
+### What Happens Next
+
+Once activated:
+- All `hermes` commands route through FREE MODE
+- Local providers (Ollama, LM Studio, etc.) tried first (free)
+- Cloud providers (Groq, Gemini, OpenRouter) next (free tier)
+- Paid providers (OpenAI, Anthropic, Mistral) as fallback
+- Zero cost for tier 1-2, pay-as-you-go for tier 3
+
+### For Developers
+
+The activation script is idempotent and safe to run multiple times:
+- Checks for .env before doing anything
+- Starts proxy only if not already running
+- Exports variables (can be sourced in subshell)
+- Validates proxy health before reporting success
+
+Full script location: `free-mode/scripts/activate-secret-agent.sh`
