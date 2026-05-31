@@ -1,0 +1,195 @@
+# LiteLLM Proxy Configuration — FREE MODE
+# Universal gateway routing all AI calls through free/local providers when FREE_MODE=true
+# See: free-mode/README.md for setup instructions
+
+model_list:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # LOCAL PROVIDERS (zero cost if running locally)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - model_name: free-local
+    litellm_params:
+      model: openai/${OLLAMA_MODEL:qwen2.5-coder:7b}
+      api_base: ${OLLAMA_BASE_URL:http://127.0.0.1:11434/v1}
+      api_key: ${OLLAMA_API_KEY:}
+    model_info:
+      mode: local
+      cost: zero_if_local
+      description: "Ollama Local Model"
+
+  - model_name: free-lmstudio
+    litellm_params:
+      model: openai/${LMSTUDIO_MODEL:local-model}
+      api_base: ${LMSTUDIO_BASE_URL:http://127.0.0.1:1234/v1}
+      api_key: ${LMSTUDIO_API_KEY:lm-studio}
+    model_info:
+      mode: local
+      cost: zero_if_local
+      description: "LM Studio Local Model"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # FREE CLOUD PROVIDERS (free tier)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - model_name: free-openrouter
+    litellm_params:
+      model: openrouter/${OPENROUTER_FREE_MODEL:deepseek/deepseek-chat-v3-0324:free}
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      mode: cloud
+      cost: free_tier_or_configured_account
+      description: "OpenRouter Free Model"
+
+  - model_name: free-groq
+    litellm_params:
+      model: groq/${GROQ_MODEL:llama-3.3-70b-versatile}
+      api_key: os.environ/GROQ_API_KEY
+    model_info:
+      mode: cloud
+      cost: free_tier_or_configured_account
+      description: "Groq Free Model"
+
+  - model_name: free-gemini
+    litellm_params:
+      model: gemini/${GEMINI_MODEL:gemini-3.5-flash}
+      api_key: os.environ/GEMINI_API_KEY
+    model_info:
+      mode: cloud
+      cost: free_tier_or_configured_account
+      description: "Google Gemini Flash"
+
+  - model_name: free-nvidia-nim
+    litellm_params:
+      model: openai/${NVIDIA_NIM_MODEL:meta/llama-3.1-70b-instruct}
+      api_base: ${NVIDIA_NIM_BASE_URL:https://integrate.api.nvidia.com/v1}
+      api_key: os.environ/NVIDIA_NIM_API_KEY
+    model_info:
+      mode: cloud
+      cost: free_tier_or_configured_account
+      description: "NVIDIA NIM Free Model"
+
+  - model_name: free-cerebras
+    litellm_params:
+      model: cerebras/${CEREBRAS_MODEL:llama3.1-8b}
+      api_key: os.environ/CEREBRAS_API_KEY
+    model_info:
+      mode: cloud
+      cost: free_tier_or_configured_account
+      description: "Cerebras Free Model"
+
+  - model_name: free-huggingface
+    litellm_params:
+      model: huggingface/${HUGGINGFACE_MODEL:meta-llama/Llama-3.1-8B-Instruct}
+      api_key: os.environ/HF_TOKEN
+    model_info:
+      mode: cloud
+      cost: free_tier_or_configured_account
+      description: "Hugging Face Free Model"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # PAID PROVIDERS (premium/default)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - model_name: default-openrouter
+    litellm_params:
+      model: openrouter/${OPENROUTER_CODER_MODEL:qwen/qwen-2.5-coder-32b-instruct}
+      api_key: os.environ/OPENROUTER_API_KEY
+    model_info:
+      description: "OpenRouter Premium Model"
+
+  - model_name: default-openai
+    litellm_params:
+      model: gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+    model_info:
+      description: "OpenAI GPT-4 Mini"
+
+  - model_name: default-anthropic
+    litellm_params:
+      model: claude-sonnet-4-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+    model_info:
+      description: "Anthropic Claude Sonnet"
+
+  - model_name: default-gemini
+    litellm_params:
+      model: gemini/${GEMINI_REASONING_MODEL:gemini-3.5-pro}
+      api_key: os.environ/GEMINI_API_KEY
+    model_info:
+      description: "Google Gemini Pro"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # MODEL ALIASES (routing priorities)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  - model_name: free-auto
+    litellm_params:
+      model: free-local
+    model_info:
+      description: "Auto-select local or free cloud"
+
+  - model_name: free-cloud
+    litellm_params:
+      model: free-openrouter
+    model_info:
+      description: "Auto-select free cloud providers"
+
+  - model_name: free-code
+    litellm_params:
+      model: free-groq
+    model_info:
+      description: "Free provider for code tasks"
+
+  - model_name: free-fast
+    litellm_params:
+      model: free-groq
+    model_info:
+      description: "Free provider optimized for speed"
+
+  - model_name: free-reasoning
+    litellm_params:
+      model: free-openrouter
+    model_info:
+      description: "Free provider for reasoning tasks"
+
+  - model_name: premium-auto
+    litellm_params:
+      model: default-openrouter
+    model_info:
+      description: "Premium auto-routing"
+
+  - model_name: default-auto
+    litellm_params:
+      model: default-openrouter
+    model_info:
+      description: "Default routing (original provider)"
+
+  - model_name: claude-code-free
+    litellm_params:
+      model: free-auto
+    model_info:
+      description: "Free mode for Claude Code"
+
+  - model_name: claude-code-premium
+    litellm_params:
+      model: default-anthropic
+    model_info:
+      description: "Premium Claude Code routing"
+
+router_settings:
+  routing_strategy: simple-shuffle
+  num_retries: 5
+  timeout: 60
+  redis_host: ${REDIS_HOST:}
+  redis_password: ${REDIS_PASSWORD:}
+  redis_port: ${REDIS_PORT:}
+
+litellm_settings:
+  drop_params: true
+  set_verbose: false
+  request_timeout: 60
+  telemetry: false
+
+general_settings:
+  master_key: ${LITELLM_MASTER_KEY:change-me-local-master-key}
+  alerting: []
