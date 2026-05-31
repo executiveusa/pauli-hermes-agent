@@ -7,12 +7,12 @@ from typing import Optional
 
 # Lazy imports — only needed if actually creating clients
 try:
-    from anthropic import Anthropic
+    from anthropic import Anthropic  # type: ignore[import-not-found]
 except ImportError:
     Anthropic = None
 
 try:
-    from openai import OpenAI
+    from openai import OpenAI  # type: ignore[import-not-found]
 except ImportError:
     OpenAI = None
 

@@ -7,7 +7,8 @@ import os
 import time
 from dataclasses import dataclass, asdict
 from typing import Optional
-import httpx
+
+import httpx  # type: ignore[import-not-found]
 
 logger = logging.getLogger(__name__)
 
