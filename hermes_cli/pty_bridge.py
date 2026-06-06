@@ -54,6 +54,33 @@ except ImportError:  # pragma: no cover - dev env without ptyprocess
 __all__ = ["PtyBridge", "PtyUnavailableError"]
 
 
+# ``struct winsize`` packs rows/cols as unsigned short (0..65535).  We clamp
+# well below that ceiling: real terminals never exceed a couple thousand
+# columns, and a value above this is a broken probe (WSL2 reports
+# columns=131072) rather than a genuine ultrawide.  Lower bound is 1 — a
+# zero/negative dimension is the classic "no size yet" signal.
+_MIN_DIMENSION = 1
+_MAX_COLS = 2000
+_MAX_ROWS = 1000
+
+
+def _clamp_dimension(value: int, maximum: int) -> int:
+    """Clamp a reported terminal dimension into ``[_MIN_DIMENSION, maximum]``.
+
+    Non-integer / non-finite values fall back to ``_MIN_DIMENSION`` so a bad
+    probe can never reach ``struct.pack`` and raise ``struct.error``.
+    """
+    try:
+        n = int(value)
+    except (TypeError, ValueError, OverflowError):
+        return _MIN_DIMENSION
+    if n < _MIN_DIMENSION:
+        return _MIN_DIMENSION
+    if n > maximum:
+        return maximum
+    return n
+
+
 class PtyUnavailableError(RuntimeError):
     """Raised when a PTY cannot be created on this platform.
 
@@ -196,8 +223,10 @@ class PtyBridge:
         """Forward a terminal resize to the child via ``TIOCSWINSZ``."""
         if self._closed or fcntl is None or termios is None:
             return
+        cols = _clamp_dimension(cols, _MAX_COLS)
+        rows = _clamp_dimension(rows, _MAX_ROWS)
         # struct winsize: rows, cols, xpixel, ypixel (all unsigned short)
-        winsize = struct.pack("HHHH", max(1, rows), max(1, cols), 0, 0)
+        winsize = struct.pack("HHHH", rows, cols, 0, 0)
         try:
             fcntl.ioctl(self._fd, termios.TIOCSWINSZ, winsize)
         except OSError:

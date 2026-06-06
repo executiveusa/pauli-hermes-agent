@@ -1,9 +1,12 @@
 declare global {
   interface Window {
-    /** Set true by the server only for `hermes dashboard --tui` (or HERMES_DASHBOARD_TUI=1). */
+    /**
+     * Injected by the server as `true`. The embedded TUI Chat surface
+     * (`/chat`, `/api/ws`, `/api/pty`) is always enabled, so this is
+     * effectively a constant; kept on `window` for any consumer that reads
+     * it directly and for parity with the server's bootstrap script.
+     */
     __HERMES_DASHBOARD_EMBEDDED_CHAT__?: boolean;
-    /** @deprecated Older injected name; treated as on when true. */
-    __HERMES_DASHBOARD_TUI__?: boolean;
   }
 }
 

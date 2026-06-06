@@ -1,5 +1,6 @@
 .DS_Store
 /venv/
+/venv.old/
 /_pycache/
 *.pyc*
 __pycache__/
@@ -63,6 +64,10 @@ environments/benchmarks/evals/
 
 # Web UI build output
 hermes_cli/web_dist/
+apps/desktop/build/
+apps/desktop/dist/
+apps/desktop/release/
+apps/desktop/*.tsbuildinfo
 
 # Web UI assets — synced from @nous-research/ui at build time via
 # `npm run sync-assets` (see web/package.json).
@@ -78,5 +83,11 @@ mini-swe-agent/
 .nix-stamps/
 result
 website/static/api/skills-index.json
+# skills.json + skills-meta.json are build artifacts emitted by
+# website/scripts/extract-skills.py during prebuild — keep them out of
+# git for the same reason as skills-index.json (large, generated, change
+# every build).
+website/static/api/skills.json
+website/static/api/skills-meta.json
 models-dev-upstream/
 .claude/

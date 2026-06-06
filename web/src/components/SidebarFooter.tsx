@@ -1,5 +1,5 @@
-import { Typography } from "@/components/NouiTypography";
-import { useSidebarStatus } from "@/hooks/useSidebarStatus";
+import { Typography } from "@nous-research/ui/ui/components/typography/index";
+import type { StatusResponse } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n";
 import { Globe } from "lucide-react";
@@ -7,8 +7,7 @@ import { useState } from "react";
 import { Button } from "@nous-research/ui/ui/components/button";
 import { ConnectionDialog } from "./ConnectionDialog";
 
-export function SidebarFooter() {
-  const status = useSidebarStatus();
+export function SidebarFooter({ status }: SidebarFooterProps) {
   const { t } = useI18n();
   const [showConnection, setShowConnection] = useState(
     typeof window !== "undefined" &&
@@ -60,4 +59,8 @@ export function SidebarFooter() {
     </div>
     </>
   );
+}
+
+interface SidebarFooterProps {
+  status: StatusResponse | null;
 }

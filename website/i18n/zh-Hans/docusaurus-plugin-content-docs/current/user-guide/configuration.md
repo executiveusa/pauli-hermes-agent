@@ -1176,13 +1176,13 @@ display:
 
 ### 运行时元数据页脚（仅限 gateway）
 
-当 `display.runtime_footer.enabled: true` 时，Hermes 在每个 gateway 轮次的**最终**消息中附加一个小型运行时上下文页脚 —— 与 CLI 在其状态栏中显示的相同信息（模型、上下文 %、cwd、会话时长、token、成本）。默认关闭；如果您的团队希望每个回复都包含来源信息，请按 gateway 选择加入。
+当 `display.runtime_footer.enabled: true` 时，Hermes 在每个 gateway 轮次的**最终**消息中附加一个小型运行时上下文页脚。目前页脚可显示模型、上下文窗口百分比和当前工作目录。默认关闭；如果您的团队希望每个回复都包含这些来源信息，请按 gateway 选择加入。
 
 ```yaml
 display:
   runtime_footer:
     enabled: true
-    fields: ["model", "context_pct", "cwd"]   # 任意：model、context_pct、cwd、duration、tokens、cost
+    fields: ["model", "context_pct", "cwd"]   # 支持字段：model、context_pct、cwd
 ```
 
 `/footer` 斜杠命令在任何会话中运行时切换此功能。
@@ -1411,7 +1411,7 @@ code_execution:
 
 ## Web 搜索后端
 
-`web_search`、`web_extract` 和 `web_crawl` 工具支持五种后端 provider。在 `config.yaml` 中或通过 `hermes tools` 配置后端：
+`web_search` 和 `web_extract` 工具支持五种后端 provider。在 `config.yaml` 中或通过 `hermes tools` 配置后端：
 
 ```yaml
 web:
@@ -1422,17 +1422,17 @@ web:
   extract_backend: "firecrawl"
 ```
 
-| 后端 | 环境变量 | 搜索 | 提取 | 爬取 |
-|---------|---------|--------|---------|-------|
-| **Firecrawl**（默认） | `FIRECRAWL_API_KEY` | ✔ | ✔ | ✔ |
-| **SearXNG** | `SEARXNG_URL` | ✔ | — | — |
-| **Parallel** | `PARALLEL_API_KEY` | ✔ | ✔ | — |
-| **Tavily** | `TAVILY_API_KEY` | ✔ | ✔ | ✔ |
-| **Exa** | `EXA_API_KEY` | ✔ | ✔ | — |
+| 后端 | 环境变量 | 搜索 | 提取 |
+|---------|---------|--------|---------|
+| **Firecrawl**（默认） | `FIRECRAWL_API_KEY` | ✔ | ✔ |
+| **SearXNG** | `SEARXNG_URL` | ✔ | — |
+| **Parallel** | `PARALLEL_API_KEY` | ✔ | ✔ |
+| **Tavily** | `TAVILY_API_KEY` | ✔ | ✔ |
+| **Exa** | `EXA_API_KEY` | ✔ | ✔ |
 
 **后端选择：** 如果未设置 `web.backend`，后端从可用的 API 密钥自动检测。如果仅设置了 `SEARXNG_URL`，使用 SearXNG。如果仅设置了 `EXA_API_KEY`，使用 Exa。如果仅设置了 `TAVILY_API_KEY`，使用 Tavily。如果仅设置了 `PARALLEL_API_KEY`，使用 Parallel。否则 Firecrawl 是默认值。
 
-**SearXNG** 是一个免费、自托管、尊重隐私的元搜索引擎，查询 70+ 个搜索引擎。无需 API 密钥 —— 只需将 `SEARXNG_URL` 设置为您的实例（例如 `http://localhost:8080`）。SearXNG 仅限搜索；`web_extract` 和 `web_crawl` 需要单独的提取 provider（设置 `web.extract_backend`）。Docker 设置说明请参阅 [Web 搜索设置指南](/user-guide/features/web-search)。
+**SearXNG** 是一个免费、自托管、尊重隐私的元搜索引擎，查询 70+ 个搜索引擎。无需 API 密钥 —— 只需将 `SEARXNG_URL` 设置为您的实例（例如 `http://localhost:8080`）。SearXNG 仅限搜索；`web_extract` 需要单独的提取 provider（设置 `web.extract_backend`）。Docker 设置说明请参阅 [Web 搜索设置指南](/user-guide/features/web-search)。
 
 **自托管 Firecrawl：** 设置 `FIRECRAWL_API_URL` 指向您自己的实例。设置自定义 URL 后，API 密钥变为可选（在服务器上设置 `USE_DB_AUTHENTICATION=***` 以禁用认证）。
 
