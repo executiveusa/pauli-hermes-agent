@@ -1,8 +1,6 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund",
-  "buildCommand": "npm run build",
   "rewrites": [
     {
       "source": "/((?!assets/|static/|.*\\..*).*)",

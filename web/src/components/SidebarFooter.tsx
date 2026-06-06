@@ -9,11 +9,7 @@ import { ConnectionDialog } from "./ConnectionDialog";
 
 export function SidebarFooter({ status }: SidebarFooterProps) {
   const { t } = useI18n();
-  const [showConnection, setShowConnection] = useState(
-    typeof window !== "undefined" &&
-      (!localStorage.getItem("HERMES_SESSION_TOKEN") ||
-        !localStorage.getItem("HERMES_BACKEND_URL"))
-  );
+  const [showConnection, setShowConnection] = useState(false);
 
   return (
     <>

@@ -5,8 +5,6 @@ from pathlib import Path
 import numpy as np
 import PyPDF2
 
-from .canvas_generator import JSONCanvasGenerator
-
 # We will conditionally import these so that if the user hasn't installed them, it doesn't break the whole app
 try:
     from sentence_transformers import SentenceTransformer
@@ -22,45 +20,14 @@ import requests
 logger = logging.getLogger(__name__)
 
 class SecondBrainIngester:
-    def __init__(self, supabase_client, vault_path: str = None):
+    def __init__(self, supabase_client):
         self._supabase = supabase_client
         self._embedder = None
-        self.vault_path = vault_path or os.environ.get("OBSIDIAN_VAULT_PATH", "E:\\OBSIDIAN SECOND BRAIN")
         
     def _get_embedder(self):
         if not self._embedder:
             self._embedder = SentenceTransformer('all-MiniLM-L6-v2')
         return self._embedder
-
-    def ingest_obsidian_inbox(self):
-        """
-        Scans the 'Inbox' folder of the Obsidian Vault. This is where obsidian-clipper 
-        and obsidian-importer should be configured to dump new files.
-        """
-        inbox_path = Path(self.vault_path) / "Inbox"
-        if not inbox_path.exists():
-            return
-            
-        print(f"Scanning Obsidian Inbox at {inbox_path}")
-        episodes = []
-        
-        for md_file in inbox_path.glob("*.md"):
-            try:
-                with open(md_file, "r", encoding="utf-8") as f:
-                    content = f.read()
-                    
-                # Treat each file as an episode/memory for clustering
-                episodes.append({
-                    "id": md_file.stem,
-                    "title": md_file.stem,
-                    "text": content
-                })
-            except Exception as e:
-                print(f"Failed to read {md_file}: {e}")
-            
-        if episodes:
-            print(f"Found {len(episodes)} new clipped/imported notes. Distilling...")
-            self._cluster_and_distill(episodes)
 
     def ingest_pdf(self, file_path: str):
         print(f"Ingesting PDF: {file_path}")
@@ -247,45 +214,4 @@ class SecondBrainIngester:
             # Insert individual conversations into conversation_messages linked to this cluster (or just log them)
             # (Skipped here for brevity, but this is where 100% data retention happens)
             
-        # Generate JSON Canvas map of the newly formed clusters
-        print("Generating visual JSON Canvas map of the clusters...")
-        try:
-            canvas_gen = JSONCanvasGenerator(self.vault_path)
-            canvas_gen.generate_layout(clusters)
-            canvas_gen.save("Agent_Brain_Map")
-        except Exception as e:
-            print(f"Failed to generate JSON Canvas: {e}")
-            
         print("Ingestion and Clustering complete!")
-        try:
-            self.rebuild_graphify_index()
-        except Exception as e:
-            print(f"Failed to auto-trigger Graphify indexing: {e}")
-
-    def rebuild_graphify_index(self):
-        """Rebuilds the Graphify knowledge graph index of the Obsidian Vault."""
-        print("Rebuilding Graphify knowledge graph index of the vault...")
-        try:
-            import subprocess
-            import sys
-            vault_abs_path = os.path.abspath(self.vault_path)
-            out_dir = Path(vault_abs_path) / "graphify-out"
-            out_dir.mkdir(parents=True, exist_ok=True)
-            
-            # Execute graphifyy build via subprocess with our active python interpreter
-            py_exe = sys.executable or "python"
-            res = subprocess.run(
-                [py_exe, "-m", "graphifyy", "build", vault_abs_path, "--output", str(out_dir)],
-                capture_output=True,
-                text=True
-            )
-            if res.returncode == 0:
-                print("Graphify index built successfully!")
-                return True
-            else:
-                print(f"Graphify build failed with exit code {res.returncode}: {res.stderr}")
-                return False
-        except Exception as e:
-            print(f"Failed to run Graphify index builder: {e}")
-            return False
-

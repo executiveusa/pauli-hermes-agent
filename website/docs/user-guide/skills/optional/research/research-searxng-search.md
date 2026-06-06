@@ -19,7 +19,6 @@ Free meta-search via SearXNG — aggregates results from 70+ search engines. Sel
 | Version | `1.0.0` |
 | Author | hermes-agent |
 | License | MIT |
-| Platforms | linux, macos |
 | Tags | `search`, `searxng`, `meta-search`, `self-hosted`, `free`, `fallback` |
 | Related skills | [`duckduckgo-search`](/docs/user-guide/skills/optional/research/research-duckduckgo-search), [`domain-intel`](/docs/user-guide/skills/optional/research/research-domain-intel) |
 

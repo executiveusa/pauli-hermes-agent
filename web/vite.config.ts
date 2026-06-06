@@ -70,11 +70,7 @@ export default defineConfig({
         name: "Executive Hermes",
         short_name: "Hermes",
         description: "Premium Executive AI Agent Dashboard",
-        theme_color: "#041c1c",
-        background_color: "#041c1c",
-        display: "standalone",
-        start_url: "/",
-        scope: "/",
+        theme_color: "#6B21A8",
         icons: [
           {
             src: "icon-512.png",

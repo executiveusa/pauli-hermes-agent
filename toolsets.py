@@ -248,6 +248,12 @@ TOOLSETS = {
         "includes": []
     },
 
+    "deploy_apps": {
+        "description": "Autonomous app deployment workflow tools (repo ingestion, analysis, and deploy)",
+        "tools": ["ingest_repos", "analyze_repo", "deploy_repo"],
+        "includes": []
+    },
+
     # "honcho" toolset removed — Honcho is now a memory provider plugin.
     # Tools are injected via MemoryManager, not the toolset system.
 

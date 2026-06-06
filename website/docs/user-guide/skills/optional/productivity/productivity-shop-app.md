@@ -19,7 +19,6 @@ Shop.app: product search, order tracking, returns, reorder.
 | Version | `0.0.28` |
 | Author | community |
 | License | MIT |
-| Platforms | linux, macos, windows |
 | Tags | `Shopping`, `E-commerce`, `Shop.app`, `Products`, `Orders`, `Returns` |
 | Related skills | [`shopify`](/docs/user-guide/skills/optional/productivity/productivity-shopify), [`maps`](/docs/user-guide/skills/bundled/productivity/productivity-maps) |
 

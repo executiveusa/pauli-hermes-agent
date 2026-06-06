@@ -88,6 +88,24 @@ If a skill is missing from this list but present in the repo, the catalog is reg
 | [`github-pr-workflow`](/docs/user-guide/skills/bundled/github/github-github-pr-workflow) | GitHub PR lifecycle: branch, commit, open, CI, merge. | `github/github-pr-workflow` |
 | [`github-repo-management`](/docs/user-guide/skills/bundled/github/github-github-repo-management) | Clone/create/fork repos; manage remotes, releases. | `github/github-repo-management` |
 
+## hermes-rolodex
+
+| Skill | Description | Path |
+|-------|-------------|------|
+| [`hermes-rolodex`](/docs/user-guide/skills/bundled/hermes-rolodex/hermes-rolodex-hermes-rolodex) | Hermes Rolodex™ — AI-powered relationship graph that grows from conversation. Trigger when user says things like: "remember that", "who was", "I just met", "meeting brief", "birthday", "reconnect with", "who do I know in", "that person f... | `hermes-rolodex` |
+
+## indigo-azul
+
+| Skill | Description | Path |
+|-------|-------------|------|
+| [`indigo-azul`](/docs/user-guide/skills/bundled/indigo-azul/indigo-azul-indigo-azul) | Indigo Azul Nonprofit Intelligence — autonomous agent module for New World Kids. Trigger when user mentions: "Indigo Azul", "New World Kids", "nwkids", "Puerto Vallarta", "construction", "fundraising", "donor", "nonprofit", "children ser... | `indigo-azul` |
+
+## mcp
+
+| Skill | Description | Path |
+|-------|-------------|------|
+| [`native-mcp`](/docs/user-guide/skills/bundled/mcp/mcp-native-mcp) | MCP client: connect servers, register tools (stdio/HTTP). | `mcp/native-mcp` |
+
 ## media
 
 | Skill | Description | Path |
@@ -115,6 +133,12 @@ If a skill is missing from this list but present in the repo, the catalog is reg
 | Skill | Description | Path |
 |-------|-------------|------|
 | [`obsidian`](/docs/user-guide/skills/bundled/note-taking/note-taking-obsidian) | Read, search, create, and edit notes in the Obsidian vault. | `note-taking/obsidian` |
+
+## pauli
+
+| Skill | Description | Path |
+|-------|-------------|------|
+| [`openclaude-worker`](/docs/user-guide/skills/bundled/pauli/pauli-openclaude-worker) | Dispatch coding tasks to the OpenClaude isolated worker via the Pauli Flywheel. Handles refactoring, test repair, feature implementation, documentation, MCP scaffolding, and code generation. OpenClaude is a leaf worker — Hermes remains t... | `pauli/openclaude-worker` |
 
 ## productivity
 

@@ -872,71 +872,7 @@ def skill_view(
                 if file_path:
                     return _serve_skill_file(skill_dir, file_path)
                 description = str(frontmatter.get("description", "")).strip()
-                # Robust inline requirement checking for absolute targets
-                legacy_env_vars, _ = _collect_prerequisite_values(frontmatter)
-                required_env_vars = _get_required_environment_variables(
-                    frontmatter, legacy_env_vars
-                )
-                backend = _get_terminal_backend_name()
-                env_snapshot = load_env()
-                missing_required_env_vars = [
-                    e
-                    for e in required_env_vars
-                    if not e.get("optional")
-                    and not _is_env_var_persisted(e["name"], env_snapshot)
-                ]
-                skill_name = frontmatter.get("name", skill_dir.name)
-                capture_result = _capture_required_environment_variables(
-                    skill_name,
-                    missing_required_env_vars,
-                )
-                if missing_required_env_vars:
-                    env_snapshot = load_env()
-                remaining_missing_required_envs = _remaining_required_environment_names(
-                    required_env_vars,
-                    capture_result,
-                    env_snapshot=env_snapshot,
-                )
-                setup_needed = bool(remaining_missing_required_envs)
-
-                # Check credential files for absolute target skills
-                required_cred_files_raw = frontmatter.get("required_credential_files", [])
-                if not isinstance(required_cred_files_raw, list):
-                    required_cred_files_raw = []
-                missing_cred_files: list = []
-                if required_cred_files_raw:
-                    try:
-                        from tools.credential_files import register_credential_files
-                        missing_cred_files = register_credential_files(required_cred_files_raw)
-                        if missing_cred_files:
-                            setup_needed = True
-                    except Exception:
-                        pass
-
-                # Build the setup note
-                setup_note = None
-                if setup_needed:
-                    missing_items = [
-                        f"env ${env_name}" for env_name in remaining_missing_required_envs
-                    ] + [
-                        f"file {path}" for path in missing_cred_files
-                    ]
-                    setup_help = next((e["help"] for e in required_env_vars if e.get("help")), None)
-                    setup_note = _build_setup_note(
-                        SkillReadinessStatus.SETUP_NEEDED,
-                        missing_items,
-                        setup_help,
-                    )
-                    if backend in _REMOTE_ENV_BACKENDS and setup_note:
-                        setup_note = f"{setup_note} {backend.upper()}-backed skills need these requirements available inside the remote environment as well."
-
-                readiness = {
-                    "status": SkillReadinessStatus.SETUP_NEEDED.value if setup_needed else SkillReadinessStatus.AVAILABLE.value,
-                    "setup_needed": setup_needed,
-                    "setup_note": setup_note,
-                    "setup_skipped": capture_result["setup_skipped"],
-                    "gateway_setup_hint": capture_result["gateway_setup_hint"],
-                }
+                readiness = check_skills_requirements(frontmatter, body)
                 rendered_content = content
                 if preprocess:
                     try:
@@ -953,41 +889,6 @@ def skill_view(
                             name,
                             exc_info=True,
                         )
-                # Discover linked files for absolute targets
-                reference_files = []
-                template_files = []
-                asset_files = []
-                script_files = []
-                if skill_dir:
-                    references_dir = skill_dir / "references"
-                    if references_dir.exists():
-                        reference_files = [
-                            str(f.relative_to(skill_dir)) for f in references_dir.glob("*.md")
-                        ]
-                    templates_dir = skill_dir / "templates"
-                    if templates_dir.exists():
-                        for ext in ["*.md", "*.py", "*.yaml", "*.yml", "*.json", "*.tex", "*.sh"]:
-                            template_files.extend([str(f.relative_to(skill_dir)) for f in templates_dir.rglob(ext)])
-                    assets_dir = skill_dir / "assets"
-                    if assets_dir.exists():
-                        for f in assets_dir.rglob("*"):
-                            if f.is_file():
-                                asset_files.append(str(f.relative_to(skill_dir)))
-                    scripts_dir = skill_dir / "scripts"
-                    if scripts_dir.exists():
-                        for ext in ["*.py", "*.sh", "*.bash", "*.js", "*.ts", "*.rb"]:
-                            script_files.extend([str(f.relative_to(skill_dir)) for f in scripts_dir.glob(ext)])
-
-                linked_files = {}
-                if reference_files:
-                    linked_files["references"] = reference_files
-                if template_files:
-                    linked_files["templates"] = template_files
-                if asset_files:
-                    linked_files["assets"] = asset_files
-                if script_files:
-                    linked_files["scripts"] = script_files
-
                 return json.dumps(
                     {
                         "success": True,
@@ -997,7 +898,7 @@ def skill_view(
                         "content": rendered_content,
                         "raw_content": content,
                         "description": description,
-                        "linked_files": linked_files if linked_files else None,
+                        "linked_files": _discover_linked_files(skill_dir),
                         "readiness_status": readiness["status"],
                         "setup_needed": readiness.get("setup_needed", False),
                         "setup_note": readiness.get("setup_note"),

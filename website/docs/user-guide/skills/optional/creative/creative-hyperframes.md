@@ -19,7 +19,6 @@ Create HTML-based video compositions, animated title cards, social overlays, cap
 | Version | `1.0.0` |
 | Author | heygen-com |
 | License | Apache-2.0 |
-| Platforms | linux, macos, windows |
 | Tags | `creative`, `video`, `animation`, `html`, `gsap`, `motion-graphics` |
 | Related skills | [`manim-video`](/docs/user-guide/skills/bundled/creative/creative-manim-video), [`meme-generation`](/docs/user-guide/skills/optional/creative/creative-meme-generation) |
 

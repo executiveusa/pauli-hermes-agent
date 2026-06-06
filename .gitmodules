@@ -1,0 +1,10 @@
+[submodule "tinker-atropos"]
+	path = tinker-atropos
+	url = https://github.com/nousresearch/tinker-atropos
+
+[submodule "vendor/jcodemunch-mcp"]
+	path = vendor/jcodemunch-mcp
+	url = https://github.com/jgravelle/jcodemunch-mcp
+[submodule "services/synthia-gateway"]
+	path = services/synthia-gateway
+	url = https://github.com/executiveusa/synthia-gateway.git
