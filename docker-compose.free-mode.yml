@@ -25,3 +25,29 @@ services:
       LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-change-me-local-master-key}
       LITELLM_LOG: ${LITELLM_LOG:-INFO}
       LITELLM_TELEMETRY: ${LITELLM_TELEMETRY:-false}
+
+  monitoring-service:
+    build:
+      context: .
+      dockerfile: free-mode/Dockerfile.monitoring
+    container_name: free-mode-monitoring
+    ports:
+      - "127.0.0.1:8001:8001"
+    env_file:
+      - .env
+    environment:
+      FREE_MODE: ${FREE_MODE:-true}
+      FREE_MODE_MONITOR_HOST: 0.0.0.0
+      FREE_MODE_MONITOR_PORT: 8001
+    volumes:
+      - ~/.hermes/cost_tracking:/root/.hermes/cost_tracking
+    depends_on:
+      litellm-free-mode:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

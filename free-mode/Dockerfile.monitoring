@@ -1,0 +1,24 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy project files
+COPY free_mode/ /app/free_mode/
+COPY pyproject.toml /app/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    fastapi>=0.104.0 \
+    uvicorn[standard]>=0.24.0 \
+    pydantic>=2.12.5
+
+# Create cost tracking directory
+RUN mkdir -p /root/.hermes/cost_tracking
+
+# Run monitoring service
+CMD ["python", "-m", "free_mode.monitoring_service"]
