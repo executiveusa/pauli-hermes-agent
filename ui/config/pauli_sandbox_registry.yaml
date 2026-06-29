@@ -1,0 +1,15 @@
+# Minimal Sandcastle configuration for testing
+sandcastle:
+  version: "1.0"
+  providers:
+    - id: "local_container"
+      type: "local_container"
+      label: "Local Container"
+      enabled: true
+      description: "Local container sandbox"
+  
+  storage:
+    type: "memory"
+    
+  registry:
+    type: "memory"

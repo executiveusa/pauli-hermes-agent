@@ -1,0 +1,57 @@
+{
+  "bead_id": "ZTE-20260506-0001",
+  "repos": [
+    {
+      "name": "pauli-hermes-agent-root",
+      "path": "E:\\ACTIVE PROJECTS-PIPELINE\\HERMES AGENT",
+      "role": "dirty_existing_checkout",
+      "git": {
+        "branch": "main",
+        "status": "dirty",
+        "notes": "Contains thousands of staged/generated files and was not modified."
+      }
+    },
+    {
+      "name": "pauli-hermes-agent-clean",
+      "path": "E:\\ACTIVE PROJECTS-PIPELINE\\HERMES AGENT.remote-main",
+      "role": "clean_worktree",
+      "git": {
+        "branch": "zte/20260506-hermes-desktop-hostinger-stack",
+        "head": "946ef0ea19c9b898037f5e6178d8961ab260f079",
+        "origin_main": "946ef0ea19c9b898037f5e6178d8961ab260f079",
+        "upstream_main": "04cf4788ccc05003785992682e3cb25205e509cc",
+        "ahead_behind_vs_origin_main": [0, 0],
+        "ahead_behind_origin_vs_upstream": [0, 12],
+        "latest_tag_seen": "v2026.4.30"
+      }
+    },
+    {
+      "name": "hermes-desktop",
+      "path": "E:\\ACTIVE PROJECTS-PIPELINE\\hermes-desktop",
+      "role": "desktop_gui",
+      "git": {
+        "branch": "zte/20260506-hermes-desktop-hostinger-stack",
+        "head": "270a7295e0fbbe922b9dc6ae5f96263b12750104",
+        "origin_main": "270a7295e0fbbe922b9dc6ae5f96263b12750104",
+        "latest_tag_seen": "v0.3.5"
+      }
+    }
+  ],
+  "uploaded_packages_found": [
+    {
+      "name": "# ZERO-TOUCH ENGINEER —.txt",
+      "path": "E:\\THE PAULI FILES\\# ZERO-TOUCH ENGINEER —.txt",
+      "classification": "documentation/reference"
+    },
+    {
+      "name": "You are a Zero-Touch Engineer (ZTE).txt",
+      "path": "E:\\THE PAULI FILES\\You are a Zero-Touch Engineer (ZTE).txt",
+      "classification": "documentation/reference"
+    },
+    {
+      "name": "UI_UX Design Review and Recommendations.pdf",
+      "path": "E:\\THE PAULI FILES\\UI_UX Design Review and Recommendations.pdf",
+      "classification": "design reference"
+    }
+  ]
+}

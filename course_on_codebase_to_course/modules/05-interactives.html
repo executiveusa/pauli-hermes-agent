@@ -1,0 +1,90 @@
+<section class="module" id="module-5">
+  <div class="container">
+    <div class="screen" data-screen="1">
+      <h2 class="animate-in">Interactive Elements: Making Code Tangible</h2>
+      <p class="animate-in">Static text is where learning goes to die. <strong>Codebase-to-Course</strong> mandate includes 5 specific interactive elements that must appear in every course to keep the vibe coder engaged.</p>
+      
+      <div class="flow-animation animate-in" data-steps='[
+        {"highlight":"flow-actor-1","label":"Learner hovers over a dotted term"},
+        {"highlight":"flow-actor-1","label":"Browser detects hover event","packet":true,"from":"actor-1","to":"actor-2"},
+        {"highlight":"flow-actor-2","label":"main.js looks up the definition"},
+        {"highlight":"flow-actor-2","label":"Definition bubble is injected into the screen","packet":true,"from":"actor-2","to":"actor-1"}
+      ]'>
+        <div class="flow-actors">
+          <div class="flow-actor" id="flow-actor-1">
+            <div class="flow-actor-icon">👤</div>
+            <span>Learner</span>
+          </div>
+          <div class="flow-actor" id="flow-actor-2">
+            <div class="flow-actor-icon">🧠</div>
+            <span>main.js</span>
+          </div>
+        </div>
+
+        <div class="flow-packet" id="flow-packet"></div>
+        <div class="flow-step-label" id="flow-label">Click "Next Step" to see the tooltip flow</div>
+
+        <div class="flow-controls">
+          <button class="btn flow-next-btn">Next Step</button>
+          <button class="btn flow-reset-btn">Restart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" data-screen="2">
+      <h2 class="animate-in">The Five Mandatories</h2>
+      <p class="animate-in">Every course built with this skill is required to have these elements. They aren't just "nice to have"—they are the pillars of the pedagogy.</p>
+
+      <div class="badge-list animate-in">
+        <div class="badge-item">
+          <code class="badge-code">Group Chat</code>
+          <span class="badge-desc">Shows components talking to each other</span>
+        </div>
+        <div class="badge-item">
+          <code class="badge-code">Data Flow</code>
+          <span class="badge-desc">Animates packets moving between actors</span>
+        </div>
+        <div class="badge-item">
+          <code class="badge-code">Translation</code>
+          <span class="badge-desc">Side-by-side Code and English</span>
+        </div>
+        <div class="badge-item">
+          <code class="badge-code">Quizzes</code>
+          <span class="badge-desc">Instant feedback on learning</span>
+        </div>
+        <div class="badge-item">
+          <code class="badge-code">Tooltips</code>
+          <span class="badge-desc">Embedded CS vocabulary definitions</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen" data-screen="3">
+      <h2 class="animate-in">Final Challenge</h2>
+      <p class="animate-in">You're now a methodology master. Ready to build your own?</p>
+      
+      <div class="quiz-container animate-in" id="quiz-final">
+        <div class="quiz-question-block"
+             data-correct="option-b"
+             data-explanation-right="Correct! We always assume the learner is brilliant but lacks the jargon."
+             data-explanation-wrong="Nope! We never assume technical background. We teach the 'vibes' first.">
+          <h3 class="quiz-question">When writing a course, what level of technical background should you assume?</h3>
+          <div class="quiz-options">
+            <button class="quiz-option" data-value="option-a" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>A Junior Developer with 1-2 years experience</span>
+            </button>
+            <button class="quiz-option" data-value="option-b" onclick="selectOption(this)">
+              <div class="quiz-option-radio"></div>
+              <span>Zero technical background (The Vibe Coder)</span>
+            </button>
+          </div>
+          <div class="quiz-feedback"></div>
+        </div>
+        <button class="quiz-check-btn" onclick="checkQuiz('quiz-final')">Finish Course</button>
+      </div>
+      
+      <p class="animate-in" style="margin-top: 2rem; text-align: center; opacity: 0.7;"><em>Congratulations! Scroll to the bottom to finish.</em></p>
+    </div>
+  </div>
+</section>

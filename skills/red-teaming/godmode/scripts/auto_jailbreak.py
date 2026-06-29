@@ -7,7 +7,7 @@ finds what works, and locks it in by writing config.yaml + prefill.json.
 
 Usage in execute_code:
     exec(open(os.path.expanduser(
-        "~/.hermes/skills/red-teaming/godmode/scripts/auto_jailbreak.py"
+        os.path.join(os.environ.get("HERMES_HOME", os.path.expanduser("~/.hermes")), "skills/red-teaming/godmode/scripts/auto_jailbreak.py")
     )).read())
     
     result = auto_jailbreak()  # Uses current model from config
@@ -16,13 +16,10 @@ Usage in execute_code:
 """
 
 import os
-import sys
 import json
 import time
-import re
 import yaml
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 try:
     from openai import OpenAI
@@ -400,7 +397,8 @@ def _write_config(system_prompt: str = None, prefill_file: str = None):
         cfg["agent"]["system_prompt"] = system_prompt
 
     if prefill_file is not None:
-        cfg["agent"]["prefill_messages_file"] = prefill_file
+        cfg["prefill_messages_file"] = prefill_file
+        cfg["agent"].pop("prefill_messages_file", None)
 
     with open(CONFIG_PATH, "w") as f:
         yaml.dump(cfg, f, default_flow_style=False, allow_unicode=True,
@@ -724,6 +722,7 @@ def undo_jailbreak(verbose=True):
             if "agent" in cfg:
                 cfg["agent"].pop("system_prompt", None)
                 cfg["agent"].pop("prefill_messages_file", None)
+            cfg.pop("prefill_messages_file", None)
             with open(CONFIG_PATH, "w") as f:
                 yaml.dump(cfg, f, default_flow_style=False, allow_unicode=True,
                           width=120, sort_keys=False)

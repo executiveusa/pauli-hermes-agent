@@ -1,0 +1,25 @@
+{
+  "updated_at": "2026-05-09T06:54:09.282728",
+  "platforms": {
+    "telegram": [],
+    "discord": [],
+    "whatsapp": [],
+    "slack": [],
+    "signal": [],
+    "mattermost": [],
+    "matrix": [],
+    "homeassistant": [],
+    "email": [],
+    "sms": [],
+    "dingtalk": [],
+    "feishu": [],
+    "wecom": [],
+    "wecom_callback": [],
+    "weixin": [],
+    "bluebubbles": [],
+    "qqbot": [],
+    "yuanbao": [],
+    "irc": [],
+    "teams": []
+  }
+}

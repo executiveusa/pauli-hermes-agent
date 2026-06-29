@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "hostinger-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "hostinger-api-mcp@latest"
+      ],
+      "env": {
+        "API_TOKEN": "${HOSTINGER_API_KEY}"
+      }
+    },
+    "hermes-rolodex": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "/opt/pauli-hermes-agent/mcp-servers/hermes-rolodex/server.py"
+      ],
+      "env": {
+        "HERMES_CONFIG": "~/.hermes/config.yaml"
+      }
+    }
+  }
+}

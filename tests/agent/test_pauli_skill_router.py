@@ -1,123 +1,64 @@
 from pathlib import Path
-import importlib
+
+from agent.pauli_skill_router import (
+    build_redacted_env_status,
+    resolve_skill_identifier,
+    route_skills_for_task,
+)
 
 
-def test_pauli_package_and_router_are_importable():
-    pauli = importlib.import_module("pauli")
-    router = importlib.import_module("agent.pauli_skill_router")
-
-    assert pauli.__name__ == "pauli"
-    assert hasattr(router, "route_task")
-
-
-def test_pauli_router_blocks_destructive_tasks_and_selects_core_policies():
-    from agent.pauli_skill_router import route_task
-
-    result = route_task("please delete the production database", strict=False)
-
-    assert result["blocked"] is True
-    assert result["selected_skills"]
-    assert "zero-touch-engineer-prime-directive" in result["selected_skills"]
-    assert "destructive" in result["block_reason"].lower() or "delete" in result["block_reason"].lower()
+def test_router_loads_github_skills_only_for_repo_task():
+    result = route_skills_for_task("Scan this repo and open a PR for the CI fix")
+    assert "github" in result["matched_routes"]
+    assert "design" not in result["matched_routes"]
+    assert "github-auth" in result["selected_skills"]
+    assert "codebase-inspection" in result["selected_skills"]
 
 
-def test_pauli_skill_router_config_and_worker_registry_exist():
-    router_cfg = Path("config/pauli_skill_router.yaml")
-    worker_cfg = Path("config/pauli_worker_registry.yaml")
-
-    assert router_cfg.exists()
-    assert worker_cfg.exists()
-
-
-def test_route_task_uses_config_strict_missing_required_flag(tmp_path):
-    from agent.pauli_skill_router import route_task
-
-    router_cfg = tmp_path / "pauli_skill_router.yaml"
-    router_cfg.write_text(
-        """
-version: 1
-default_profile: hermes_operator
-profiles:
-  hermes_operator:
-    required_skills:
-      - missing-policy-skill
-router:
-  strict_missing_required: true
-""".strip(),
-        encoding="utf-8",
+def test_router_rejects_over_budget_skill_load():
+    result = route_skills_for_task(
+        "Repo scan with CI debugging, memory search, and Vercel deployment failed"
     )
+    assert len(result["selected_skills"]) <= result["max_skills_loaded"]
+    assert result["skipped_skills"]
 
-    worker_cfg = tmp_path / "pauli_worker_registry.yaml"
-    worker_cfg.write_text(
-        """
-version: 1
-workers:
-  openclaude:
-    enabled: true
-safety:
-  destructive_keywords: []
-""".strip(),
-        encoding="utf-8",
+
+def test_redacted_secret_status_never_returns_values():
+    status = build_redacted_env_status(
+        ["OPENROUTER_API_KEY", "MISSING_KEY"],
+        env={"OPENROUTER_API_KEY": "super-secret-value"},
     )
-
-    skill_root = tmp_path / "skills" / "pauli"
-    skill_root.mkdir(parents=True)
-
-    result = route_task(
-        "review this repo",
-        strict=None,
-        config_path=router_cfg,
-        worker_registry_path=worker_cfg,
-        skill_root=skill_root,
-    )
-
-    assert result["blocked"] is True
-    assert result["missing_skills"] == ["missing-policy-skill"]
-    assert "missing required skills" in result["block_reason"]
+    assert status == {
+        "OPENROUTER_API_KEY": "present",
+        "MISSING_KEY": "missing",
+    }
+    assert "super-secret-value" not in str(status)
 
 
-def test_route_task_marks_missing_skills_skipped_when_not_strict(tmp_path):
-    from agent.pauli_skill_router import route_task
+def test_video_task_defaults_to_non_paid_generation():
+    result = route_skills_for_task("Create a video montage and render plan")
+    assert "video" in result["matched_routes"]
+    assert result["paid_generation_default"] is False
 
-    router_cfg = tmp_path / "pauli_skill_router.yaml"
-    router_cfg.write_text(
-        """
-version: 1
-default_profile: hermes_operator
-profiles:
-  hermes_operator:
-    required_skills:
-      - missing-policy-skill
-router:
-  strict_missing_required: false
-""".strip(),
-        encoding="utf-8",
-    )
 
-    worker_cfg = tmp_path / "pauli_worker_registry.yaml"
-    worker_cfg.write_text(
-        """
-version: 1
-workers:
-  openclaude:
-    enabled: true
-safety:
-  destructive_keywords: []
-""".strip(),
-        encoding="utf-8",
-    )
+def test_production_deploy_requires_approval():
+    result = route_skills_for_task("Deploy this to production on Coolify")
+    assert result["approval_required"] is True
 
-    skill_root = tmp_path / "skills" / "pauli"
-    skill_root.mkdir(parents=True)
 
-    result = route_task(
-        "review this repo",
-        strict=None,
-        config_path=router_cfg,
-        worker_registry_path=worker_cfg,
-        skill_root=skill_root,
-    )
+def test_design_task_loads_design_skills_only():
+    result = route_skills_for_task("Refresh the dashboard UI and improve UX clarity")
+    assert "design" in result["matched_routes"]
+    assert "pauli-open-design" in result["selected_skills"]
+    assert "github-auth" not in result["selected_skills"]
 
-    assert result["blocked"] is False
-    assert result["missing_skills"] == ["missing-policy-skill"]
-    assert result["skipped_skills"] == ["missing-policy-skill"]
+
+def test_memory_task_uses_search_only_mode():
+    result = route_skills_for_task("Search my files and remember the project notes")
+    assert "memory" in result["matched_routes"]
+    assert result["retrieval_mode"] == "search_only"
+
+
+def test_custom_skill_identifier_resolves_to_repo_path():
+    resolved = resolve_skill_identifier("pauli-open-design")
+    assert resolved.endswith(str(Path("skills") / "pauli" / "open-design"))

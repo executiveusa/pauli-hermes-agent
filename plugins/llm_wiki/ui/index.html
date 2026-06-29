@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Wiki - Second Brain</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            height: 100vh;
+        }
+        #sidebar {
+            width: 300px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        #graph-container {
+            flex-grow: 1;
+            position: relative;
+        }
+        #network {
+            width: 100%;
+            height: 100%;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: #fff;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .memory-card {
+            background-color: #2a2a2a;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #646cff;
+        }
+        .memory-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 1rem;
+            color: #fff;
+        }
+        .memory-card p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        .memory-card .category {
+            font-size: 0.75rem;
+            background-color: #3a3a3a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 5px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h1>Second Brain</h1>
+        <div id="memories-list">Loading memories...</div>
+    </div>
+    <div id="graph-container">
+        <div id="network"></div>
+    </div>
+
+    <script>
+        // Fetch memories
+        fetch('/api/memories')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('memories-list');
+                list.innerHTML = '';
+                if (data.error) {
+                    list.innerHTML = `<div style="color: red;">${data.error}</div>`;
+                    return;
+                }
+                data.forEach(memory => {
+                    const el = document.createElement('div');
+                    el.className = 'memory-card';
+                    el.innerHTML = `
+                        <h3>${memory.title || 'Untitled'}</h3>
+                        <p>${memory.summary || ''}</p>
+                        ${memory.category ? `<span class="category">${memory.category}</span>` : ''}
+                    `;
+                    list.appendChild(el);
+                });
+            });
+
+        // Fetch graph data
+        fetch('/api/graph')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.nodes || data.nodes.length === 0) return;
+
+                const nodes = new vis.DataSet(data.nodes);
+                const edges = new vis.DataSet(data.edges);
+
+                const container = document.getElementById('network');
+                const graphData = { nodes: nodes, edges: edges };
+                const options = {
+                    nodes: {
+                        shape: 'dot',
+                        size: 16,
+                        font: { color: '#ffffff' },
+                        borderWidth: 2,
+                        shadow: true
+                    },
+                    edges: {
+                        width: 1.5,
+                        color: { inherit: 'from' },
+                        smooth: { type: 'continuous' }
+                    },
+                    physics: {
+                        barnesHut: {
+                            gravitationalConstant: -2000,
+                            centralGravity: 0.3,
+                            springLength: 95,
+                            springConstant: 0.04,
+                            damping: 0.09,
+                            avoidOverlap: 0.1
+                        }
+                    },
+                    groups: {
+                        "Uncategorized": { color: { background: '#555555', border: '#777777' } },
+                        // Colors will be auto-assigned for other categories
+                    }
+                };
+                new vis.Network(container, graphData, options);
+            });
+    </script>
+</body>
+</html>

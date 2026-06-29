@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from gateway.config import Platform, PlatformConfig
-from gateway.platforms.base import MessageEvent, MessageType, SendResult
+from gateway.platforms.base import MessageEvent, MessageType, ProcessingOutcome, SendResult
 from gateway.session import SessionSource, build_session_key
 
 
@@ -40,7 +40,7 @@ def _ensure_discord_mock():
 
 _ensure_discord_mock()
 
-from gateway.platforms.discord import DiscordAdapter  # noqa: E402
+from plugins.platforms.discord.adapter import DiscordAdapter  # noqa: E402
 
 
 class FakeTree:
@@ -168,3 +168,81 @@ async def test_reaction_helper_failures_do_not_break_message_flow(adapter):
     await adapter._process_message_background(event, build_session_key(event.source))
 
     adapter.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_reactions_disabled_via_env(adapter, monkeypatch):
+    """When DISCORD_REACTIONS=false, no reactions should be added."""
+    monkeypatch.setenv("DISCORD_REACTIONS", "false")
+
+    raw_message = SimpleNamespace(
+        add_reaction=AsyncMock(),
+        remove_reaction=AsyncMock(),
+    )
+
+    async def handler(_event):
+        await asyncio.sleep(0)
+        return "ack"
+
+    async def hold_typing(_chat_id, interval=2.0, metadata=None):
+        await asyncio.Event().wait()
+
+    adapter.set_message_handler(handler)
+    adapter.send = AsyncMock(return_value=SendResult(success=True, message_id="999"))
+    adapter._keep_typing = hold_typing
+
+    event = _make_event("4", raw_message)
+    await adapter._process_message_background(event, build_session_key(event.source))
+
+    raw_message.add_reaction.assert_not_awaited()
+    raw_message.remove_reaction.assert_not_awaited()
+    # Response should still be sent
+    adapter.send.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_reactions_disabled_via_env_zero(adapter, monkeypatch):
+    """DISCORD_REACTIONS=0 should also disable reactions."""
+    monkeypatch.setenv("DISCORD_REACTIONS", "0")
+
+    raw_message = SimpleNamespace(
+        add_reaction=AsyncMock(),
+        remove_reaction=AsyncMock(),
+    )
+
+    event = _make_event("5", raw_message)
+    await adapter.on_processing_start(event)
+    await adapter.on_processing_complete(event, ProcessingOutcome.SUCCESS)
+
+    raw_message.add_reaction.assert_not_awaited()
+    raw_message.remove_reaction.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_reactions_enabled_by_default(adapter, monkeypatch):
+    """When DISCORD_REACTIONS is unset, reactions should still work (default: true)."""
+    monkeypatch.delenv("DISCORD_REACTIONS", raising=False)
+
+    raw_message = SimpleNamespace(
+        add_reaction=AsyncMock(),
+        remove_reaction=AsyncMock(),
+    )
+
+    event = _make_event("6", raw_message)
+    await adapter.on_processing_start(event)
+
+    raw_message.add_reaction.assert_awaited_once_with("👀")
+
+
+@pytest.mark.asyncio
+async def test_on_processing_complete_cancelled_removes_eyes_without_terminal_reaction(adapter):
+    raw_message = SimpleNamespace(
+        add_reaction=AsyncMock(),
+        remove_reaction=AsyncMock(),
+    )
+
+    event = _make_event("7", raw_message)
+    await adapter.on_processing_complete(event, ProcessingOutcome.CANCELLED)
+
+    raw_message.remove_reaction.assert_awaited_once_with("👀", adapter._client.user)
+    raw_message.add_reaction.assert_not_awaited()

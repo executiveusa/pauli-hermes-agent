@@ -1,15 +1,106 @@
-version: 1
-default_profile: hermes_operator
-profiles:
-  hermes_operator:
-    required_skills:
-      - zero-touch-engineer-prime-directive
-      - pauli-agent-operating-contract
-      - memory-routing-policy
-      - secret-safety-policy
-      - tool-use-budget-policy
-    optional_skills:
-      - repo-audit-prd
-      - visual-inspection
-router:
-  strict_missing_required: true
+always_load:
+  - zero-touch-engineer-prime-directive
+  - pauli-agent-operating-contract
+  - memory-routing-policy
+  - secret-safety-policy
+  - tool-use-budget-policy
+
+lazy_load_rules:
+  github:
+    triggers: ["repo", "PR", "branch", "commit", "issue", "workflow", "actions", "CI"]
+    skills:
+      - codebase-inspection
+      - jcodemunch
+      - github-auth
+      - github-repo-management
+      - github-pr-workflow
+      - github-code-review
+      - github-issues
+  deploy:
+    triggers: ["deploy", "Coolify", "Hostinger", "Docker", "container", "VPS", "rollback"]
+    skills:
+      - docker-management
+      - webhook-subscriptions
+      - pauli-coolify-ops
+      - pauli-browser-ops
+  vercel:
+    triggers: ["Vercel", "404", "build failed", "deployment failed", "wrong root", "env vars"]
+    skills:
+      - pauli-vercel-ops
+      - systematic-debugging
+      - github-pr-workflow
+  secrets:
+    triggers: ["secret", "token", "Infisical", ".env", "credential", "API key"]
+    skills:
+      - pauli-infisical-secrets
+      - native-mcp
+  voice:
+    triggers: ["call me", "phone", "voice", "Twilio", "talk", "transcript"]
+    skills:
+      - pauli-twilio-voice
+  design:
+    triggers: ["UI", "UX", "design", "dashboard", "component", "landing page", "frontend"]
+    skills:
+      - pauli-open-design
+      - pauli-taste-skill
+      - pauli-impeccable-design
+      - popular-web-designs
+      - claude-design
+      - design-md
+      - sketch
+  course:
+    triggers: ["course", "teach this repo", "onboarding", "explain this codebase", "codebase to course"]
+    skills:
+      - pauli-course-generator
+  video:
+    triggers: ["video", "trailer", "reel", "montage", "clip", "YouTube", "render"]
+    skills:
+      - pauli-video-watch
+      - pauli-openmontage-studio
+      - pauli-fal-ai
+      - youtube-content
+      - hyperframes
+      - kanban-video-orchestrator
+  memory:
+    triggers: ["remember", "second brain", "notes", "knowledge", "vault", "search my files"]
+    skills:
+      - pauli-supabase-memory
+      - obsidian
+      - ocr-and-documents
+      - llm-wiki
+      - notion
+      - google-workspace
+  debugging:
+    triggers: ["bug", "failing", "error", "traceback", "logs", "test failure"]
+    skills:
+      - systematic-debugging
+      - python-debugpy
+      - node-inspect-debugger
+      - requesting-code-review
+      - test-driven-development
+  flywheel:
+    triggers: ["flywheel", "beads", "task swarm", "PRD", "ralphy", "orchestrate"]
+    skills:
+      - pauli-flywheel-orchestrator
+  browser:
+    triggers: ["browser", "dashboard", "login", "scrape", "click through", "dynamic page"]
+    skills:
+      - pauli-browser-ops
+
+tool_budget:
+  default:
+    max_skills_loaded: 3
+    max_external_tools_per_turn: 4
+    max_repo_files_loaded_before_jcodemunch: 20
+  complex_repo_task:
+    required_first:
+      - jcodemunch-summary
+      - codebase-inspection
+    max_skills_loaded: 6
+  video_task:
+    max_skills_loaded: 5
+    paid_generation_default: false
+  production_deploy:
+    requires_human_approval: true
+    requires_secret_scan: true
+    requires_rollback_plan: true
