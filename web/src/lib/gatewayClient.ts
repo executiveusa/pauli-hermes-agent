@@ -13,6 +13,8 @@
  *   await gw.request("prompt.submit", { session_id, text: "hi" })
  */
 
+import { HERMES_BASE_PATH, getWsTicket } from "@/lib/api";
+
 export type GatewayEventName =
   | "gateway.ready"
   | "session.info"
@@ -107,17 +109,30 @@ export class GatewayClient {
     if (this._state === "open" || this._state === "connecting") return;
     this.setState("connecting");
 
-    const resolved = token ?? window.__HERMES_SESSION_TOKEN__ ?? "";
+    const resolved = token ?? window.__HERMES_SESSION_TOKEN__ ?? (typeof window !== "undefined" ? localStorage.getItem("HERMES_SESSION_TOKEN") : null) ?? "";
     if (!resolved) {
       this.setState("error");
       throw new Error(
-        "Session token not available — page must be served by the Hermes dashboard",
+        "Session token not available — page must be served by the Hermes dashboard or configured via Remote Connection",
       );
     }
 
-    const scheme = location.protocol === "https:" ? "wss:" : "ws:";
+    let host = location.host;
+    let scheme = location.protocol === "https:" ? "wss:" : "ws:";
+    
+    const customBackend = typeof window !== "undefined" ? localStorage.getItem("HERMES_BACKEND_URL") || "" : "";
+    if (customBackend) {
+      try {
+        const parsed = new URL(customBackend);
+        host = parsed.host;
+        scheme = parsed.protocol === "https:" ? "wss:" : "ws:";
+      } catch (e) {
+        console.warn("Invalid custom backend URL for Gateway WebSocket:", customBackend);
+      }
+    }
+
     const ws = new WebSocket(
-      `${scheme}//${location.host}/api/ws?token=${encodeURIComponent(resolved)}`,
+      `${scheme}//${host}/api/ws?token=${encodeURIComponent(resolved)}`,
     );
     this.ws = ws;
 
@@ -231,5 +246,6 @@ export class GatewayClient {
 declare global {
   interface Window {
     __HERMES_SESSION_TOKEN__?: string;
+    __HERMES_AUTH_REQUIRED__?: boolean;
   }
 }

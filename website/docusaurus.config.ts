@@ -114,6 +114,11 @@ const config: Config = {
           position: 'left',
         },
         {
+          href: 'https://hermes-agent.nousresearch.com/desktop',
+          label: 'Download',
+          position: 'left',
+        },
+        {
           type: 'localeDropdown',
           position: 'right',
         },
