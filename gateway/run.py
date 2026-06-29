@@ -1178,6 +1178,39 @@ logger = logging.getLogger(__name__)
 _AGENT_PENDING_SENTINEL = object()
 
 
+def merge_pending_message_event(adapter: Any, session_key: str, event: MessageEvent) -> Optional[MessageEvent]:
+    """Merge *event* into the adapter pending queue for *session_key*."""
+    if not adapter:
+        return event
+
+    pending_messages = getattr(adapter, "_pending_messages", None)
+    if not isinstance(pending_messages, dict):
+        return event
+
+    existing = pending_messages.get(session_key)
+    if existing is None:
+        pending_messages[session_key] = event
+        return event
+
+    if getattr(existing, "message_type", None) == MessageType.PHOTO and event.message_type == MessageType.PHOTO:
+        existing.media_urls.extend(event.media_urls)
+        existing.media_types.extend(event.media_types)
+        if event.text:
+            if not existing.text:
+                existing.text = event.text
+            elif event.text not in existing.text:
+                existing.text = f"{existing.text}\n\n{event.text}".strip()
+        return existing
+
+    if getattr(existing, "text", None) and event.text:
+        if event.text not in existing.text:
+            existing.text = f"{existing.text}\n\n{event.text}".strip()
+        return existing
+
+    pending_messages[session_key] = event
+    return event
+
+
 def _resolve_runtime_agent_kwargs() -> dict:
     """Resolve provider credentials for gateway-created AIAgent instances.
 
@@ -16265,6 +16298,27 @@ class GatewayRunner:
             out.update(cls._empty_honcho_cache_busting_config())
 
         return out
+
+    @staticmethod
+    def _agent_has_active_subagents(running_agent: Any) -> bool:
+        """Return True when *running_agent* is currently driving subagents."""
+        if running_agent is None or running_agent is _AGENT_PENDING_SENTINEL:
+            return False
+
+        children = getattr(running_agent, "_active_children", None)
+        if not isinstance(children, (list, tuple, set)):
+            return False
+        if not children:
+            return False
+
+        lock = getattr(running_agent, "_active_children_lock", None)
+        try:
+            if lock is not None:
+                with lock:
+                    return bool(children)
+            return bool(children)
+        except Exception:
+            return False
 
     @staticmethod
     def _agent_config_signature(

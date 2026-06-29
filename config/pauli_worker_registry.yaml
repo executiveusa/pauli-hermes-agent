@@ -1,0 +1,34 @@
+version: 1
+workers:
+  openclaude:
+    enabled: true
+    model_priority:
+      - local/free
+      - cheap
+      - standard
+    denied_task_types:
+      - deploy
+      - git_push
+      - file_delete
+      - db_migration
+      - auth_edit
+      - payment_edit
+    approval_required_task_types:
+      - deploy
+      - git_push
+      - file_delete
+      - db_migration
+      - auth_edit
+      - payment_edit
+safety:
+  destructive_keywords:
+    - delete
+    - destroy
+    - drop database
+    - rm -rf
+    - git push
+    - deploy
+    - auth
+    - payment
+    - secret
+    - password

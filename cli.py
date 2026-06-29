@@ -4003,6 +4003,10 @@ class HermesCLI:
                         frags.append(("class:status-bar-strong", f"⚙ {bg_proc_count}"))
                     frags.extend([
                         ("class:status-bar-dim", " · "),
+                        ("class:status-bar-strong", f"▶ {snapshot.get('active_background_tasks', 0)}"),
+                        ("class:status-bar-dim", " │ "),
+                        ("class:status-bar-strong", f"⚙ {snapshot.get('active_background_processes', 0)}"),
+                        ("class:status-bar-dim", " │ "),
                         ("class:status-bar-dim", duration_label),
                     ])
                     if yolo_active:
@@ -4041,6 +4045,10 @@ class HermesCLI:
                         frags.append(("class:status-bar-dim", " │ "))
                         frags.append(("class:status-bar-strong", f"⚙ {bg_proc_count}"))
                     frags.extend([
+                        ("class:status-bar-dim", " │ "),
+                        ("class:status-bar-strong", f"▶ {snapshot.get('active_background_tasks', 0)}"),
+                        ("class:status-bar-dim", " │ "),
+                        ("class:status-bar-strong", f"⚙ {snapshot.get('active_background_processes', 0)}"),
                         ("class:status-bar-dim", " │ "),
                         ("class:status-bar-dim", duration_label),
                     ])
