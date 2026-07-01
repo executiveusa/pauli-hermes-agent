@@ -1,0 +1,75 @@
+{
+  "name": "vercel-imc-a2a-deploy-agent",
+  "description": "Restores and verifies Vercel production deployments from GitHub/Vercel events using ICM folder-stage orchestration.",
+  "url": "http://localhost:8787/a2a",
+  "provider": {
+    "organization": "ExecutiveUSA / Synthia Studio",
+    "url": "https://github.com/executiveusa"
+  },
+  "version": "0.1.0",
+  "documentationUrl": "./README.md",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "authentication": {
+    "schemes": [
+      "bearer"
+    ],
+    "description": "Use Authorization: Bearer $A2A_SHARED_SECRET for mutating/task calls. Agent card can be public."
+  },
+  "defaultInputModes": [
+    "application/json",
+    "text/markdown"
+  ],
+  "defaultOutputModes": [
+    "application/json",
+    "text/markdown"
+  ],
+  "skills": [
+    {
+      "id": "github-webhook-deploy",
+      "name": "GitHub webhook production deploy",
+      "description": "Accepts GitHub push/deployment notifications, resolves Vercel project, deploys approved production branch, and verifies visibility.",
+      "tags": [
+        "github",
+        "vercel",
+        "webhook",
+        "deploy",
+        "production"
+      ],
+      "examples": [
+        "Deploy owner/repo main to production and verify the hero section is visible."
+      ]
+    },
+    {
+      "id": "vercel-visibility-sweep",
+      "name": "Vercel visibility sweep",
+      "description": "Inventories GitHub repos and Vercel projects, then reports which projects are 404, blocked, failing, or visible.",
+      "tags": [
+        "vercel",
+        "inventory",
+        "browser",
+        "smoke-test"
+      ],
+      "examples": [
+        "Sweep all repos under executiveusa and report deployment blockers without editing source code."
+      ]
+    },
+    {
+      "id": "no-code-deployment-triage",
+      "name": "No-code deployment triage",
+      "description": "Diagnoses build and routing blockers using logs, Vercel metadata, and browser checks; stops when source-code changes are required.",
+      "tags": [
+        "logs",
+        "triage",
+        "no-code",
+        "guardrails"
+      ],
+      "examples": [
+        "Find why this Vercel app shows 404 and report the safe fix path."
+      ]
+    }
+  ]
+}

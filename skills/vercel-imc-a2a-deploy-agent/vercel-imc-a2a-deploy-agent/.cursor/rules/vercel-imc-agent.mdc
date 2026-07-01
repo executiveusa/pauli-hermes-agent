@@ -1,0 +1,6 @@
+---
+description: Vercel IMC A2A Deploy Agent operating rules
+alwaysApply: true
+---
+
+Read `AGENTS.md` and `CONTEXT.md` before making changes. Use numbered stage folders as the orchestration surface. Do not edit application source code during Mission 001. Scripts must emit JSON. Never print secrets.
