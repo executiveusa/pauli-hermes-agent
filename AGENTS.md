@@ -898,6 +898,38 @@ Full user-facing docs: `website/docs/user-guide/features/kanban.md`.
 
 ---
 
+## MCP-to-CLI Bridge (mcp2cli)
+
+Hermes reaches MCP servers, OpenAPI specs, and GraphQL endpoints through
+[`mcp2cli`](https://github.com/knowsuchagency/mcp2cli) instead of loading
+full MCP tool schemas into every agent context. Full setup and reference:
+`HERMES.md` and `MCP2CLI.md`. State lives under `.hermes/` (`bin/`, `mcp/`,
+`logs/`, `skills/`) and `.agents/skills/mcp2cli/`.
+
+- Prefer plain CLI tools first — `gh`, `git`, `npm`, `pnpm`, `docker`,
+  `vercel` — before reaching for `mcp2cli`.
+- Use `mcp2cli` when an MCP/OpenAPI/GraphQL tool is a better fit than raw
+  shell. Discover with `--list --compact` before calling anything unfamiliar,
+  inspect with `<command> --help`, execute with `--json` for
+  machine-readable output.
+- GitHub access: `gh` CLI first, the baked `github` mcp2cli tool second.
+- Use OpenCode only for repo code edits (`hermes handoff:opencode`) —
+  `mcp2cli` calls tools, it does not edit files.
+- Secrets: always `env:VAR` or `file:/path` references in `mcp2cli` flags
+  (`--auth-header`, `--env`, `--oauth-client-*`) — never a literal value.
+  They leak into shell history and process listings otherwise.
+- Save reusable connections with `hermes mcp:bake` (wraps `mcp2cli bake
+  create`); list them with `mcp2cli bake list` / `mcp2cli bake show <name>`
+  (secrets masked).
+- `hermes mcp:call` blocks destructive-looking commands
+  (delete/remove/drop/purge/rm/wipe/...) unless `--approve` is passed.
+
+Hermes command surface (`.hermes/bin/hermes-mcp2cli`): `mcp:list`,
+`mcp:search`, `mcp:call`, `mcp:bake`, `repo:inspect`, `handoff:opencode`,
+`verify`.
+
+---
+
 ## Important Policies
 
 ### Prompt Caching Must Not Break

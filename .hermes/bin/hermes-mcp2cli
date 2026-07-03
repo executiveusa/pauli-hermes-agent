@@ -1,0 +1,244 @@
+#!/usr/bin/env bash
+# Hermes <-> mcp2cli bridge. Implements the `hermes mcp:*` / `hermes repo:inspect` /
+# `hermes handoff:opencode` / `hermes verify` command surface described in
+# HERMES.md and MCP2CLI.md.
+#
+# Usage: hermes-mcp2cli <command> [args...]
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+HERMES_DIR="$REPO_ROOT/.hermes"
+LOG_FILE="$HERMES_DIR/logs/mcp2cli.log"
+DESTRUCTIVE_RE='(^|[^a-zA-Z])(delete|remove|drop|purge|destroy|force-?push|rm|wipe|truncate)([^a-zA-Z]|$)'
+
+mkdir -p "$HERMES_DIR/logs"
+
+log() {
+  printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >>"$LOG_FILE"
+}
+
+require_mcp2cli() {
+  if ! command -v mcp2cli >/dev/null 2>&1; then
+    echo "error: mcp2cli not found on PATH. Run: uv tool install mcp2cli (or use 'uvx mcp2cli')" >&2
+    exit 127
+  fi
+}
+
+usage() {
+  cat <<'EOF'
+hermes-mcp2cli - MCP-to-CLI bridge for Hermes
+
+Commands:
+  mcp:list [--json] [TOOL]        List baked tools, or commands on a baked TOOL
+  mcp:search PATTERN [TOOL]       Search baked tool names, or commands on TOOL
+  mcp:call TOOL COMMAND [ARGS...] Call COMMAND on baked TOOL (--json forced)
+  mcp:bake NAME [mcp2cli bake create ARGS...]
+                                  Save a new baked tool config
+  repo:inspect [--json]           Summarize repo + bridge state
+  handoff:opencode [ARGS...]      Hand off a repo-code-edit task to OpenCode
+  verify                          Run the bridge verification checklist
+
+Rules: prefer gh/git/npm/pnpm/docker/vercel directly; use mcp2cli for
+MCP/OpenAPI/GraphQL tools; secrets only via env:VAR or file:/path
+(never literal); destructive tool calls require --approve.
+EOF
+}
+
+cmd_mcp_list() {
+  require_mcp2cli
+  local json=0 tool=""
+  for a in "$@"; do
+    case "$a" in
+      --json) json=1 ;;
+      *) tool="$a" ;;
+    esac
+  done
+
+  if [[ -n "$tool" ]]; then
+    log "mcp:list tool=$tool json=$json"
+    if [[ "$json" -eq 1 ]]; then
+      mcp2cli "@$tool" --list --json
+    else
+      mcp2cli "@$tool" --list --compact
+    fi
+    return
+  fi
+
+  log "mcp:list (baked tools) json=$json"
+  local names
+  names=$(mcp2cli bake list 2>/dev/null | tail -n +3 | awk '{print $1}')
+  if [[ "$json" -eq 1 ]]; then
+    echo -n '['
+    local first=1
+    while IFS= read -r name; do
+      [[ -z "$name" ]] && continue
+      [[ "$first" -eq 0 ]] && echo -n ','
+      first=0
+      printf '{"name":"%s","config":' "$name"
+      mcp2cli bake show "$name"
+      echo -n '}'
+    done <<<"$names"
+    echo ']'
+  else
+    mcp2cli bake list
+  fi
+}
+
+cmd_mcp_search() {
+  require_mcp2cli
+  local pattern="${1:-}"
+  local tool="${2:-}"
+  [[ -z "$pattern" ]] && { echo "usage: hermes-mcp2cli mcp:search PATTERN [TOOL]" >&2; exit 2; }
+  log "mcp:search pattern=$pattern tool=$tool"
+
+  if [[ -n "$tool" ]]; then
+    mcp2cli "@$tool" --search "$pattern" --compact
+  else
+    mcp2cli bake list 2>/dev/null | tail -n +3 | awk '{print $1}' | grep -i -- "$pattern" || true
+  fi
+}
+
+cmd_mcp_call() {
+  require_mcp2cli
+  local tool="${1:-}" command="${2:-}"
+  [[ -z "$tool" || -z "$command" ]] && {
+    echo "usage: hermes-mcp2cli mcp:call TOOL COMMAND [ARGS...] [--approve]" >&2
+    exit 2
+  }
+  shift 2
+
+  local approve=0 args=()
+  for a in "$@"; do
+    if [[ "$a" == "--approve" ]]; then
+      approve=1
+    else
+      args+=("$a")
+    fi
+  done
+
+  if [[ "$command" =~ $DESTRUCTIVE_RE ]] && [[ "$approve" -ne 1 ]]; then
+    echo "blocked: '$command' looks destructive. Re-run with --approve to confirm." >&2
+    log "mcp:call BLOCKED tool=$tool command=$command"
+    exit 3
+  fi
+
+  log "mcp:call tool=$tool command=$command args=${#args[@]}"
+  mcp2cli "@$tool" --json "$command" "${args[@]}"
+}
+
+cmd_mcp_bake() {
+  require_mcp2cli
+  local name="${1:-}"
+  [[ -z "$name" ]] && { echo "usage: hermes-mcp2cli mcp:bake NAME [bake create ARGS...]" >&2; exit 2; }
+  shift
+  log "mcp:bake name=$name"
+  mcp2cli bake create "$name" "$@" --force
+}
+
+cmd_repo_inspect() {
+  local json="${1:-}"
+  local branch commit dirty baked_count
+  branch=$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+  commit=$(git -C "$REPO_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+  dirty=$(git -C "$REPO_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+  baked_count=0
+  if command -v mcp2cli >/dev/null 2>&1; then
+    baked_count=$(mcp2cli bake list 2>/dev/null | tail -n +3 | grep -c . || true)
+  fi
+
+  if [[ "$json" == "--json" ]]; then
+    printf '{"branch":"%s","commit":"%s","dirty_files":%s,"baked_tools":%s,"has_gh_cli":%s,"has_mcp2cli":%s}\n' \
+      "$branch" "$commit" "$dirty" "$baked_count" \
+      "$(command -v gh >/dev/null 2>&1 && echo true || echo false)" \
+      "$(command -v mcp2cli >/dev/null 2>&1 && echo true || echo false)"
+  else
+    echo "branch:       $branch"
+    echo "commit:       $commit"
+    echo "dirty files:  $dirty"
+    echo "baked tools:  $baked_count"
+    echo "gh CLI:       $(command -v gh >/dev/null 2>&1 && echo present || echo absent)"
+    echo "mcp2cli:      $(command -v mcp2cli >/dev/null 2>&1 && echo present || echo absent)"
+  fi
+}
+
+cmd_handoff_opencode() {
+  if command -v opencode >/dev/null 2>&1; then
+    log "handoff:opencode -> delegating to opencode CLI"
+    exec opencode "$@"
+  fi
+  cat <<EOF
+OpenCode CLI not found on PATH.
+Install it, then re-run: hermes-mcp2cli handoff:opencode $*
+
+Hermes' rule: repo code edits go through OpenCode; mcp2cli is only for
+calling MCP/OpenAPI/GraphQL tools, not for editing files.
+EOF
+  exit 127
+}
+
+cmd_verify() {
+  local ok=1
+
+  echo "== Hermes MCP2CLI bridge verification =="
+
+  if command -v mcp2cli >/dev/null 2>&1 || command -v uvx >/dev/null 2>&1; then
+    echo "[ok] mcp2cli runs ($(mcp2cli --version 2>/dev/null || uvx mcp2cli --version 2>/dev/null))"
+  else
+    echo "[fail] mcp2cli not runnable"
+    ok=0
+  fi
+
+  if [[ -f "$REPO_ROOT/.agents/skills/mcp2cli/SKILL.md" ]]; then
+    echo "[ok] mcp2cli skill installed (.agents/skills/mcp2cli/SKILL.md)"
+  else
+    echo "[fail] mcp2cli skill missing"
+    ok=0
+  fi
+
+  local baked_count
+  baked_count=$(mcp2cli bake list 2>/dev/null | tail -n +3 | grep -c . || true)
+  if [[ "$baked_count" -ge 1 ]]; then
+    echo "[ok] at least one baked tool present ($baked_count baked)"
+  else
+    echo "[fail] no baked tools found"
+    ok=0
+  fi
+
+  if mcp2cli @filesystem --list --json 2>/dev/null | python3 -c 'import json,sys; json.load(sys.stdin)' 2>/dev/null; then
+    echo "[ok] JSON output verified via @filesystem --list --json"
+  else
+    echo "[fail] JSON output check failed"
+    ok=0
+  fi
+
+  if [[ "$ok" -eq 1 ]]; then
+    echo "Hermes MCP-to-CLI bridge ready."
+  else
+    echo "Hermes MCP-to-CLI bridge NOT ready — see failures above." >&2
+    exit 1
+  fi
+}
+
+main() {
+  local command="${1:-}"
+  [[ -z "$command" ]] && { usage; exit 2; }
+  shift || true
+
+  case "$command" in
+    mcp:list) cmd_mcp_list "$@" ;;
+    mcp:search) cmd_mcp_search "$@" ;;
+    mcp:call) cmd_mcp_call "$@" ;;
+    mcp:bake) cmd_mcp_bake "$@" ;;
+    repo:inspect) cmd_repo_inspect "$@" ;;
+    handoff:opencode) cmd_handoff_opencode "$@" ;;
+    verify) cmd_verify "$@" ;;
+    -h|--help|help) usage ;;
+    *)
+      echo "unknown command: $command" >&2
+      usage >&2
+      exit 2
+      ;;
+  esac
+}
+
+main "$@"
