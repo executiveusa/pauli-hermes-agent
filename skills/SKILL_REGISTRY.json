@@ -1,0 +1,24 @@
+{
+    "token-saving-skill-hermes": {
+        "path": "skills/token-saving-skill-hermes",
+        "description": "Token saving + secret handling skill",
+        "required": true,
+        "enabled": true
+    },
+    "vercel-imc-a2a-deploy-agent": {
+        "path": "skills/vercel-imc-a2a-deploy-agent",
+        "description": "Vercel deployment and IMC agent",
+        "enabled": true
+    },
+    "black-swan-skills": {
+        "path": "skills/black-swan-skills",
+        "description": "Black swan research skills",
+        "enabled": true
+    },
+    "__missing_required_test__": {
+        "path": "skills/__missing_required_test__",
+        "description": "Temporary test",
+        "required": true,
+        "enabled": true
+    }
+}

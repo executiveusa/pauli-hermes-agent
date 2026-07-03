@@ -63,6 +63,30 @@ hermes              # start chatting!
 
 ---
 
+## New Skill Enforcement & Hostinger Bridge
+
+Hermes now supports a lightweight skill registry at `skills/SKILL_REGISTRY.json`.
+By default, `token-saving-skill-hermes` is marked as a required governance skill.
+Hermes prints required skills at startup and blocks code/file-modifying tool execution
+if a required skill is missing.
+
+A local Hostinger bridge is also available in `scripts/hostinger_bridge.py`.
+Set `HOSTINGER_API_TOKEN` and run the bridge, then query:
+
+```bash
+python scripts/hostinger_bridge.py
+curl http://127.0.0.1:8765/inventory
+```
+
+A new `agent-payments` integration has been added for Apify Actor discovery and execution using x402 prepaid tokens via a Coinbase Agentic Wallet (`awal`).
+Run it as a standalone CLI:
+
+```bash
+python agent-payments/cli.py --help
+```
+
+---
+
 ## Getting Started
 
 ```bash
