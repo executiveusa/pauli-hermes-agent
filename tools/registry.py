@@ -397,6 +397,38 @@ class ToolRegistry:
         entry = self.get_entry(name)
         if not entry:
             return json.dumps({"error": f"Unknown tool: {name}"})
+        # Conservative runtime guard: if the SKILL_REGISTRY marks skills as
+        # required but those skills are missing, block execution of
+        # potentially-destructive tools (code, file, terminal, deploy).
+        try:
+            # Import lazily to avoid startup import cycles in tests.
+            from agent import skill_enforcer as _se
+            ok, present, missing = _se.verify_required_skills()
+            if not ok:
+                toolset = (entry.toolset or "").lower()
+                dangerous_names = {"execute_code", "patch", "write_file", "terminal", "delegate_task"}
+                is_dangerous = entry.name in dangerous_names or any(k in toolset for k in ("code", "file", "terminal", "deploy"))
+                if is_dangerous:
+                    msg = (
+                        "Execution blocked: required skills missing: " + ", ".join(missing) + ". "
+                        "Initialize or install these skills before running code or file-modifying tools."
+                    )
+                    return json.dumps({"error": msg})
+            # Prompt for model selection when running potentially-destructive tools.
+            try:
+                # Only advisory: suggest a model suited for code execution.
+                suggested = _se.prompt_model_selection(default=None)
+                if suggested:
+                    try:
+                        print(f"[hermes] Model suggestion for this task: {suggested}")
+                        print("[hermes] If you wish to switch models, do so before proceeding.")
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+        except Exception:
+            # On any failure of the guard, default to permissive (don't block).
+            pass
         try:
             if entry.is_async:
                 from model_tools import _run_async

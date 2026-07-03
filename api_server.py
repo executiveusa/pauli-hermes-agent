@@ -12,6 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
 import httpx
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(title="Hermes Agent API", version="2.0.0")
 

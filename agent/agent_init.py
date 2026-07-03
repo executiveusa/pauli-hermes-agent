@@ -252,6 +252,43 @@ def init_agent(
             remain skipped.
     """
     _install_safe_stdio()
+    # Surface any required skills early so operators see mandatory policies.
+    try:
+        import hermes_bootstrap as _hb
+        _hb.check_skill_registry()
+    except Exception:
+        pass
+
+    # Attach lightweight skill-enforcement helpers onto the agent object so
+    # runtime callers (CLI, gateway, executors) can verify required skills
+    # and prompt for model selection before running code or destructive tools.
+    try:
+        from agent import skill_enforcer as _se
+
+        def _get_required_skills():
+            try:
+                return _se.load_required_skills()
+            except Exception:
+                return []
+
+        def _verify_required_skills():
+            try:
+                return _se.verify_required_skills()
+            except Exception:
+                return (False, [], _get_required_skills())
+
+        def _prompt_model_selection(clarify=None, default=None):
+            try:
+                return _se.prompt_model_selection(clarify_callback=clarify, default=default)
+            except Exception:
+                return default
+
+        agent.get_required_skills = _get_required_skills
+        agent.verify_required_skills = _verify_required_skills
+        agent.prompt_model_selection = _prompt_model_selection
+    except Exception:
+        # Best-effort only; missing helpers shouldn't block agent init.
+        pass
 
     agent.model = model
     agent.max_iterations = max_iterations

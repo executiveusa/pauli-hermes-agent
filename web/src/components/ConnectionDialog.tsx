@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Globe, Save, X } from "lucide-react";
 import { Button } from "@nous-research/ui/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@nous-research/ui/ui/components/card";
+import { Input } from "@nous-research/ui/ui/components/input";
+import { Label } from "@nous-research/ui/ui/components/label";
 import { setBackendUrl, setManualToken } from "@/lib/api";
 
 export function ConnectionDialog({ onClose }: { onClose: () => void }) {

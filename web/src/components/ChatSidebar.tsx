@@ -152,30 +152,9 @@ export function ChatSidebar({ channel, className }: ChatSidebarProps) {
   // JSON-RPC sidecar so the sidebar matches its documented best-effort
   // UX and the user always has a reconnect affordance.
   useEffect(() => {
-    const token = window.__HERMES_SESSION_TOKEN__ || (typeof window !== "undefined" ? localStorage.getItem("HERMES_SESSION_TOKEN") : null);
-
-    if (!token || !channel) {
+    if (!channel) {
       return;
     }
-
-    let host = window.location.host;
-    let proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-    
-    const customBackend = typeof window !== "undefined" ? localStorage.getItem("HERMES_BACKEND_URL") || "" : "";
-    if (customBackend) {
-      try {
-        const parsed = new URL(customBackend);
-        host = parsed.host;
-        proto = parsed.protocol === "https:" ? "wss:" : "ws:";
-      } catch (e) {
-        console.warn("Invalid custom backend URL for Events WebSocket:", customBackend);
-      }
-    }
-
-    const qs = new URLSearchParams({ token, channel });
-    const ws = new WebSocket(
-      `${proto}//${host}/api/events?${qs.toString()}`,
-    );
 
     // `unmounting` suppresses the banner during cleanup — `ws.close()`
     // from the effect's return fires a close event with code 1005 that

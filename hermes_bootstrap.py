@@ -127,3 +127,27 @@ def apply_windows_utf8_bootstrap() -> bool:
 # the very top of their module, before importing anything else.  The
 # import side effect does the right thing.
 apply_windows_utf8_bootstrap()
+
+
+def check_skill_registry():
+    """Non-fatal check for skills marked required in skills/SKILL_REGISTRY.json.
+
+    This is intentionally lightweight: it prints found required skills so
+    the operator sees the policy at process start. It must never raise.
+    """
+    try:
+        import json
+        path = os.path.join(os.path.dirname(__file__), "skills", "SKILL_REGISTRY.json")
+        if not os.path.exists(path):
+            return []
+        with open(path, "r", encoding="utf-8") as f:
+            reg = json.load(f)
+        required = [name for name, m in (reg or {}).items() if isinstance(m, dict) and m.get("required")]
+        if required:
+            try:
+                print(f"[hermes] Required skills: {', '.join(required)}")
+            except Exception:
+                pass
+        return required
+    except Exception:
+        return []

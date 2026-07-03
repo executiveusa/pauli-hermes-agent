@@ -1,4 +1,15 @@
-const BASE = "";
+function readBasePath(): string {
+  if (typeof window === "undefined") return "";
+  const raw = window.__HERMES_BASE_PATH__ ?? "";
+  if (!raw) return "";
+  // Normalise: ensure leading slash, strip trailing slash.
+  const withLead = raw.startsWith("/") ? raw : `/${raw}`;
+  return withLead.replace(/\/+$/, "");
+}
+
+export const HERMES_BASE_PATH = readBasePath();
+const BASE = HERMES_BASE_PATH;
+
 let _backendUrl = typeof window !== "undefined" ? localStorage.getItem("HERMES_BACKEND_URL") || "" : "";
 let _manualToken = typeof window !== "undefined" ? localStorage.getItem("HERMES_SESSION_TOKEN") || "" : "";
 
@@ -59,6 +70,58 @@ export async function fetchJSON<T>(
   }
   return res.json();
 }
+
+export async function authedFetch(
+  url: string,
+  init?: RequestInit,
+): Promise<Response> {
+  const headers = new Headers(init?.headers);
+  const token = _manualToken || window.__HERMES_SESSION_TOKEN__;
+  if (token) {
+    setSessionHeader(headers, token);
+  }
+  const base = getBase();
+  return fetch(`${base}${url}`, {
+    ...init,
+    headers,
+    credentials: init?.credentials ?? "include",
+  });
+}
+
+export async function getWsTicket(): Promise<{ ticket: string; ttl_seconds: number }> {
+  const base = getBase();
+  const res = await fetch(`${base}/api/auth/ws-ticket`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    throw new Error(`/api/auth/ws-ticket: HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function buildWsAuthParam(): Promise<[string, string]> {
+  if (window.__HERMES_AUTH_REQUIRED__) {
+    const { ticket } = await getWsTicket();
+    return ["ticket", ticket];
+  }
+  const token = _manualToken || window.__HERMES_SESSION_TOKEN__ || "";
+  return ["token", token];
+}
+
+export async function buildWsUrl(
+  path: string,
+  params?: Record<string, string>,
+): Promise<string> {
+  const [authName, authValue] = await buildWsAuthParam();
+  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const qs = new URLSearchParams(params ?? {});
+  qs.set(authName, authValue);
+  const base = getBase();
+  return `${proto}//${window.location.host}${base}${path}?${qs}`;
+}
+
+
 
 /** Encode a plugin registry key for URL paths (preserves `/` segment separators). */
 function pluginPath(name: string): string {
