@@ -245,3 +245,23 @@ hermes dev
 *Upstream: https://github.com/NousResearch/hermes-agent*
 *Local branch: main (c2e286a7e)*
 *Upstream branch: upstream/main (3e21cfdeb)*
+
+---
+
+## ⚠️ NOTES FOR NEXT AGENT
+
+### Composio Integration (2026-07-04)
+- Installed `@composio/core`, `@composio/vercel`, `ai`, `@ai-sdk/anthropic`
+- Created `agent.ts` template for Vercel AI SDK + Composio integration
+- Added `COMPOSIO_API_KEY` to `.env` - GET THE ACTUAL KEY FROM: https://dashboard.composio.dev/executiveusa/HERMES/settings/api-keys
+- TODO: Wire up Composio tools, test the agent, configure all integrations
+
+### Agent Mail AI
+- TODO: Test and wire Agent Mail AI configurations
+- Check for any existing Agent Mail configurations in the codebase
+
+### Testing Required
+- [ ] Test Composio agent.ts with real API key
+- [ ] Test Agent Mail AI integration
+- [ ] Verify all configs are wired correctly
+- [ ] Run hermes dev and verify everything works
