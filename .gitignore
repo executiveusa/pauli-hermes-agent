@@ -60,6 +60,11 @@ cli-config.yaml
 skills/.hub/
 ignored/
 .worktrees/
+
+# mcp2cli bridge runtime state (baked configs live in ~/.config/mcp2cli/).
+# .hermes/logs/ is already covered by the top-level `logs/` rule above.
+/.hermes/skills/*
+!/.hermes/skills/.gitkeep
 environments/benchmarks/evals/
 
 # Web UI build output
