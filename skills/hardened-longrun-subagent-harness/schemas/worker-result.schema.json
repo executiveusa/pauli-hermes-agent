@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://executiveusa.dev/schemas/hermes-worker-result.schema.json",
+  "title": "Hermes Long-Running Worker Result",
+  "type": "object",
+  "required": [
+    "schema_version", "mission_id", "task_id", "attempt", "status", "started_at", "completed_at",
+    "summary", "findings", "artifacts", "evidence", "files_touched", "validations", "risks",
+    "unresolved", "side_effects", "idempotency_key", "content_hash"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "mission_id": {"type": "string"},
+    "task_id": {"type": "string"},
+    "attempt": {"type": "integer", "minimum": 1},
+    "worker_id": {"type": "string"},
+    "status": {"enum": ["completed", "needs_review", "blocked", "failed"]},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "summary": {"type": "string"},
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "statement", "confidence", "source_refs"],
+        "properties": {
+          "id": {"type": "string"},
+          "statement": {"type": "string"},
+          "type": {"enum": ["fact", "concept", "claim", "procedure", "example", "inference", "contradiction", "recommendation"]},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "source_refs": {"type": "array", "items": {"type": "string"}},
+          "tags": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "kind", "sha256"],
+        "properties": {
+          "path": {"type": "string"},
+          "kind": {"type": "string"},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "description": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "source", "location", "captured_at"],
+        "properties": {
+          "id": {"type": "string"},
+          "source": {"type": "string"},
+          "location": {"type": "string"},
+          "captured_at": {"type": "string", "format": "date-time"},
+          "excerpt_or_summary": {"type": "string"},
+          "primary_source": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "files_touched": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "action"],
+        "properties": {
+          "path": {"type": "string"},
+          "action": {"enum": ["created", "modified", "deleted", "read"]},
+          "rollback": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "commands_run": {"type": "array", "items": {"type": "string"}},
+    "validations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status"],
+        "properties": {
+          "name": {"type": "string"},
+          "status": {"enum": ["pass", "fail", "not_run"]},
+          "evidence": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "risks": {"type": "array", "items": {"type": "string"}},
+    "unresolved": {"type": "array", "items": {"type": "string"}},
+    "suggested_next_tasks": {"type": "array", "items": {"type": "string"}},
+    "side_effects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["description", "status", "idempotency_key"],
+        "properties": {
+          "description": {"type": "string"},
+          "status": {"enum": ["none", "planned", "completed", "rolled_back", "unknown"]},
+          "idempotency_key": {"type": "string"},
+          "rollback": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "usage": {
+      "type": "object",
+      "properties": {
+        "provider": {"type": "string"},
+        "model": {"type": "string"},
+        "input_tokens": {"type": "integer", "minimum": 0},
+        "output_tokens": {"type": "integer", "minimum": 0},
+        "estimated_cost_usd": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "idempotency_key": {"type": "string", "minLength": 8},
+    "content_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "additionalProperties": false
+}
