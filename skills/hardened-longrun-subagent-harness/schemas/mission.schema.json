@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://executiveusa.dev/schemas/hermes-longrun-mission.schema.json",
+  "title": "Hermes Long-Running Mission",
+  "type": "object",
+  "required": ["schema_version", "mission_id", "title", "objective", "mode", "created_at", "limits", "completion_criteria", "tasks"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "mission_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"},
+    "title": {"type": "string", "minLength": 3},
+    "objective": {"type": "string", "minLength": 10},
+    "mode": {"enum": ["greenfield", "brownfield", "research", "learning", "operations"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "target": {"type": "string"},
+    "constraints": {"type": "array", "items": {"type": "string"}},
+    "commercial_value": {"type": "string"},
+    "limits": {
+      "type": "object",
+      "required": ["max_epochs", "max_attempts_per_task", "max_concurrent_children", "max_iterations_per_child"],
+      "properties": {
+        "max_epochs": {"type": "integer", "minimum": 1},
+        "max_attempts_per_task": {"type": "integer", "minimum": 1, "maximum": 10},
+        "max_concurrent_children": {"type": "integer", "minimum": 1},
+        "max_iterations_per_child": {"type": "integer", "minimum": 1, "maximum": 100},
+        "max_runtime_minutes": {"type": "integer", "minimum": 1},
+        "max_total_cost_usd": {"type": "number", "minimum": 0},
+        "max_total_tokens": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "completion_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "proof"],
+        "properties": {
+          "id": {"type": "string"},
+          "description": {"type": "string"},
+          "proof": {"type": "string"},
+          "required": {"type": "boolean", "default": true}
+        },
+        "additionalProperties": false
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "goal", "dependencies", "side_effect_class", "acceptance_criteria", "required_evidence"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-zA-Z0-9._-]+$"},
+          "title": {"type": "string"},
+          "goal": {"type": "string", "minLength": 10},
+          "context": {"type": "string"},
+          "dependencies": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "side_effect_class": {"enum": ["none", "local_reversible", "approval_required", "irreversible"]},
+          "acceptance_criteria": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "required_evidence": {"type": "array", "items": {"type": "string"}},
+          "allowed_inputs": {"type": "array", "items": {"type": "string"}},
+          "allowed_outputs": {"type": "array", "items": {"type": "string"}},
+          "prohibited_actions": {"type": "array", "items": {"type": "string"}},
+          "max_attempts": {"type": "integer", "minimum": 1, "maximum": 10}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
