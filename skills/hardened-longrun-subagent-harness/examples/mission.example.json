@@ -10,16 +10,19 @@
     "Read-only source access",
     "No account changes or community engagement",
     "No durable-memory insertion without approval",
-    "All workers write isolated JSON results"
+    "All workers write isolated JSON results",
+    "Every worker checkpoints after each completed unit"
   ],
   "commercial_value": "Reusable Digital Student workflow for paid setup and managed learning services.",
   "limits": {
     "max_epochs": 20,
     "max_attempts_per_task": 3,
     "max_concurrent_children": 3,
+    "provider_concurrency_cap": 3,
     "max_iterations_per_child": 20,
     "max_runtime_minutes": 720,
     "max_total_cost_usd": 5,
+    "max_dispatch_cost_usd": 0.75,
     "max_total_tokens": 500000
   },
   "completion_criteria": [
@@ -60,7 +63,10 @@
       "required_evidence": ["Lesson URL or source file", "Section or timestamp"],
       "allowed_inputs": ["sources/lesson-01/**"],
       "allowed_outputs": ["attempts/lesson-01/**"],
-      "prohibited_actions": ["Posting", "Messaging", "Editing shared mission state"]
+      "prohibited_actions": ["Posting", "Messaging", "Editing shared mission state"],
+      "provider": "cheap-model",
+      "estimated_cost_usd": 0.2,
+      "priority": 10
     },
     {
       "id": "lesson-02",
@@ -73,7 +79,10 @@
       "required_evidence": ["Lesson URL or source file", "Section or timestamp"],
       "allowed_inputs": ["sources/lesson-02/**"],
       "allowed_outputs": ["attempts/lesson-02/**"],
-      "prohibited_actions": ["Posting", "Messaging", "Editing shared mission state"]
+      "prohibited_actions": ["Posting", "Messaging", "Editing shared mission state"],
+      "provider": "cheap-model",
+      "estimated_cost_usd": 0.2,
+      "priority": 10
     },
     {
       "id": "module-01-synthesis",
@@ -86,7 +95,10 @@
       "required_evidence": ["lesson-01 result", "lesson-02 result"],
       "allowed_inputs": ["attempts/lesson-01/**", "attempts/lesson-02/**"],
       "allowed_outputs": ["artifacts/module-01/**"],
-      "prohibited_actions": ["Changing source results", "Approving durable memory"]
+      "prohibited_actions": ["Changing source results", "Approving durable memory"],
+      "provider": "reasoning-model",
+      "estimated_cost_usd": 0.3,
+      "priority": 20
     }
   ]
 }
