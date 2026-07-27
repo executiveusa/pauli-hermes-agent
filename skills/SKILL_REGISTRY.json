@@ -15,6 +15,12 @@
         "description": "Black swan research skills",
         "enabled": true
     },
+    "hardened-longrun-subagent-harness": {
+        "path": "skills/hardened-longrun-subagent-harness",
+        "description": "Durable JSON-backed mission loop with bounded Hermes subagents, checkpoints, review gates, final JSON report, and ZIP export",
+        "required": false,
+        "enabled": true
+    },
     "__missing_required_test__": {
         "path": "skills/__missing_required_test__",
         "description": "Temporary test",
