@@ -15,10 +15,10 @@
         "description": "Black swan research skills",
         "enabled": true
     },
-    "__missing_required_test__": {
-        "path": "skills/__missing_required_test__",
-        "description": "Temporary test",
-        "required": true,
+    "hardened-longrun-subagent-harness": {
+        "path": "skills/hardened-longrun-subagent-harness",
+        "description": "Durable JSON-backed mission loop with crash recovery, safe side-effect reconciliation, adaptive bounded concurrency, validated subagent packets, review gates, and final JSON/ZIP export",
+        "required": false,
         "enabled": true
     }
 }

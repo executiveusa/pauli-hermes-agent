@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://executiveusa.dev/schemas/hermes-final-report.schema.json",
+  "title": "Hermes Long-Running Mission Final Report",
+  "type": "object",
+  "required": [
+    "schema_version", "mission_id", "title", "objective", "status", "started_at", "finished_at",
+    "summary", "completion_criteria", "tasks", "synthesis", "evidence_index", "artifacts",
+    "reviews", "risks", "rollback", "next", "human_approval", "provenance"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "mission_id": {"type": "string"},
+    "title": {"type": "string"},
+    "objective": {"type": "string"},
+    "status": {"enum": ["completed", "completed_with_conditions", "blocked", "failed", "cancelled", "rolled_back"]},
+    "started_at": {"type": "string", "format": "date-time"},
+    "finished_at": {"type": "string", "format": "date-time"},
+    "summary": {"type": "string"},
+    "completion_criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "status", "proof"],
+        "properties": {
+          "id": {"type": "string"},
+          "description": {"type": "string"},
+          "status": {"enum": ["pass", "fail", "not_applicable"]},
+          "proof": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["task_id", "status", "attempts", "result_path"],
+        "properties": {
+          "task_id": {"type": "string"},
+          "status": {"type": "string"},
+          "attempts": {"type": "integer", "minimum": 0},
+          "result_path": {"type": ["string", "null"]},
+          "summary": {"type": "string"},
+          "content_hash": {"type": ["string", "null"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "synthesis": {"type": "object"},
+    "evidence_index": {"type": "array", "items": {"type": "object"}},
+    "artifacts": {"type": "array", "items": {"type": "object"}},
+    "reviews": {
+      "type": "object",
+      "properties": {
+        "spec": {"type": ["object", "null"]},
+        "quality": {"type": ["object", "null"]},
+        "security": {"type": ["object", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "usage": {
+      "type": "object",
+      "properties": {
+        "epochs": {"type": "integer", "minimum": 0},
+        "total_attempts": {"type": "integer", "minimum": 0},
+        "input_tokens": {"type": "integer", "minimum": 0},
+        "output_tokens": {"type": "integer", "minimum": 0},
+        "estimated_cost_usd": {"type": "number", "minimum": 0},
+        "runtime_minutes": {"type": "number", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "risks": {"type": "array", "items": {"type": "string"}},
+    "unresolved": {"type": "array", "items": {"type": "string"}},
+    "rollback": {"type": "array", "items": {"type": "string"}},
+    "next": {"type": "string"},
+    "commercial_impact": {"type": "string"},
+    "human_approval": {
+      "type": "object",
+      "required": ["required", "pending"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "pending": {"type": "array", "items": {"type": "string"}},
+        "approved_by": {"type": ["string", "null"]},
+        "approved_at": {"type": ["string", "null"], "format": "date-time"}
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["mission_sha256", "state_sha256", "export_manifest_sha256"],
+      "properties": {
+        "mission_sha256": {"type": "string"},
+        "state_sha256": {"type": "string"},
+        "export_manifest_sha256": {"type": "string"},
+        "skill_version": {"type": "string"},
+        "generated_by": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

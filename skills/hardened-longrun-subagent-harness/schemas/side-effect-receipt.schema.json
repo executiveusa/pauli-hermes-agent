@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://executiveusa.dev/schemas/hermes-side-effect-receipt.schema.json",
+  "title": "Hermes Side-Effect Reconciliation Receipt",
+  "type": "object",
+  "required": ["schema_version", "mission_id", "task_id", "attempt", "idempotency_key", "outcome", "verified_at", "verified_by", "evidence"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "mission_id": {"type": "string"},
+    "task_id": {"type": "string"},
+    "attempt": {"type": "integer", "minimum": 1},
+    "idempotency_key": {"type": "string", "minLength": 8},
+    "outcome": {"enum": ["not_applied", "applied", "rolled_back", "partially_applied", "unknown"]},
+    "verified_at": {"type": "string", "format": "date-time"},
+    "verified_by": {"type": "string", "minLength": 1},
+    "evidence": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "external_reference": {"type": ["string", "null"]},
+    "notes": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

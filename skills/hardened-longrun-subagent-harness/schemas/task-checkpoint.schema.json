@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://executiveusa.dev/schemas/hermes-task-checkpoint.schema.json",
+  "title": "Hermes Durable Task Checkpoint",
+  "type": "object",
+  "required": ["schema_version", "mission_id", "task_id", "attempt", "completed_units", "next_unit", "artifacts", "side_effects", "local_state_consistent"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "mission_id": {"type": "string"},
+    "task_id": {"type": "string"},
+    "attempt": {"type": "integer", "minimum": 1},
+    "completed_units": {"type": "array", "items": {"type": "string"}},
+    "next_unit": {"type": ["string", "null"]},
+    "artifacts": {"type": "array", "items": {"type": "object"}},
+    "side_effects": {"type": "array", "items": {"type": "object"}},
+    "local_state_consistent": {"type": "boolean"},
+    "notes": {"type": "array", "items": {"type": "string"}},
+    "saved_at": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": false
+}
