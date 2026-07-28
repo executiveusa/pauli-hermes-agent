@@ -1,179 +1,126 @@
 # Hardened Long-Running Subagent Harness
 
-A native Hermes skill for durable missions that use bounded parallel subagents without relying on one fragile, endlessly growing agent turn.
+Native Hermes skill for durable long-running missions using bounded parallel subagents, filesystem JSON state,
+worker leases, micro-checkpoints, safe side-effect reconciliation, adaptive concurrency, independent reviews,
+and final JSON/ZIP export.
 
-## What it adds
+## Risk controls
 
-- Filesystem-backed mission state
-- Dependency-aware task graphs
-- Bounded `delegate_task` batches
-- Atomic per-worker JSON result files
-- Expiring controller locks
-- Retry, stall, and unknown-side-effect handling
-- Independent spec, quality, and security review gates
-- Cron-backed fresh-session continuation
-- Canonical `final-report.json`
-- Export manifest with SHA-256 hashes
-- Downloadable mission ZIP
+The harness closes the primary long-running-agent failure modes:
 
-## Why this design
-
-Hermes can delegate isolated tasks and keep their intermediate tool calls out of the parent context. However, an active child is not resumable after a Hermes process crash. This skill stores durable progress in JSON and treats every Hermes invocation as one bounded epoch. A recurring cron job can start the next epoch from disk after a restart.
-
-## Install location
-
-Bundled repository skill:
-
-```text
-skills/hardened-longrun-subagent-harness/
-```
-
-User-level installation can also copy this folder to:
-
-```text
-~/.hermes/skills/hardened-longrun-subagent-harness/
-```
+- **Interrupted children:** a replacement child resumes the task from its latest validated checkpoint. The original
+  model process is not resumed.
+- **External side effects:** interrupted external actions block until an independent reconciliation receipt proves
+  whether the action was applied, not applied, rolled back, partial, or unknown.
+- **Cost and rate limits:** global and provider concurrency are capped at eight, dispatch cost is budgeted, and a
+  provider rate limit creates a cooldown while reducing adaptive concurrency.
+- **Incomplete child context:** task packets are generated from validated mission contracts. Missing context, paths,
+  criteria, evidence requirements, outputs, or constraints block dispatch.
+- **Release verification:** lifecycle and risk-control tests run in the dedicated GitHub Actions workflow.
 
 ## Quick start
 
-1. Copy the example mission and customize it.
-
-```bash
-cp skills/hardened-longrun-subagent-harness/examples/mission.example.json /tmp/my-mission.json
-```
-
-2. Initialize the run.
+Initialize the example mission:
 
 ```bash
 python skills/hardened-longrun-subagent-harness/scripts/mission_state.py init \
-  --mission-file /tmp/my-mission.json \
+  --mission-file skills/hardened-longrun-subagent-harness/examples/mission.example.json \
   --run-root "$PWD/.hermes-runs"
 ```
 
-3. Ask Hermes:
-
-```text
-Use the hardened-longrun-subagent-harness skill. Resume the mission at
-/path/to/.hermes-runs/example-course-intelligence. Run exactly one epoch.
-```
-
-4. For unattended continuation, ask Hermes to create a skill-backed cron job that runs one epoch every ten minutes.
-
-5. After task completion, create the required review JSON files and synthesis artifacts, then finalize and export.
+Prepare one bounded batch:
 
 ```bash
-python skills/hardened-longrun-subagent-harness/scripts/mission_state.py finalize \
-  --run "$PWD/.hermes-runs/example-course-intelligence"
-
-python skills/hardened-longrun-subagent-harness/scripts/export_mission.py \
-  --run "$PWD/.hermes-runs/example-course-intelligence"
+python skills/hardened-longrun-subagent-harness/scripts/risk_controls.py prepare-batch \
+  --run "$PWD/.hermes-runs/example-course-intelligence" \
+  --controller "hermes:session:epoch-0001"
 ```
+
+Hermes must delegate only the task packets returned by `prepare-batch`.
+
+## Worker checkpoints
+
+Workers checkpoint after each completed unit:
+
+```bash
+python skills/hardened-longrun-subagent-harness/scripts/risk_controls.py heartbeat \
+  --run /path/to/run \
+  --task-id lesson-01 \
+  --attempt 1 \
+  --worker-id student-01 \
+  --checkpoint-file /path/to/checkpoint.json
+```
+
+If the worker lease expires, recover the mission:
+
+```bash
+python skills/hardened-longrun-subagent-harness/scripts/risk_controls.py recover \
+  --run /path/to/run
+```
+
+## Side-effect reconciliation
+
+An interrupted external action cannot be retried until a receipt is verified:
+
+```bash
+python skills/hardened-longrun-subagent-harness/scripts/risk_controls.py reconcile-side-effect \
+  --run /path/to/run \
+  --task-id publish-task \
+  --attempt 1 \
+  --receipt-file /path/to/receipt.json
+```
+
+## Rate-limit response
+
+```bash
+python skills/hardened-longrun-subagent-harness/scripts/risk_controls.py record-rate-limit \
+  --run /path/to/run \
+  --provider cheap-model \
+  --retry-after-seconds 60
+```
+
+## Verification
+
+```bash
+python skills/hardened-longrun-subagent-harness/tests/smoke_test.py
+python skills/hardened-longrun-subagent-harness/tests/risk_controls_test.py
+```
+
+The risk suite deliberately expires a worker lease, resumes from a checkpoint, blocks an uncertain external side
+effect, validates a reconciliation receipt, rejects an incomplete context packet, enforces provider/global concurrency,
+and proves cooldown backpressure.
 
 ## Worker result rule
 
-A worker's chat summary is not canonical. Each worker must atomically write:
+A worker's chat summary is not canonical. Each worker atomically writes:
 
 ```text
 attempts/<task_id>/attempt-<NNN>/result.json
 ```
 
-The result must match `schemas/worker-result.schema.json` and include:
+The result must match `schemas/worker-result.schema.json` and include identity, status, findings, evidence, artifacts,
+validations, side effects, usage, idempotency key, and content hash.
 
-- identity and attempt
-- status
-- summary and findings
-- evidence and artifacts
-- files touched and rollback notes
-- validations
-- risks and unresolved items
-- side effects and idempotency keys
-- model usage when available
-- content hash
+## Finalization
 
-## Files required before final export
+Before finalization create:
 
 ```text
 outputs/synthesis.json
 outputs/completion-criteria.json
 reviews/spec-review.json
 reviews/quality-review.json
+reviews/security-review.json  # when applicable
 ```
 
-`reviews/security-review.json` is additionally required when any task is not classified as `none` side effect.
-
-Optional:
-
-```text
-outputs/rollback.json
-outputs/next.json
-outputs/human-approval.json
-candidate-memory/candidate-memory.json
-```
-
-## Expected completion-criteria file
-
-```json
-{
-  "criteria": [
-    {
-      "id": "C1",
-      "description": "All required tasks completed",
-      "status": "pass",
-      "proof": ["state.json", "attempts/task-01/attempt-001/result.json"]
-    }
-  ]
-}
-```
-
-## Expected review file
-
-```json
-{
-  "reviewer": "independent-spec-reviewer",
-  "reviewed_at": "2026-07-27T12:00:00Z",
-  "verdict": "pass",
-  "findings": [],
-  "proof": ["outputs/completion-criteria.json"]
-}
-```
-
-## Safety defaults
-
-- Maximum three concurrent children unless deliberately configured otherwise
-- No nested delegation by default
-- No direct worker writes to shared state
-- No retries after uncertain external side effects
-- No durable-memory approval by workers
-- No completion without independent reviews
-- No secret values in mission files
-- No unbounded self-reflection or task creation
-
-## Validation
-
-The included utilities use only the Python standard library.
-
-Basic syntax check:
+Then run:
 
 ```bash
-python -m py_compile \
-  skills/hardened-longrun-subagent-harness/scripts/mission_state.py \
-  skills/hardened-longrun-subagent-harness/scripts/export_mission.py
+python skills/hardened-longrun-subagent-harness/scripts/mission_state.py finalize --run /path/to/run
+python skills/hardened-longrun-subagent-harness/scripts/export_mission.py --run /path/to/run
 ```
 
-Initialize smoke test:
-
-```bash
-TMP_ROOT="$(mktemp -d)"
-python skills/hardened-longrun-subagent-harness/scripts/mission_state.py init \
-  --mission-file skills/hardened-longrun-subagent-harness/examples/mission.example.json \
-  --run-root "$TMP_ROOT"
-python skills/hardened-longrun-subagent-harness/scripts/mission_state.py status \
-  --run "$TMP_ROOT/example-course-intelligence"
-```
-
-## Final deliverables
-
-A completed mission produces:
+Outputs:
 
 ```text
 outputs/final-report.json
@@ -181,4 +128,14 @@ outputs/export-manifest.json
 outputs/<mission_id>.zip
 ```
 
-The JSON report is the canonical machine-readable result. The ZIP is the portable handoff and download package.
+## Safety defaults
+
+- Three concurrent children by default; hard maximum eight
+- Provider-specific caps and cooldowns
+- No nested delegation by default
+- No blind retries after uncertain effects
+- No worker writes to shared state
+- No durable-memory insertion without approval
+- No completion without independent review
+- No secret values in mission JSON
+- No unbounded loops
