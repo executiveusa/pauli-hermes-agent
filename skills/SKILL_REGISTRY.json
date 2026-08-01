@@ -20,5 +20,11 @@
         "description": "Durable JSON-backed mission loop with crash recovery, safe side-effect reconciliation, adaptive bounded concurrency, validated subagent packets, review gates, and final JSON/ZIP export",
         "required": false,
         "enabled": true
+    },
+    "qvac-local-ai": {
+        "path": "skills/qvac-local-ai",
+        "description": "Safely inspect, install, operate, verify, and connect QVAC as Hermes' local-first OpenAI-compatible AI runtime",
+        "required": false,
+        "enabled": true
     }
 }
