@@ -23,7 +23,7 @@
     },
     "qvac-local-ai": {
         "path": "skills/qvac-local-ai",
-        "description": "Safely inspect, install, operate, verify, and connect QVAC as Hermes' local-first OpenAI-compatible AI runtime",
+        "description": "Install, verify, and support QVAC on owner or client machines using local, assisted, or consent-based remote browser workflows",
         "required": false,
         "enabled": true
     }
