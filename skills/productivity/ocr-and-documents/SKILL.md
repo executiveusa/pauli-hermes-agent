@@ -1,14 +1,14 @@
 ---
 name: ocr-and-documents
-description: "Extract text from PDFs/scans (pymupdf, marker-pdf)."
-version: 2.3.0
+description: "Extract text from PDFs/scans (pymupdf, marker-pdf, unlimited-ocr)."
+version: 2.4.0
 author: Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
   hermes:
     tags: [PDF, Documents, Research, Arxiv, Text-Extraction, OCR]
-    related_skills: [powerpoint]
+    related_skills: [powerpoint, unlimited-ocr]
 ---
 
 # PDF & Document Extraction
@@ -49,7 +49,9 @@ Only use local extraction when: the file is local, web_extract fails, or you nee
 | **Install size** | ~25MB | ~3-5GB (PyTorch + models) |
 | **Speed** | Instant | ~1-14s/page (CPU), ~0.2s/page (GPU) |
 
-**Decision**: Use pymupdf unless you need OCR, equations, forms, or complex layout analysis.
+**Decision**: Use pymupdf unless you need OCR, equations, forms, or complex layout analysis. If
+marker-pdf's accuracy isn't enough for a long, dense, or heavily multi-page scan and an NVIDIA
+GPU is available, step up to `unlimited-ocr` (see below).
 
 If the user needs marker capabilities but the system lacks ~5GB free disk:
 > "This document needs OCR/advanced extraction (marker-pdf), which requires ~5GB for PyTorch and models. Your system has [X]GB free. Options: free up space, provide a URL so I can use web_extract, or I can try pymupdf which works for text-based PDFs but not scanned documents or equations."
@@ -110,6 +112,22 @@ marker /path/to/folder --workers 4    # Batch
 
 ---
 
+## Unlimited-OCR (GPU, long-horizon / dense multi-page)
+
+For scans too dense, long, or layout-complex for marker-pdf — or when bounding-box-annotated
+output is needed — and an NVIDIA GPU is available (`nvidia-smi`), use the **`unlimited-ocr`**
+skill (`skills/mlops/models/unlimited-ocr/SKILL.md`). It wraps Baidu's Unlimited-OCR
+vision-language model, purpose-built for one-shot parsing of multi-page documents and PDFs in a
+single pass.
+
+- Heavier than marker-pdf (requires GPU + model download) — only reach for this when marker-pdf's
+  quality isn't sufficient
+- Handles single images (Gundam mode) and multi-page/PDF (Base mode)
+- See that skill for setup, `infer.py` batch usage, and vLLM/SGLang serving for high-throughput
+  scanning
+
+---
+
 ## Arxiv Papers
 
 ```
@@ -166,6 +184,7 @@ No extra dependencies needed — pymupdf covers split, merge, search, and text e
 - `web_extract` is always first choice for URLs
 - pymupdf is the safe default — instant, no models, works everywhere
 - marker-pdf is for OCR, scanned docs, equations, complex layouts — install only when needed
+- unlimited-ocr is for GPU-accelerated, long-horizon multi-page/PDF scanning when marker-pdf isn't accurate or fast enough
 - Both helper scripts accept `--help` for full usage
 - marker-pdf downloads ~2.5GB of models to `~/.cache/huggingface/` on first use
 - For Word docs: `pip install python-docx` (better than OCR — parses actual structure)
