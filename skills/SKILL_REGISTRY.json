@@ -32,5 +32,11 @@
         "description": "Private local footage indexing, multimodal understanding, search, and reversible AI edit planning for owner and client machines",
         "required": false,
         "enabled": true
+    },
+    "21st-dev-mcp": {
+        "path": "skills/21st-dev-mcp",
+        "description": "Governed 21st.dev CLI and MCP connection for UI component discovery, installation, generation, review, and publishing",
+        "required": false,
+        "enabled": true
     }
 }
