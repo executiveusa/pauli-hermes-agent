@@ -22,7 +22,7 @@ jobs:
           python-version: "3.11"
       - name: Install bounded test dependencies
         run: |
-          python -m pip install --disable-pip-version-check pytest==9.0.2
+          python -m pip install --disable-pip-version-check pytest==9.0.2 pytest-timeout==2.4.0
           python -m pip install --disable-pip-version-check -r skills/studio/campaign-factory/requirements.txt
       - name: Compile generator
         run: python -m py_compile skills/studio/campaign-factory/scripts/generate_qr.py
