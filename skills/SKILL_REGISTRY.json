@@ -32,5 +32,11 @@
         "description": "Private local footage indexing, multimodal understanding, search, and reversible AI edit planning for owner and client machines",
         "required": false,
         "enabled": true
+    },
+    "campaign-factory": {
+        "path": "skills/studio/campaign-factory",
+        "description": "ICM-governed campaign workflow for verified landing pages, functional QR packages, branded channel assets, and reproducible client handoffs",
+        "required": false,
+        "enabled": true
     }
 }
