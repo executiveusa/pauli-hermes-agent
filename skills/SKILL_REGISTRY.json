@@ -33,9 +33,9 @@
         "required": false,
         "enabled": true
     },
-    "21st-dev-mcp": {
-        "path": "skills/21st-dev-mcp",
-        "description": "Governed 21st.dev CLI and MCP connection for UI component discovery, installation, generation, review, and publishing",
+    "campaign-factory": {
+        "path": "skills/studio/campaign-factory",
+        "description": "ICM-governed campaign workflow for verified landing pages, functional QR packages, branded channel assets, and reproducible client handoffs",
         "required": false,
         "enabled": true
     }
