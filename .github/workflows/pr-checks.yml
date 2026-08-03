@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - id: website
         name: Detect website changes
@@ -35,8 +35,7 @@ jobs:
             exit 0
           fi
 
-          BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          if git diff --quiet "$BASE_SHA"...HEAD -- website/; then
+          if git diff --quiet HEAD^1 HEAD -- website/; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No website files changed; website build is not applicable to this PR."
           else
