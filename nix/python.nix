@@ -36,11 +36,13 @@ let
       };
     };
 
-  # Legacy alibabacloud packages ship only sdists with setup.py/setup.cfg
-  # and no pyproject.toml, so setuptools isn't declared as a build dep.
+  # Source distributions do not carry build-system metadata in uv.lock.
+  # Supply setuptools only for packages whose published source builds require it.
   buildSystemOverrides = final: prev: builtins.mapAttrs
     (name: _: prev.${name}.overrideAttrs (old: {
-      nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ final.setuptools ];
+      nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ final.resolveBuildSystem {
+        setuptools = [ ];
+      };
     }))
     (lib.genAttrs [
       "alibabacloud-credentials-api"
@@ -48,6 +50,7 @@ let
       "alibabacloud-gateway-dingtalk"
       "alibabacloud-gateway-spi"
       "alibabacloud-tea"
+      "httpx-sse"
     ] (_: null));
 
   pythonPackageOverrides = final: _prev:
