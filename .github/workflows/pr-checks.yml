@@ -14,9 +14,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ── 0. Change Scope ─────────────────────────────────────────
+  changes:
+    name: Change Scope
+    runs-on: ubuntu-latest
+    outputs:
+      website: ${{ steps.website.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: website
+        name: Detect website changes
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" != "pull_request" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Website build required for push events."
+            exit 0
+          fi
+
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          if git diff --quiet "$BASE_SHA"...HEAD -- website/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No website files changed; website build is not applicable to this PR."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Website files changed; website build is required."
+          fi
+
   # ── 1. Website Build ────────────────────────────────────────
   website-build:
     name: Website Build
+    needs: changes
+    if: needs.changes.outputs.website == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -155,13 +187,21 @@ jobs:
   all-green:
     name: All Checks Passed
     runs-on: ubuntu-latest
-    needs: [website-build, python-checks, skills-index, mcp-smoke, no-conflicts]
+    needs: [changes, website-build, python-checks, skills-index, mcp-smoke, no-conflicts]
     if: always()
     steps:
       - name: Verify all required checks passed
         run: |
-          if [[ "${{ needs.website-build.result }}" != "success" ]]; then
-            echo "❌ website-build failed"
+          if [[ "${{ needs.changes.result }}" != "success" ]]; then
+            echo "❌ change-scope detection failed"
+            exit 1
+          fi
+          if [[ "${{ needs.changes.outputs.website }}" == "true" && "${{ needs.website-build.result }}" != "success" ]]; then
+            echo "❌ website-build was required and failed"
+            exit 1
+          fi
+          if [[ "${{ needs.changes.outputs.website }}" != "true" && "${{ needs.website-build.result }}" != "skipped" ]]; then
+            echo "❌ website-build scope result was inconsistent"
             exit 1
           fi
           if [[ "${{ needs.python-checks.result }}" != "success" ]]; then
@@ -180,4 +220,4 @@ jobs:
             echo "❌ conflict check failed"
             exit 1
           fi
-          echo "✅ All required checks green — PR ready to merge"
+          echo "✅ All applicable required checks green — PR ready to merge"
