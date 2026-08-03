@@ -20,5 +20,29 @@
         "description": "Durable JSON-backed mission loop with crash recovery, safe side-effect reconciliation, adaptive bounded concurrency, validated subagent packets, review gates, and final JSON/ZIP export",
         "required": false,
         "enabled": true
+    },
+    "qvac-local-ai": {
+        "path": "skills/qvac-local-ai",
+        "description": "Install, verify, and support QVAC on owner or client machines using local, assisted, or consent-based remote browser workflows",
+        "required": false,
+        "enabled": true
+    },
+    "local-footage-studio": {
+        "path": "skills/local-footage-studio",
+        "description": "Private local footage indexing, multimodal understanding, search, and reversible AI edit planning for owner and client machines",
+        "required": false,
+        "enabled": true
+    },
+    "campaign-factory": {
+        "path": "skills/studio/campaign-factory",
+        "description": "ICM-governed campaign workflow for verified landing pages, functional QR packages, branded channel assets, and reproducible client handoffs",
+        "required": false,
+        "enabled": true
+    },
+    "vibe-client-factory": {
+        "path": "skills/studio/vibe-client-factory",
+        "description": "Outcome-first client delivery workflow with low-friction A/B decisions, bounded agent authority, independent review, SHIP/HOLD release gates, client proof, and safe improvement",
+        "required": false,
+        "enabled": true
     }
 }

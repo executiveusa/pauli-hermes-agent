@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "policy_name": "Vibe Client Factory Default Authority",
+  "precedence": "A stricter project-specific rule overrides this default policy.",
+  "classes": [
+    {
+      "id": "READ",
+      "description": "Inspect approved repositories, files, documents, public sources, and current state.",
+      "automatic": true,
+      "approval": "NONE",
+      "examples": ["read files", "inspect website", "list pull requests"]
+    },
+    {
+      "id": "ANALYZE",
+      "description": "Compare, classify, summarize, identify gaps, and recommend without changing state.",
+      "automatic": true,
+      "approval": "NONE",
+      "examples": ["audit architecture", "compare options", "identify risks"]
+    },
+    {
+      "id": "DRAFT",
+      "description": "Prepare clearly labeled proposals, copy, designs, specifications, and decision cards.",
+      "automatic": true,
+      "approval": "NONE",
+      "requirements": ["label output as draft", "do not publish"]
+    },
+    {
+      "id": "REVERSIBLE_INTERNAL",
+      "description": "Create bounded, reversible internal changes in an isolated branch or workspace.",
+      "automatic": true,
+      "approval": "PREAPPROVED_SCOPE",
+      "requirements": ["record scope", "record rollback", "preserve evidence"]
+    },
+    {
+      "id": "CLIENT_FACING",
+      "description": "Change public copy, approved design, forms, or client-visible behavior.",
+      "automatic": false,
+      "approval": "RECORDED_CLIENT_DECISION",
+      "requirements": ["decision receipt", "bounded implementation", "review before release"]
+    },
+    {
+      "id": "RELEASE",
+      "description": "Merge, deploy, migrate, publish, or otherwise change a production or protected state.",
+      "automatic": false,
+      "approval": "INDEPENDENT_REVIEW_AND_HUMAN_APPROVAL",
+      "requirements": ["reviewed commit", "SHIP verdict", "rollback point", "exact release approval"]
+    },
+    {
+      "id": "SENSITIVE",
+      "description": "Billing, credentials, ownership transfer, destructive data changes, legal representation, or persistent remote access.",
+      "automatic": false,
+      "approval": "DUAL_CONFIRMATION",
+      "requirements": ["specific human confirmation", "least privilege", "audit receipt", "recovery plan"]
+    },
+    {
+      "id": "PROHIBITED",
+      "description": "Actions that may never be authorized through this workflow.",
+      "automatic": false,
+      "approval": "NEVER",
+      "examples": [
+        "self-approve",
+        "fabricate proof",
+        "hide failed checks",
+        "bypass review",
+        "expose secrets",
+        "weaken authority rules to finish faster"
+      ]
+    }
+  ],
+  "client_decision_boundary": {
+    "rule": "A client option selection authorizes only the recorded bounded next action.",
+    "never_directly_authorizes": [
+      "merge to production",
+      "production deployment",
+      "database migration",
+      "billing or purchase",
+      "credential change",
+      "ownership transfer",
+      "destructive deletion",
+      "public publishing"
+    ]
+  }
+}
