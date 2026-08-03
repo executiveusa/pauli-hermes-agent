@@ -38,5 +38,11 @@
         "description": "ICM-governed campaign workflow for verified landing pages, functional QR packages, branded channel assets, and reproducible client handoffs",
         "required": false,
         "enabled": true
+    },
+    "vibe-client-factory": {
+        "path": "skills/studio/vibe-client-factory",
+        "description": "Outcome-first client delivery workflow with low-friction A/B decisions, bounded agent authority, independent review, SHIP/HOLD release gates, client proof, and safe improvement",
+        "required": false,
+        "enabled": true
     }
 }
