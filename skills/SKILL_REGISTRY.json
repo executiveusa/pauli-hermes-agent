@@ -44,5 +44,11 @@
         "description": "Outcome-first client delivery workflow with low-friction A/B decisions, bounded agent authority, independent review, SHIP/HOLD release gates, client proof, and safe improvement",
         "required": false,
         "enabled": true
+    },
+    "sovereign-vps-operator": {
+        "path": "skills/workflows/sovereign-vps-operator",
+        "description": "ICM-governed Hostinger and Linux VPS operations workflow for baseline audits, monitoring, backups and restore drills, controlled deployments, incident response, and client-data lifecycle management",
+        "required": false,
+        "enabled": true
     }
 }
