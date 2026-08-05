@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Head from 'next/head';
+import Head from '@docusaurus/Head';
 
 interface ProviderStatus {
   id: string;

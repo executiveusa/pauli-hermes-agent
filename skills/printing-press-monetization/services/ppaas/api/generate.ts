@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -36,7 +36,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Generate the CLI
   try {
-    const result = await generateCLI(body);
+    const githubRepo = req.headers["x-github-repo"] as string | undefined;
+    const result = await generateCLI(body, githubRepo);
     return res.status(200).json(result);
   } catch (err: any) {
     console.error("Generation failed:", err);
@@ -58,13 +59,15 @@ async function verifyPayment(intentId?: string, subscriptionId?: string): Promis
   return false;
 }
 
-async function generateCLI(body: GenerateRequest) {
+async function generateCLI(body: GenerateRequest, githubRepo?: string) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "ppaas-"));
 
+  const cliName = body.cli_name || body.api_name.toLowerCase().replace(/\s+/g, "-");
+
+  // Build args as an array — never join into a shell string to prevent injection
   const args = [
-    "printing-press",
     "--api", body.api_url,
-    "--name", body.cli_name || body.api_name.toLowerCase().replace(/\s+/g, "-"),
+    "--name", cliName,
     "--output", tmpDir,
     "--lang", "go",
   ];
@@ -72,20 +75,19 @@ async function generateCLI(body: GenerateRequest) {
   if (body.include_mcp !== false) args.push("--mcp");
   if (body.include_skill !== false) args.push("--skill");
 
-  const cmd = args.join(" ");
-  execSync(cmd, { timeout: 300_000, stdio: "pipe" });
+  // execFileSync spawns the binary directly; no shell, no injection risk
+  execFileSync("printing-press", args, { timeout: 300_000, stdio: "pipe" });
 
   // Collect generated files
   const files: Record<string, string> = {};
   collectFiles(tmpDir, tmpDir, files);
 
-  // Deliver via GitHub PR if token is set
+  // Deliver via GitHub PR if token and repo header are present
   let github_pr_url: string | undefined;
   const githubToken = process.env.GITHUB_TOKEN;
-  const githubRepo = req_header("x-github-repo");
 
   if (githubToken && githubRepo) {
-    github_pr_url = await deliverViaGitHub(files, githubRepo, body.cli_name || body.api_name, githubToken);
+    github_pr_url = await deliverViaGitHub(files, githubRepo, cliName, githubToken);
   }
 
   // Cleanup
@@ -170,11 +172,6 @@ async function deliverViaGitHub(
 
   const pr = await prResp.json();
   return pr.html_url;
-}
-
-function req_header(name: string): string | undefined {
-  // Accessed via closure from handler — passed through global request context
-  return undefined;
 }
 
 function buildCheckoutUrl(body: GenerateRequest): string {
