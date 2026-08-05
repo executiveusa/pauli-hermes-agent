@@ -83,6 +83,21 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    function nodeModuleFallbacks() {
+      return {
+        name: 'node-module-fallbacks',
+        configureWebpack() {
+          return {
+            resolve: {
+              fallback: { fs: false, path: false },
+            },
+          };
+        },
+      };
+    },
+  ],
+
   themeConfig: {
     image: 'img/hermes-agent-banner.png',
     colorMode: {

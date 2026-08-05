@@ -1,3 +1,17 @@
+---
+name: pauli-sandcastle-worker
+description: "Use Sandcastle to run coding agents in isolated branches/sandboxes with live observability, commits, logs, tests, and approval gates."
+version: 1.0.0
+author: Pauli Hermes Agent
+license: MIT
+platforms: [linux, macos, windows]
+metadata:
+  hermes:
+    tags: [sandcastle, sandbox, isolation, agents, branch, testing, approval-gates, ci-cd, safe-execution]
+    related_skills: [strix-batch-security-testing, hardened-longrun-subagent-harness]
+    capabilities: [sandbox-execution, branch-isolation, test-gating, human-approval, live-observability]
+---
+
 # Sandcastle Worker Skill
 
 **Name:** `pauli-sandcastle-worker`  

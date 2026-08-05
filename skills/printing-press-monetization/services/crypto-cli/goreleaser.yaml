@@ -1,0 +1,44 @@
+project_name: crypto-intel
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: .
+    binary: crypto-intel
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{.ProjectName}}_{{.Os}}_{{.Arch}}"
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+brews:
+  - name: crypto-intel
+    homepage: https://cryptointel.dev
+    description: "Crypto intelligence CLI: arbitrage, signals, portfolio, swaps"
+    tap:
+      owner: your-github-username
+      name: homebrew-tap
+    install: |
+      bin.install "crypto-intel"
+    test: |
+      system "#{bin}/crypto-intel", "--version"
