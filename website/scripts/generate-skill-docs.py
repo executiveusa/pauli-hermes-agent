@@ -294,7 +294,9 @@ def derive_skill_meta(skill_path: Path, source_dir: Path, source_kind: str) -> d
     elif len(parts) == 3:
         category, sub, slug = parts
     else:
-        raise ValueError(f"Unexpected skill layout: {skill_path}")
+        # Skip deeply-nested SKILL.md files (e.g. inside resources/ subdirectories)
+        # that don't match any supported top-level skill layout.
+        return None
     return {
         "source_kind": source_kind,  # bundled | optional
         "category": category,
@@ -454,6 +456,8 @@ def discover_skills() -> list[tuple[dict[str, Any], dict[str, Any]]]:
     for kind, source_dir in SKILL_SOURCES:
         for skill_md in sorted(source_dir.rglob("SKILL.md")):
             meta = derive_skill_meta(skill_md, source_dir, kind)
+            if meta is None:
+                continue
             parsed = parse_skill_md(skill_md)
             results.append((meta, parsed))
     return results
