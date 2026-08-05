@@ -63,5 +63,12 @@
         "required": false,
         "enabled": true,
         "tags": ["security", "penetration-testing", "strix", "parallel-agents", "vulnerability-scanning", "batch-testing", "owasp"]
+    },
+    "printing-press-monetization": {
+        "path": "skills/printing-press-monetization",
+        "description": "5 high-leverage revenue streams built on CLI Printing Press. Spawns parallel agents to build PPaaS, crypto intelligence CLI, idea research CLI, MCP marketplace, and a developer agency. Real money in any currency including crypto.",
+        "required": false,
+        "enabled": true,
+        "tags": ["monetization", "revenue", "cli-printing-press", "saas", "crypto", "bitcoin", "developer-tools", "mcp", "agency", "passive-income"]
     }
 }
