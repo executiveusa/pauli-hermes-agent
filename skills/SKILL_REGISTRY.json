@@ -56,5 +56,12 @@
         "description": "ICM-governed Hostinger and Linux VPS operations workflow for baseline audits, monitoring, backups and restore drills, controlled deployments, incident response, and client-data lifecycle management",
         "required": false,
         "enabled": true
+    },
+    "strix-batch-security-testing": {
+        "path": "skills/strix-batch-security-testing",
+        "description": "Automated batch security testing for GitHub repos using Strix AI agents. Spawns parallel agents to detect and fix OWASP vulnerabilities across multiple applications with real exploit validation.",
+        "required": false,
+        "enabled": true,
+        "tags": ["security", "penetration-testing", "strix", "parallel-agents", "vulnerability-scanning", "batch-testing", "owasp"]
     }
 }
