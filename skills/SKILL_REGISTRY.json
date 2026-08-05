@@ -70,5 +70,12 @@
         "required": false,
         "enabled": true,
         "tags": ["monetization", "revenue", "cli-printing-press", "saas", "crypto", "bitcoin", "developer-tools", "mcp", "agency", "passive-income"]
+    },
+    "youtube-channel-scraper": {
+        "path": "skills/youtube-channel-scraper",
+        "description": "Scrape YouTube channel playlists using Scrapling stealth browser automation. Extracts video titles, descriptions, upload dates, view counts, and URLs into structured JSON files.",
+        "required": false,
+        "enabled": true,
+        "tags": ["scraping", "youtube", "data-extraction", "scrapling", "stealth", "playlist", "automation", "json"]
     }
 }
