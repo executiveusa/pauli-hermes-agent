@@ -274,7 +274,7 @@ def sanitize_yaml_string(s: str) -> str:
     return s
 
 
-def derive_skill_meta(skill_path: Path, source_dir: Path, source_kind: str) -> dict[str, Any]:
+def derive_skill_meta(skill_path: Path, source_dir: Path, source_kind: str) -> dict[str, Any] | None:
     """Extract category + skill slug from filesystem layout.
 
     skills/<cat>/<skill>/SKILL.md           -> cat=<cat>, slug=<skill>
