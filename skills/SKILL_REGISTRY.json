@@ -33,6 +33,12 @@
         "required": false,
         "enabled": true
     },
+    "local-machine-architect": {
+        "path": "skills/local-machine-architect",
+        "description": "Read-only hardware, storage, model-fit, cost, and installation planning for owner and client machines before local AI deployment",
+        "required": false,
+        "enabled": true
+    },
     "campaign-factory": {
         "path": "skills/studio/campaign-factory",
         "description": "ICM-governed campaign workflow for verified landing pages, functional QR packages, branded channel assets, and reproducible client handoffs",
