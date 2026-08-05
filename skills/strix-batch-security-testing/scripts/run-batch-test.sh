@@ -182,6 +182,25 @@ run_github_org_test() {
     echo -e "  Results: ${BLUE}$OUTPUT_DIR${NC}"
 }
 
+run_github_user_test() {
+    if [ -z "$USE_GITHUB_USER" ]; then
+        echo -e "${RED}✗ GitHub user not specified${NC}"
+        exit 1
+    fi
+
+    check_prerequisites
+
+    echo -e "${BLUE}Starting GitHub user scan...${NC}\n"
+
+    python3 "$SCRIPT_DIR/github_multi_agent_test.py" \
+        --user "$USE_GITHUB_USER" \
+        --workers "$WORKERS" \
+        --output-dir "$OUTPUT_DIR"
+
+    echo -e "\n${GREEN}✓ GitHub user scan completed${NC}"
+    echo -e "  Results: ${BLUE}$OUTPUT_DIR${NC}"
+}
+
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -233,10 +252,10 @@ done
 # Main execution
 print_header
 
-if [ -n "$USE_GITHUB_ORG" ] || [ -n "$USE_GITHUB_USER" ]; then
-    if [ -n "$USE_GITHUB_ORG" ]; then
-        run_github_org_test
-    fi
+if [ -n "$USE_GITHUB_ORG" ]; then
+    run_github_org_test
+elif [ -n "$USE_GITHUB_USER" ]; then
+    run_github_user_test
 else
     run_batch_test
 fi

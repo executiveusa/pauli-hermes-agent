@@ -20,7 +20,7 @@ import time
 class Target:
     """Represents a testing target (repo, URL, or API spec)."""
     url: str
-    name: Optional[str] = None
+    name: str = ""
     type: str = "github"  # github, url, openapi, postman
     auth_credentials: Optional[Dict] = None
     custom_instructions: Optional[str] = None
