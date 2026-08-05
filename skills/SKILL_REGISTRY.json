@@ -77,5 +77,12 @@
         "required": false,
         "enabled": true,
         "tags": ["scraping", "youtube", "data-extraction", "scrapling", "stealth", "playlist", "automation", "json"]
+    },
+    "youtube-intelligence-pipeline": {
+        "path": "skills/youtube-intelligence-pipeline",
+        "description": "Full YouTube channel intelligence pipeline: multi-channel scrape with Scrapling, transcript extraction, Claude-powered per-video analysis and cross-channel synthesis, produces Obsidian-ready second brain with trends, content gaps, prioritized actions, content calendar, collaborators, and tools.",
+        "required": false,
+        "enabled": true,
+        "tags": ["youtube", "scraping", "intelligence", "second-brain", "content-strategy", "research", "transcripts", "claude", "obsidian", "automation", "pipeline", "synthesis"]
     }
 }
