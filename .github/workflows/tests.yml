@@ -49,7 +49,6 @@ jobs:
           python -m pytest tests/ -q --ignore=tests/integration --ignore=tests/e2e --tb=short -n 2
         env:
           PYTEST_TIMEOUT: "60"
-        env:
           # Ensure tests don't accidentally call real APIs
           OPENROUTER_API_KEY: ""
           OPENAI_API_KEY: ""
