@@ -1,6 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 
 interface DashboardStatus {
   free_mode_enabled: boolean;
@@ -23,9 +21,12 @@ interface ProviderStatus {
   model?: string;
 }
 
-// Load providers from registry
+// Load providers from registry (server-side only)
 function loadProviders(): ProviderStatus[] {
+  if (typeof window !== 'undefined') return [];
   try {
+    const fs = require('fs');
+    const path = require('path');
     const registryPath = path.join(process.cwd(), '../../free-mode/providers.json');
     if (fs.existsSync(registryPath)) {
       const data = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
@@ -60,9 +61,12 @@ async function checkProxyHealth(): Promise<{ reachable: boolean; latency?: numbe
   }
 }
 
-// Get costs from file-based store
+// Get costs from file-based store (server-side only)
 function getCosts(): { today: number; month: number; requests: number } {
+  if (typeof window !== 'undefined') return { today: 0, month: 0, requests: 0 };
   try {
+    const fs = require('fs');
+    const path = require('path');
     const costsPath = path.join(process.cwd(), '../../.free-mode-costs.json');
     if (fs.existsSync(costsPath)) {
       const data = JSON.parse(fs.readFileSync(costsPath, 'utf-8'));

@@ -1,6 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 
 interface SwitchProviderRequest {
   provider_id: string;
@@ -14,7 +12,10 @@ interface SwitchProviderResponse {
 }
 
 function loadProviders(): Record<string, any> {
+  if (typeof window !== 'undefined') return {};
   try {
+    const fs = require('fs');
+    const path = require('path');
     const registryPath = path.join(process.cwd(), '../../free-mode/providers.json');
     if (fs.existsSync(registryPath)) {
       const data = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
@@ -61,6 +62,8 @@ export default async function handler(
       user: req.headers['x-user-id'] || 'anonymous',
     };
 
+    const fs = require('fs');
+    const path = require('path');
     const logPath = path.join(process.cwd(), '../../.free-mode-provider-switches.json');
     let switches = [];
     if (fs.existsSync(logPath)) {

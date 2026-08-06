@@ -1,6 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 
 interface CostEntry {
   provider: string;
@@ -10,7 +8,10 @@ interface CostEntry {
 }
 
 function getCostHistory(): CostEntry[] {
+  if (typeof window !== 'undefined') return [];
   try {
+    const fs = require('fs');
+    const path = require('path');
     const costsPath = path.join(process.cwd(), '../../.free-mode-costs.json');
     if (fs.existsSync(costsPath)) {
       const data = JSON.parse(fs.readFileSync(costsPath, 'utf-8'));
