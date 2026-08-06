@@ -11,31 +11,37 @@ import time
 import re
 from pathlib import Path
 from datetime import datetime
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
-# Import scraper module (with fallback for different environments)
-try:
+if TYPE_CHECKING:
+    # For type checking only
     from skills.youtube_intelligence_pipeline.scrape import (
-        discover_playlists,
-        scrape_playlist,
-        fetch_description,
-        scrape_channel,
+        discover_playlists as discover_playlists,
+        scrape_playlist as scrape_playlist,
+        fetch_description as fetch_description,
+        scrape_channel as scrape_channel,
     )
-except ImportError:
-    # Fallback for relative imports
-    import sys
-    from pathlib import Path
+else:
+    # Runtime imports with fallback
+    try:
+        from skills.youtube_intelligence_pipeline.scrape import (
+            discover_playlists,
+            scrape_playlist,
+            fetch_description,
+            scrape_channel,
+        )
+    except ImportError:
+        # Fallback for relative imports in different environments
+        parent_dir = str(Path(__file__).parent.parent / "youtube-intelligence-pipeline")
+        if parent_dir not in sys.path:
+            sys.path.insert(0, parent_dir)
 
-    parent_dir = str(Path(__file__).parent.parent / "youtube-intelligence-pipeline")
-    if parent_dir not in sys.path:
-        sys.path.insert(0, parent_dir)
-
-    from scrape import (
-        discover_playlists,
-        scrape_playlist,
-        fetch_description,
-        scrape_channel,
-    )
+        from scrape import (  # type: ignore
+            discover_playlists,
+            scrape_playlist,
+            fetch_description,
+            scrape_channel,
+        )
 
 OUTPUT_BASE = Path("youtube_scrapes")
 OUTPUT_BASE.mkdir(exist_ok=True)
