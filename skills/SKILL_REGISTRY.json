@@ -84,5 +84,12 @@
         "required": false,
         "enabled": true,
         "tags": ["youtube", "scraping", "intelligence", "second-brain", "content-strategy", "research", "transcripts", "claude", "obsidian", "automation", "pipeline", "synthesis"]
+    },
+    "gauntlet-loop": {
+        "path": "skills/gauntlet-loop",
+        "description": "Turns any goal into one short paste-ready gauntlet loop prompt. Sets a concrete quality bar, splits work into small judgeable pieces, runs a builder and a separate harsh critic on each, compares blind against the bar, and loops until it wins. Trigger: /gauntlet-loop, 'gauntlet this', 'loop until it beats X'.",
+        "required": false,
+        "enabled": true,
+        "tags": ["quality", "loop", "critic", "builder", "bar", "agent-pattern", "prompt-engineering", "multi-agent"]
     }
 }
