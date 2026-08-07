@@ -1,104 +1,105 @@
 {
-    "token-saving-skill-hermes": {
-        "path": "skills/token-saving-skill-hermes",
-        "description": "Token saving + secret handling skill",
-        "required": true,
-        "enabled": true
-    },
-    "vercel-imc-a2a-deploy-agent": {
-        "path": "skills/vercel-imc-a2a-deploy-agent",
-        "description": "Vercel deployment and IMC agent",
-        "enabled": true
-    },
-    "black-swan-skills": {
-        "path": "skills/black-swan-skills",
-        "description": "Black swan research skills",
-        "enabled": true
-    },
-    "hardened-longrun-subagent-harness": {
-        "path": "skills/hardened-longrun-subagent-harness",
-        "description": "Durable JSON-backed mission loop with crash recovery, safe side-effect reconciliation, adaptive bounded concurrency, validated subagent packets, review gates, and final JSON/ZIP export",
-        "required": false,
-        "enabled": true
-    },
-    "qvac-local-ai": {
-        "path": "skills/qvac-local-ai",
-        "description": "Install, verify, and support QVAC on owner or client machines using local, assisted, or consent-based remote browser workflows",
-        "required": false,
-        "enabled": true
-    },
-    "local-footage-studio": {
-        "path": "skills/local-footage-studio",
-        "description": "Private local footage indexing, multimodal understanding, search, and reversible AI edit planning for owner and client machines",
-        "required": false,
-        "enabled": true
-    },
-    "local-machine-architect": {
-        "path": "skills/local-machine-architect",
-        "description": "Read-only hardware, storage, model-fit, cost, and installation planning for owner and client machines before local AI deployment",
-        "required": false,
-        "enabled": true
-    },
-    "campaign-factory": {
-        "path": "skills/studio/campaign-factory",
-        "description": "ICM-governed campaign workflow for verified landing pages, functional QR packages, branded channel assets, and reproducible client handoffs",
-        "required": false,
-        "enabled": true
-    },
-    "vibe-client-factory": {
-        "path": "skills/studio/vibe-client-factory",
-        "description": "Outcome-first client delivery workflow with low-friction A/B decisions, bounded agent authority, independent review, SHIP/HOLD release gates, client proof, and safe improvement",
-        "required": false,
-        "enabled": true
-    },
-    "sovereign-vps-operator": {
-        "path": "skills/workflows/sovereign-vps-operator",
-        "description": "ICM-governed Hostinger and Linux VPS operations workflow for baseline audits, monitoring, backups and restore drills, controlled deployments, incident response, and client-data lifecycle management",
-        "required": false,
-        "enabled": true
-    },
-    "strix-batch-security-testing": {
-        "path": "skills/strix-batch-security-testing",
-        "description": "Automated batch security testing for GitHub repos using Strix AI agents. Spawns parallel agents to detect and fix OWASP vulnerabilities across multiple applications with real exploit validation.",
-        "required": false,
-        "enabled": true,
-        "tags": ["security", "penetration-testing", "strix", "parallel-agents", "vulnerability-scanning", "batch-testing", "owasp"]
-    },
-    "printing-press-monetization": {
-        "path": "skills/printing-press-monetization",
-        "description": "5 high-leverage revenue streams built on CLI Printing Press. Spawns parallel agents to build PPaaS, crypto intelligence CLI, idea research CLI, MCP marketplace, and a developer agency. Real money in any currency including crypto.",
-        "required": false,
-        "enabled": true,
-        "tags": ["monetization", "revenue", "cli-printing-press", "saas", "crypto", "bitcoin", "developer-tools", "mcp", "agency", "passive-income"]
-    },
-    "youtube-channel-scraper": {
-        "path": "skills/youtube-channel-scraper",
-        "description": "Scrape YouTube channels and playlists with Scrapling stealth automation. Auto-activates on keywords: 'scrape YouTube', 'extract videos', 'download playlist'. ICM workflow with 4 stages: parse request → scrape → structure → deliver. Outputs: structured JSON, stats, ready-to-use files.",
-        "required": false,
-        "enabled": true,
-        "version": "2.0.0",
-        "tags": ["scraping", "youtube", "data-extraction", "scrapling", "stealth", "playlist", "automation", "json", "icm-workflow", "auto-activation"],
-        "triggers": [
-            "scrape YouTube channel",
-            "extract videos from",
-            "download YouTube data",
-            "get all videos from",
-            "archive this channel"
-        ],
-        "entry_point": "/youtube-channel-scraper"
-    },
-    "youtube-intelligence-pipeline": {
-        "path": "skills/youtube-intelligence-pipeline",
-        "description": "Full YouTube channel intelligence pipeline: multi-channel scrape with Scrapling, transcript extraction, Claude-powered per-video analysis and cross-channel synthesis, produces Obsidian-ready second brain with trends, content gaps, prioritized actions, content calendar, collaborators, and tools.",
-        "required": false,
-        "enabled": true,
-        "tags": ["youtube", "scraping", "intelligence", "second-brain", "content-strategy", "research", "transcripts", "claude", "obsidian", "automation", "pipeline", "synthesis"]
-    },
-    "gauntlet-loop": {
-        "path": "skills/gauntlet-loop",
-        "description": "Turns any goal into one short paste-ready gauntlet loop prompt. Sets a concrete quality bar, splits work into small judgeable pieces, runs a builder and a separate harsh critic on each, compares blind against the bar, and loops until it wins. Trigger: /gauntlet-loop, 'gauntlet this', 'loop until it beats X'.",
-        "required": false,
-        "enabled": true,
-        "tags": ["quality", "loop", "critic", "builder", "bar", "agent-pattern", "prompt-engineering", "multi-agent"]
-    }
+  "token-saving-skill-hermes": {
+    "path": "skills/token-saving-skill-hermes",
+    "description": "Token saving + secret handling skill",
+    "required": true,
+    "enabled": true
+  },
+  "vercel-imc-a2a-deploy-agent": {
+    "path": "skills/vercel-imc-a2a-deploy-agent",
+    "description": "Vercel deployment and IMC agent",
+    "enabled": true
+  },
+  "black-swan-skills": {
+    "path": "skills/black-swan-skills",
+    "description": "Black swan research skills",
+    "enabled": true
+  },
+  "hardened-longrun-subagent-harness": {
+    "path": "skills/hardened-longrun-subagent-harness",
+    "description": "Durable JSON-backed mission loop with crash recovery, safe side-effect reconciliation, adaptive bounded concurrency, validated subagent packets, review gates, and final JSON/ZIP export",
+    "required": false,
+    "enabled": true
+  },
+  "qvac-local-ai": {
+    "path": "skills/qvac-local-ai",
+    "description": "Install, verify, and support QVAC on owner or client machines using local, assisted, or consent-based remote browser workflows",
+    "required": false,
+    "enabled": true
+  },
+  "local-footage-studio": {
+    "path": "skills/local-footage-studio",
+    "description": "Private local footage indexing, multimodal understanding, search, and reversible AI edit planning for owner and client machines",
+    "required": false,
+    "enabled": true
+  },
+  "local-machine-architect": {
+    "path": "skills/local-machine-architect",
+    "description": "Read-only hardware, storage, model-fit, cost, and installation planning for owner and client machines before local AI deployment",
+    "required": false,
+    "enabled": true
+  },
+  "freenet-community-mesh": {
+    "path": "skills/freenet-community-mesh",
+    "description": "Governed Seattle sovereign-AI experiment for isolated local nodes, approved CommunityResource sharing, leakage and tamper tests, Freenet-compatible transport, and bounded go-to-market pilots",
+    "required": false,
+    "enabled": true,
+    "tags": ["freenet", "sovereign-ai", "peer-to-peer", "seattle", "community-resources", "privacy", "local-ai", "workflow"]
+  },
+  "campaign-factory": {
+    "path": "skills/studio/campaign-factory",
+    "description": "ICM-governed campaign workflow for verified landing pages, functional QR packages, branded channel assets, and reproducible client handoffs",
+    "required": false,
+    "enabled": true
+  },
+  "vibe-client-factory": {
+    "path": "skills/studio/vibe-client-factory",
+    "description": "Outcome-first client delivery workflow with low-friction A/B decisions, bounded agent authority, independent review, SHIP/HOLD release gates, client proof, and safe improvement",
+    "required": false,
+    "enabled": true
+  },
+  "sovereign-vps-operator": {
+    "path": "skills/workflows/sovereign-vps-operator",
+    "description": "ICM-governed Hostinger and Linux VPS operations workflow for baseline audits, monitoring, backups and restore drills, controlled deployments, incident response, and client-data lifecycle management",
+    "required": false,
+    "enabled": true
+  },
+  "strix-batch-security-testing": {
+    "path": "skills/strix-batch-security-testing",
+    "description": "Automated batch security testing for GitHub repos using Strix AI agents. Spawns parallel agents to detect and fix OWASP vulnerabilities across multiple applications with real exploit validation.",
+    "required": false,
+    "enabled": true,
+    "tags": ["security", "penetration-testing", "strix", "parallel-agents", "vulnerability-scanning", "batch-testing", "owasp"]
+  },
+  "printing-press-monetization": {
+    "path": "skills/printing-press-monetization",
+    "description": "5 high-leverage revenue streams built on CLI Printing Press. Spawns parallel agents to build PPaaS, crypto intelligence CLI, idea research CLI, MCP marketplace, and a developer agency. Real money in any currency including crypto.",
+    "required": false,
+    "enabled": true,
+    "tags": ["monetization", "revenue", "cli-printing-press", "saas", "crypto", "bitcoin", "developer-tools", "mcp", "agency", "passive-income"]
+  },
+  "youtube-channel-scraper": {
+    "path": "skills/youtube-channel-scraper",
+    "description": "Scrape YouTube channels and playlists with Scrapling stealth automation. Auto-activates on keywords: 'scrape YouTube', 'extract videos', 'download playlist'. ICM workflow with 4 stages: parse request → scrape → structure → deliver. Outputs: structured JSON, stats, ready-to-use files.",
+    "required": false,
+    "enabled": true,
+    "version": "2.0.0",
+    "tags": ["scraping", "youtube", "data-extraction", "scrapling", "stealth", "playlist", "automation", "json", "icm-workflow", "auto-activation"],
+    "triggers": ["scrape YouTube channel", "extract videos from", "download YouTube data", "get all videos from", "archive this channel"],
+    "entry_point": "/youtube-channel-scraper"
+  },
+  "youtube-intelligence-pipeline": {
+    "path": "skills/youtube-intelligence-pipeline",
+    "description": "Full YouTube channel intelligence pipeline: multi-channel scrape with Scrapling, transcript extraction, Claude-powered per-video analysis and cross-channel synthesis, produces Obsidian-ready second brain with trends, content gaps, prioritized actions, content calendar, collaborators, and tools.",
+    "required": false,
+    "enabled": true,
+    "tags": ["youtube", "scraping", "intelligence", "second-brain", "content-strategy", "research", "transcripts", "claude", "obsidian", "automation", "pipeline", "synthesis"]
+  },
+  "gauntlet-loop": {
+    "path": "skills/gauntlet-loop",
+    "description": "Turns any goal into one short paste-ready gauntlet loop prompt. Sets a concrete quality bar, splits work into small judgeable pieces, runs a builder and a separate harsh critic on each, compares blind against the bar, and loops until it wins. Trigger: /gauntlet-loop, 'gauntlet this', 'loop until it beats X'.",
+    "required": false,
+    "enabled": true,
+    "tags": ["quality", "loop", "critic", "builder", "bar", "agent-pattern", "prompt-engineering", "multi-agent"]
+  }
 }
