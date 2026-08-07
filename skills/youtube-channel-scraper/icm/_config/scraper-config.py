@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from datetime import datetime
-from scrapling import PlayWrightFetcher
+from scrapling import PlayWrightFetcher  # type: ignore[import-not-found]
 
 class ScraperConfig:
     """Reusable Scrapling configuration with safety guardrails."""
