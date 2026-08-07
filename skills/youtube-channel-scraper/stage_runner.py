@@ -15,7 +15,7 @@ from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     # For type checking only
-    from skills.youtube_intelligence_pipeline.scrape import (
+    from skills.youtube_intelligence_pipeline.scrape import (  # type: ignore
         discover_playlists as discover_playlists,
         scrape_playlist as scrape_playlist,
         fetch_description as fetch_description,
