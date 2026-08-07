@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install --upgrade pip pytest
+      - run: python -m pip install --upgrade pip pytest pytest-timeout
       - run: python -m py_compile skills/freenet-community-mesh/scripts/community_mesh.py
       - run: pytest skills/freenet-community-mesh/tests -q
       - run: python skills/freenet-community-mesh/scripts/community_mesh.py demo --workspace /tmp/pauli-mesh-proof
