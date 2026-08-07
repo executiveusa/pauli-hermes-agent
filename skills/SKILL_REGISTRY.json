@@ -73,10 +73,19 @@
     },
     "youtube-channel-scraper": {
         "path": "skills/youtube-channel-scraper",
-        "description": "Scrape YouTube channel playlists using Scrapling stealth browser automation. Extracts video titles, descriptions, upload dates, view counts, and URLs into structured JSON files.",
+        "description": "Scrape YouTube channels and playlists with Scrapling stealth automation. Auto-activates on keywords: 'scrape YouTube', 'extract videos', 'download playlist'. ICM workflow with 4 stages: parse request → scrape → structure → deliver. Outputs: structured JSON, stats, ready-to-use files.",
         "required": false,
         "enabled": true,
-        "tags": ["scraping", "youtube", "data-extraction", "scrapling", "stealth", "playlist", "automation", "json"]
+        "version": "2.0.0",
+        "tags": ["scraping", "youtube", "data-extraction", "scrapling", "stealth", "playlist", "automation", "json", "icm-workflow", "auto-activation"],
+        "triggers": [
+            "scrape YouTube channel",
+            "extract videos from",
+            "download YouTube data",
+            "get all videos from",
+            "archive this channel"
+        ],
+        "entry_point": "/youtube-channel-scraper"
     },
     "youtube-intelligence-pipeline": {
         "path": "skills/youtube-intelligence-pipeline",
