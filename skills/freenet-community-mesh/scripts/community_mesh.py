@@ -19,52 +19,24 @@ import json
 import re
 import secrets
 import shutil
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 ALLOWED_FIELDS = {
-    "resource_id",
-    "organization_id",
-    "category",
-    "service",
-    "location",
-    "languages",
-    "availability",
-    "contact_method",
-    "updated_at",
-    "status",
-    "signature",
+    "resource_id", "organization_id", "category", "service", "location",
+    "languages", "availability", "contact_method", "updated_at", "status", "signature",
 }
 REQUIRED_FIELDS = ALLOWED_FIELDS - {"signature"}
 ALLOWED_CATEGORIES = {
-    "food",
-    "transport",
-    "youth",
-    "translation",
-    "health-navigation",
-    "housing-navigation",
-    "jobs",
-    "other",
+    "food", "transport", "youth", "translation", "health-navigation",
+    "housing-navigation", "jobs", "other",
 }
 ALLOWED_STATUS = {"active", "revoked"}
 PROHIBITED_FIELD_FRAGMENTS = {
-    "client",
-    "patient",
-    "donor",
-    "student",
-    "child",
-    "beneficiary",
-    "password",
-    "secret",
-    "token",
-    "api_key",
-    "private_key",
-    "case_note",
-    "medical",
-    "immigration",
-    "account_number",
+    "client", "patient", "donor", "student", "child", "beneficiary", "password",
+    "secret", "token", "api_key", "private_key", "case_note", "medical",
+    "immigration", "account_number",
 }
 SENSITIVE_PATTERNS = [
     re.compile(r"\b(?:sk|pk|ghp|github_pat|21st_sk)_[A-Za-z0-9_-]{8,}\b"),
@@ -113,9 +85,9 @@ def validate_record(record: dict[str, Any], *, require_signature: bool = True) -
                 raise ValueError(f"sensitive pattern detected in {key}")
 
 
-@dataclass(frozen=True)
 class Node:
-    root: Path
+    def __init__(self, root: Path) -> None:
+        self.root = root
 
     @property
     def private_path(self) -> Path:
@@ -186,13 +158,11 @@ def sync(source: Node, destination: Node) -> int:
 
 
 def leakage_check(source: Node, destination: Node) -> None:
-    private_bytes = source.private_path.read_bytes()
-    if private_bytes and private_bytes != b"[]\n":
-        shared_blob = destination.shared_path.read_bytes()
-        private_records = json.loads(private_bytes)
-        for record in private_records:
-            serialized = json.dumps(record, sort_keys=True, ensure_ascii=False).encode("utf-8")
-            if serialized in shared_blob:
+    private_records = source.load(source.private_path)
+    shared_text = destination.shared_path.read_text(encoding="utf-8")
+    for record in private_records:
+        for key, value in record.items():
+            if key in shared_text or str(value) in shared_text:
                 raise RuntimeError("private record leaked into destination shared state")
 
 
