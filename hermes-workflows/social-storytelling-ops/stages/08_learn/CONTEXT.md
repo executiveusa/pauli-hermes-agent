@@ -1,0 +1,2 @@
+# 08 Learn + Reuse
+Record performance, cost, editorial outcomes, failed assumptions, useful provider patterns, and client-specific taste notes. Promote only verified reusable process improvements into shared workflow knowledge. Do not convert one client's creative decisions into universal templates. Output `lessons.md`, `cost-summary.json`, and any proposed skill/workflow updates for review.
