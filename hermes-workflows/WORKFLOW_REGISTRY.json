@@ -1,46 +1,32 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Index of all Hermes workflows, grouped by desired outcome.",
   "workflows": {
     "scroll-world-design": {
       "path": "hermes-workflows/scroll-world-design",
       "outcome": "High-quality cinematic scroll websites, every time — no slop ships",
       "entry_point": "/scroll-world-design [brief]",
-      "triggers": [
-        "build a scroll website",
-        "create a landing page",
-        "parallax site",
-        "3D scroll animation",
-        "cinematic website",
-        "design a web page"
-      ],
-      "skills_used": [
-        "youtube-channel-scraper",
-        "youtube-intelligence-pipeline",
-        "hardened-longrun-subagent-harness",
-        "vibe-client-factory"
-      ],
-      "repos_used": [
-        "oso95/scroll-world",
-        "greensock/GSAP",
-        "gastownhall/beads",
-        "atomicdotdev/atomic",
-        "pbakaus/impeccable",
-        "Fission-AI/OpenSpec",
-        "willseltzer/claude-handoff",
-        "robonuggets/cinematic-site-components",
-        "darula-hpp/uigen",
-        "safishamsi/graphify",
-        "emilkowalski/skills",
-        "ihlamury/design-skills",
-        "ytx-readings/design-ui-ux",
-        "vercel-labs/opensrc"
-      ],
+      "triggers": ["build a scroll website", "create a landing page", "parallax site", "3D scroll animation", "cinematic website", "design a web page"],
+      "skills_used": ["youtube-channel-scraper", "youtube-intelligence-pipeline", "hardened-longrun-subagent-harness", "vibe-client-factory"],
+      "repos_used": ["oso95/scroll-world", "greensock/GSAP", "gastownhall/beads", "atomicdotdev/atomic", "pbakaus/impeccable", "Fission-AI/OpenSpec", "willseltzer/claude-handoff", "robonuggets/cinematic-site-components", "darula-hpp/uigen", "safishamsi/graphify", "emilkowalski/skills", "ihlamury/design-skills", "ytx-readings/design-ui-ux", "vercel-labs/opensrc"],
       "human_touchpoints": ["Stage 00 (intake brief)", "Stage 06 (final approval)"],
       "judge_count": 3,
       "enabled": true,
       "version": "1.0.0",
       "tags": ["design", "web", "scroll", "animation", "cinematic", "icm", "no-slop"]
+    },
+    "social-storytelling-ops": {
+      "path": "hermes-workflows/social-storytelling-ops",
+      "outcome": "Turn long-form client footage into a coherent, approved, published and verified short-form story series with minimal owner routing",
+      "entry_point": "/social-storytelling-ops [client brief or transcript]",
+      "triggers": ["make reels", "turn this transcript into reels", "edit in opus", "opusclip", "social video campaign", "storytelling series", "schedule reels", "publish shorts"],
+      "skills_used": ["icm-organizer", "hardened-longrun-subagent-harness"],
+      "repos_used": ["opus-pro/opus-skills"],
+      "human_touchpoints": ["Outcome/taste gate when required", "Public publish approval"],
+      "judge_count": 2,
+      "enabled": true,
+      "version": "1.0.0",
+      "tags": ["video", "social", "storytelling", "opusclip", "kanban", "minions", "icm", "cost-governed"]
     }
   }
 }
