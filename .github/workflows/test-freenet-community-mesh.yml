@@ -1,0 +1,29 @@
+name: Test Freenet Community Mesh
+
+on:
+  pull_request:
+    paths:
+      - 'skills/freenet-community-mesh/**'
+      - '.github/workflows/test-freenet-community-mesh.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'skills/freenet-community-mesh/**'
+      - '.github/workflows/test-freenet-community-mesh.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --upgrade pip pytest pytest-timeout
+      - run: python -m py_compile skills/freenet-community-mesh/scripts/community_mesh.py
+      - run: pytest skills/freenet-community-mesh/tests -q
+      - run: python skills/freenet-community-mesh/scripts/community_mesh.py demo --workspace /tmp/pauli-mesh-proof
+      - run: test -f /tmp/pauli-mesh-proof/proof.json
