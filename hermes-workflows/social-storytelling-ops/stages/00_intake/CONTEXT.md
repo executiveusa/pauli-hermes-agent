@@ -1,0 +1,2 @@
+# 00 Intake
+Collect client, business/social outcome, audience, campaign cadence, source assets, protected facts, deadlines, platform accounts, budget, consent/privacy constraints, and proof required. Output `run-brief.md`. Gate: do not proceed if source ownership, target account, or success criteria are unclear.

@@ -1,0 +1,2 @@
+# 02 Series Plan
+Map the story graph to the campaign outcome and publishing cadence. Define each Reel's role, viewer belief before/after, emotional function, CTA role, dependencies on static posts/events, and sequence. Output `series-plan.md` + machine-readable manifest. Reject isolated 'viral clips' that do not advance the series.

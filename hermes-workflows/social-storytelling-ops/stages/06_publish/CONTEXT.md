@@ -1,0 +1,2 @@
+# 06 Approval + Publish
+Publishing is a public side effect. Require asset manifest status `APPROVED`, verify target client/platform account, caption, schedule time, and media pointer. Then schedule/publish through Opus or the approved platform adapter. Record account, post/schedule ID, timestamp, caption hash, media pointer, and response receipt. Never infer approval from casual conversation.

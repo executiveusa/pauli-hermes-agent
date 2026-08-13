@@ -1,15 +1,24 @@
 ---
 name: youtube-channel-scraper
 description: "Scrape YouTube channel playlists using Scrapling — stealth browser automation extracts video titles, descriptions, upload dates, view counts, and URLs into structured JSON."
-version: 1.0.0
+version: 2.0.0
 author: Pauli Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
+triggers:
+  - scrape YouTube channel
+  - extract videos from
+  - download YouTube data
+  - get all videos from
+  - archive this channel
+  - /youtube-channel-scraper
+entry_point: /youtube-channel-scraper [channel_url] [--playlists url1 url2] [--descriptions] [--transcripts]
 metadata:
   hermes:
-    tags: [scraping, youtube, data-extraction, scrapling, stealth, playlist, automation, json]
-    related_skills: [social-media, research, data-science]
-    capabilities: [web-scraping, stealth-browser, structured-output, error-recovery]
+    tags: [scraping, youtube, data-extraction, scrapling, stealth, playlist, automation, json, icm-workflow]
+    related_skills: [social-media, research, data-science, youtube-intelligence-pipeline]
+    capabilities: [web-scraping, stealth-browser, structured-output, error-recovery, auto-activation]
+    activation_style: automatic-on-keyword
 ---
 
 # YouTube Channel Scraper Skill
@@ -22,6 +31,20 @@ Extract structured data from YouTube channel playlists using [Scrapling](https:/
 - **Structured output** — per-playlist JSON with video title, URL, upload date, view count, description
 - **Error recovery** — skips failed videos, logs failures, continues to next target
 - **Summary report** — successful vs. failed scrape counts at end of run
+- **Auto-activation** — Hermes detects scraper keywords and runs workflow automatically
+- **ICM workflow** — Structured 4-stage pipeline with validation gates and recovery points
+
+## Auto-Activation (No Setup Required)
+
+Hermes automatically detects and activates this skill when you say:
+- "scrape YouTube channel [URL]"
+- "extract videos from [playlist URL]"
+- "download YouTube data from [channel]"
+- "get all videos from [channel]"
+- "archive this YouTube channel"
+- Or use `/youtube-channel-scraper` directly
+
+Just ask, and the workflow runs.
 
 ## When to Use This Skill
 
@@ -30,6 +53,7 @@ Trigger when the user:
 - Needs video metadata (titles, dates, view counts, descriptions) in bulk
 - Asks to "extract all videos from [channel/playlist]"
 - Wants to archive or analyze a YouTube channel's content
+- Uses keywords: scrape, extract, download, archive + YouTube
 
 ## Setup Instructions
 
@@ -178,16 +202,46 @@ Each playlist produces a JSON file in `youtube_scrapes/`:
 
 A `summary_<timestamp>.json` is always written with succeeded/failed counts.
 
+## Workflow Overview
+
+This skill uses a **4-stage ICM workflow** for transparent, auditable, resumable scraping:
+
+| Stage | Input | Output | Duration |
+|-------|-------|--------|----------|
+| 00 | User request | Structured targets (JSON) | <5s |
+| 01 | Target list | Raw video entries (JSONL) | 1-5m |
+| 02 | Raw entries | Clean JSON + CSV + stats | <10s |
+| 03 | Structured data | User report + files | <5s |
+
+**Start:** Read `CLAUDE.md` for quick reference  
+**Details:** See `CONTEXT.md` for routing  
+**Stage details:** See `icm/stages/[00-03]/CONTEXT.md`
+
 ## Agent Instructions
 
-When the user asks to scrape a YouTube channel or playlist:
+When user asks to scrape YouTube:
 
-1. **Ask for** channel URL and list of playlist URLs (or extract from user message)
-2. **Install Scrapling** if not present: `pip install scrapling[all]` + `playwright install chromium`
-3. **Write** the `scrape_youtube.py` script to a working directory
-4. **Run**: `python scrape_youtube.py <channel_url> <playlist_urls...>`
-5. **Report** the summary: files written, video counts, any failures
-6. **Offer** to load the JSON into a dataframe or pipe into another tool
+1. **Auto-detect request** — Look for "scrape", "extract", "download" + YouTube URL
+2. **Route to Stage 00** — Parse request, extract URLs, validate
+3. **Stage 01** — Initialize Scrapling, run scrape_playlist() for each target
+4. **Stage 02** — Dedupe, clean, enrich JSON
+5. **Stage 03** — Generate report, files ready
+6. **Report** — Summary with counts, stats, next-step suggestions
+
+**Key:** Each stage is independent and resumable. If Stage 01 fails, fix and retry just Stage 01.
+
+## One-Command Usage
+
+```bash
+/youtube-channel-scraper https://www.youtube.com/@examplechannel --descriptions
+```
+
+Or just ask naturally:
+```
+"Can you scrape all videos from @examplechannel and get their descriptions?"
+```
+
+Hermes handles the rest automatically.
 
 ## Notes
 

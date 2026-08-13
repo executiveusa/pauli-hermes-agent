@@ -1,0 +1,87 @@
+version: 1
+project:
+  name: UNKNOWN
+  owner: UNKNOWN
+  human_approver: UNKNOWN
+  deadline: UNKNOWN
+
+outcome:
+  format: UNKNOWN
+  audience: UNKNOWN
+  distribution_surface: UNKNOWN
+  measurable_result: UNKNOWN
+  target_duration_seconds: UNKNOWN
+  aspect_ratio: UNKNOWN
+  factual_status: UNKNOWN  # factual | fictional | hybrid
+
+story:
+  audience_promise: UNKNOWN
+  opening_hook: UNKNOWN
+  narrative_spine: UNKNOWN
+  ending_or_cta: UNKNOWN
+  emotional_target: UNKNOWN
+
+sources:
+  approved_material: []
+  rights_status: UNKNOWN
+  factual_claims_require_sources: true
+  prohibited_sources: []
+
+continuity:
+  characters_or_subjects: []
+  locations: []
+  props: []
+  wardrobe: []
+  voice_profiles: []
+  immutable_visual_rules: []
+  mutable_shot_rules: []
+
+visual_language:
+  references: []
+  framing_rules: []
+  camera_rules: []
+  lighting_rules: []
+  palette_rules: []
+  prohibited_styles: []
+
+audio:
+  spoken_language: UNKNOWN
+  voiceover: UNKNOWN
+  dialogue: UNKNOWN
+  music: UNKNOWN
+  ambience: UNKNOWN
+  sfx_foley: UNKNOWN
+  captions_required: true
+
+production:
+  preferred_backend: auto
+  available_footage: []
+  available_images: []
+  generation_models_allowed: []
+  browser_capture_allowed: false
+  capcut_allowed: true
+  programmatic_render_allowed: true
+  paid_generation_budget: UNKNOWN
+  paid_generation_requires_gate: true
+
+deliverables:
+  master: UNKNOWN
+  editable_project: true
+  variants: []
+  captions: true
+  transcript: false
+  thumbnail_or_poster: false
+  source_manifest: true
+  qc_report: true
+
+constraints:
+  must_not_change: []
+  privacy_rules: []
+  brand_rules: []
+  legal_or_rights_rules: []
+
+proof:
+  acceptance_evidence: []
+  playback_required: true
+  independent_review_required: true
+  minimum_quality_score: 8.5
