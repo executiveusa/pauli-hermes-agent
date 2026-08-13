@@ -101,5 +101,25 @@
     "required": false,
     "enabled": true,
     "tags": ["quality", "loop", "critic", "builder", "bar", "agent-pattern", "prompt-engineering", "multi-agent"]
+  },
+  "cinematic-master-editor": {
+    "path": "skills/studio/cinematic-master-editor",
+    "description": "ICM-governed master director/editor that routes documentaries, narrative film, anime, short drama, explainers, demos, brand films and programmatic video through format-specific workflows with cinematic taste, continuity, CapCut MCP/HTTP integration, rough/fine-cut gates and verified delivery.",
+    "required": false,
+    "enabled": true,
+    "version": "0.1.0",
+    "tags": ["video", "cinematic", "editing", "directing", "capcut", "mcp", "documentary", "anime", "short-drama", "remotion", "icm"],
+    "triggers": ["make a cinematic video", "edit this video", "create a documentary", "make an anime sequence", "make a short drama", "create a CapCut draft", "cinematic master editor"],
+    "entry_point": "/cinematic-master-editor"
+  },
+  "pauliverse-orchestrator": {
+    "path": "skills/pauliverse-orchestrator",
+    "description": "ICM portfolio orchestrator for the internal Pauliverse: repo-as-node inventory, consolidation, master ontology, signal-vs-noise scoring, adversarial LLM council, experiment routing, and financial handoff to Pauli's Place.",
+    "required": true,
+    "enabled": true,
+    "version": "1.0.0",
+    "tags": ["pauliverse", "icm", "portfolio", "ontology", "consolidation", "second-brain", "revenue", "decision-making", "multi-agent"],
+    "triggers": ["Pauliverse", "portfolio census", "consolidate repos", "master brain", "master ontology", "financial opportunity", "route to Pauli's Place", "second brain portfolio"],
+    "entry_point": "/pauliverse-orchestrator"
   }
 }

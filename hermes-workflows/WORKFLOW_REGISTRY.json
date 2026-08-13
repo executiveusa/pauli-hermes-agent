@@ -15,18 +15,44 @@
       "version": "1.0.0",
       "tags": ["design", "web", "scroll", "animation", "cinematic", "icm", "no-slop"]
     },
-    "social-storytelling-ops": {
-      "path": "hermes-workflows/social-storytelling-ops",
-      "outcome": "Turn long-form client footage into a coherent, approved, published and verified short-form story series with minimal owner routing",
-      "entry_point": "/social-storytelling-ops [client brief or transcript]",
-      "triggers": ["make reels", "turn this transcript into reels", "edit in opus", "opusclip", "social video campaign", "storytelling series", "schedule reels", "publish shorts"],
-      "skills_used": ["icm-organizer", "hardened-longrun-subagent-harness"],
-      "repos_used": ["opus-pro/opus-skills"],
-      "human_touchpoints": ["Outcome/taste gate when required", "Public publish approval"],
-      "judge_count": 2,
+    "cinematic-production": {
+      "path": "hermes-workflows/cinematic-production",
+      "outcome": "Directed, editable, verified cinematic video production matched to the format — documentary, narrative, anime, short drama, brand, explainer, demo, motion graphics or repurposed short",
+      "entry_point": "/cinematic-production [brief]",
+      "triggers": [
+        "make a cinematic video",
+        "create a documentary",
+        "make a short film",
+        "make an anime sequence",
+        "make a short drama",
+        "edit this video",
+        "create a CapCut draft",
+        "produce a brand film"
+      ],
+      "skills_used": [
+        "cinematic-master-editor",
+        "local-footage-studio",
+        "youtube-intelligence-pipeline",
+        "hardened-longrun-subagent-harness",
+        "campaign-factory"
+      ],
+      "repos_used": [
+        "ashreo/CapCutAPI",
+        "Hommy-master/capcut-mate",
+        "sun-guannan/VectCutAPI",
+        "smixs/visual-skills",
+        "geniusdapeng-collab/hyperreality-system",
+        "Bomx/super-video-maker-skill",
+        "clipcurator/awesome-ai-short-drama-tools",
+        "billpar/ai-cinematic-pipeline",
+        "mahshid1378/Owner-avatar-higgsfield-ai-prompt-skill",
+        "arXiv:2506.18899"
+      ],
+      "human_touchpoints": ["Stage 00 (brief/budget/rights assumptions)", "Stage 06 (final approval)"],
+      "judge_count": 3,
       "enabled": true,
-      "version": "1.0.0",
-      "tags": ["video", "social", "storytelling", "opusclip", "kanban", "minions", "icm", "cost-governed"]
+      "version": "0.1.0",
+      "tags": ["video", "cinematic", "editing", "capcut", "documentary", "anime", "short-drama", "motion-graphics", "icm", "no-slop"]
     }
   }
 }
