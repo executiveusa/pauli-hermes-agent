@@ -121,5 +121,15 @@
     "tags": ["pauliverse", "icm", "portfolio", "ontology", "consolidation", "second-brain", "revenue", "decision-making", "multi-agent"],
     "triggers": ["Pauliverse", "portfolio census", "consolidate repos", "master brain", "master ontology", "financial opportunity", "route to Pauli's Place", "second brain portfolio"],
     "entry_point": "/pauliverse-orchestrator"
+  },
+  "new-world-kids-fundraising": {
+    "path": "skills/new-world-kids-fundraising",
+    "description": "ICM-governed New World Kids fundraising and grants through FundRazr, HSI fiscal-sponsor controls, compliant grant research, evidence-backed drafting, donor distribution, browser-control guardrails, and reporting.",
+    "required": false,
+    "enabled": true,
+    "version": "1.0.0",
+    "tags": ["new-world-kids", "nonprofit", "fundraising", "fundrazr", "grants", "hsi", "icm", "browser-control", "governance"],
+    "triggers": ["New World Kids fundraising", "FundRazr", "HSI fiscal sponsor", "NW Kids grants", "grant writing for NW Kids", "raise money for Indigo Azul"],
+    "entry_point": "/new-world-kids-fundraising"
   }
 }
