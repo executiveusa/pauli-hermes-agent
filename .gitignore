@@ -31,6 +31,8 @@ test_durations.json
 tmp/
 temp_vision_images/
 hermes-*/*
+!hermes-workflows/
+!hermes-workflows/**
 examples/
 tests/quick_test_dataset.jsonl
 tests/sample_dataset.jsonl

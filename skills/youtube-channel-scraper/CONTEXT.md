@@ -1,45 +1,85 @@
-# Scraper Workflow Router
+# YouTube Scraper Workflow — Context Router
 
-## User intent → Stage mapping
+## Current Mission
 
-| User asks / Intent | Stage to open | Entry point |
-|---|---|---|
-| "Set up the scraper" / "Check dependencies" | `stages/00_scraper_init/CONTEXT.md` | Verify Scrapling + Playwright installed |
-| "Scrape this channel/playlist" + URLs provided | `stages/01_scrape_playlist/CONTEXT.md` | Execute scrape_youtube.py |
-| "Normalize/deduplicate the data" | `stages/02_process_metadata/CONTEXT.md` | Load JSON, clean timestamps, validate |
-| "What patterns are in this data?" / "Analyze trends" | `stages/03_analyze_patterns/CONTEXT.md` | Time series, content themes, view distribution |
-| "Turn this into a workflow" / "Create automation" | `stages/04_generate_workflow/CONTEXT.md` | Call agent-workflow-builder skill |
+Extract structured video metadata from YouTube channels/playlists using stealth browser automation.
 
-## Stable references (guardrails)
+## Workflow State
 
-- `guardrails/scraping-safety.md` — Rate limits, consent, error handling
-- `icm/methodology.md` — Folder-as-agent methodology
-- `resources/scrapling-config.py` — Reusable Scrapling configuration
+| Component | Status | Details |
+|-----------|--------|---------|
+| Scrapling | Ready | `pip install scrapling[all]` installed |
+| Playwright | Ready | `playwright install chromium` present |
+| Output dir | Ready | `youtube_scrapes/` exists |
+| Run state | None | Starting fresh workflow |
 
-## Run convention
+## How to Use
 
-Every run gets an ID:
-```
-YYYYMMDD-HHMMSS-<channel-slug>
-```
+### For Hermes
 
-Artifacts go to:
-```
-runs/<run-id>/
-├── metadata.json        # raw scraped data
-├── processed.json       # normalized + deduplicated
-├── analysis.md          # pattern findings
-└── workflow_spec.json   # A2A protocol workflow (if stage 04 completed)
+1. **User makes request** containing YouTube URL + "scrape"/"extract"/"download"
+2. **Check stage** below
+3. **Route to that stage's CONTEXT.md**
+4. **Execute** that stage's process
+5. **Move to next stage**
+
+### For Direct Use
+
+```bash
+python -m skills.youtube-channel-scraper.icm.stages.runner --urls <url1> <url2>
 ```
 
-## Handoff expectations
+## Active Stage Decision Tree
 
-Between stages, output always includes:
-- What succeeded / what failed
-- Next stage recommendation
-- Required inputs for next stage
-- Any blockers or manual decisions needed
+```
+Is user request present?
+  YES → Go to Stage 00 (Parse Request)
+  NO  → Error: No input
 
----
+Stage 00 complete?
+  YES → Go to Stage 01 (Scrape Target)
+  NO  → Wait for user input
 
-**When in doubt:** Read the stage's CONTEXT.md. Each stage is self-contained.
+Stage 01 complete?
+  YES → Go to Stage 02 (Structure Output)
+  NO  → Check error log
+
+Stage 02 complete?
+  YES → Go to Stage 03 (Deliver Results)
+  NO  → Check structure errors
+
+Stage 03 complete?
+  YES → Workflow done, report to user
+  NO  → Check delivery errors
+```
+
+## Key Files
+
+- `CLAUDE.md` — Start here (quick reference)
+- `AGENTS.md` — Who does what
+- `stages/*/CONTEXT.md` — Per-stage details
+- `icm/methodology.md` — Why this structure exists
+
+## Gates & Approvals
+
+| Action | Gate | Approval |
+|--------|------|----------|
+| Start scraping | None | Auto on request |
+| Fetch descriptions | Optional | User preference |
+| Save to disk | None | Auto |
+| Report results | None | Auto |
+
+## Failure Recovery
+
+If a stage fails:
+1. Check `stages/[stage]/output/error.log`
+2. Review inputs in `stages/[stage]/input/`
+3. Fix issue (usually rate limit or YouTube DOM change)
+4. Retry that stage: `python stage_runner.py --stage [N]`
+
+## Performance Notes
+
+- Soft rate limit: 40 requests/min (Scrapling adapts)
+- Per-playlist: ~5-30 sec depending on size
+- Description fetch: +1-2 sec per video
+- Typical run: 100 videos in 2-3 minutes

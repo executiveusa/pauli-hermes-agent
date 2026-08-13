@@ -1,45 +1,40 @@
-# ICM (Interpretable Context Methodology) for YouTube Scraper
+# ICM Methodology — YouTube Channel Scraper
 
-This workspace uses the Interpretable Context Methodology — a folder-as-agent pattern where the folder structure IS the orchestration framework.
+This workflow uses the Interpretable Context Methodology (ICM) folder-as-agent pattern.
 
 ## Layers
 
-| Layer | Files | Purpose |
-|-------|-------|---------|
-| **0** | `AGENTS.md`, `CLAUDE.md` | Agent identity, non-negotiable behavior |
-| **1** | `CONTEXT.md` | Router — maps user intent to stages |
-| **2** | `stages/*/CONTEXT.md` | Stage contract: inputs, process, outputs, exit gates |
-| **3** | `guardrails/`, `resources/` | Stable references (rate limits, configs, safety rules) |
-| **4** | `runs/<run-id>/` | Working artifacts for current run |
+| Layer | File/folder | Purpose |
+|------:|---|---|
+| 0 | `AGENTS.md`, `CLAUDE.md` | Global identity and behavior |
+| 1 | `CONTEXT.md` | Router that tells agent which stage to open |
+| 2 | `stages/*/CONTEXT.md` | One stage contract: inputs, process, outputs, gates |
+| 3 | `guardrails/`, `subagents/`, `resources/` | Stable references and capabilities |
+| 4 | `runs/`, `stages/*/output/` | Working artifacts for current run |
 
-## Why Folder-as-Agent?
+## Why This Structure
 
-- **Portable** — Zip and ship to another IDE or agent
-- **Auditable** — Every intermediate artifact lives in `runs/<run-id>/`
-- **Clear stop points** — Each stage has defined inputs/outputs
-- **Smaller context** — Load only the stage you're in, not the whole workspace
-- **Handoff-ready** — Another agent can pick up a run by reading the latest stage output
+- **Handoff-friendly** — Easy to pass between IDEs and agents
+- **Small context** — Each stage is ~300 lines, fits in local context
+- **Auditable** — Every intermediate artifact is saved
+- **Clear stop points** — Each stage has entry/exit gates
+- **Portable** — Zip entire `skills/youtube-channel-scraper/` directory
 
-## Key Rule
+## Stage Execution Pattern
 
-**Do not replace this with a hidden orchestration framework** unless later missions require high concurrency. The folder tree IS the framework.
+Each stage follows:
 
-## Navigation Example
+1. **Input** — Read from `stages/[N]/input/`
+2. **Validate** — Check gates before proceeding
+3. **Process** — Execute stage-specific logic
+4. **Output** — Write to `stages/[N]/output/`
+5. **Report** — Summarize completion, list next steps
 
-```
-User: "Scrape my channel and create a workflow"
-  ↓
-Open CONTEXT.md → "Intent = scrape + generate"
-  ↓
-Enter stages/01_scrape_playlist/CONTEXT.md → Execute scrape
-  ↓
-Enter stages/02_process_metadata/CONTEXT.md → Normalize data
-  ↓
-Enter stages/03_analyze_patterns/CONTEXT.md → Find patterns
-  ↓
-Enter stages/04_generate_workflow/CONTEXT.md → Call skill, output spec
-  ↓
-Create run artifact: runs/20260806-123456-<channel>/workflow_spec.json
-```
+## No Hidden Orchestration
 
-All outputs auditable, all paths documented.
+The folder tree IS the orchestration. If you need to inspect the workflow:
+- Look at `CONTEXT.md` for the flow diagram
+- Check `stages/[N]/CONTEXT.md` for that stage's details
+- Read `stages/[N]/output/` to see what happened
+
+No YAML, no abstract state machine. Just folders and markdown.

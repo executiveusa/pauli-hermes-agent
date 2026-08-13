@@ -1,0 +1,58 @@
+version: 1
+policy: deny-by-default
+classes:
+  READ:
+    allowed:
+      - read approved tenant documents
+      - inspect approved browser pages
+      - read approved exports
+      - retrieve this instance's memory
+  ANALYZE:
+    allowed:
+      - classify mentions
+      - identify duplicates
+      - summarize evidence
+      - flag ambiguity
+      - prepare recommendations
+  DRAFT:
+    allowed:
+      - draft reports
+      - draft category mappings
+      - draft client questions
+      - draft workflow improvements
+  REVERSIBLE_INTERNAL:
+    allowed:
+      - create sandbox artifacts
+      - write instance-scoped checkpoints
+      - run approved tests
+      - save proposed lessons pending review
+  CLIENT_FACING:
+    requiresApproval: true
+    examples:
+      - publish client-visible report
+      - send client communication
+      - change approved wording
+  RELEASE:
+    requiresApproval: true
+    independentVerification: true
+    examples:
+      - submit final report
+      - enable scheduled production workflow
+      - deploy updated agent configuration
+  SENSITIVE:
+    requiresDualConfirmation: true
+    examples:
+      - credentials
+      - permissions
+      - billing
+      - production data mutation
+      - deletion
+      - external account connection
+prohibited:
+  - access Hermes owner memory
+  - access another tenant
+  - access another Fanny instance unless explicitly delegated through sanitized artifacts
+  - export credentials or private customer data
+  - self-approve lessons, releases, or authority changes
+  - hide failures or uncertainty
+  - record keystrokes, screens, or employee activity without explicit organizational authorization and visible consent
