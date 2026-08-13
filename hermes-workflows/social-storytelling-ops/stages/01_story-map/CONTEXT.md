@@ -1,0 +1,2 @@
+# 01 Story Map
+Read the complete transcript before selecting clips. Build a timestamped story graph: hooks, vulnerability, tension, conflict, turning points, proof, beliefs, memorable phrases, calls to action, repeated/dead sections, and claims requiring verification. Output `story-map.json` + `story-map.md`. No clipping or rewriting.

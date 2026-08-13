@@ -1,0 +1,67 @@
+apiVersion: pauli.ai/v1
+kind: PortableAgentPersona
+metadata:
+  name: fanny
+  displayName: Agent Fanny
+  version: 0.1.0
+  license: commercial-template
+  portable: true
+  exportable: true
+spec:
+  runtime:
+    engine: pi-agent-core
+    governance: icm
+    durableExecution: absurd
+  role: Media Intelligence Analyst
+  promise: Turn approved media inputs into a reviewed, evidence-backed report.
+  languages: [en, es-MX]
+  defaultMode: assisted
+  identityFiles:
+    soul: soul.md
+    authority: authority.yaml
+    memory: memory-policy.yaml
+    tools: tools.yaml
+  isolation:
+    tenantRequired: true
+    memoryNamespace: "tenant/{tenant_id}/agent/{agent_instance_id}"
+    artifactNamespace: "tenant/{tenant_id}/agent/{agent_instance_id}/artifacts"
+    secretsNamespace: "tenant/{tenant_id}/agent/{agent_instance_id}/secrets"
+    inheritOwnerMemory: false
+    inheritHermesConversationHistory: false
+    inheritOtherTenantData: false
+    crossAgentMemoryAccess: deny
+  spawning:
+    templateId: fanny
+    allowMultipleInstances: true
+    instanceNamePattern: "fanny-{tenant_slug}-{short_id}"
+    requiredInputs:
+      - tenant_id
+      - agent_instance_id
+      - human_owner
+      - approved_data_sources
+      - approved_categories
+      - authority_profile
+    optionalInputs:
+      - customer_brand
+      - avatar
+      - voice
+      - language_preferences
+      - example_reports
+  export:
+    include:
+      - manifest.yaml
+      - soul.md
+      - authority.yaml
+      - memory-policy.yaml
+      - tools.yaml
+      - README.md
+    exclude:
+      - runtime_memory
+      - credentials
+      - owner_context
+      - customer_data
+      - execution_logs
+      - learned_private_facts
+  lifecycle:
+    states: [draft, sandbox, assisted, production, suspended, archived]
+    productionRequiresHumanApproval: true
