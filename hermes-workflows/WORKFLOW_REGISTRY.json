@@ -53,6 +53,40 @@
       "enabled": true,
       "version": "0.1.0",
       "tags": ["video", "cinematic", "editing", "capcut", "documentary", "anime", "short-drama", "motion-graphics", "icm", "no-slop"]
+    },
+    "new-world-kids-fundraising": {
+      "path": "hermes-workflows/new-world-kids-fundraising",
+      "outcome": "Compliant evidence-backed fundraising and grant operations for New World Kids through FundRazr, HSI governance, donor traffic, and reporting",
+      "entry_point": "/new-world-kids-fundraising [task]",
+      "triggers": [
+        "New World Kids fundraising",
+        "FundRazr",
+        "HSI fiscal sponsor",
+        "grant research for NW Kids",
+        "grant writing for NW Kids",
+        "raise money for Indigo Azul",
+        "donor traffic for NW Kids"
+      ],
+      "skills_used": [
+        "new-world-kids-fundraising",
+        "gauntlet-loop",
+        "i-have-adhd"
+      ],
+      "repos_used": [
+        "executiveusa/strapi-template-new-world-kids"
+      ],
+      "human_touchpoints": [
+        "FundRazr launch/settings",
+        "grant opportunity selection",
+        "grant fact/budget check",
+        "mandatory HSI review before submission",
+        "outbound audience/spend approval",
+        "final totals verification"
+      ],
+      "judge_count": 1,
+      "enabled": true,
+      "version": "1.0.0",
+      "tags": ["nonprofit", "fundraising", "fundrazr", "grants", "hsi", "icm", "governance", "traffic"]
     }
   }
 }
