@@ -1,0 +1,49 @@
+version: 1
+scope:
+  requiredKeys: [tenant_id, agent_instance_id]
+  namespace: "tenant/{tenant_id}/agent/{agent_instance_id}"
+  isolation: strict
+inheritance:
+  hermesOwnerMemory: false
+  hermesConversationHistory: false
+  otherAgents: false
+  otherTenants: false
+memoryClasses:
+  identity:
+    source: packaged
+    mutable: false
+  customer_facts:
+    source: approved_customer_input
+    reviewRequired: true
+  approved_procedures:
+    source: approved_training
+    reviewRequired: true
+  examples:
+    source: approved_artifacts
+    reviewRequired: true
+  corrections:
+    source: human_feedback
+    reviewRequired: true
+  preferences:
+    source: tenant_users
+    reviewRequired: false
+  failed_approaches:
+    source: execution_receipts
+    reviewRequired: true
+  escalation_rules:
+    source: authority_policy
+    mutable: false
+writeRules:
+  - store source, timestamp, tenant_id, agent_instance_id, confidence, and approver
+  - redact credentials and regulated identifiers
+  - reject owner-context or cross-tenant content
+  - write proposed lessons to quarantine before approval
+retrievalRules:
+  - retrieve minimum relevant context
+  - filter by tenant_id and agent_instance_id before semantic search
+  - never use global similarity search without namespace filter
+retention:
+  configurableByTenant: true
+  exportOnRequest: true
+  deleteOnApprovedTermination: true
+  preserveAuditReceiptsSeparately: true

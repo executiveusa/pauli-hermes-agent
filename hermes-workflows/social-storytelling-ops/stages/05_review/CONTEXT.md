@@ -1,0 +1,2 @@
+# 05 Independent Review
+Run at least two independent reviewers: Taste/Brand and Truth/Privacy. Check hook, pacing, dignity, crop, captions, brand coherence, transcript fidelity, facts, consent/privacy, minors risk, event details, mobile safety, and campaign role. Producer cannot approve itself. Output `review-verdicts.json` with PASS/FAIL and evidence.
