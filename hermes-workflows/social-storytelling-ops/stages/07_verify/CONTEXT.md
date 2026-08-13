@@ -1,0 +1,2 @@
+# 07 Verify
+After export and again after publication, independently verify the artifact. Check MP4 opens, expected duration/aspect/audio/captions/crop, correct account, correct caption/CTA, live URL, and scheduled vs actual publication time. Output `verification.json` plus evidence pointers. FAIL means create a bounded correction task; never mark done from provider success alone.

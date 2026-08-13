@@ -1,41 +1,14 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Index of all Hermes workflows, grouped by desired outcome.",
   "workflows": {
     "scroll-world-design": {
       "path": "hermes-workflows/scroll-world-design",
       "outcome": "High-quality cinematic scroll websites, every time — no slop ships",
       "entry_point": "/scroll-world-design [brief]",
-      "triggers": [
-        "build a scroll website",
-        "create a landing page",
-        "parallax site",
-        "3D scroll animation",
-        "cinematic website",
-        "design a web page"
-      ],
-      "skills_used": [
-        "youtube-channel-scraper",
-        "youtube-intelligence-pipeline",
-        "hardened-longrun-subagent-harness",
-        "vibe-client-factory"
-      ],
-      "repos_used": [
-        "oso95/scroll-world",
-        "greensock/GSAP",
-        "gastownhall/beads",
-        "atomicdotdev/atomic",
-        "pbakaus/impeccable",
-        "Fission-AI/OpenSpec",
-        "willseltzer/claude-handoff",
-        "robonuggets/cinematic-site-components",
-        "darula-hpp/uigen",
-        "safishamsi/graphify",
-        "emilkowalski/skills",
-        "ihlamury/design-skills",
-        "ytx-readings/design-ui-ux",
-        "vercel-labs/opensrc"
-      ],
+      "triggers": ["build a scroll website", "create a landing page", "parallax site", "3D scroll animation", "cinematic website", "design a web page"],
+      "skills_used": ["youtube-channel-scraper", "youtube-intelligence-pipeline", "hardened-longrun-subagent-harness", "vibe-client-factory"],
+      "repos_used": ["oso95/scroll-world", "greensock/GSAP", "gastownhall/beads", "atomicdotdev/atomic", "pbakaus/impeccable", "Fission-AI/OpenSpec", "willseltzer/claude-handoff", "robonuggets/cinematic-site-components", "darula-hpp/uigen", "safishamsi/graphify", "emilkowalski/skills", "ihlamury/design-skills", "ytx-readings/design-ui-ux", "vercel-labs/opensrc"],
       "human_touchpoints": ["Stage 00 (intake brief)", "Stage 06 (final approval)"],
       "judge_count": 3,
       "enabled": true,
@@ -80,6 +53,40 @@
       "enabled": true,
       "version": "0.1.0",
       "tags": ["video", "cinematic", "editing", "capcut", "documentary", "anime", "short-drama", "motion-graphics", "icm", "no-slop"]
+    },
+    "new-world-kids-fundraising": {
+      "path": "hermes-workflows/new-world-kids-fundraising",
+      "outcome": "Compliant evidence-backed fundraising and grant operations for New World Kids through FundRazr, HSI governance, donor traffic, and reporting",
+      "entry_point": "/new-world-kids-fundraising [task]",
+      "triggers": [
+        "New World Kids fundraising",
+        "FundRazr",
+        "HSI fiscal sponsor",
+        "grant research for NW Kids",
+        "grant writing for NW Kids",
+        "raise money for Indigo Azul",
+        "donor traffic for NW Kids"
+      ],
+      "skills_used": [
+        "new-world-kids-fundraising",
+        "gauntlet-loop",
+        "i-have-adhd"
+      ],
+      "repos_used": [
+        "executiveusa/strapi-template-new-world-kids"
+      ],
+      "human_touchpoints": [
+        "FundRazr launch/settings",
+        "grant opportunity selection",
+        "grant fact/budget check",
+        "mandatory HSI review before submission",
+        "outbound audience/spend approval",
+        "final totals verification"
+      ],
+      "judge_count": 1,
+      "enabled": true,
+      "version": "1.0.0",
+      "tags": ["nonprofit", "fundraising", "fundrazr", "grants", "hsi", "icm", "governance", "traffic"]
     }
   }
 }
