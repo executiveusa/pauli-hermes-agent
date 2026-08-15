@@ -75,6 +75,16 @@
     "triggers": ["deploy this site to Bluehost", "migrate this site to Bluehost", "restore this Bluehost site", "deploy this site to Hostinger", "migrate this site to Hostinger", "install this website on shared hosting", "publish this Cloneflow export"],
     "entry_point": "/browser-hosting-deployer"
   },
+  "agent-maxx": {
+    "path": "skills/agent-maxx",
+    "description": "ICM-governed executive orchestration identity for Hermes: turns plain-language customer outcomes into routed skill/tool/subagent work while preserving approvals, rollback, owner control and evidence-backed completion",
+    "required": true,
+    "enabled": true,
+    "version": "1.0.0",
+    "tags": ["maxx", "hermes", "icm", "orchestration", "executive-agent", "skills", "approvals", "customer-experience"],
+    "triggers": ["agent maxx", "maxx handle this", "maxx do this for me", "figure out the outcome", "run this project", "take care of this"],
+    "entry_point": "/agent-maxx"
+  },
   "strix-batch-security-testing": {
     "path": "skills/strix-batch-security-testing",
     "description": "Automated batch security testing for GitHub repos using Strix AI agents. Spawns parallel agents to detect and fix OWASP vulnerabilities across multiple applications with real exploit validation.",
