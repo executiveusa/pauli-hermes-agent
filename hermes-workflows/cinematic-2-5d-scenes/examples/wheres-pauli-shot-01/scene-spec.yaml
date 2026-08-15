@@ -1,0 +1,63 @@
+scene_id: WP-EP001-SHOT01
+project: wherespauli
+title: Orbit — Pacific Northwest
+narrative_job: "Establish that an unknown system is searching the Pacific Northwest without identifying Seattle or revealing Pauli."
+must_reveal:
+  - Pacific Northwest scale and geography
+  - active search/surveillance intent
+must_not_reveal:
+  - Pauli
+  - Seattle as the identified target
+  - drone owner
+  - 2056 explanation
+  - Yappyverse explanation
+source:
+  type: rights-cleared-real
+  url: "https://eoimages.gsfc.nasa.gov/images/imagerecords/71000/71608/Washington.A2004205.1930.250m.jpg"
+  page: "https://visibleearth.nasa.gov/images/71608/phytoplankton-bloom-off-the-pacific-northwest/71609l"
+  owner: "NASA Earth Observatory / NASA GSFC"
+  credit: "NASA Earth Observatory / NASA GSFC"
+  note: "Real satellite imagery used for an isolated 2.5D prototype. Confirm final reproduction/credit requirements before production promotion."
+mobile:
+  primary_viewport: "390x844"
+  crop_anchor: center
+  reduced_motion: required
+  device_orientation_required: false
+performance:
+  video_required: false
+  webgl_required: false
+  external_animation_library_required: false
+  preload: current_and_next_only
+  offscreen_canvas_policy: pause
+motion:
+  depth_mode: A
+  pointer_parallax_desktop_px: 5
+  phases:
+    - range: "0.00-0.25"
+      job: establish
+      action: "mostly still; atmospheric drift only"
+    - range: "0.25-0.55"
+      job: narrow_attention
+      action: "subtle camera push; differential image-plane movement"
+    - range: "0.55-0.80"
+      job: reveal_search
+      action: "semantic HUD introduces SIGNAL ACQUIRED then REGIONAL SWEEP"
+    - range: "0.80-1.00"
+      job: lock_and_transition
+      action: "tracking state tightens; restrained signal instability; cue Shot 02"
+visual_language:
+  palette: "near-monochrome charcoal/slate with source-color suppression as needed"
+  atmosphere: [fog, faint_cloud_drift, grain, vignette, scanlines]
+  prohibited: [neon_cyberpunk, giant_panels, excessive_glitch, baked_in_hud_text]
+acceptance:
+  - "Base still plus HTML text communicates the scene if all motion fails."
+  - "No horizontal overflow at 390x844."
+  - "Reduced-motion version remains coherent."
+  - "No semantic or visual Seattle identification appears in Shot 01."
+  - "No Pauli visual appears."
+  - "Motion feels like a surveillance camera acquiring a region, not a generic parallax demo."
+  - "NASA provenance and credit remain traceable."
+gauntlet:
+  first_bar: "Internal canon bar: the scene must create curiosity and active-search pressure while revealing only that the Pacific Northwest is being searched."
+  critic_returns: [WIN_OR_LOSE, single_biggest_gap, smallest_repair, regression_risk]
+human_gate: production_promotion

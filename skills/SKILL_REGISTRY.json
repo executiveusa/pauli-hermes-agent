@@ -13,6 +13,7 @@
   "black-swan-skills": {
     "path": "skills/black-swan-skills",
     "description": "Black swan research skills",
+    "required": true,
     "enabled": true
   },
   "hardened-longrun-subagent-harness": {
@@ -121,6 +122,16 @@
     "tags": ["video", "cinematic", "editing", "directing", "capcut", "mcp", "documentary", "anime", "short-drama", "remotion", "icm"],
     "triggers": ["make a cinematic video", "edit this video", "create a documentary", "make an anime sequence", "make a short drama", "create a CapCut draft", "cinematic master editor"],
     "entry_point": "/cinematic-master-editor"
+  },
+  "cinematic-2-5d-scenes": {
+    "path": "skills/studio/cinematic-2-5d-scenes",
+    "description": "ICM-governed still-image-to-cinematic-web-scene workflow using HTML/CSS/Canvas, depth/parallax, mobile-first progressive enhancement, provenance, reduced-motion fallbacks, and builder/critic Gauntlet verification.",
+    "required": false,
+    "enabled": true,
+    "version": "1.0.0",
+    "tags": ["cinematic", "2.5d", "parallax", "scroll", "image", "html", "css", "canvas", "mobile", "icm", "gauntlet"],
+    "triggers": ["make this picture cinematic", "animate this still image", "make a living photograph", "build a 2.5D scene", "create a cinematic scroll scene", "turn this photo into a moving web scene"],
+    "entry_point": "/cinematic-2-5d-scenes"
   },
   "pauliverse-orchestrator": {
     "path": "skills/pauliverse-orchestrator",
