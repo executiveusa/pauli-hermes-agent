@@ -64,6 +64,16 @@
     "required": false,
     "enabled": true
   },
+  "browser-hosting-deployer": {
+    "path": "skills/workflows/browser-hosting-deployer",
+    "description": "ICM-governed browser-agent deployment workflow for Bluehost, Hostinger, cPanel/hPanel, Webflow/static exports, PHP, WordPress, front-end builds, and provider-supported Node apps; requires current-doc discovery, target proof, staging, rollback, public verification, and unauthorized-change audit",
+    "required": false,
+    "enabled": true,
+    "version": "1.0.0",
+    "tags": ["icm", "browser-control", "bluehost", "hostinger", "cpanel", "hpanel", "webflow", "deployment", "migration", "restore", "cloneflow", "rollback"],
+    "triggers": ["deploy this site to Bluehost", "migrate this site to Bluehost", "restore this Bluehost site", "deploy this site to Hostinger", "migrate this site to Hostinger", "install this website on shared hosting", "publish this Cloneflow export"],
+    "entry_point": "/browser-hosting-deployer"
+  },
   "strix-batch-security-testing": {
     "path": "skills/strix-batch-security-testing",
     "description": "Automated batch security testing for GitHub repos using Strix AI agents. Spawns parallel agents to detect and fix OWASP vulnerabilities across multiple applications with real exploit validation.",
