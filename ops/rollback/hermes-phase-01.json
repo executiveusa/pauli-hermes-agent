@@ -1,0 +1,17 @@
+{
+  "phase_id": "hermes-phase-01-upstream-baseline",
+  "risk": "low",
+  "baseline_main_sha": "950aabef00059cbbf8a8a735da0bc215acd2d483",
+  "upstream_head_observed": "4aa9f738cedbe8a69fbd08595d0fb67f812ce2d3",
+  "merge_base_observed": "c79e3fd0baf41c0adda616b73153eeaa8a4b8231",
+  "deployment_id": null,
+  "schema_version": null,
+  "backup_id": null,
+  "affected_services": [],
+  "feature_flags": [],
+  "rollback": [
+    "Revert the phase squash commit or delete the phase documentation files before merge."
+  ],
+  "data_loss_risk": "none",
+  "notes": "Documentation/audit only; no runtime, secret, deployment, database, or production state changes."
+}
