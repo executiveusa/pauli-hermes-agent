@@ -1,0 +1,19 @@
+{
+  "phase_id": "hermes-phase-03-computer-use-kernel",
+  "risk": "medium",
+  "baseline_branch": "phase/02-hermes-upstream-gap-map",
+  "baseline_head_sha": "f6c2da25bc332ed3135a11f7afe121be1007b3d3",
+  "deployment_id": null,
+  "schema_version": null,
+  "backup_id": null,
+  "affected_services": ["Hermes computer-use library"],
+  "feature_flags": [],
+  "rollback": [
+    "Revert the Phase 03 squash commit.",
+    "Verify tools/computer_use/permissions.py is removed.",
+    "Verify tools/computer_use/vision_routing.py matches the Phase 02 baseline.",
+    "Run the computer-use targeted tests and ordinary repository gates before continuing dependent phases."
+  ],
+  "data_loss_risk": "none",
+  "notes": "No database, production deployment, credentials, external side effects, or computer-control schema changes are introduced."
+}
