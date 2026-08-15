@@ -1,0 +1,16 @@
+{
+  "phase_id": "hermes-phase-02-upstream-gap-map",
+  "risk": "low",
+  "baseline_branch": "phase/01-hermes-upstream-baseline",
+  "baseline_head_sha": "e35da993aa88892fca1681e495ac90c4c8143eb9",
+  "deployment_id": null,
+  "schema_version": null,
+  "backup_id": null,
+  "affected_services": [],
+  "feature_flags": [],
+  "rollback": [
+    "Revert the phase squash commit or remove the phase-02 OpenSpec/report files."
+  ],
+  "data_loss_risk": "none",
+  "notes": "Audit/specification only; no runtime behavior changed."
+}
