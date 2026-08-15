@@ -1,0 +1,43 @@
+name: GRINION Computer Use Gate
+
+on:
+  push:
+    branches:
+      - "phase/03-hermes-computer-use-kernel"
+  pull_request:
+    paths:
+      - "tools/computer_use/**"
+      - "tests/tools/test_computer_use_cross_platform.py"
+      - ".github/workflows/grinion-computer-use.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: grinion-computer-use-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  targeted-test:
+    name: Cross-platform policy tests
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.11"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install deterministic test dependencies
+        run: python -m pip install --disable-pip-version-check pytest pytest-timeout
+
+      - name: Run computer-use policy tests
+        run: python -m pytest tests/tools/test_computer_use_cross_platform.py -q
+
+      - name: Compile changed runtime modules
+        run: python -m py_compile tools/computer_use/permissions.py tools/computer_use/vision_routing.py
