@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 from typing import Any, Dict, List, Optional
@@ -36,10 +37,16 @@ _BOOLS = ("accessibility", "screen_recording", "screen_recording_capturable")
 
 
 def _resolve_driver_cmd(override: Optional[str]) -> Optional[str]:
-    """Use the runtime resolver for UI status and permission commands too."""
-    from tools.computer_use.cua_backend import resolve_cua_driver_cmd
+    """Resolve the driver without depending on a newer cua_backend API.
 
-    return resolve_cua_driver_cmd(override)
+    The Pauli fork intentionally ports readiness policy before the much larger
+    upstream backend rewrite, so this helper must remain compatible with the
+    existing backend. ``shutil.which`` also handles explicit executable paths.
+    """
+    command = (override or os.environ.get("HERMES_CUA_DRIVER_CMD") or "cua-driver").strip()
+    if not command:
+        return None
+    return shutil.which(command)
 
 
 def _child_env() -> Dict[str, str]:
@@ -144,8 +151,12 @@ def computer_use_status(driver_cmd: Optional[str] = None) -> Dict[str, Any]:
 
     if plat == "darwin":
         _mac_permissions(binary, out)
-        if out["error"] is None:
-            out["ready"] = out["accessibility"] is True and out["screen_recording"] is True
+        if out["error"] is None and doctor is not None:
+            out["ready"] = (
+                doctor["ok"] is True
+                and out["accessibility"] is True
+                and out["screen_recording"] is True
+            )
     elif doctor is not None:
         out["ready"] = doctor["ok"]
     return out
