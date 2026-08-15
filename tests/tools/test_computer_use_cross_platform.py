@@ -87,6 +87,14 @@ def test_native_vision_model_with_supported_tool_results_stays_multimodal(monkey
     ) is False
 
 
+def test_resolve_driver_uses_existing_fork_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("HERMES_CUA_DRIVER_CMD", raising=False)
+    monkeypatch.setattr(permissions.shutil, "which", lambda command: f"/resolved/{command}")
+
+    assert permissions._resolve_driver_cmd(None) == "/resolved/cua-driver"
+    assert permissions._resolve_driver_cmd("custom-cua") == "/resolved/custom-cua"
+
+
 def test_computer_use_status_without_driver_is_not_installed(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(permissions, "_resolve_driver_cmd", lambda _override: None)
     monkeypatch.setattr(permissions.sys, "platform", "win32")
@@ -148,6 +156,27 @@ def test_macos_readiness_requires_accessibility_and_screen_recording(monkeypatch
     status = permissions.computer_use_status()
 
     assert status["can_grant"] is True
+    assert status["ready"] is False
+
+
+def test_macos_readiness_requires_healthy_driver_even_with_permissions(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(permissions.sys, "platform", "darwin")
+    monkeypatch.setattr(permissions, "_resolve_driver_cmd", lambda _override: "cua-driver")
+    monkeypatch.setattr(
+        permissions,
+        "_run",
+        lambda *_args, **_kwargs: SimpleNamespace(stdout="cua-driver 1.2.3\n"),
+    )
+    monkeypatch.setattr(permissions, "_doctor", lambda _binary: {"ok": False, "checks": []})
+
+    def fake_mac_permissions(_binary: str, out: dict) -> None:
+        out["accessibility"] = True
+        out["screen_recording"] = True
+
+    monkeypatch.setattr(permissions, "_mac_permissions", fake_mac_permissions)
+
+    status = permissions.computer_use_status()
+
     assert status["ready"] is False
 
 
