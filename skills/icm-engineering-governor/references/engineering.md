@@ -48,7 +48,9 @@ Sharpen the project's language and invariants. Identify entities, value objects,
 Design deep modules with small stable interfaces and hidden implementation detail. Prefer clear seams, low coupling, high cohesion, and interface-level tests. Design twice when the first option feels inevitable.
 
 ## code-review
-Run two independent axes: (1) standards/architecture/code smells and (2) faithfulness to the originating spec/ticket. Review the actual diff from a fixed base. Findings need severity, evidence, and actionable remediation. The builder does not self-approve.
+Canonical process: `workflows/code-review/PROCESS.md`.
+
+Run two independent axes against a fixed base/head diff: (1) standards/architecture/code smells/security/reliability/sovereignty and (2) faithfulness to the originating spec/ticket. Findings need severity, evidence, and actionable remediation. The builder does not self-approve. Material fixes require a fresh re-review. At every project completion boundary, Hermes must surface the human code-review prompt and record the owner's result before closure. Scheduled review may dispatch the two axes to separate fresh subagents but cron review has no authority to merge or deploy.
 
 ## resolving-merge-conflicts
 Resolve conflicts hunk by hunk from intent, not by blanket ours/theirs. Trace each side to its source change/spec, preserve compatible intent, run targeted checks, and complete the merge/rebase with an auditable resolution. Do not abort merely because conflicts are difficult.
@@ -59,10 +61,10 @@ Generate an interactive human-execution wizard only for actions the agent cannot
 ## Recommended chains
 
 ### Greenfield feature
-`grill-with-docs -> domain-modeling -> research (only unknowns) -> to-spec -> to-tickets -> prototype (only risky assumptions) -> implement -> tdd -> code-review`
+`grill-with-docs -> domain-modeling -> research (only unknowns) -> to-spec -> to-tickets -> prototype (only risky assumptions) -> implement -> tdd -> code-review -> human-review`
 
 ### Brownfield rescue
-`improve-codebase-architecture -> diagnosing-bugs or domain-modeling -> to-spec -> to-tickets -> implement -> tdd -> code-review`
+`improve-codebase-architecture -> diagnosing-bugs or domain-modeling -> to-spec -> to-tickets -> implement -> tdd -> code-review -> human-review`
 
 ### Multi-session transformation
-`wayfinder -> resolve decision tickets -> to-spec -> to-tickets -> implement -> code-review`
+`wayfinder -> resolve decision tickets -> to-spec -> to-tickets -> implement -> code-review -> human-review`

@@ -1,11 +1,11 @@
 ---
 name: icm-engineering-governor
-description: Lazy ICM engineering workflow router adapted from Matt Pocock's public engineering/productivity skills. Use when work needs grilling, domain modeling, research, specs, dependency-aware tickets, prototypes, TDD, diagnosis, implementation, review, merge-conflict resolution, handoff, teaching, questionnaires, agent-writing, git guardrails, pre-commit setup, or long-horizon planning. Load only the minimum referenced capability needed for the current phase.
-version: 1.0.0
+description: Lazy ICM engineering workflow router adapted from Matt Pocock's public engineering/productivity skills. Use when work needs grilling, domain modeling, research, specs, dependency-aware tickets, prototypes, TDD, diagnosis, implementation, review, merge-conflict resolution, handoff, teaching, questionnaires, agent-writing, git guardrails, pre-commit setup, or long-horizon planning. Load only the minimum referenced capability needed for the current phase. Code review is a mandatory completion gate for every project; code/config changes require independent review and an explicit owner review prompt before closure.
+version: 1.1.0
 license: MIT
 metadata:
   hermes:
-    tags: [icm, engineering, progressive-disclosure, lazy-load, software-factory, matt-pocock]
+    tags: [icm, engineering, progressive-disclosure, lazy-load, software-factory, code-review, human-gate, matt-pocock]
     related_skills: [gauntlet-loop, hardened-longrun-subagent-harness]
 ---
 
@@ -54,9 +54,26 @@ Use only when explicitly beneficial and bounded: loop-me, writing-beats, writing
 
 Use the smallest applicable prefix/slice of this chain; do not run every stage mechanically:
 
-`GRILL -> MODEL -> RESEARCH -> SPEC -> TICKETS -> PROTOTYPE (if uncertainty) -> IMPLEMENT -> TDD -> REVIEW -> GAUNTLET -> PROOF`
+`GRILL -> MODEL -> RESEARCH -> SPEC -> TICKETS -> PROTOTYPE (if uncertainty) -> IMPLEMENT -> TDD -> REVIEW -> GAUNTLET -> PROOF -> HUMAN REVIEW`
 
-For huge work, insert `WAYFINDER` before tickets. For bugs, replace the build path with `DIAGNOSE -> REPRODUCE -> MINIMIZE -> HYPOTHESIZE -> INSTRUMENT -> FIX -> REGRESSION TEST -> REVIEW`.
+For huge work, insert `WAYFINDER` before tickets. For bugs, replace the build path with `DIAGNOSE -> REPRODUCE -> MINIMIZE -> HYPOTHESIZE -> INSTRUMENT -> FIX -> REGRESSION TEST -> REVIEW -> HUMAN REVIEW`.
+
+## Mandatory project-completion code-review gate
+
+This gate is NOT lazy or optional at the completion boundary.
+
+Whenever any project is about to be called complete:
+
+1. Load `workflows/code-review/PROCESS.md`.
+2. If code, configuration, infrastructure-as-code, scripts, migrations, or executable behavior changed, run the independent code-review process against a fixed base/head comparison.
+3. The builder cannot approve itself. Use fresh subagents or another logically independent review pass for Standards and Spec review.
+4. Resolve blocker/high findings and re-review material fixes.
+5. Verify the real target where possible; CI/build/deploy intent alone is not production proof.
+6. **Hermes MUST explicitly ask the owner to review the code/diff before closing or shipping the project.** Record the answer as `APPROVED`, `CHANGES_REQUESTED`, or `DECLINED_REVIEW`.
+7. If no code/config changed, record `NO_CODE_DIFF` and ask whether the owner wants to review the project artifacts instead.
+8. A project with `HUMAN_REVIEW_RESULT: PENDING` must remain `HOLD`/open; never silently upgrade it to `DONE`.
+
+Scheduled reviews may run from `cron/icm-code-review.json`. Cron reviewers may inspect, test, and dispatch reviewer subagents, but they may not merge, deploy, mutate production, or self-approve fixes.
 
 ## Separation of duties
 
@@ -76,6 +93,8 @@ For major work return:
 - NEXT
 - HUMAN APPROVAL
 
+The completion receipt must include the code-review receipt or `NO_CODE_DIFF`, plus whether the mandatory human review prompt was surfaced and the owner's response.
+
 ## Provenance
 
-This is an ICM-native adaptation of concepts from `mattpocock/skills` (MIT licensed). It intentionally does not mirror upstream verbatim; Hermes-specific governance, progressive disclosure, owner control, rollback, and evidence requirements are added here. See `ATTRIBUTION.md`.
+This is an ICM-native adaptation of concepts from `mattpocock/skills` (MIT licensed). It intentionally does not mirror upstream verbatim; Hermes-specific governance, progressive disclosure, owner control, rollback, evidence requirements, scheduled review, and a mandatory human completion gate are added here. See `ATTRIBUTION.md`.
