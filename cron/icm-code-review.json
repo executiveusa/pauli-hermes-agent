@@ -1,0 +1,13 @@
+{
+  "id": "icm-code-review-nightly",
+  "description": "Nightly independent ICM code-review sweep for changed projects. Reviews only new code/config deltas, dispatches separate Standards and Spec reviewers when subagents are available, writes durable receipts, and never merges or deploys from cron.",
+  "schedule": "0 3 * * *",
+  "timezone": "UTC",
+  "skills": ["icm-engineering-governor", "hardened-longrun-subagent-harness"],
+  "prompt": "Run the ICM scheduled code-review process from skills/icm-engineering-governor/workflows/code-review/PROCESS.md. Inspect only projects with new commits, changed code/config, unresolved review findings, or a pending human review gate since the last successful receipt. Freeze base/head SHAs. Dispatch fresh independent subagents for (1) Standards/architecture/security/reliability/sovereignty review and (2) Spec/acceptance-criteria fidelity review when subagents are available. The builder may not approve itself. Do not merge, deploy, delete, spend money, rotate credentials, change DNS, or perform production mutations. Write review receipts to ops/reports/code-review/ and surface only new material findings or projects waiting for owner review. If nothing changed, record NO_MATERIAL_CHANGE and exit.",
+  "enabled_toolsets": ["read", "terminal", "github", "subagent"],
+  "disabled_toolsets": ["messaging", "clarify"],
+  "output_dir": "ops/reports/code-review/",
+  "retry_on_error": 1,
+  "error_policy": "write-error-file-and-hold"
+}
