@@ -1,12 +1,13 @@
 {
   "name": "icm-engineering-governor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "activation": "progressive-disclosure",
   "default_state": "sleeping",
   "load_policy": {
     "tier_1": "SKILL.md metadata only",
     "tier_2": "SKILL.md router only when matched or explicitly invoked",
     "tier_3": "load exactly one references/*.md capability family when routed",
+    "completion_gate": "workflows/code-review/PROCESS.md is mandatory at every project completion boundary",
     "beta": "never auto-select for production-critical work"
   },
   "families": {
@@ -20,7 +21,17 @@
     "builder_cannot_self_approve": true,
     "rollback_required_for_material_changes": true,
     "proof_before_done": true,
-    "owner_control_required": true
+    "owner_control_required": true,
+    "mandatory_project_code_review": true,
+    "mandatory_human_review_prompt": true,
+    "human_review_pending_blocks_done": true,
+    "scheduled_review_may_dispatch_subagents": true,
+    "scheduled_review_may_merge_or_deploy": false
+  },
+  "scheduled_review": {
+    "definition": "cron/icm-code-review.json",
+    "review_axes": ["standards", "spec"],
+    "fresh_reviewer_required_for_material_fixes": true
   },
   "upstream": {
     "repository": "mattpocock/skills",
