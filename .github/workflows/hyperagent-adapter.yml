@@ -1,0 +1,31 @@
+name: HyperAgent Adapter
+
+on:
+  pull_request:
+    paths:
+      - 'integrations/hyperagent/**'
+      - 'skills/workflows/hyperagent-browser-operator/**'
+      - 'tests/skills/test_hyperagent_browser_operator.py'
+      - '.github/workflows/hyperagent-adapter.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  adapter-self-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated HyperAgent runtime
+        working-directory: integrations/hyperagent
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify HyperAgent API surface
+        working-directory: integrations/hyperagent
+        run: npm run self-test
+      - name: Run static ICM contract tests
+        run: python -m pytest tests/skills/test_hyperagent_browser_operator.py -q
