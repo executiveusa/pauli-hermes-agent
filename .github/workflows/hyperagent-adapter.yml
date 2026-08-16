@@ -31,6 +31,6 @@ jobs:
         working-directory: integrations/hyperagent
         run: npm run self-test
       - name: Install test runner
-        run: python -m pip install pytest==9.0.2
+        run: python -m pip install pytest==9.0.2 pytest-timeout==2.4.0
       - name: Run static ICM contract tests
         run: python -m pytest tests/skills/test_hyperagent_browser_operator.py -q
