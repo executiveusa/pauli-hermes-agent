@@ -1,0 +1,94 @@
+version: 1
+system: faceless-youtube-channel-operator
+default_mode: autonomous
+owner_time_goal: minimal
+
+auto_allowed:
+  - read_already_authorized_sources
+  - scrape_public_pages
+  - collect_public_transcripts
+  - classify_and_graph
+  - research_topics
+  - research_competitors
+  - research_community_pain
+  - research_keywords_and_surfaces
+  - score_channel_theses
+  - kill_failed_experiments
+  - generate_research_packs
+  - generate_source_manifests
+  - generate_title_candidates
+  - generate_thumbnail_concepts
+  - generate_hooks
+  - generate_scripts
+  - generate_shot_lists
+  - generate_broll_plans
+  - generate_voiceover_drafts
+  - generate_editing_briefs
+  - generate_metadata_drafts
+  - generate_shorts_drafts
+  - generate_social_derivatives
+  - run_sollo_draft_generation_when_authenticated
+  - run_independent_qa
+  - collect_first_party_analytics_when_authorized
+  - update_learning_graph
+  - schedule_internal_research_and_analysis
+
+human_required:
+  - connect_new_account_or_scope
+  - complete_login_captcha_mfa
+  - approve_initial_channel_thesis
+  - approve_material_channel_pivot
+  - approve_new_paid_tool_or_spend_outside_budget
+  - approve_first_publication_until_authority_promoted
+  - approve_video_with_material_policy_or_copyright_ambiguity
+  - approve_material_reputational_claim
+  - delete_canonical_dataset
+  - modify_account_security
+  - purchase_ads
+  - hire_or_pay_contractors
+
+never_allowed_without_explicit_owner_command:
+  - expose_credentials_or_tokens
+  - bypass_authentication_or_mfa
+  - imitate_competitor_script_or_voice_closely
+  - fabricate_sources_or_metrics
+  - silently_rewrite_failed_metrics
+  - purchase_or_upgrade_services
+  - delete_source_evidence
+
+promotion_policy:
+  publish_without_per_video_approval:
+    default: false
+    eligible_after:
+      - owner_explicitly_promotes_authority
+      - at_least_10_verified_publications
+      - zero_material_policy_incidents
+      - rollback_verified
+      - qa_receipts_complete
+    owner_can_revoke_any_time: true
+
+budget_policy:
+  default_new_spend_usd: 0
+  reuse_existing_paid_tools_first: true
+  require_budget_receipt: true
+
+qa_policy:
+  builder_may_self_approve: false
+  minimum_independent_reviewers: 1
+  release_score_target: 8.5
+  required_checks:
+    - factual_integrity
+    - originality_and_copyright
+    - title_thumbnail_promise_alignment
+    - hook_and_retention
+    - audience_value
+    - monetization_alignment
+    - production_feasibility
+    - platform_policy
+
+rollback:
+  drafts: discard_or_regenerate
+  browser_session: disable_adapter_and_reauthenticate
+  oauth: revoke_scope_or_token
+  dataset: restore_previous_version
+  publication: unpublish_or_correct_only_with_owner_authority
