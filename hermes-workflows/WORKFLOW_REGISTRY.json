@@ -1,7 +1,65 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Index of all Hermes workflows, grouped by desired outcome.",
   "workflows": {
+    "wheres-pauli": {
+      "path": "hermes-workflows/wheres-pauli",
+      "outcome": "Operate Where's Pauli as a canon-safe, mobile-first cinematic Seattle mystery world with a seamless 12-shot scroll, Living Story investigation, Pauli Pass activation, and governed invite loop.",
+      "entry_point": "/wheres-pauli [task]",
+      "triggers": [
+        "Where's Pauli",
+        "wherespauli",
+        "Pauli Pass",
+        "Case File 001",
+        "Pauli scroll world",
+        "Pauli 12 scenes",
+        "Pauli Living Story",
+        "Interactive Avatar World Engine"
+      ],
+      "skills_used": [
+        "cinematic-2-5d-scenes",
+        "gauntlet-loop",
+        "cinematic-master-editor",
+        "hardened-longrun-subagent-harness"
+      ],
+      "workflows_used": [
+        "scroll-world-design",
+        "cinematic-2-5d-scenes",
+        "cinematic-production"
+      ],
+      "repos_used": [
+        "executiveusa/wherespauli",
+        "oso95/scroll-world"
+      ],
+      "external_research": {
+        "fonts_first_stop": "https://fontsinuse.com/",
+        "font_rule": "Research real-world typography precedent first; verify actual licensing/availability at the official foundry or source. Never scrape or redistribute font binaries."
+      },
+      "human_touchpoints": [
+        "canon unlock/reveal changes",
+        "locked-image replacement",
+        "production deployment",
+        "domain/DNS changes",
+        "paid generation beyond bounded approved attempts",
+        "financial/reward liability",
+        "final beta promotion"
+      ],
+      "judge_count": 1,
+      "enabled": true,
+      "version": "1.0.0",
+      "tags": [
+        "wheres-pauli",
+        "pauli",
+        "seattle",
+        "scroll-world",
+        "living-story",
+        "2.5d",
+        "pauli-pass",
+        "mobile",
+        "icm",
+        "gauntlet"
+      ]
+    },
     "scroll-world-design": {
       "path": "hermes-workflows/scroll-world-design",
       "outcome": "High-quality cinematic scroll websites, every time — no slop ships",
