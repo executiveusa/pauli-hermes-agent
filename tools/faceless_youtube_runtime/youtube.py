@@ -10,7 +10,7 @@ class YouTubeNotConfigured(RuntimeError):
     pass
 
 
-def _service(scopes: list[str]):
+def _credentials(scopes: list[str]):
     secret_file = os.getenv("HERMES_YOUTUBE_CLIENT_SECRET_FILE")
     token_file = os.getenv("HERMES_YOUTUBE_TOKEN_FILE")
     if not secret_file or not token_file:
@@ -19,7 +19,6 @@ def _service(scopes: list[str]):
         from google.auth.transport.requests import Request
         from google.oauth2.credentials import Credentials
         from google_auth_oauthlib.flow import InstalledAppFlow
-        from googleapiclient.discovery import build
     except ImportError as exc:
         raise YouTubeNotConfigured("Install Hermes google extra before using YouTube OAuth") from exc
 
@@ -31,7 +30,7 @@ def _service(scopes: list[str]):
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            # OAuth setup is intentionally human-assisted. This opens the normal Google consent flow.
+            # First authorization is deliberately human-assisted through Google's normal consent flow.
             flow = InstalledAppFlow.from_client_secrets_file(str(Path(secret_file).expanduser()), scopes)
             creds = flow.run_local_server(port=0)
         token_path.parent.mkdir(parents=True, exist_ok=True)
@@ -40,16 +39,48 @@ def _service(scopes: list[str]):
             os.chmod(token_path, 0o600)
         except OSError:
             pass
-    return build("youtube", "v3", credentials=creds)
+    return creds
+
+
+def _service(api: str, version: str, scopes: list[str]):
+    try:
+        from googleapiclient.discovery import build
+    except ImportError as exc:
+        raise YouTubeNotConfigured("Install Hermes google extra before using YouTube APIs") from exc
+    return build(api, version, credentials=_credentials(scopes), cache_discovery=False)
 
 
 def channel_snapshot(channel_id: str) -> dict[str, Any]:
-    service = _service(["https://www.googleapis.com/auth/youtube.readonly"])
+    service = _service("youtube", "v3", ["https://www.googleapis.com/auth/youtube.readonly"])
     response = service.channels().list(part="snippet,statistics,contentDetails", id=channel_id).execute()
     item = (response.get("items") or [None])[0]
     if not item:
         raise RuntimeError(f"YouTube channel not found: {channel_id}")
     return item
+
+
+def analytics_report(start_date: str, end_date: str, *, video_id: str | None = None) -> dict[str, Any]:
+    """Collect owner-authorized first-party metrics from YouTube Analytics v2."""
+    scopes = [
+        "https://www.googleapis.com/auth/youtube.readonly",
+        "https://www.googleapis.com/auth/yt-analytics.readonly",
+    ]
+    service = _service("youtubeAnalytics", "v2", scopes)
+    metrics = "views,estimatedMinutesWatched,averageViewDuration,averageViewPercentage,subscribersGained,subscribersLost"
+    dimensions = "video" if not video_id else None
+    kwargs: dict[str, Any] = {
+        "ids": "channel==MINE",
+        "startDate": start_date,
+        "endDate": end_date,
+        "metrics": metrics,
+        "sort": "-views",
+    }
+    if video_id:
+        kwargs["filters"] = f"video=={video_id}"
+    else:
+        kwargs["dimensions"] = dimensions
+        kwargs["maxResults"] = 50
+    return service.reports().query(**kwargs).execute()
 
 
 def upload_video(video_path: str, metadata: dict[str, Any], *, approved: bool = False) -> dict[str, Any]:
@@ -64,7 +95,7 @@ def upload_video(video_path: str, metadata: dict[str, Any], *, approved: bool = 
         from googleapiclient.http import MediaFileUpload
     except ImportError as exc:
         raise YouTubeNotConfigured("Install Hermes google extra before publishing") from exc
-    service = _service(["https://www.googleapis.com/auth/youtube.upload"])
+    service = _service("youtube", "v3", ["https://www.googleapis.com/auth/youtube.upload"])
     body = {
         "snippet": {
             "title": metadata["title"],
