@@ -162,5 +162,15 @@
     "tags": ["new-world-kids", "nonprofit", "fundraising", "fundrazr", "grants", "hsi", "icm", "browser-control", "governance"],
     "triggers": ["New World Kids fundraising", "FundRazr", "HSI fiscal sponsor", "NW Kids grants", "grant writing for NW Kids", "raise money for Indigo Azul"],
     "entry_point": "/new-world-kids-fundraising"
+  },
+  "social-drop-factory": {
+    "path": "skills/social-drop-factory",
+    "description": "Portable multi-client Social Drop system that turns weekly Monday/Wednesday/Friday content into a coherent interactive micro-experience with one CTA, GitHub as source of truth, and Webflow as an optional design lab.",
+    "required": false,
+    "enabled": true,
+    "version": "1.0.0",
+    "tags": ["social-media", "campaign", "interactive-drop", "microsite", "personalized-sales", "recruiting", "nonprofit", "local-service", "webflow", "github", "content-system", "multi-client"],
+    "triggers": ["social drop", "social media template", "build this week's campaign", "Monday Wednesday Friday content", "personalized sales page", "personalized outreach microsite", "recruiting drop", "turn this post into an interactive experience", "use the social-media-template repo"],
+    "entry_point": "/social-drop-factory"
   }
 }
