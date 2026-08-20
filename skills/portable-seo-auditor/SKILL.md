@@ -84,9 +84,12 @@ comparison.md
 
 ### GATE
 
-- `PASS`: baseline plus required specialist evidence completed; verifier found no unsupported material claims.
-- `PARTIAL`: useful real evidence exists, but one or more requested enrichments are unavailable or failed.
-- `BLOCK`: target could not be safely audited or evidence is insufficient to make the requested conclusion.
+The ICM gate itself has only two legal outcomes:
+
+- `PASS`: enough verified evidence exists for the requested audit conclusion, the required verifier has found no unsupported material claims, and the package is safe to hand downstream.
+- `BLOCK`: evidence is insufficient, contradictory, unsafe, or materially unverified for the requested conclusion.
+
+`PARTIAL` is permitted only as a **run-status/completeness label** inside the audit JSON when useful real evidence exists but optional or requested enrichments are unavailable. `PARTIAL` is never a gate outcome.
 
 ### RECEIPT
 
@@ -188,7 +191,7 @@ Recommended packets:
 6. `verifier`
    - receives all packets but does not inherit builder conclusions as facts
    - checks source support, numbers, contradictions, evidence labels, and unsupported recommendations
-   - can return `PASS`, `PARTIAL`, or `BLOCK`
+   - returns only ICM `PASS` or `BLOCK`; it may separately report run completeness as `PARTIAL`
 
 When the run is long or crash-sensitive, route through `hardened-longrun-subagent-harness`.
 
