@@ -64,6 +64,19 @@ YouTube URL | watch-history.json | list of URLs
 
 ### Step 1a — Transcript (Single Video)
 
+**When invoked via `agent-reach`** (its YouTube reliability ladder in
+`skills/agent-reach/references/youtube.md` already ran): consume the
+`transcript_record` object it hands off — matching
+`skills/agent-reach/schemas/transcript-record.json` — instead of
+independently re-fetching. Read `transcript_record.transcript_text`,
+`.title`, `.channel` directly for Step 2. If `transcript_record.coverage` is
+`"blocked"`, skip analysis and continue with metadata only (same as a local
+fetch failure below). Do not re-run `yt-dlp` when a valid record is already
+present — that duplicates a network call the caller already paid for.
+
+**When invoked standalone** (no agent-reach record — direct URL, watch
+history, or URL list): fetch it locally.
+
 Primary:
 
 ```bash

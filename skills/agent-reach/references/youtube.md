@@ -119,6 +119,38 @@ Before summarizing:
 - repeated auto-caption fragments were removed without deleting unique speech;
 - timestamps remain available for important claims.
 
+## Handoff to youtube-knowledge-extractor
+
+When this ladder is run on behalf of `youtube-knowledge-extractor` (or any
+other skill that wants structured knowledge rather than a raw transcript),
+step 6 must emit one object matching
+`skills/agent-reach/schemas/transcript-record.json` — not prose, not the raw
+`metadata.json` + VTT pair. Populate it from what steps 2–5 already produced:
+
+```json
+{
+  "video_id": "<metadata.json .id>",
+  "url": "<metadata.json .webpage_url>",
+  "title": "<metadata.json .title>",
+  "channel": "<metadata.json .uploader or .channel>",
+  "published_at": "<metadata.json .upload_date, normalized to ISO8601, or null>",
+  "duration_seconds": "<metadata.json .duration, or null>",
+  "transcript_text": "<normalized plain text from the ladder rung that succeeded>",
+  "transcript_source": "manual_subtitles | automatic_subtitles | asr_fallback",
+  "coverage": "complete | partial | blocked",
+  "retrieved_at": "<ISO8601 now>"
+}
+```
+
+`transcript_source` and `coverage` come directly from which rung succeeded
+and the quality checks above — do not guess them independently. If the
+ladder terminates at "report blocked", still emit the object with
+`transcript_text: ""`, `coverage: "blocked"`, and the metadata fields filled
+in from step 2 so the caller has enough to report the failure without
+re-fetching. `youtube-knowledge-extractor` reads this object directly (see
+its Step 1a/Step 2) instead of independently re-running `yt-dlp` when it is
+invoked through agent-reach.
+
 ## Output format
 
 ```markdown

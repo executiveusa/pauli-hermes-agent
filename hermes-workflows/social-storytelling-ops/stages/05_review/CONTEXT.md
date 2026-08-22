@@ -1,2 +1,4 @@
 # 05 Independent Review
+Before reviewing, `taste-reviewer` reads `../../lessons.md` (the workflow's durable, cross-run lessons file — see `stages/08_learn/CONTEXT.md` "The learning loop") if it exists, and checks the reel against any pattern it names, not only this run's own brand rules.
+
 Run at least two independent reviewers: Taste/Brand and Truth/Privacy. Check hook, pacing, dignity, crop, captions, brand coherence, transcript fidelity, facts, consent/privacy, minors risk, event details, mobile safety, and campaign role. Producer cannot approve itself. Output `review-verdicts.json` with PASS/FAIL and evidence.

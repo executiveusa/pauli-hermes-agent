@@ -8290,7 +8290,13 @@ class GatewayRunner:
 
         if canonical == "retry":
             return await self._handle_retry_command(event)
-        
+
+        if canonical == "content-approve":
+            return await self._handle_content_approve_command(event)
+
+        if canonical == "content-reject":
+            return await self._handle_content_reject_command(event)
+
         if canonical == "undo":
             async def _do_undo():
                 return await self._handle_undo_command(event)
@@ -11619,6 +11625,120 @@ class GatewayRunner:
         
         # Let the normal message handler process it
         return await self._handle_message(retry_event)
+
+    # ────────────────────────────────────────────────────────────────
+    # /content-approve, /content-reject — social-storytelling-ops daily
+    # approval loop (hermes-workflows/social-storytelling-ops, Part 5).
+    # ────────────────────────────────────────────────────────────────
+    @staticmethod
+    def _load_social_storytelling_approval_module():
+        """Dynamically load the workflow's stdlib-only approval helper.
+
+        It lives under ``hermes-workflows/`` rather than a Python package,
+        matching how this repo keeps workflow logic beside its CONTEXT.md
+        contracts instead of importing it into the gateway package proper.
+        """
+        import importlib.util
+
+        repo_root = Path(__file__).resolve().parent.parent
+        script_path = (
+            repo_root
+            / "hermes-workflows"
+            / "social-storytelling-ops"
+            / "scripts"
+            / "approval.py"
+        )
+        spec = importlib.util.spec_from_file_location(
+            "social_storytelling_approval", script_path
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    @staticmethod
+    def _latest_social_storytelling_run_dir() -> Optional[Path]:
+        """Most-recently-modified run directory under this workflow's runs/.
+
+        There is no separate "current run" registry in this repo — a run
+        directory's manifest.json mtime is the only signal available, so the
+        daily digest and /content-approve /content-reject operate on
+        whichever run was touched most recently. If a team runs multiple
+        concurrent campaigns this will need a real "active run" pointer;
+        out of scope for this integration.
+        """
+        repo_root = Path(__file__).resolve().parent.parent
+        runs_dir = (
+            repo_root / "hermes-workflows" / "social-storytelling-ops" / "runs"
+        )
+        if not runs_dir.exists():
+            return None
+        candidates = sorted(
+            runs_dir.glob("*/manifest.json"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True,
+        )
+        return candidates[0].parent if candidates else None
+
+    async def _handle_content_approve_command(self, event: MessageEvent) -> str:
+        """Handle /content-approve <reel_id> — approve one queued draft."""
+        args = event.get_command_args().strip()
+        if not args:
+            return "Usage: /content-approve <reel_id>"
+        reel_id = args.split()[0]
+
+        run_dir = self._latest_social_storytelling_run_dir()
+        if run_dir is None:
+            return "No social-storytelling-ops run found (no runs/*/manifest.json)."
+
+        try:
+            module = self._load_social_storytelling_approval_module()
+            reel = module.approve(run_dir, reel_id)
+        except FileNotFoundError as e:
+            return str(e)
+        except KeyError as e:
+            return f"content-approve failed: {e}"
+        except ValueError as e:
+            return f"content-approve failed: {e}"
+
+        return (
+            f"Approved {reel['reel_id']} ({reel.get('platform', '?')} / "
+            f"{reel.get('series_role', '?')}). publishing-operator may now "
+            f"schedule/publish it."
+        )
+
+    async def _handle_content_reject_command(self, event: MessageEvent) -> str:
+        """Handle /content-reject <reel_id> <reason> — reject with a reason.
+
+        Creates a bounded revision task rather than restarting the pipeline
+        (AGENTS.md retry policy), and appends the reason to lessons.md so it
+        durably improves future drafts (Part 6: the learning loop).
+        """
+        args = event.get_command_args().strip()
+        parts = args.split(maxsplit=1)
+        if len(parts) < 2:
+            return "Usage: /content-reject <reel_id> <one-line reason>"
+        reel_id, reason = parts[0], parts[1]
+
+        run_dir = self._latest_social_storytelling_run_dir()
+        if run_dir is None:
+            return "No social-storytelling-ops run found (no runs/*/manifest.json)."
+
+        try:
+            module = self._load_social_storytelling_approval_module()
+            lessons_path = run_dir.parent.parent / "lessons.md"
+            revision = module.reject(run_dir, reel_id, reason, lessons_path)
+        except FileNotFoundError as e:
+            return str(e)
+        except KeyError as e:
+            return f"content-reject failed: {e}"
+        except ValueError as e:
+            return f"content-reject failed: {e}"
+
+        return (
+            f"Rejected {reel_id}: {reason}\n"
+            f"Created bounded revision task {revision['reel_id']}. "
+            f"Reason recorded in lessons.md for future drafts."
+        )
 
     # ────────────────────────────────────────────────────────────────
     # /goal — persistent cross-turn goals (Ralph-style loop)

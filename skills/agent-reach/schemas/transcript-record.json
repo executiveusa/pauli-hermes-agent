@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pauli-hermes-agent/skills/agent-reach/schemas/transcript-record.json",
+  "title": "TranscriptRecord",
+  "description": "Handoff object emitted by agent-reach's YouTube reliability ladder (references/youtube.md, step 6) and consumed by youtube-knowledge-extractor's AI-analysis step. This is the single agreed shape between the two skills — agent-reach never emits raw VTT + metadata.json across the handoff boundary, and youtube-knowledge-extractor never assumes its own local {title, channel, transcript} shape when invoked from agent-reach.",
+  "type": "object",
+  "required": [
+    "video_id",
+    "url",
+    "title",
+    "channel",
+    "transcript_text",
+    "transcript_source",
+    "coverage",
+    "retrieved_at"
+  ],
+  "properties": {
+    "video_id": {
+      "type": "string",
+      "description": "YouTube video ID, e.g. from yt-dlp --dump-single-json .id"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Canonical webpage_url, not the input URL as typed (drop playlist/timestamp params)."
+    },
+    "title": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string",
+      "description": "Uploader/channel display name."
+    },
+    "published_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "ISO8601 upload date, null when yt-dlp cannot resolve it."
+    },
+    "duration_seconds": {
+      "type": ["number", "null"]
+    },
+    "transcript_text": {
+      "type": "string",
+      "description": "Normalized plain text — VTT headers/timestamps stripped, consecutive auto-caption duplicate/overlapping cues removed, unique speech preserved. Never raw VTT."
+    },
+    "transcript_source": {
+      "type": "string",
+      "enum": ["manual_subtitles", "automatic_subtitles", "asr_fallback"],
+      "description": "Which rung of the reliability ladder (references/youtube.md) produced transcript_text."
+    },
+    "coverage": {
+      "type": "string",
+      "enum": ["complete", "partial", "blocked"],
+      "description": "complete: full video covered. partial: gaps exist (chunked, rate-limited, or ASR dropped segments) — callers must not treat this as a full transcript. blocked: no transcript could be produced; transcript_text is empty and downstream analysis must not run."
+    },
+    "retrieved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 timestamp when this record was produced, for cache/staleness decisions downstream."
+    }
+  },
+  "additionalProperties": false
+}
