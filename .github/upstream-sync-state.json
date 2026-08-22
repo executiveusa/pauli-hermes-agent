@@ -4,6 +4,21 @@
   "lastSyncedCommit": "b62af47da8f1de5cfdbae423caaff5b64c060c9a",
   "lastSyncedAt": "2026-05-25T00:00:00Z",
   "protectedPrefixes": [
-    "apps/"
+    "apps/",
+    "hermes-workflows/",
+    "openspec/",
+    "agents/",
+    "agent-payments/",
+    "cron/",
+    "plans/",
+    "projects/",
+    "free_mode/",
+    "free-mode/",
+    "orchestrator/",
+    "toolset_distributions.py",
+    "toolsets.py",
+    "hermes-already-has-routines.md",
+    "HERMES.md",
+    "CLAUDE.md"
   ]
 }
