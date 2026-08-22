@@ -1,0 +1,54 @@
+version: 0.1.0
+policy: deny-by-default
+
+# Postiz governance for the publishing-operator worker in this workflow.
+# Pattern reused verbatim in shape from agents/personas/fanny-ecotourism/tools.yaml
+# (deny-by-default, tiered read/draft/approval permissions), generalized away
+# from tourism-specific language for cross-client social storytelling ops.
+
+required_context:
+  - tenant_id
+  - agent_instance_id
+  - human_owner_id
+  - authority_profile
+  - idempotency_key
+  - run_id
+
+postiz:
+  preferred_interface: mcp
+  fallback_interfaces: [cli, public-api]
+
+  automatic_read:
+    - integrationList
+    - integrationSchema
+    - posts_list
+    - analytics_platform
+    - analytics_post  # required by verifier (stages/07_verify) to check live post state after publish
+
+  automatic_draft:
+    - create_draft
+    - upload_approved_media
+    - build_content_calendar_draft
+
+  approval_required:
+    - schedule_post
+    - publish_now
+    - delete_post
+    - connect_or_disconnect_account
+
+  prohibited:
+    - bypass_platform_rules
+    - publish_without_tenant_authority
+    - use_other_tenant_integrations
+    - invent_reviews_or_customer_testimonials
+
+receipts:
+  required_after_every_tool:
+    - target
+    - action
+    - authority
+    - result
+    - evidence
+    - side_effects
+    - rollback
+    - timestamp

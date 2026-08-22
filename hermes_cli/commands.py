@@ -97,6 +97,13 @@ COMMAND_REGISTRY: list[CommandDef] = [
                gateway_only=True, args_hint="[session|always]"),
     CommandDef("deny", "Deny a pending dangerous command", "Session",
                gateway_only=True),
+    # Named content-approve/content-reject rather than reusing /approve /deny:
+    # those are already taken by dangerous-command confirmation above and mean
+    # something different (approving a shell command, not a content draft).
+    CommandDef("content-approve", "Approve a social-storytelling-ops draft from the daily digest", "Session",
+               gateway_only=True, aliases=("capprove",), args_hint="<reel_id>"),
+    CommandDef("content-reject", "Reject a social-storytelling-ops draft with a one-line reason", "Session",
+               gateway_only=True, aliases=("creject",), args_hint="<reel_id> <reason>"),
     CommandDef("background", "Run a prompt in the background", "Session",
                aliases=("bg", "btw"), args_hint="<prompt>"),
     CommandDef("agents", "Show active agents and running tasks", "Session",

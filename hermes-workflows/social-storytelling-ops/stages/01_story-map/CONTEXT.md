@@ -1,2 +1,4 @@
 # 01 Story Map
+Before building the graph, read `../../lessons.md` (the workflow's durable, cross-run rejection/editorial lessons file — see `stages/08_learn/CONTEXT.md` "The learning loop") if it exists. A prior rejection reason like "buries the human moment" should change what this stage surfaces as the candidate hook, not just get fixed in the one draft that was rejected.
+
 Read the complete transcript before selecting clips. Build a timestamped story graph: hooks, vulnerability, tension, conflict, turning points, proof, beliefs, memorable phrases, calls to action, repeated/dead sections, and claims requiring verification. Output `story-map.json` + `story-map.md`. No clipping or rewriting.
