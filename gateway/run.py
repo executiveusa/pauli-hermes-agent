@@ -11651,6 +11651,8 @@ class GatewayRunner:
         spec = importlib.util.spec_from_file_location(
             "social_storytelling_approval", script_path
         )
+        if spec is None or spec.loader is None:
+            raise ImportError(f"could not load approval helper from {script_path}")
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
@@ -11693,7 +11695,7 @@ class GatewayRunner:
         try:
             module = self._load_social_storytelling_approval_module()
             reel = module.approve(run_dir, reel_id)
-        except FileNotFoundError as e:
+        except (FileNotFoundError, ImportError) as e:
             return str(e)
         except KeyError as e:
             return f"content-approve failed: {e}"
@@ -11727,7 +11729,7 @@ class GatewayRunner:
             module = self._load_social_storytelling_approval_module()
             lessons_path = run_dir.parent.parent / "lessons.md"
             revision = module.reject(run_dir, reel_id, reason, lessons_path)
-        except FileNotFoundError as e:
+        except (FileNotFoundError, ImportError) as e:
             return str(e)
         except KeyError as e:
             return f"content-reject failed: {e}"
