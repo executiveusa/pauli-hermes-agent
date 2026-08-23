@@ -163,6 +163,16 @@
     "triggers": ["New World Kids fundraising", "FundRazr", "HSI fiscal sponsor", "NW Kids grants", "grant writing for NW Kids", "raise money for Indigo Azul"],
     "entry_point": "/new-world-kids-fundraising"
   },
+  "scroll-media-operator": {
+    "path": "skills/scroll-media-operator",
+    "description": "ICM-governed Scroll Media operator for social strategy, Shorts/Reels, Interactive Social Drops, scroll experiences, provider-neutral media generation, human-gated publishing, scheduling, analytics, and learning.",
+    "required": false,
+    "enabled": true,
+    "version": "1.0.0",
+    "tags": ["scroll-media", "social-media", "youtube", "shorts", "reels", "interactive-drop", "icm", "hermes", "gauntlet", "publishing", "analytics"],
+    "triggers": ["scroll media", "make a viral short", "make a YouTube Short", "make a Reel", "social media strategy", "turn this story into content", "story to action", "run the social media system", "publish this campaign", "schedule this social campaign"],
+    "entry_point": "/scroll-media-operator"
+  },
   "social-drop-factory": {
     "path": "skills/social-drop-factory",
     "description": "Portable multi-client Social Drop system that turns weekly Monday/Wednesday/Friday content into a coherent interactive micro-experience with one CTA, GitHub as source of truth, and Webflow as an optional design lab.",
