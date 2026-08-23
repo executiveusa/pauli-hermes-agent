@@ -25,6 +25,19 @@ mcp2cli bake create github \
   --description "GitHub MCP fallback (gh CLI is preferred; use this only when gh is unavailable)" \
   --force
 
+if [[ -n "${PAULI_BRAND_STUDIO_ROOT:-}" && -f "${PAULI_BRAND_STUDIO_ROOT}/interfaces/mcp/server.mjs" ]]; then
+  echo "==> baking Pauli Design Factory MCP"
+  mcp2cli bake create brand-studio \
+    --mcp-stdio "node ${PAULI_BRAND_STUDIO_ROOT}/interfaces/mcp/server.mjs" \
+    --cache-ttl 300 \
+    --description "Pauli Design Factory — ICM design workflows, design capabilities, canonical request normalization and guarded reference runs" \
+    --force
+else
+  echo "==> Pauli Design Factory MCP skipped"
+  echo "    Set PAULI_BRAND_STUDIO_ROOT to a checkout of executiveusa/brand-kit-builder-"
+  echo "    containing interfaces/mcp/server.mjs, then rerun this bootstrap."
+fi
+
 echo "==> browser/search MCP: none configured in this environment."
 echo "    Native WebSearch/WebFetch cover this today. To bake a standalone"
 echo "    one later: mcp2cli bake create browser --mcp <url> --auth-header ..."
