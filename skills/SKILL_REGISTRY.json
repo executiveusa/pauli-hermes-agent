@@ -182,5 +182,15 @@
     "tags": ["social-media", "campaign", "interactive-drop", "microsite", "personalized-sales", "recruiting", "nonprofit", "local-service", "webflow", "github", "content-system", "multi-client"],
     "triggers": ["social drop", "social media template", "build this week's campaign", "Monday Wednesday Friday content", "personalized sales page", "personalized outreach microsite", "recruiting drop", "turn this post into an interactive experience", "use the social-media-template repo"],
     "entry_point": "/social-drop-factory"
+  },
+  "riverside-flow": {
+    "path": "skills/riverside-flow",
+    "description": "ICM-governed Riverside recording, interview, fundraising, relationship, narrative-control, repurposing, distribution, A/B testing, analytics, and learning workflow with manual-first API-ready integration.",
+    "required": true,
+    "enabled": true,
+    "version": "1.0.0",
+    "tags": ["riverside", "podcast", "interviews", "fundraising", "content", "repurposing", "ab-testing", "analytics", "relationships", "icm", "cron"],
+    "triggers": ["Riverside", "Riverside flow", "record a podcast", "podcast interview", "turn this interview into content", "Founder Story Sprint", "funder interview", "run Riverside A/B test", "Riverside analytics"],
+    "entry_point": "/riverside-flow"
   }
 }
