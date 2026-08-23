@@ -101,3 +101,70 @@ The earlier sprint assumption that upstream computer use was still macOS-only is
 ## Risk
 
 LOW — audit/specification only.
+
+## Addendum — Bot Mode + Cloud (2026-08-22)
+
+Triggered by: upstream shipped "Hermes Cloud" (Nous Portal hosting) and "Bot
+Mode" (named multi-bot roster, `@mention` routing, shared collab rooms) in
+the v0.20.0–v0.20.3 patch train (Aug 3–16, 2026). User wants both, with an
+explicit constraint: **additive only — nothing already built in this fork
+may be removed or overwritten.**
+
+### Source truth for this addendum
+
+- Upstream tags inspected: `v2026.8.3` (0.20.0), `v2026.8.13`, `v2026.8.16`,
+  `v2026.8.16.2` (the desktop-default Bot Mode release).
+- Method: `git ls-tree` / `git show` against a read-only `upstream` remote
+  added to this checkout — no upstream code executed or merged, no local
+  files touched by the recon itself.
+- **No merge-base exists** between this fork's `main` and any upstream tag
+  back to `v2026.3.12` (five months of upstream history). This fork was not
+  produced by an ongoing `git merge`/`git pull` lineage from upstream — it's
+  an independent import. That is the real explanation for why
+  `scripts/upstream_sync.py` has recorded zero applied commits across 54
+  nightly runs (see PR #141 discussion): `git cherry-pick` needs a shared
+  ancestor to apply cleanly, and there isn't one. **Cherry-pick replay is
+  not a viable mechanism for this port, at all, independent of the
+  protected-paths question.** Vendoring (copy specific files/dirs at a
+  pinned tag, adapt by hand, PR for review) is the only realistic path.
+
+### Capability matrix additions
+
+| Capability | Pauli fork now | Current upstream | Decision | Rationale / next action |
+|---|---|---|---|---|
+| Desktop plugin-host (`apps/desktop/src/contrib/plugin*.ts`, `plugins.ts`, `plugins-store.ts`, `src/plugins/`) | **Absent entirely** — no `contrib/` dir, no `plugins/` dir under this fork's `apps/desktop/src` | Present; introduced between upstream `v2026.7.1` (absent) and `v2026.7.20` (13 files), grown to 30+ files by `v2026.8.3` | PORT, but **foundational and high-risk** | This is the real prerequisite, not Bot Mode itself. It is upstream's own newest subsystem — roughly 5 weeks old at the point Bot Mode shipped on top of it — so its own API is still likely to move. Porting it means adopting upstream's plugin-loading contract into this fork's desktop app (currently `hermes` v0.15.1, same lineage/directory shape as upstream's `apps/desktop`, just older — not a divergent rebuild, which is the one genuinely good sign here). |
+| Bot Mode plugin (`apps/desktop/src/plugins/hermes-bots/`) | Absent (blocked on the row above) | `plugin.js` (7,199 lines) + LICENSE + 40 dedicated test files (roster, `@mention` completions, mention-handoff, group chat, routines, model-inherit, soul-protocol-backfill, etc.) | PORT, **blocked** | Cannot be vendored standalone — it is written against the plugin-host contract above. Do not attempt to extract just the UI/roster logic and rewire it to this fork's current (pre-plugin) desktop shell; that is a rewrite wearing a port's clothes and will not track upstream's own fixes going forward. Port order must be: plugin-host first, validated and stable in this fork on its own, then `hermes-bots` on top. |
+| Cloud request-attribution (`agent/portal_tags.py`) | **Present, but older** — 64 lines, has the basic `product=hermes-agent` / `client=hermes-client-v<version>` tag pair | Present, expanded — adds a `ContextVar`-based ambient conversation-id propagation system (~50 more lines) so background/subagent/batch call sites inherit the right tag context without threading a parameter through every call site | PORT, **low risk** | Single self-contained file, no plugin-host dependency, no directory this fork doesn't already have. Genuinely the cheapest safe win in this whole addendum — diff and adapt just this file, run its own tests, done. |
+| Cloud hosting/provisioning (Nous Portal: two-click deploy, scale-to-zero, unified org billing) | Absent | Present, but **as a Nous-hosted SaaS control plane** (`portal.nousresearch.com`), not code in the OSS repo | PARK — not portable | There is nothing to vendor here beyond the attribution row above. "Getting" this feature for a self-hosted fork isn't a merge question — it's either (a) using Nous's hosted product directly for the bots you want in their cloud, which coexists with this fork rather than replacing anything in it, or (b) this fork's own existing edge-sovereign Cloudflare/Coolify deployment governor (commit `c2873ba`) is the actual self-hosted equivalent, already built, already Pauli-owned. Don't build a shadow control plane to chase parity with a product Nous sells. |
+
+### Revised priority order for this addendum only
+
+1. `agent/portal_tags.py` — diff, adapt, test. Ships alone, today, if wanted.
+2. Plugin-host system — scoped as its own bounded slice, validated in
+   isolation (this fork's existing desktop test suite must pass unchanged
+   with the plugin-host present but zero plugins registered) before
+   anything is layered on top.
+3. `hermes-bots` plugin — only after (2) is merged and stable, vendored at
+   the pinned tag, adapted, its own 40-test suite run against this fork's
+   adapted plugin-host.
+4. Nous Cloud itself — not a port; a product decision, not an engineering
+   task, whenever it's needed.
+
+### Non-goals (extends the section above)
+
+- No plugin-host port that changes any existing desktop app behavior when
+  zero plugins are registered — presence alone must be a no-op.
+- No rewrite-disguised-as-a-port of Bot Mode against the old desktop shell.
+- No self-hosted reimplementation of Nous Portal's provisioning/billing
+  control plane.
+- No reliance on `scripts/upstream_sync.py`'s commit-replay path for any
+  part of this addendum — confirmed non-viable (no merge-base exists).
+
+### Risk
+
+LOW for this addendum as written — audit/specification only, zero code
+changes. Risk moves to MEDIUM the moment the plugin-host slice (item 2
+above) actually starts, purely because it's upstream's newest and least
+battle-tested subsystem; that slice should get its own isolated PR with the
+present-but-disabled regression check called out above before Bot Mode is
+even attempted.
