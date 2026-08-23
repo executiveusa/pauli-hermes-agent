@@ -192,5 +192,15 @@
     "tags": ["riverside", "podcast", "interviews", "fundraising", "content", "repurposing", "ab-testing", "analytics", "relationships", "icm", "cron"],
     "triggers": ["Riverside", "Riverside flow", "record a podcast", "podcast interview", "turn this interview into content", "Founder Story Sprint", "funder interview", "run Riverside A/B test", "Riverside analytics"],
     "entry_point": "/riverside-flow"
+  },
+  "youtube-channel-operator": {
+    "path": "skills/youtube-channel-operator",
+    "description": "ICM-governed YouTube channel launch and growth operator with ADHD intake, 10-type story routing, research, branding, browser-assisted YouTube Studio setup, starter content, verification, monetization readiness, and handoff.",
+    "required": false,
+    "enabled": true,
+    "version": "1.0.0",
+    "tags": ["youtube", "channel-setup", "browser-control", "branding", "thumbnails", "monetization", "icm", "adhd", "story-routing"],
+    "triggers": ["set up a YouTube channel", "create my YouTube channel", "launch a YouTube channel", "YouTube channel setup", "make a YouTube video", "make a Short", "choose a story type"],
+    "entry_point": "/youtube-channel-operator"
   }
 }
