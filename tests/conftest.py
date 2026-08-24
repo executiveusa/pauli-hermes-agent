@@ -533,6 +533,21 @@ def pytest_configure(config):  # noqa: D401 — pytest hook
         "(only for tests that genuinely need real os.kill / subprocess "
         "behaviour — e.g. PTY tests that signal their own child).",
     )
+    # Name-only registration (silences pytest's "unknown mark" warning) for
+    # the OS-gating markers used by tests/tools/test_computer_use_cua_backend_linux.py,
+    # vendored from upstream NousResearch/hermes-agent at tag v2026.8.16.2
+    # as part of hermes-upstream-gap-map item #1 ("Cross-platform upstream
+    # computer-use package"). Upstream's own conftest.py implements a real
+    # collection-time skip for these (only run @pytest.mark.linux_only on
+    # an actual Linux host, etc.) via a much larger OS-marker mechanism that
+    # is general test infrastructure, not computer_use-specific — porting
+    # that whole mechanism was judged out of scope for this PR. Practical
+    # effect: linux_only-marked tests run unconditionally here rather than
+    # being skipped on a non-Linux host. They pass on this Linux sandbox;
+    # revisit if/when this fork's CI runs a non-Linux job.
+    config.addinivalue_line(
+        "markers", "linux_only: exercises Linux-specific computer_use behavior."
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -840,3 +855,46 @@ def _live_system_guard(request, monkeypatch):
         pass
 
     yield
+
+
+# Vendored verbatim from upstream NousResearch/hermes-agent at tag
+# v2026.8.16.2 (tests/conftest.py), added alongside the hermes-upstream-
+# gap-map item #1 vendor of tools/computer_use/ (see that package's files
+# for the full attribution note). This fixture did not exist in the fork's
+# conftest.py before this change; without it,
+# tests/tools/test_computer_use_approval_isolation.py and any full-suite
+# run touching computer-use approval state are order-dependent and can
+# fail or hang (see the fixture's own docstring below).
+@pytest.fixture(autouse=True)
+def _isolate_computer_use_approval_state():
+    """Reset computer-use approval globals after every test.
+
+    ``tools.computer_use.tool`` keeps three module-globals for the CLI
+    approval flow: ``_approval_callback`` (set by the CLI console on init)
+    plus the per-session unlock stores ``_always_allow`` /
+    ``_session_auto_approve``. A test that installs a callback — or drives
+    CLI init far enough that the real one is registered — and does not reset
+    it poisons every later computer-use test in the same process:
+
+    * a leaked callback that raises (dead UI/queue infra, or a stale
+      two-argument signature — the real contract is ``(action, args,
+      summary)``) turns into ``verdict = "deny"`` in ``_request_approval``,
+      so dispatch tests fail with an empty backend call list;
+    * a leaked callback that blocks (the real CLI one waits on an answer
+      queue) hangs the whole single-process run forever — pytest-timeout is
+      the only thing that can cut it.
+
+    Both symptoms are order-dependent: the affected files pass in isolation
+    and only fail in full-suite runs. Teardown-only, so tests that install
+    their own callback keep it for their own duration.
+    """
+    yield
+    try:
+        from tools.computer_use import tool as _cu_tool
+
+        _cu_tool.set_approval_callback(None)
+        with _cu_tool._approval_lock:
+            _cu_tool._always_allow.clear()
+            _cu_tool._session_auto_approve.clear()
+    except Exception:
+        pass

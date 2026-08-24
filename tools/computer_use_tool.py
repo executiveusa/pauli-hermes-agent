@@ -1,5 +1,15 @@
 """Shim for tool discovery. Registers `computer_use` with tools.registry.
 
+Vendored verbatim from upstream NousResearch/hermes-agent at tag
+v2026.8.16.2, part of hermes-upstream-gap-map item #1 ("Cross-platform
+upstream computer-use package" — openspec/changes/hermes-upstream-gap-map).
+Only this docstring note was added; the registration call, description
+text ("macOS, Windows, Linux"), and the new `release_computer_use_session`
+export are all upstream's, unmodified. The fork's prior version of this
+file was macOS-only (cua-driver background control via SkyLight private
+SPIs) and did not export `release_computer_use_session`; that gap is
+closed by this vendor.
+
 The real implementation lives in the `tools/computer_use/` package to keep
 the file structure clean. This shim exists because tools.registry auto-imports
 `tools/*.py` — we need a top-level module to trigger the registration.
@@ -11,6 +21,7 @@ from tools.computer_use.schema import COMPUTER_USE_SCHEMA
 from tools.computer_use.tool import (
     check_computer_use_requirements,
     handle_computer_use,
+    release_computer_use_session,
     set_approval_callback,
 )
 from tools.registry import registry
@@ -24,7 +35,7 @@ registry.register(
     check_fn=check_computer_use_requirements,
     requires_env=[],
     description=(
-        "Universal macOS desktop control via cua-driver. Works with any "
+        "Universal desktop control via cua-driver (macOS, Windows, Linux). Works with any "
         "tool-capable model (Anthropic, OpenAI, OpenRouter, local vLLM, "
         "etc.). Background computer-use: does NOT steal the user's cursor "
         "or keyboard focus."
@@ -34,6 +45,8 @@ registry.register(
 
 __all__ = [
     "handle_computer_use",
+    "release_computer_use_session",
     "set_approval_callback",
     "check_computer_use_requirements",
+    "release_computer_use_session",
 ]

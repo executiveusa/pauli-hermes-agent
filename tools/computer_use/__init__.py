@@ -1,5 +1,24 @@
 """Computer use toolset — universal (any-model) macOS desktop control.
 
+Vendored verbatim from upstream NousResearch/hermes-agent at tag
+v2026.8.16.2, part of hermes-upstream-gap-map item #1 ("Cross-platform
+upstream computer-use package" — openspec/changes/hermes-upstream-gap-map).
+Only this note was added. Note upstream's own module docstring below still
+says "macOS desktop control" even though the package (via cua_backend.py)
+now also supports Windows and Linux — that phrasing is upstream's, left
+as-is rather than editorializing on their doc copy.
+
+The `capture.py` module this docstring's "Wiring" section references does
+not exist upstream at this tag (its responsibilities live inline in
+`tool.py`/`cua_backend.py`); this fork's prior version referenced the same
+non-existent module, so that is a pre-existing upstream doc inaccuracy,
+not something introduced by this vendor.
+
+The `browser_route.py` module referenced by `cua_backend.py` (imported
+below transitively) is NOT the real upstream implementation here — see
+`tools/computer_use/browser_route.py`'s own docstring: it is a minimal
+fork-native stub, deliberately scoped out of gap #1 pending a follow-up.
+
 Architecture
 ------------
 This toolset drives macOS apps through cua-driver's background computer-use
@@ -37,7 +56,9 @@ from __future__ import annotations
 # Re-export the public surface so `from tools.computer_use import ...` works.
 from tools.computer_use.tool import (  # noqa: F401
     handle_computer_use,
+    release_computer_use_session,
     set_approval_callback,
     check_computer_use_requirements,
     get_computer_use_schema,
+    release_computer_use_session,
 )
