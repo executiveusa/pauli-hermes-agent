@@ -8006,6 +8006,39 @@ def _kill_stale_dashboard_processes(
 _warn_stale_dashboard_processes = _kill_stale_dashboard_processes
 
 
+def _atomic_replace_dir(src: str, dst: str) -> None:
+    """Replace directory *dst* with *src* without leaving *dst* half-deleted.
+
+    Ported (gap #7 audit) from NousResearch/hermes-agent @ v2026.8.16.2,
+    ``hermes_cli/update_cmd.py::_atomic_replace_dir`` (single-entry form,
+    upstream issue #49145) — adapted to stand alone rather than build on
+    upstream's later two-phase/whole-loop rollback generalization (issue
+    #76104), which restructures the surrounding update loop and was judged
+    out of scope for a bounded, additive fix.
+
+    The naive ``rmtree(dst); copytree(src, dst)`` (this fork's previous
+    behavior in ``_update_via_zip``) has a destructive window: if the copy
+    fails partway — plausible on the Windows ZIP-update path, which only
+    runs because file I/O is already flaky on that machine (AV / NTFS
+    filter drivers) — the old directory is already gone and nothing
+    replaced it, leaving the install with a deleted tree (e.g. ``ui-tui/``
+    vanishing and breaking the TUI). Staging the new copy first and only
+    swapping it in on full success means a mid-copy failure leaves the
+    original directory untouched.
+    """
+    staging = f"{dst}.hermes-update-staging"
+    if os.path.isdir(staging):
+        shutil.rmtree(staging, ignore_errors=True)
+    elif os.path.exists(staging):
+        os.remove(staging)
+    shutil.copytree(src, staging)
+    if os.path.isdir(dst):
+        shutil.rmtree(dst)
+    elif os.path.exists(dst):
+        os.remove(dst)
+    os.rename(staging, dst)
+
+
 def _update_via_zip(args):
     """Update Hermes Agent by downloading a ZIP archive.
 
@@ -8091,9 +8124,7 @@ def _update_via_zip(args):
             src = os.path.join(extracted, item)
             dst = os.path.join(str(PROJECT_ROOT), item)
             if os.path.isdir(src):
-                if os.path.exists(dst):
-                    shutil.rmtree(dst)
-                shutil.copytree(src, dst)
+                _atomic_replace_dir(src, dst)
             else:
                 shutil.copy2(src, dst)
             update_count += 1
