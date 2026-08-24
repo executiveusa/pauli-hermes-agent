@@ -50,20 +50,23 @@ without a system-installed driver, driver version/update-nudge plumbing,
 and a runtime-contract compatibility check), not feature growth unrelated
 to portability — confirmed by reading the diff, not just the line count.
 
-Two pieces of that growth are deliberately NOT wired to full functionality
-in this fork yet, both intentionally out of scope for gap #1:
+Two pieces of that growth were deliberately NOT wired to full
+functionality in this fork at gap #1 time, both intentionally out of
+scope for that PR — both landed in the hermes-upstream-gap-map item #2
+follow-up PR:
 
 * `from tools.computer_use.browser_route import CuaTypedBrowserRoute`
-  (below) resolves to a fork-native placeholder stub, not upstream's real
-  644-line typed-browser adapter — see that module's docstring. Only the
-  three `cua_browser_*` mutate/observe/prepare call sites are affected;
-  every other action (click, type, capture, drag, scroll, focus_app,
-  list_windows, ...) is fully functional cross-platform.
-* References to `hermes computer-use doctor` in error/log messages point
-  at a CLI diagnostics subcommand from upstream's `doctor.py`, which is
-  not ported in this PR (hermes-upstream-gap-map item #2). Those messages
-  are left as-is (harmless — an unimplemented CLI hint, not a crash) since
-  they are literal upstream error text, not a functional dependency.
+  (below) resolved to a fork-native placeholder stub at gap #1 time, not
+  upstream's real 644-line typed-browser adapter. Item #2 replaced that
+  stub with the real vendored `browser_route.py` — see that module's
+  docstring — so the `cua_browser_*` mutate/observe/prepare call sites
+  below are now fully functional, same as every other action (click,
+  type, capture, drag, scroll, focus_app, list_windows, ...).
+* References to `hermes computer-use doctor` in error/log messages below
+  point at a CLI diagnostics subcommand from upstream's `doctor.py`, which
+  was not ported in gap #1. Item #2 vendored `doctor.py` (and
+  `permissions.py`) into this same package, so those messages now point at
+  a real subcommand rather than an unimplemented CLI hint.
 """
 
 from __future__ import annotations

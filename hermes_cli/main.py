@@ -14848,11 +14848,131 @@ Examples:
         help="Print whether cua-driver is installed and on PATH",
     )
 
+    # doctor / permissions subactions ported from upstream NousResearch/
+    # hermes-agent v2026.8.16.2 (hermes-upstream-gap-map item #2,
+    # "Computer-use diagnostics + permission model + lifecycle cleanup").
+    # Vendored via tools/computer_use/doctor.py and
+    # tools/computer_use/permissions.py in this same change; without a CLI
+    # entry point those modules would be unreachable dead code, the same
+    # problem the gap-map flagged for release_computer_use_session.
+    # `install`/`status` above stay fork-native (they call this fork's own
+    # `hermes_cli.tools_config.install_cua_driver`, not upstream's
+    # `_cua_driver_contract_status`/`_cua_version_summary` helpers, which
+    # were not part of this vendor and are left for a future pass) — only
+    # `doctor` and `permissions` are added here, matching upstream's argparse
+    # shape exactly since they depend solely on the newly vendored modules.
+    computer_use_doctor = computer_use_sub.add_parser(
+        "doctor",
+        help="Run cua-driver `health_report` and surface the check matrix",
+        description=(
+            "Drive cua-driver's stable `health_report` MCP tool and render\n"
+            "its check matrix (TCC permissions, bundle identity, version,\n"
+            "platform support, screenshot probe, …) as human-readable\n"
+            "output. cua-driver owns the health model; this command stays\n"
+            "thin so new checks added upstream surface here without code\n"
+            "changes. Exits 0 when overall=ok, 1 when degraded/failed, 2\n"
+            "when the binary is missing or unreachable."
+        ),
+    )
+    computer_use_doctor.add_argument(
+        "--include",
+        action="append",
+        default=[],
+        metavar="CHECK",
+        help=(
+            "Run only the listed checks. Repeat for multiple "
+            "(e.g. --include tcc_accessibility --include bundle_identity). "
+            "Unknown names are reported by cua-driver."
+        ),
+    )
+    computer_use_doctor.add_argument(
+        "--skip",
+        action="append",
+        default=[],
+        metavar="CHECK",
+        help="Skip the listed checks. Repeat for multiple. Wins over --include.",
+    )
+    computer_use_doctor.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the raw structured payload as JSON (same shape as `tools/call`).",
+    )
+    computer_use_perms = computer_use_sub.add_parser(
+        "permissions",
+        help="Check or grant macOS Accessibility + Screen Recording (macOS)",
+        description=(
+            "Computer Use drives the Mac through cua-driver, whose TCC grants\n"
+            "attach to cua-driver's own identity (com.trycua.driver) — not the\n"
+            "terminal or the Hermes app. `status` reports the driver's grant\n"
+            "state; `grant` launches CuaDriver via LaunchServices so the macOS\n"
+            "permission dialog is attributed to the process that does the work."
+        ),
+    )
+    computer_use_perms_sub = computer_use_perms.add_subparsers(
+        dest="computer_use_perms_action"
+    )
+    computer_use_perms_status = computer_use_perms_sub.add_parser(
+        "status",
+        help="Report Accessibility + Screen Recording grant state (read-only)",
+    )
+    computer_use_perms_status.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit the normalized permission payload as JSON.",
+    )
+    computer_use_perms_sub.add_parser(
+        "grant",
+        help="Request the grants (opens the dialog attributed to CuaDriver)",
+    )
+
     def cmd_computer_use(args):
         action = getattr(args, "computer_use_action", None)
         if action == "install":
             from hermes_cli.tools_config import install_cua_driver
             install_cua_driver(upgrade=bool(getattr(args, "upgrade", False)))
+            return
+        if action == "doctor":
+            from tools.computer_use.doctor import run_doctor
+            code = run_doctor(
+                include=list(getattr(args, "include", []) or []),
+                skip=list(getattr(args, "skip", []) or []),
+                json_output=bool(getattr(args, "json", False)),
+            )
+            sys.exit(code)
+        if action == "permissions":
+            perms_action = getattr(args, "computer_use_perms_action", None)
+            if perms_action == "grant":
+                from tools.computer_use.permissions import request_permissions_grant
+                sys.exit(request_permissions_grant())
+            if perms_action == "status":
+                import json as _json
+                from tools.computer_use.permissions import computer_use_status
+                st = computer_use_status()
+                if bool(getattr(args, "json", False)):
+                    print(_json.dumps(st, indent=2, sort_keys=True))
+                    sys.exit(0 if st["ready"] else 1)
+                if not st["platform_supported"]:
+                    print(f"Computer Use is not supported on {st['platform']}.")
+                    sys.exit(1)
+                if not st["installed"]:
+                    print("cua-driver: not installed. Run: hermes computer-use install")
+                    sys.exit(1)
+                glyph = lambda v: "✅" if v is True else ("❌" if v is False else "•")  # noqa: E731
+                print(f"cua-driver: {st['version'] or 'installed'} ({st['platform']})")
+                if st["can_grant"]:  # macOS TCC permissions
+                    print(f"  {glyph(st['accessibility'])} Accessibility")
+                    print(f"  {glyph(st['screen_recording'])} Screen Recording")
+                    if not st["ready"]:
+                        print("  Grant: hermes computer-use permissions grant")
+                else:  # no TCC model — readiness is driver health
+                    print(f"  {glyph(st['ready'])} driver health (no permission toggles on {st['platform']})")
+                for c in st["checks"]:
+                    if c["status"] != "ok":
+                        print(f"  ⚠ {c['label']}: {c['message']}")
+                if st["error"]:
+                    print(f"  ⚠ {st['error']}")
+                sys.exit(0 if st["ready"] else 1)
+            computer_use_perms.print_help()
             return
         if action == "status":
             import shutil

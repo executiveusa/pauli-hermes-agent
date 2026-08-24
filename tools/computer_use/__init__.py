@@ -15,9 +15,15 @@ non-existent module, so that is a pre-existing upstream doc inaccuracy,
 not something introduced by this vendor.
 
 The `browser_route.py` module referenced by `cua_backend.py` (imported
-below transitively) is NOT the real upstream implementation here — see
-`tools/computer_use/browser_route.py`'s own docstring: it is a minimal
-fork-native stub, deliberately scoped out of gap #1 pending a follow-up.
+below transitively) was a minimal fork-native stub at gap #1 time,
+deliberately scoped out pending a follow-up. hermes-upstream-gap-map item
+#2 ("Computer-use diagnostics + permission model + lifecycle cleanup")
+replaced it with the real upstream implementation — see
+`tools/computer_use/browser_route.py`'s own docstring. That same PR also
+added `doctor.py` and `permissions.py` to this package and wired the
+`release_computer_use_session` lifecycle export (below) into its two
+missing call sites (`run_agent.py::AIAgent.close()` and
+`tools/approval.py`'s YOLO toggle functions).
 
 Architecture
 ------------

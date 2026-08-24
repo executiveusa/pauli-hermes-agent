@@ -96,7 +96,21 @@ class TestAgentCloseMethod:
     """Verify AIAgent.close() exists, is idempotent, and calls cleanup."""
 
     def test_close_calls_cleanup_functions(self):
-        """close() should call kill_all, cleanup_vm, cleanup_browser."""
+        """close() should call kill_all, cleanup_vm, cleanup_browser,
+        release_computer_use_session.
+
+        The computer-use release assertion is new coverage for
+        hermes-upstream-gap-map item #2 ("Computer-use session release" —
+        "Missing from Pauli shim export"): the export itself
+        (release_computer_use_session) landed in gap #1's PR #152, but
+        nothing in this fork called it until this change wired it into
+        AIAgent.close(). Ported from upstream NousResearch/hermes-agent
+        v2026.8.16.2's tests/tools/test_zombie_process_cleanup.py, which
+        asserts the same call — adapted here into this fork's existing
+        test rather than duplicating the file wholesale, since this fork's
+        version already covers the same close() contract under different
+        test names.
+        """
         from unittest.mock import patch
 
         with patch("run_agent.AIAgent.__init__", return_value=None):
@@ -109,7 +123,8 @@ class TestAgentCloseMethod:
 
             with patch("tools.process_registry.process_registry") as mock_registry, \
                  patch("run_agent.cleanup_vm") as mock_cleanup_vm, \
-                 patch("run_agent.cleanup_browser") as mock_cleanup_browser:
+                 patch("run_agent.cleanup_browser") as mock_cleanup_browser, \
+                 patch("tools.computer_use.release_computer_use_session") as mock_cleanup_cua:
                 agent.close()
 
                 mock_registry.kill_all.assert_called_once_with(
@@ -117,6 +132,7 @@ class TestAgentCloseMethod:
                 )
                 mock_cleanup_vm.assert_called_once_with("test-close-cleanup")
                 mock_cleanup_browser.assert_called_once_with("test-close-cleanup")
+                mock_cleanup_cua.assert_called_once_with("test-close-cleanup")
 
     def test_close_is_idempotent(self):
         """close() can be called multiple times without error."""
@@ -173,13 +189,16 @@ class TestAgentCloseMethod:
                 "run_agent.cleanup_vm"
             ) as mock_vm, patch(
                 "run_agent.cleanup_browser"
-            ) as mock_browser:
+            ) as mock_browser, patch(
+                "tools.computer_use.release_computer_use_session"
+            ) as mock_cua:
                 mock_reg.kill_all.side_effect = RuntimeError("boom")
 
                 agent.close()
 
                 mock_vm.assert_called_once()
                 mock_browser.assert_called_once()
+                mock_cua.assert_called_once_with("test-close-partial")
 
 
 class TestGatewayCleanupWiring:
