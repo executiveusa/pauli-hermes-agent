@@ -996,6 +996,21 @@ DEFAULT_CONFIG = {
     },
 
     "browser": {
+        # Browser tool implementation.
+        # ""            — DEFAULT: Browser Use mode when the browser-use CLI
+        #                 (or uvx) is available; otherwise the built-in
+        #                 browser tools. Camofox setups always keep the
+        #                 built-in tools (no CDP surface).
+        # "browser-use" — force Browser Use mode: one browser_exec tool
+        #                 driving the Browser Use CLI 3.0 over any CDP
+        #                 backend (local Chrome, cloud browsers)
+        # "off"         — force the built-in browser tools
+        #                 (browser_navigate, browser_click, …)
+        #
+        # Ported additively from NousResearch/hermes-agent @ v2026.8.16.2
+        # (hermes_cli/config_defaults.py) as part of the browser_exec
+        # gap-map port. Every other key in this section is unchanged.
+        "backend": "",
         "inactivity_timeout": 120,
         "command_timeout": 30,  # Timeout for browser commands in seconds (screenshot, navigate, etc.)
         "record_sessions": False,  # Auto-record browser sessions as WebM videos
