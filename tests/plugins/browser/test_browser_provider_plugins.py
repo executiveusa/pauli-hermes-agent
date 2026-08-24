@@ -44,8 +44,16 @@ def _clear_browser_env(monkeypatch: pytest.MonkeyPatch) -> None:
         "FIRECRAWL_BROWSER_TTL",
         "TOOL_GATEWAY_DOMAIN",
         "TOOL_GATEWAY_USER_TOKEN",
+        "OBSCURA_BIN",
+        "OBSCURA_CDP_URL",
+        "OBSCURA_STEALTH",
+        "OBSCURA_PORT",
+        "OBSCURA_STARTUP_TIMEOUT",
     ):
         monkeypatch.delenv(k, raising=False)
+    # Force a deterministic "not on PATH" result for is_available() regardless
+    # of whatever the test runner's real PATH happens to contain.
+    monkeypatch.setenv("OBSCURA_BIN", "obscura-binary-does-not-exist-in-tests")
 
 
 def _ensure_plugins_loaded() -> None:
@@ -79,7 +87,7 @@ class TestBundledPluginsRegister:
         from agent.browser_registry import list_providers
 
         names = sorted(p.name for p in list_providers())
-        assert names == ["browser-use", "browserbase", "firecrawl"]
+        assert names == ["browser-use", "browserbase", "firecrawl", "obscura"]
 
     @pytest.mark.parametrize(
         "plugin_name,expected_display",
@@ -87,6 +95,7 @@ class TestBundledPluginsRegister:
             ("browserbase", "Browserbase"),
             ("browser-use", "Browser Use"),
             ("firecrawl", "Firecrawl"),
+            ("obscura", "Obscura"),
         ],
     )
     def test_each_plugin_has_name_and_display_name(
@@ -102,7 +111,7 @@ class TestBundledPluginsRegister:
 
     @pytest.mark.parametrize(
         "plugin_name",
-        ["browserbase", "browser-use", "firecrawl"],
+        ["browserbase", "browser-use", "firecrawl", "obscura"],
     )
     def test_each_plugin_has_setup_schema(self, plugin_name: str) -> None:
         """``get_setup_schema()`` returns a dict the picker can consume."""
@@ -121,7 +130,7 @@ class TestBundledPluginsRegister:
 
     @pytest.mark.parametrize(
         "plugin_name",
-        ["browserbase", "browser-use", "firecrawl"],
+        ["browserbase", "browser-use", "firecrawl", "obscura"],
     )
     def test_each_plugin_implements_full_lifecycle(self, plugin_name: str) -> None:
         """The ABC's three lifecycle methods are all overridden."""
@@ -197,6 +206,31 @@ class TestIsAvailable:
         assert p is not None
         assert p.is_available() is False
         monkeypatch.setenv("FIRECRAWL_API_KEY", "key")
+        assert p.is_available() is True
+
+    def test_obscura_unavailable_with_no_binary_and_no_remote_url(self) -> None:
+        """No local binary on PATH, no OBSCURA_CDP_URL set → unavailable.
+
+        ``_isolate_env`` already forces OBSCURA_BIN to a nonexistent name so
+        this is deterministic regardless of the test runner's real PATH.
+        """
+        _ensure_plugins_loaded()
+        from agent.browser_registry import get_provider
+
+        p = get_provider("obscura")
+        assert p is not None
+        assert p.is_available() is False
+
+    def test_obscura_available_via_remote_cdp_url_without_binary(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Remote mode needs no local binary — just a reachable server URL."""
+        _ensure_plugins_loaded()
+        from agent.browser_registry import get_provider
+
+        p = get_provider("obscura")
+        assert p is not None
+        monkeypatch.setenv("OBSCURA_CDP_URL", "http://127.0.0.1:9222")
         assert p.is_available() is True
 
 
@@ -302,6 +336,34 @@ class TestRegistryResolution:
         # Only firecrawl is_available() — but it's not in the legacy walk.
         assert _resolve(None) is None
 
+    def test_obscura_not_in_legacy_walk_even_when_available(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Regression: obscura is NEVER auto-selected, same gate as firecrawl.
+
+        Obscura spawns a local subprocess the instant it's selected — that
+        must stay an explicit, opt-in choice (``browser.cloud_provider:
+        obscura``), never something a bare ``browser_navigate`` call falls
+        into just because the binary happens to be on PATH.
+        """
+        _ensure_plugins_loaded()
+        from agent.browser_registry import _resolve
+
+        monkeypatch.setenv("OBSCURA_CDP_URL", "http://127.0.0.1:9222")
+
+        # Only obscura is_available() — but it's not in the legacy walk.
+        assert _resolve(None) is None
+
+    def test_explicit_obscura_returns_provider_even_when_unavailable(self) -> None:
+        """Rule 1: explicit config selects obscura same as any other provider."""
+        _ensure_plugins_loaded()
+        from agent.browser_registry import _resolve
+
+        provider = _resolve("obscura")
+        assert provider is not None
+        assert provider.name == "obscura"
+        assert provider.is_available() is False
+
 
 # ---------------------------------------------------------------------------
 # Legacy ABC backward-compat aliases (is_configured / provider_name)
@@ -313,7 +375,7 @@ class TestLegacyAbcAliases:
 
     @pytest.mark.parametrize(
         "plugin_name",
-        ["browserbase", "browser-use", "firecrawl"],
+        ["browserbase", "browser-use", "firecrawl", "obscura"],
     )
     def test_is_configured_delegates_to_is_available(self, plugin_name: str) -> None:
         _ensure_plugins_loaded()
@@ -329,6 +391,7 @@ class TestLegacyAbcAliases:
             ("browserbase", "Browserbase"),
             ("browser-use", "Browser Use"),
             ("firecrawl", "Firecrawl"),
+            ("obscura", "Obscura"),
         ],
     )
     def test_provider_name_returns_display_name(
@@ -356,7 +419,7 @@ class TestPickerIntegration:
 
         rows = _plugin_browser_providers()
         names = sorted(r.get("browser_provider") for r in rows)
-        assert names == ["browser-use", "browserbase", "firecrawl"]
+        assert names == ["browser-use", "browserbase", "firecrawl", "obscura"]
 
     def test_picker_rows_carry_post_setup_hook(self) -> None:
         """Every browser plugin row has post_setup='agent_browser' so
