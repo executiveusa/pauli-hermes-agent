@@ -8,7 +8,39 @@ Each adapter handles:
 - Message formatting and media handling
 """
 
+import logging
+
 from .base import BasePlatformAdapter, MessageEvent, SendResult
+
+logger = logging.getLogger(__name__)
+
+
+def _install_voice_model_control() -> None:
+    """Promote Telegram voice model commands before normal gateway dispatch.
+
+    The wrapper is intentionally installed at the shared adapter boundary so a
+    spoken model switch reaches Hermes' existing ``/model`` command handler
+    before the main LLM is invoked.  It fails open: transcription/control errors
+    fall through to the original voice-message path.
+    """
+    original = BasePlatformAdapter.handle_message
+    if getattr(original, "_hermes_voice_model_control", False):
+        return
+
+    async def voice_model_control_handle_message(self, event):
+        try:
+            from gateway.voice_model_control import preprocess_telegram_voice_model_control
+
+            await preprocess_telegram_voice_model_control(event)
+        except Exception as exc:  # pragma: no cover - safety net around gateway ingress
+            logger.debug("Voice model-control preprocessing skipped: %s", exc)
+        return await original(self, event)
+
+    voice_model_control_handle_message._hermes_voice_model_control = True
+    BasePlatformAdapter.handle_message = voice_model_control_handle_message
+
+
+_install_voice_model_control()
 
 # QQAdapter and YuanbaoAdapter were previously imported eagerly here, but
 # nothing in the codebase consumes ``from gateway.platforms import
