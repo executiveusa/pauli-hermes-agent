@@ -12,6 +12,7 @@ Hermes Agent includes a full browser automation toolset with multiple backend op
 - **Browserbase cloud mode** via [Browserbase](https://browserbase.com) for managed cloud browsers and anti-bot tooling
 - **Browser Use cloud mode** via [Browser Use](https://browser-use.com) as an alternative cloud browser provider
 - **Firecrawl cloud mode** via [Firecrawl](https://firecrawl.dev) for cloud browsers with built-in scraping
+- **Obscura local mode** via [Obscura](https://github.com/h4ckf0r0day/obscura) — a Rust headless browser over CDP, no Chrome or Node.js dependency, ~70 MB binary
 - **Camofox local mode** via [Camofox](https://github.com/jo-inc/camofox-browser) for local anti-detection browsing (Firefox-based fingerprint spoofing)
 - **Local Chromium-family CDP** — connect browser tools to your own Chrome, Brave, Chromium, or Edge instance using `/browser connect`
 - **Local browser mode** via the `agent-browser` CLI and a local Chromium installation
@@ -85,6 +86,38 @@ FIRECRAWL_API_URL=http://localhost:3002
 # Session TTL in seconds (default: 300)
 FIRECRAWL_BROWSER_TTL=600
 ```
+
+### Obscura local mode
+
+[Obscura](https://github.com/h4ckf0r0day/obscura) is a local, opt-in browser provider — unlike the cloud providers above, it spawns a local `obscura serve` process and hands the agent its CDP endpoint directly, no account or API key needed. Install the `obscura` binary (see the [Obscura README](https://github.com/h4ckf0r0day/obscura#install) for platform-specific downloads), then select it:
+
+```bash
+hermes setup tools
+# → Browser Automation → Obscura
+```
+
+Or set it explicitly in `config.yaml`:
+
+```yaml
+browser:
+  cloud_provider: obscura
+```
+
+Optional settings:
+
+```bash
+# Path to the obscura binary, if not on PATH
+OBSCURA_BIN=/path/to/obscura
+
+# Connect to an already-running server instead of spawning one
+# (e.g. Docker: docker run -p 9222:9222 <obscura-image> serve --host 0.0.0.0)
+OBSCURA_CDP_URL=http://127.0.0.1:9222
+
+# Enable Obscura's built-in anti-detect fingerprinting (default: false)
+OBSCURA_STEALTH=true
+```
+
+Like Firecrawl, Obscura is never auto-selected — you must set `browser.cloud_provider: obscura` explicitly, since selecting it spawns a local subprocess the instant it's chosen.
 
 ### Hybrid routing: cloud for public URLs, local for LAN/localhost
 
