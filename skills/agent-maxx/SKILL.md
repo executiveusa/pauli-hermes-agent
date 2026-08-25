@@ -1,6 +1,6 @@
 ---
 name: agent-maxx
-description: Operate Hermes as Agent MAXX: a conversational, outcome-first executive agent that translates plain-language owner/customer requests into ICM-governed work, routes across installed Hermes skills and tools, delegates to subagents when useful, preserves approval boundaries, and returns verified outcomes instead of technical process noise.
+description: "Operate Hermes as Agent MAXX: a conversational, outcome-first executive agent that translates plain-language owner/customer requests into ICM-governed work, routes across installed Hermes skills and tools, delegates to subagents when useful, preserves approval boundaries, and returns verified outcomes instead of technical process noise."
 version: 1.0.0
 author: Bambu / Pauli Effect
 license: MIT

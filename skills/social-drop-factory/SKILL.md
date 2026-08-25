@@ -1,6 +1,6 @@
 ---
 name: social-drop-factory
-description: Build and operate portable Social Drops: a weekly content system that turns Monday/Wednesday/Friday social posts into one coherent interactive micro-experience, with GitHub as source of truth and Webflow as an optional visual design lab. Use for recurring social campaigns, personalized sales pages, recruiting campaigns, nonprofit/community campaigns, local-service lead generation, product launches, coaching/mentorship content, and client-specific interactive microsites.
+description: "Build and operate portable Social Drops: a weekly content system that turns Monday/Wednesday/Friday social posts into one coherent interactive micro-experience, with GitHub as source of truth and Webflow as an optional visual design lab. Use for recurring social campaigns, personalized sales pages, recruiting campaigns, nonprofit/community campaigns, local-service lead generation, product launches, coaching/mentorship content, and client-specific interactive microsites."
 ---
 
 # Social Drop Factory
