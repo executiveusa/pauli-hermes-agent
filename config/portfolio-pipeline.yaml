@@ -28,7 +28,7 @@ safety:
 
 protected_projects:
   - executiveusa/strapi-template-new-world-kids
-  - new-world-kids-v1
+  - executiveusa/new-world-kids-v1
 
 pipeline_states:
   - QUEUED
@@ -40,6 +40,7 @@ pipeline_states:
   - PREVIEW
   - VERIFYING
   - READY
+  - READY_FOR_APPROVAL
   - BLOCKED
   - COMPLETE
 
