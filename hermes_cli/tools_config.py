@@ -697,7 +697,11 @@ def _check_cua_driver_asset_for_arch() -> bool:
     return True
 
 
-def install_cua_driver(upgrade: bool = False) -> bool:
+def install_cua_driver(
+    upgrade: bool = False,
+    require_confirmed_update: bool = False,
+    show_installer_progress: bool = True,
+) -> bool:
     """Install or refresh the cua-driver binary used by Computer Use.
 
     The upstream installer always pulls the latest release tag, so re-running
@@ -710,10 +714,21 @@ def install_cua_driver(upgrade: bool = False) -> bool:
       update`` if the binary supports it). Used by ``hermes update`` and
       by ``hermes computer-use install --upgrade``.
 
+    ``require_confirmed_update`` and ``show_installer_progress`` mirror the
+    signature of upstream NousResearch/hermes-agent's newer installer (tag
+    v2026.8.16.2) so callers vendored from there — e.g.
+    ``tools/computer_use/cua_backend.py``'s auto-repair path — can call this
+    without a ``TypeError``. Neither is honored yet: this fork's installer
+    doesn't have an update-confirmation prompt or an incremental-progress
+    reporter to drive. Accepted-but-unused is intentional here, not a
+    placeholder; wiring them up is follow-up scope for whichever gap ports
+    the rest of upstream's cross-platform driver installer.
+
     Returns True iff cua-driver is installed (or successfully refreshed)
     when the function returns. macOS-only — silently returns False on
     other platforms.
     """
+    del require_confirmed_update, show_installer_progress
     import platform as _plat
     import shutil
     import subprocess
