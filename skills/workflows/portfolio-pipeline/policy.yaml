@@ -1,0 +1,75 @@
+version: 1
+mode: plane
+max_active_projects: 5
+
+source_of_truth:
+  scm: github
+  owner: executiveusa
+
+execution:
+  mutating_jobs:
+    branch_required: true
+    direct_main_writes: false
+    pull_request_required: true
+    independent_review_required: true
+    trusted_tests_required: true
+  read_only_jobs:
+    autonomous: true
+  deployment:
+    preview_before_production: true
+    production_requires_verified_target: true
+    preserve_rollback: true
+
+safety:
+  never_log_secret_values: true
+  destructive_production_actions: human_approval
+  financial_actions: human_approval
+  unknown_repositories: sandbox_first
+
+protected_projects:
+  - executiveusa/strapi-template-new-world-kids
+  - executiveusa/new-world-kids-v1
+
+pipeline_states:
+  - QUEUED
+  - AUDITING
+  - LOCKED
+  - BUILDING
+  - TESTING
+  - REVIEWING
+  - PREVIEW
+  - VERIFYING
+  - READY
+  - READY_FOR_APPROVAL
+  - BLOCKED
+  - COMPLETE
+
+worker_policy:
+  runtime: disposable
+  preferred_isolation: docker
+  one_mutating_job_per_repo: true
+  cleanup_after_terminal_state: true
+
+cron_policy:
+  timezone: America/Mexico_City
+  allow_read_only_without_approval: true
+  allow_branch_pr_repairs_without_approval: true
+  prohibit_direct_main_mutation: true
+  prohibit_unverified_production_deploy: true
+
+initial_cron_intents:
+  - name: repo-health
+    cadence: hourly
+    action: check active project CI, open PR blockers, deployment health, and report only changes or blockers
+  - name: nightly-security
+    cadence: daily
+    action: inspect active projects for dependency, secret, security, and failed-test regressions; open bounded repair PRs when safe
+  - name: morning-pipeline
+    cadence: daily
+    action: summarize five active projects, queued projects, blockers, cost signals, and next bounded action
+  - name: stale-pr-repair
+    cadence: every_6_hours
+    action: inspect active project PRs with failed CI or review requests and dispatch bounded repair jobs
+  - name: weekly-portfolio-hygiene
+    cadence: weekly
+    action: identify duplicates, stale branches, abandoned previews, and archive candidates without deleting anything
