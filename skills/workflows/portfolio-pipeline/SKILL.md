@@ -9,17 +9,18 @@ Use this skill when the owner asks Hermes to work on, pipeline, finish, audit, r
 
 ## Required policy
 
-Read `config/portfolio-pipeline.yaml` before dispatching work.
+Read `${HERMES_SKILL_DIR}/policy.yaml` before dispatching work. The installed skill directory is the runtime source of policy; repository-level mirrors are documentation/configuration aids only.
 
 ## Intake
 
 For every requested repository:
 
-1. resolve the exact `owner/repo`;
-2. block protected projects;
-3. check whether it already occupies an active slot;
-4. if five projects are active, queue it FIFO;
-5. create a durable mission record with outcome, non-goals, proof, budget, and rollback.
+1. resolve the exact canonical `owner/repo`;
+2. normalize aliases to the canonical slug before protected-project comparison;
+3. block protected projects;
+4. check whether it already occupies an active slot;
+5. if five projects are active, queue it FIFO;
+6. create a durable mission record with outcome, non-goals, proof, budget, and rollback.
 
 ## Stage 01 — Audit
 
