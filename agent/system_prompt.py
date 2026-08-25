@@ -238,6 +238,28 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None) 
             # Probe failure must never block prompt build.
             pass
 
+    # Coding-context posture — when the session is on an interactive coding
+    # surface (cli/tui/acp/desktop) sitting in a code workspace, inject the
+    # coding operating brief + a one-time git/workspace snapshot. Prompt-only
+    # in the default "auto" mode: never touches toolset selection or the
+    # skill index (see agent/coding_context.py's module docstring for the
+    # config.yaml agent.coding_context modes). Resolved once per prompt
+    # build, like the rest of the stable tier — this does not re-probe git
+    # mid-session, which is why the brief tells the model to re-check branch/
+    # dirty state itself before relying on the snapshot.
+    try:
+        from agent.coding_context import resolve_runtime_mode
+
+        _coding_mode = resolve_runtime_mode(
+            platform=getattr(agent, "platform", None) or "cli",
+            model=agent.model,
+        )
+        for _coding_block in _coding_mode.system_blocks():
+            stable_parts.append(_coding_block)
+    except Exception:
+        # Posture resolution must never block prompt build.
+        pass
+
     # Active-profile hint — names the Hermes profile the agent is running
     # under so it doesn't conflate ~/.hermes/skills/ (default profile) with
     # ~/.hermes/profiles/<active>/skills/ (this profile's). Deterministic

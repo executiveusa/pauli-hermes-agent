@@ -55,3 +55,59 @@ class TestContextFileCwd:
     def test_configured_dir_when_terminal_cwd_set(self, monkeypatch, tmp_path):
         monkeypatch.setenv("TERMINAL_CWD", str(tmp_path))
         assert _captured_context_cwd(_make_agent()) == tmp_path
+
+
+def _build_stable_text(agent):
+    """Assemble just the stable tier, with the usual heavy calls stubbed out."""
+    with (
+        patch("run_agent.load_soul_md", return_value=""),
+        patch("run_agent.build_nous_subscription_prompt", return_value=""),
+        patch("run_agent.build_environment_hints", return_value=""),
+        patch("run_agent.build_context_files_prompt", return_value=""),
+    ):
+        parts = build_system_prompt_parts(agent)
+    return parts["stable"]
+
+
+class TestCodingContextIntegration:
+    """agent/coding_context.py wiring into the stable system-prompt tier.
+
+    Covers the coding-posture addition to build_system_prompt_parts: present
+    on a cli/tui/acp/desktop surface sitting in a code workspace, absent
+    otherwise, and never fatal to prompt assembly if resolution fails.
+    """
+
+    def test_coding_brief_present_in_code_workspace(self, tmp_path, monkeypatch):
+        (tmp_path / "pyproject.toml").write_text('[project]\nname = "x"\n')
+        monkeypatch.delenv("TERMINAL_CWD", raising=False)
+        agent = _make_agent(platform="cli", model="anthropic/claude-x")
+        with patch("agent.runtime_cwd.resolve_agent_cwd", return_value=tmp_path):
+            text = _build_stable_text(agent)
+        assert "coding agent pairing with the user" in text
+
+    def test_coding_brief_absent_outside_code_workspace(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("TERMINAL_CWD", raising=False)
+        agent = _make_agent(platform="cli", model="anthropic/claude-x")
+        with patch("agent.runtime_cwd.resolve_agent_cwd", return_value=tmp_path):
+            text = _build_stable_text(agent)
+        assert "coding agent pairing with the user" not in text
+
+    def test_coding_brief_absent_on_noninteractive_platform(self, tmp_path, monkeypatch):
+        (tmp_path / "pyproject.toml").write_text('[project]\nname = "x"\n')
+        monkeypatch.delenv("TERMINAL_CWD", raising=False)
+        agent = _make_agent(platform="telegram", model="anthropic/claude-x")
+        with patch("agent.runtime_cwd.resolve_agent_cwd", return_value=tmp_path):
+            text = _build_stable_text(agent)
+        assert "coding agent pairing with the user" not in text
+
+    def test_resolution_failure_never_blocks_prompt_build(self, tmp_path, monkeypatch):
+        """A raising resolve_runtime_mode must not take down prompt assembly."""
+        monkeypatch.delenv("TERMINAL_CWD", raising=False)
+        agent = _make_agent(platform="cli", model="anthropic/claude-x")
+        with patch(
+            "agent.coding_context.resolve_runtime_mode",
+            side_effect=RuntimeError("boom"),
+        ):
+            # Must not raise.
+            text = _build_stable_text(agent)
+        assert isinstance(text, str)
