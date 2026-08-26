@@ -13,6 +13,31 @@ from unittest.mock import patch
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def _no_host_browser_use_cli():
+    """Keep the host's browser-use/uvx install out of tests.
+
+    Browser Use mode is default-on when the CLI is runnable, so a developer
+    machine with uvx on PATH would silently flip every built-in-browser test
+    into CLI mode. Pin discovery to "not installed"; tests that exercise the
+    CLI path monkeypatch ``bu_cli._find_cli`` themselves.
+
+    Ported additively from NousResearch/hermes-agent @ v2026.8.16.2
+    (tests/tools/conftest.py) as part of the browser_exec gap-map port.
+    """
+    try:
+        import tools.browser_use_cli as bu_cli
+    except Exception:
+        yield
+        return
+    # Keep a handle to the real discovery function so TestFindCli (and any
+    # test that wants genuine PATH probing) can restore it explicitly.
+    if not hasattr(bu_cli, "_find_cli_unpatched"):
+        bu_cli._find_cli_unpatched = bu_cli._find_cli
+    with patch.object(bu_cli, "_find_cli", lambda: None):
+        yield
+
+
 def register_all_web_providers():
     """Register all bundled web-search providers into the global registry.
 

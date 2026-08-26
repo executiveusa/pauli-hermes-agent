@@ -845,10 +845,50 @@ def _run_cua_driver_installer(label: str = "Installing", verbose: bool = True) -
         return False
 
 
+def _ensure_browser_use_cli() -> None:
+    """Install the Browser Use CLI if it isn't already runnable.
+
+    The Browser Use CLI 3.0 is the primary driver engine for EVERY browser
+    backend except Camofox (which is Firefox-based with no CDP surface, so
+    the CDP-only browser-use harness cannot drive it). Local, Browserbase,
+    and Nous-managed cloud rows all execute through ``browser_exec`` when the
+    CLI is runnable — so every one of those picker selections attempts this
+    install, not just an explicit "Browser Use" row. Failure is non-fatal:
+    ``browser_exec`` can still run zero-install via ``uvx browser-use``, and
+    the built-in browser tools remain the final fallback.
+
+    Ported additively from NousResearch/hermes-agent @ v2026.8.16.2
+    (hermes_cli/tools_config.py::_ensure_browser_use_cli) as part of the
+    browser_exec gap-map port.
+    """
+    _print_info("    Ensuring browser-use CLI (managed install)...")
+    try:
+        from tools.browser_use_cli import install_cli
+
+        ok, message = install_cli()
+    except Exception as exc:  # pragma: no cover — defensive
+        ok, message = False, f"install failed: {exc}"
+    if ok:
+        _print_success(f"    {message}")
+    else:
+        for line in str(message).splitlines():
+            _print_warning(f"    {line[:200]}")
+        if shutil.which("uvx"):
+            _print_info("    Falling back to zero-install runs via `uvx browser-use`")
+        else:
+            _print_info("    Install manually: uv tool install browser-use  (https://docs.astral.sh/uv/)")
+
+
 def _run_post_setup(post_setup_key: str):
     """Run post-setup hooks for tools that need extra installation steps."""
     import shutil
     if post_setup_key in {"agent_browser", "browserbase"}:
+        # Browser Use CLI install is additive to the existing agent-browser /
+        # Chromium setup below — it never replaces or short-circuits it.
+        try:
+            _ensure_browser_use_cli()
+        except Exception as exc:  # pragma: no cover — defensive, non-fatal
+            _print_warning(f"    Browser Use CLI setup skipped: {exc}")
         node_modules = PROJECT_ROOT / "node_modules" / "agent-browser"
         npm_bin = shutil.which("npm")
         npx_bin = shutil.which("npx")

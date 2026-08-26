@@ -108,6 +108,14 @@ try:
     from tools.browser_camofox import is_camofox_mode as _is_camofox_mode
 except ImportError:
     _is_camofox_mode = lambda: False  # noqa: E731
+# Browser Use CLI backend (optional) — additive gap-map port from
+# NousResearch/hermes-agent @ v2026.8.16.2. When active, the model gets a
+# single ``browser_exec`` tool driving the Browser Use CLI 3.0 instead of
+# (or alongside, per toolset selection) the classic browser_* tools below.
+try:
+    from tools.browser_use_cli import is_browser_use_cli_mode as _is_browser_use_cli_mode
+except ImportError:
+    _is_browser_use_cli_mode = lambda: False  # noqa: E731
 
 logger = logging.getLogger(__name__)
 
@@ -3640,6 +3648,55 @@ def _running_in_docker() -> bool:
         return False
 
 
+def _build_browser_env() -> dict:
+    """Base subprocess environment for spawning browser-related CLIs.
+
+    A thin, additive helper: existing call sites in this module build their
+    own env dict inline (``{**os.environ, ...}``) and are left untouched.
+    This exists so new callers — currently ``tools/browser_use_cli.py`` —
+    have one shared place to start from rather than duplicating the pattern.
+
+    Ported additively from NousResearch/hermes-agent @ v2026.8.16.2
+    (tools/browser_tool.py::_build_browser_env) as part of the browser_exec
+    gap-map port.
+    """
+    return {**os.environ}
+
+
+def evaluate_url_safety(url: str) -> Optional[Dict[str, Any]]:
+    """Standalone URL-safety check reusing browser_navigate's own gates.
+
+    Returns a ``{"error": "..."}`` dict when the URL should be blocked, or
+    ``None`` when it's fine to use. Used by ``browser_exec`` to scan URL
+    literals in model-submitted code before handing it to the browser-use
+    CLI subprocess — the same floor ``browser_navigate`` already enforces,
+    just exposed as a reusable function instead of inlined in that one
+    tool's body.
+
+    Ported additively from NousResearch/hermes-agent @ v2026.8.16.2
+    (tools/browser_tool.py::evaluate_url_safety) as part of the browser_exec
+    gap-map port. ``browser_navigate``'s own inline checks are unchanged.
+    """
+    if not url:
+        return None
+    try:
+        if not _is_local_backend() and _is_always_blocked_url(url):
+            return {"error": "Blocked: URL targets a cloud metadata endpoint"}
+        if (
+            not _is_local_backend()
+            and not _allow_private_urls()
+            and not _is_safe_url(url)
+        ):
+            return {"error": "Blocked: URL targets a private or internal address"}
+        blocked = check_website_access(url)
+        if blocked:
+            return {"error": blocked.get("message", "Blocked by website policy")}
+    except Exception as e:  # pragma: no cover — defensive, fail-open on a bug here
+        logger.debug("evaluate_url_safety check failed for %r: %s", url, e)
+        return None
+    return None
+
+
 def check_browser_requirements() -> bool:
     """
     Check if browser tool requirements are met.
@@ -3656,6 +3713,20 @@ def check_browser_requirements() -> bool:
     Returns:
         True if all requirements are met, False otherwise
     """
+    # Browser Use CLI backend — when active, browser_exec (tools/browser_use_cli.py)
+    # is the driver for this session instead of these classic browser_* tools.
+    # Both toolsets remain fully implemented and coexist in code (hybrid
+    # routing); this only decides which one a given session is advertised.
+    # See ``browser.backend`` in config: "off" always keeps these classic
+    # tools, "browser-use" always prefers browser_exec, "" (default) picks
+    # browser_exec only when the browser-use CLI is actually runnable.
+    #
+    # Ported additively from NousResearch/hermes-agent @ v2026.8.16.2
+    # (tools/browser_tool.py::check_browser_requirements) as part of the
+    # browser_exec gap-map port.
+    if _is_browser_use_cli_mode():
+        return False
+
     # Camofox backend — only needs the server URL, no agent-browser CLI
     if _is_camofox_mode():
         return True
