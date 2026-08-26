@@ -659,12 +659,41 @@ def approve_session(session_key: str, pattern_key: str):
         _session_approved.setdefault(session_key, set()).add(pattern_key)
 
 
+def _release_permission_mode_dependents(session_key: str) -> None:
+    """Drop resources whose immutable mode is derived from Hermes YOLO.
+
+    The import stays lazy so approval-only sessions do not load computer-use.
+    Releasing on both edges makes enabling YOLO replace an existing standard
+    backend and makes disabling YOLO revoke a private unrestricted daemon
+    immediately, even when no later computer-use call occurs.
+
+    Ported from upstream NousResearch/hermes-agent v2026.8.16.2
+    (hermes-upstream-gap-map item #2, "Computer-use session release").
+    ``release_computer_use_session`` itself landed in gap #1's PR #152; this
+    call site (and the two below) were the missing wiring — approval-mode
+    edges never released the session's computer-use backend, so a private
+    unrestricted daemon spun up under YOLO could outlive the toggle that
+    started it.
+    """
+    try:
+        from tools.computer_use import release_computer_use_session
+
+        release_computer_use_session(session_key)
+    except Exception:
+        logger.debug(
+            "Failed to release permission-mode dependent resources for %s",
+            session_key,
+            exc_info=True,
+        )
+
+
 def enable_session_yolo(session_key: str) -> None:
     """Enable YOLO bypass for a single session key."""
     if not session_key:
         return
     with _lock:
         _session_yolo.add(session_key)
+    _release_permission_mode_dependents(session_key)
 
 
 def disable_session_yolo(session_key: str) -> None:
@@ -673,6 +702,7 @@ def disable_session_yolo(session_key: str) -> None:
         return
     with _lock:
         _session_yolo.discard(session_key)
+    _release_permission_mode_dependents(session_key)
 
 
 def clear_session(session_key: str) -> None:
@@ -689,6 +719,7 @@ def clear_session(session_key: str) -> None:
         # immediately so the old run can unwind instead of idling until timeout.
         entry.result = "deny"
         entry.event.set()
+    _release_permission_mode_dependents(session_key)
 
 
 def is_session_yolo_enabled(session_key: str) -> bool:
@@ -702,6 +733,46 @@ def is_session_yolo_enabled(session_key: str) -> bool:
 def is_current_session_yolo_enabled() -> bool:
     """Return True when the active approval session has YOLO bypass enabled."""
     return is_session_yolo_enabled(get_current_session_key(default=""))
+
+
+def is_approval_bypass_active_for_session(session_key: str) -> bool:
+    """Return whether one exact session bypasses Hermes approval prompts.
+
+    Collapses the canonical three-source bypass check used across the codebase
+    into one place:
+      - process-scoped ``--yolo`` / ``HERMES_YOLO_MODE`` (frozen at import time
+        so a mid-process skill can't flip it — a prompt-injection escalation
+        path; see ``_YOLO_MODE_FROZEN`` above),
+      - the session-scoped gateway ``/yolo`` toggle,
+      - ``approvals.mode: off`` in config.
+
+    This is the pure-bypass sub-expression only. Callers that also honor a
+    hardline blocklist / permanent allowlist must check those separately.
+
+    Ported from upstream NousResearch/hermes-agent v2026.8.16.2
+    (hermes-upstream-gap-map item #2, "Computer-use permission layer" —
+    "Keep upstream platform permission checks; bind Pauli consequential-action
+    approvals above them"). This is that binding point:
+    `tools/computer_use/tool.py::_cua_permission_mode` (vendored verbatim in
+    gap #1's PR #152) imports and calls this exact function by name to decide
+    whether an explicit Hermes approval bypass should also widen cua-driver's
+    own immutable permission mode to `unrestricted`. Gap #1 vendored that call
+    site but this fork had no function of this name — every existing call
+    site in this file inlined the same three-source check under
+    `is_current_session_yolo_enabled()` (which only reads the *active*
+    session, not an arbitrary `session_key`) instead of a reusable helper.
+    Without this function, `_cua_permission_mode`'s import failed and was
+    silently swallowed by its own `except Exception: pass` (fail-closed to
+    "standard" mode) — a real, silent functional gap: YOLO never actually
+    escalated computer_use's permission mode. Body is unmodified upstream;
+    reuses this file's existing `_YOLO_MODE_FROZEN` / `is_session_yolo_enabled`
+    / `_get_approval_mode` primitives, all already present pre-gap #1.
+    """
+    return (
+        _YOLO_MODE_FROZEN
+        or is_session_yolo_enabled(session_key)
+        or _get_approval_mode() == "off"
+    )
 
 
 def is_approved(session_key: str, pattern_key: str) -> bool:

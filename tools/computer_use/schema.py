@@ -7,11 +7,12 @@ Only this docstring note was added. The fork's prior version (213 lines)
 grew to this one (375 lines) mostly for new action parameters (capture
 sizing/dimension controls, input-target guards) and the `cua_browser_*`
 action family's parameters. Those `cua_browser_*` actions are present in
-the schema's action enum as upstream defines them, but the backend that
-serves them in this fork is a placeholder stub (see
-`tools/computer_use/browser_route.py`) that refuses cleanly rather than
-performing real browser automation — deliberately out of scope for gap #1,
-see `cua_backend.py`'s attribution header for the full reasoning.
+the schema's action enum as upstream defines them; at gap #1 time the
+backend serving them was a placeholder stub, deliberately out of scope for
+that PR (see `cua_backend.py`'s attribution header for the full reasoning).
+hermes-upstream-gap-map item #2 replaced that stub with the real
+`tools/computer_use/browser_route.py` typed-browser adapter, so the
+`cua_browser_*` actions this schema describes are now fully functional.
 
 Model-agnostic. Any tool-calling model can drive this. Vision-capable models
 should prefer `capture(mode='som')` then `click(element=N)` — much more

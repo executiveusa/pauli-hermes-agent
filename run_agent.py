@@ -3053,6 +3053,7 @@ class AIAgent:
         - Background processes tracked in ProcessRegistry
         - Terminal sandbox environments
         - Browser daemon sessions
+        - Computer-use backend sessions and target/ref state
         - Active child agents (subagent delegation)
         - OpenAI/httpx client connections
 
@@ -3080,7 +3081,29 @@ class AIAgent:
         except Exception:
             pass
 
-        # 4. Close active child agents
+        # 4. Release the session-owned computer-use backend.  This ends the
+        # exact cua-driver session, drops typed-browser refs/grants, and stops
+        # a private embedded daemon when Hermes YOLO selected unrestricted
+        # mode.  The import is lazy so sessions without computer_use retain
+        # the narrow core footprint.
+        #
+        # Ported from upstream NousResearch/hermes-agent v2026.8.16.2
+        # (hermes-upstream-gap-map item #2, "Computer-use session release" —
+        # "Missing from Pauli shim export"). The export itself
+        # (release_computer_use_session) landed in gap #1's PR #152; this
+        # call site was the missing piece — nothing in this fork actually
+        # invoked it, so a session's cua-driver backend (and any typed-
+        # browser grants/private embedded daemon) outlived the AIAgent that
+        # started it. Sits below the process/terminal/browser cleanup this
+        # fork already had, exactly where upstream places it.
+        try:
+            from tools.computer_use import release_computer_use_session
+
+            release_computer_use_session(task_id)
+        except Exception:
+            pass
+
+        # 5. Close active child agents
         try:
             with self._active_children_lock:
                 children = list(self._active_children)
@@ -3093,7 +3116,7 @@ class AIAgent:
         except Exception:
             pass
 
-        # 5. Close the OpenAI/httpx client
+        # 6. Close the OpenAI/httpx client
         try:
             client = getattr(self, "client", None)
             if client is not None:
