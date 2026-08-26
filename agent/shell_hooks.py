@@ -456,7 +456,22 @@ def _make_callback(spec: ShellHookSpec) -> Callable[..., Optional[Dict[str, Any]
                 "shell hook exited %d (event=%s command=%s); stderr=%s",
                 r["returncode"], spec.event, spec.command, stderr[:400],
             )
-        return _parse_response(spec.event, r["stdout"])
+        parsed = _parse_response(spec.event, r["stdout"])
+        if parsed and isinstance(parsed.get("context"), str):
+            try:
+                from tools.hook_output_spill import spill_if_oversized
+
+                parsed = dict(parsed)
+                parsed["context"] = spill_if_oversized(
+                    parsed["context"],
+                    session_id=kwargs.get("session_id") or kwargs.get("parent_session_id"),
+                    source="shell hook",
+                )
+            except Exception:
+                # Spilling is a size-safety nicety, never a hard dependency —
+                # an import/IO failure here must not drop the hook's context.
+                logger.debug("hook output spill check failed", exc_info=True)
+        return parsed
 
     _callback.__name__ = f"shell_hook[{spec.event}:{spec.command}]"
     _callback.__qualname__ = _callback.__name__
