@@ -3158,6 +3158,478 @@ def claim_review_task(
         return get_task(conn, task_id)
 
 
+# ---------------------------------------------------------------------------
+# Review-state transitions (gap #4 of the upstream capability gap-map).
+#
+# Ported individually from NousResearch/hermes-agent tag v2026.8.16.2
+# hermes_cli/kanban_db.py — NOT a whole-file replacement. Only the functions
+# below (plus the two small shared helpers they call, ``_parents_satisfied``
+# and ``_landing_status_after_parents``) were extracted; the fork's existing
+# ``claim_review_task`` / ``has_spawnable_review`` (upstream has near-
+# identical copies of both) were left untouched. Attachment support
+# (``task_attachments`` table, ``add_attachment``/``list_attachments``/
+# ``get_attachment``/``delete_attachment``/``attachments_root``/
+# ``task_attachments_dir``) was found already present in this fork,
+# apparently built independently of upstream, and is not touched here.
+# ---------------------------------------------------------------------------
+
+
+def _parents_satisfied(conn: sqlite3.Connection, task_id: str) -> bool:
+    """Return whether every direct parent is terminal for dependency gating.
+
+    Ported verbatim from upstream v2026.8.16.2 kanban_db.py. Shared by
+    :func:`request_review` (this port); the fork's pre-existing
+    ``claim_task``/``claim_review_task`` inline the equivalent query rather
+    than calling a shared helper, and are left as-is.
+    """
+    return conn.execute(
+        "SELECT 1 FROM task_links l "
+        "JOIN tasks p ON p.id = l.parent_id "
+        "WHERE l.child_id = ? "
+        "AND p.status NOT IN ('done', 'archived') LIMIT 1",
+        (task_id,),
+    ).fetchone() is None
+
+
+def _landing_status_after_parents(conn: sqlite3.Connection, task_id: str) -> str:
+    """Return ``'todo'`` if any parent isn't ``done`` yet, else ``'ready'``.
+
+    Ported verbatim from upstream v2026.8.16.2 kanban_db.py. Used by
+    :func:`reopen_review_task` (this port) so a review-lane task that gets
+    sent back for changes doesn't bypass the parent-completion invariant.
+    """
+    undone_parents = conn.execute(
+        "SELECT 1 FROM task_links l "
+        "JOIN tasks p ON p.id = l.parent_id "
+        "WHERE l.child_id = ? "
+        "AND p.status NOT IN ('done', 'archived') LIMIT 1",
+        (task_id,),
+    ).fetchone()
+    return "todo" if undone_parents else "ready"
+
+
+def _reclaim_dangling_run(
+    conn: sqlite3.Connection, task_id: str, *, statuses, now: int, note: str,
+) -> None:
+    """Close a leaked ``current_run_id`` (run row still open) before a status
+    flip, preserving the runs invariant (``current_run_id IS NULL`` ⇔ run row
+    terminal). No-op in the common path.
+
+    Ported verbatim from upstream v2026.8.16.2 kanban_db.py. Used by
+    :func:`reopen_review_task` (this port) only.
+    """
+    placeholders = ", ".join("?" for _ in statuses)
+    stale = conn.execute(
+        f"SELECT current_run_id FROM tasks WHERE id = ? AND status IN ({placeholders})",
+        (task_id, *statuses),
+    ).fetchone()
+    if stale and stale["current_run_id"]:
+        conn.execute(
+            """
+            UPDATE task_runs
+               SET status = 'reclaimed', outcome = 'reclaimed',
+                   summary = COALESCE(summary, ?),
+                   ended_at = ?,
+                   claim_lock = NULL, claim_expires = NULL, worker_pid = NULL
+             WHERE id = ? AND ended_at IS NULL
+            """,
+            (note, now, int(stale["current_run_id"])),
+        )
+
+
+def redact_review_value(value: Any) -> Any:
+    """Redact secrets at the domain boundary for durable review handoffs.
+
+    Ported verbatim from upstream v2026.8.16.2 kanban_db.py. The fork's
+    ``agent/redact.py`` already exposes ``redact_sensitive_text`` with a
+    matching ``force=`` signature (checked before porting), so this wraps
+    it exactly as upstream does rather than duplicating a fork-specific
+    redaction helper — no equivalent existed under a different name.
+    """
+    if isinstance(value, str):
+        from agent.redact import redact_sensitive_text
+
+        return redact_sensitive_text(value, force=True)
+    if isinstance(value, dict):
+        return {key: redact_review_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [redact_review_value(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(redact_review_value(item) for item in value)
+    return value
+
+
+def request_review(
+    conn: sqlite3.Connection,
+    task_id: str,
+    *,
+    summary: Optional[str] = None,
+    metadata: Optional[dict] = None,
+    reviewer: Optional[str] = None,
+    expected_run_id: Optional[int] = None,
+    force: bool = False,
+    with_reason: bool = False,
+):
+    """Transition implementation work into the first-class review phase.
+
+    Ported verbatim from upstream v2026.8.16.2 kanban_db.py (gap #4).
+
+    Unlike :func:`block_task`, this transition never touches block recurrence
+    accounting.  The current implementer and resolved reviewer are recorded on
+    the event so an autonomous reviewer can route requested changes back to the
+    right profile.  Supplying ``reviewer`` reassigns the task before it is
+    exposed to the review dispatcher.  On re-review, omitting it reuses the
+    reviewer provenance persisted by the latest ``changes_requested`` event.
+
+    When the task is ``running`` under a live claim, a caller that supplies no
+    ``expected_run_id`` must pass ``force=True`` (explicit human/CLI override)
+    — otherwise the request is refused instead of silently clearing the live
+    worker's ``claim_lock``/``worker_pid``. Workers prove ownership by passing
+    their own run id as ``expected_run_id`` (unchanged).
+
+    Returns ``bool`` by default. With ``with_reason=True`` returns
+    ``(ok, reason)`` mirroring :func:`request_changes` — ``reason`` is a
+    diagnostic string on failure, ``None`` on success.
+    """
+
+    def _ret(ok: bool, reason: Optional[str] = None):
+        return (ok, reason) if with_reason else ok
+
+    summary = redact_review_value(summary)
+    metadata = redact_review_value(metadata)
+    with write_txn(conn):
+        if not _parents_satisfied(conn, task_id):
+            return _ret(False, "parent dependencies are not satisfied")
+        trow = conn.execute(
+            "SELECT assignee, status, claim_lock, current_run_id "
+            "FROM tasks WHERE id = ?", (task_id,),
+        ).fetchone()
+        if trow is None:
+            return _ret(False, "task not found")
+        # Refuse to clear a live worker's claim without proof of ownership
+        # (expected_run_id) or an explicit human override (force=True).
+        if (
+            expected_run_id is None
+            and not force
+            and trow["status"] == "running"
+            and trow["claim_lock"] is not None
+        ):
+            return _ret(
+                False,
+                "task is running under a live claim; pass expected_run_id "
+                "(worker ownership) or force=True (explicit operator "
+                "override) instead of clearing the live run's claim",
+            )
+        implementer = trow["assignee"]
+        if reviewer is None:
+            changes_run = conn.execute(
+                "SELECT id FROM task_runs "
+                "WHERE task_id = ? AND outcome = 'changes_requested' "
+                "ORDER BY id DESC LIMIT 1",
+                (task_id,),
+            ).fetchone()
+            changes_event = None
+            if changes_run is not None:
+                changes_event = conn.execute(
+                    "SELECT payload FROM task_events "
+                    "WHERE task_id = ? AND run_id = ? "
+                    "AND kind = 'changes_requested' "
+                    "ORDER BY id DESC LIMIT 1",
+                    (task_id, int(changes_run["id"])),
+                ).fetchone()
+            try:
+                changes_payload = (
+                    json.loads(changes_event["payload"])
+                    if changes_event and changes_event["payload"]
+                    else {}
+                )
+            except (json.JSONDecodeError, TypeError):
+                changes_payload = {}
+            prior_reviewer = (
+                changes_payload.get("reviewer")
+                if isinstance(changes_payload, dict)
+                else None
+            )
+            if changes_run is not None:
+                if not isinstance(prior_reviewer, str) or not prior_reviewer.strip():
+                    return _ret(
+                        False,
+                        "re-review has no durable reviewer provenance (the "
+                        "latest changes_requested event is missing or "
+                        "malformed); pass reviewer= explicitly",
+                    )
+                reviewer = prior_reviewer
+        reviewer = _canonical_assignee(reviewer) if reviewer is not None else None
+        assignee_sql = ", assignee = ?" if reviewer is not None else ""
+        params: tuple[Any, ...]
+        if expected_run_id is None:
+            params = (reviewer, task_id) if reviewer is not None else (task_id,)
+            run_guard = ""
+        else:
+            params = (
+                (reviewer, task_id, int(expected_run_id))
+                if reviewer is not None
+                else (task_id, int(expected_run_id))
+            )
+            run_guard = " AND current_run_id = ?"
+        cur = conn.execute(
+            """
+            UPDATE tasks
+               SET status        = 'review',
+                   claim_lock    = NULL,
+                   claim_expires = NULL,
+                   worker_pid    = NULL
+            """ + assignee_sql + """
+             WHERE id = ?
+               AND status IN ('running', 'ready')
+            """ + run_guard,
+            params,
+        )
+        if cur.rowcount != 1:
+            return _ret(
+                False,
+                "task is not in running/ready (or expected_run_id did not "
+                "match the current run)",
+            )
+        run_id = _end_run(
+            conn,
+            task_id,
+            outcome="review_requested",
+            status="review",
+            summary=summary,
+            metadata=metadata,
+        )
+        if run_id is None and (summary or metadata):
+            run_id = _synthesize_ended_run(
+                conn,
+                task_id,
+                outcome="review_requested",
+                summary=summary,
+                metadata=metadata,
+            )
+        lines = (summary or "").strip().splitlines()
+        event_summary = lines[0][:400] if lines else ""
+        _append_event(
+            conn,
+            task_id,
+            "review_requested",
+            {
+                "summary": event_summary or None,
+                "implementer": implementer,
+                "reviewer": reviewer,
+            },
+            run_id=run_id,
+        )
+    return _ret(True)
+
+
+def request_changes(
+    conn: sqlite3.Connection,
+    task_id: str,
+    *,
+    reason: str,
+    expected_run_id: Optional[int] = None,
+) -> tuple[bool, Optional[str]]:
+    """Finish an active review run and route the task back for rework.
+
+    Ported verbatim from upstream v2026.8.16.2 kanban_db.py (gap #4).
+
+    The transition is valid only for a run claimed from ``review``.  It closes
+    that reviewer run, restores the implementer recorded by the latest
+    ``review_requested`` event, reapplies parent gating, and emits an auditable
+    ``changes_requested`` event.  The second tuple item is the implementer on
+    success or a diagnostic reason on failure.
+    """
+    reason = str(redact_review_value(reason or "")).strip()
+    if not reason:
+        return False, "reason is required"
+
+    with write_txn(conn):
+        task_row = conn.execute(
+            "SELECT status, assignee, current_run_id FROM tasks WHERE id = ?",
+            (task_id,),
+        ).fetchone()
+        if task_row is None:
+            return False, "task not found"
+        current_run_id = task_row["current_run_id"]
+        if task_row["status"] != "running" or current_run_id is None:
+            return False, "task is not in an active review run"
+        if expected_run_id is not None and int(current_run_id) != int(expected_run_id):
+            return False, "run_id mismatch"
+
+        claimed_event = conn.execute(
+            "SELECT payload FROM task_events "
+            "WHERE task_id = ? AND run_id = ? AND kind = 'claimed' "
+            "ORDER BY id DESC LIMIT 1",
+            (task_id, int(current_run_id)),
+        ).fetchone()
+        try:
+            claimed_payload = (
+                json.loads(claimed_event["payload"])
+                if claimed_event and claimed_event["payload"]
+                else {}
+            )
+        except (json.JSONDecodeError, TypeError):
+            claimed_payload = {}
+        if not isinstance(claimed_payload, dict):
+            claimed_payload = {}
+        if claimed_payload.get("source_status") != "review":
+            return False, "active run was not claimed from review"
+
+        requested_event = conn.execute(
+            "SELECT payload FROM task_events "
+            "WHERE task_id = ? AND kind = 'review_requested' "
+            "ORDER BY id DESC LIMIT 1",
+            (task_id,),
+        ).fetchone()
+        if requested_event is None:
+            return False, "no prior review_requested event"
+        try:
+            requested_payload = (
+                json.loads(requested_event["payload"])
+                if requested_event["payload"]
+                else {}
+            )
+        except (json.JSONDecodeError, TypeError):
+            requested_payload = {}
+        if not isinstance(requested_payload, dict):
+            requested_payload = {}
+        implementer = requested_payload.get("implementer")
+        if not isinstance(implementer, str) or not implementer.strip():
+            return False, "review handoff has no valid implementer provenance"
+        reviewer = task_row["assignee"]
+        if isinstance(reviewer, str) and reviewer.strip():
+            reviewer = _canonical_assignee(reviewer)
+        else:
+            reviewer = None
+
+        new_status = _landing_status_after_parents(conn, task_id)
+        # NOTE: consecutive_failures is deliberately PRESERVED (neither
+        # reset nor incremented). Review transitions are not evidence the
+        # pathology cleared — only complete_task's success path resets the
+        # breaker counter (mirrors unblock_task, #35072).
+        cur = conn.execute(
+            """
+            UPDATE tasks
+               SET status = ?,
+                   assignee = COALESCE(?, assignee),
+                   claim_lock = NULL,
+                   claim_expires = NULL,
+                   worker_pid = NULL
+             WHERE id = ? AND status = 'running' AND current_run_id = ?
+            """,
+            (new_status, implementer, task_id, int(current_run_id)),
+        )
+        if cur.rowcount != 1:
+            return False, "task changed during review handoff"
+        run_id = _end_run(
+            conn,
+            task_id,
+            outcome="changes_requested",
+            status=new_status,
+            summary=reason,
+        )
+        _append_event(
+            conn,
+            task_id,
+            "changes_requested",
+            {
+                "reason": reason,
+                "implementer": implementer,
+                "reviewer": reviewer,
+                "status": new_status,
+            },
+            run_id=run_id,
+        )
+    return True, implementer
+
+
+def reopen_review_task(conn: sqlite3.Connection, task_id: str) -> bool:
+    """Transition ``review`` -> ready (or todo) so the implementer re-runs.
+
+    Ported verbatim from upstream v2026.8.16.2 kanban_db.py (gap #4).
+
+    The "changes requested" counterpart of :func:`request_review`: sends the
+    task back out of the review lane so the dispatcher re-runs the implementer
+    on the new comments. Mirrors the fork's ``unblock_task`` (parent
+    re-gating, defensive stale-run close, ``consecutive_failures``
+    preserved) and emits a ``review_reopened`` event.
+
+    Deliberately does NOT touch ``block_recurrences``/``block_kind``: review is
+    not a block, so there is no loop counter to reset. Returns False when the
+    task is missing or not in ``review``.
+    """
+    now = int(time.time())
+    with write_txn(conn):
+        _reclaim_dangling_run(
+            conn, task_id, statuses=("review",), now=now,
+            note="invariant recovery on review reopen",
+        )
+        new_status = _landing_status_after_parents(conn, task_id)
+        review_event = conn.execute(
+            "SELECT payload FROM task_events "
+            "WHERE task_id = ? AND kind = 'review_requested' "
+            "ORDER BY id DESC LIMIT 1",
+            (task_id,),
+        ).fetchone()
+        try:
+            handoff = (
+                json.loads(review_event["payload"])
+                if review_event and review_event["payload"]
+                else {}
+            )
+        except (json.JSONDecodeError, TypeError):
+            handoff = {}
+        implementer = handoff.get("implementer")
+        if not isinstance(implementer, str) or not implementer.strip():
+            implementer = None
+        assignee_sql = ", assignee = ?" if implementer else ""
+        params: tuple[Any, ...] = (
+            (new_status, implementer, task_id)
+            if implementer
+            else (new_status, task_id)
+        )
+        cur = conn.execute(
+            "UPDATE tasks SET status = ?, current_run_id = NULL, "
+            "claim_lock = NULL, claim_expires = NULL, worker_pid = NULL "
+            # consecutive_failures deliberately PRESERVED: review reopen is
+            # not a success signal; only complete_task resets the breaker
+            # counter (mirrors unblock_task, #35072).
+            + assignee_sql
+            + " WHERE id = ? AND status = 'review'",
+            params,
+        )
+        if cur.rowcount != 1:
+            return False
+        payload: dict[str, Any] = {"status": new_status}
+        if implementer:
+            payload["implementer"] = implementer
+        _append_event(
+            conn,
+            task_id,
+            "review_reopened",
+            payload if payload != {"status": "ready"} else None,
+        )
+        return True
+
+
+def review_dispatch_enabled() -> bool:
+    """Return whether first-class review tasks should dispatch automatically.
+
+    Ported verbatim from upstream v2026.8.16.2 kanban_db.py (gap #4). The
+    default is true because Hermes ships review-oriented skills and the
+    review lifecycle includes a supported reviewer-owned changes-requested
+    transition. Operators can disable it for human-only review boards.
+    """
+    try:
+        from hermes_cli.config import load_config
+        return bool(
+            (load_config() or {}).get("kanban", {}).get("review_dispatch", True)
+        )
+    except Exception:
+        return True
+
+
 def heartbeat_claim(
     conn: sqlite3.Connection,
     task_id: str,
