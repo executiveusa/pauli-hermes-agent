@@ -1,0 +1,21 @@
+{
+  "client": "",
+  "audit_date": "",
+  "sources": [],
+  "working": [],
+  "findings": [
+    {
+      "observation": "",
+      "evidence": "",
+      "source": "",
+      "confidence": "low|medium|high",
+      "business_impact": "",
+      "recommended_action": "",
+      "metric": ""
+    }
+  ],
+  "top_three_opportunities": [],
+  "first_30_day_plan": [],
+  "measurement_plan": [],
+  "unknowns": []
+}
