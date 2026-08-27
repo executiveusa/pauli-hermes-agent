@@ -1,0 +1,19 @@
+{
+  "client": "",
+  "experiment_id": "",
+  "hypothesis": "",
+  "observation": "",
+  "evidence": [],
+  "expected_outcome": "",
+  "primary_metric": "",
+  "baseline": "",
+  "target": "",
+  "scope": [],
+  "constraints": [],
+  "owner": "",
+  "start_date": "",
+  "end_date": "",
+  "rollback": "",
+  "result": "pending",
+  "decision": "pending"
+}
