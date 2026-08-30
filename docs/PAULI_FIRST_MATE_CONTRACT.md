@@ -182,12 +182,14 @@ From Pauli Command Center, the captain says:
 Pass when:
 
 1. Command Center authenticates the owner.
-2. Command Center sends the request through Terabithia.
-3. Hermes receives it as the First Mate.
-4. Hermes routes a read-only mission.
-5. Durable mission state is created.
-6. A worker returns evidence.
-7. Hermes returns one receipt to Command Center.
+2. Command Center sends the authenticated request to Hermes through the approved ingress adapter.
+3. Hermes receives it as the First Mate and creates durable mission state.
+4. Hermes delegates the read-only mission to Terabithia.
+5. Terabithia routes the mission to the appropriate worker.
+6. A worker returns evidence through Terabithia.
+7. Hermes returns one structured receipt to Command Center.
 8. No direct browser shell execution occurs.
+
+This keeps the canonical ingress boundary consistent: owner-facing clients talk to Hermes; Hermes delegates through Terabithia; Terabithia never needs to route a request back into Hermes before dispatch.
 
 Then prove one bounded `ship` mission through an isolated cloud sandbox before enabling broad autonomous execution.
