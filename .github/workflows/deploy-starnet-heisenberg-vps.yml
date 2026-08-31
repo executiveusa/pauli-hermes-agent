@@ -1,0 +1,191 @@
+name: Deploy Pauli STARNET Heisenberg Gateway
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'starnet_gateway.py'
+      - 'scripts/install_starnet_gateway.py'
+      - '.github/workflows/deploy-starnet-heisenberg-vps.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pauli-starnet-vps
+  cancel-in-progress: false
+
+jobs:
+  deploy-and-prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VPS_HOST: ${{ secrets.HERMES_VPS_HOST }}
+      VPS_USER: ${{ secrets.HERMES_VPS_USER }}
+      VPS_PORT: ${{ secrets.HERMES_VPS_PORT }}
+      VPS_SSH_KEY: ${{ secrets.HERMES_VPS_SSH_KEY }}
+      VPS_REPO_DIR: ${{ secrets.HERMES_VPS_REPO_DIR }}
+    steps:
+      - name: Verify deployment credentials exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in VPS_HOST VPS_USER VPS_SSH_KEY; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is not configured as a GitHub Actions secret"
+              missing=1
+            fi
+          done
+          test "$missing" -eq 0
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          port="${VPS_PORT:-22}"
+          ssh-keyscan -p "$port" -H "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy STARNET and mount Heisenberg gateway
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          port="${VPS_PORT:-22}"
+          repo_dir="${VPS_REPO_DIR:-/opt/pauli-hermes-agent}"
+          ssh -p "$port" "$VPS_USER@$VPS_HOST" "HERMES_REPO='$repo_dir' bash -s" <<'REMOTE'
+          set -euo pipefail
+          HERMES_REPO="${HERMES_REPO:-/opt/pauli-hermes-agent}"
+          STARNET_REPO=/opt/pauli-starnet
+          STARNET_REF=feat/harness-backend
+          STARNET_ENV=/etc/pauli-starnet.env
+          STATE_DIR=/var/lib/pauli-starnet-gateway/tasks
+
+          if [ -d "$HERMES_REPO/.git" ]; then
+            git -C "$HERMES_REPO" fetch origin main
+            git -C "$HERMES_REPO" checkout main
+            git -C "$HERMES_REPO" reset --hard origin/main
+          else
+            echo 'Hermes repository is missing on VPS' >&2
+            exit 20
+          fi
+
+          if [ -d "$STARNET_REPO/.git" ]; then
+            git -C "$STARNET_REPO" fetch origin "$STARNET_REF"
+            git -C "$STARNET_REPO" checkout "$STARNET_REF"
+            git -C "$STARNET_REPO" reset --hard "origin/$STARNET_REF"
+          else
+            git clone --branch "$STARNET_REF" --single-branch https://github.com/executiveusa/pauli-starnet.git "$STARNET_REPO"
+          fi
+
+          command -v node >/dev/null 2>&1 || { echo 'Node.js is required on VPS' >&2; exit 21; }
+          command -v npm >/dev/null 2>&1 || { echo 'npm is required on VPS' >&2; exit 21; }
+          node_major="$(node -p 'Number(process.versions.node.split(".")[0])')"
+          test "$node_major" -ge 18 || { echo 'Node 18+ is required' >&2; exit 21; }
+
+          cd "$STARNET_REPO"
+          npm ci --omit=dev --no-audit --no-fund
+
+          sudo install -d -m 700 "$STATE_DIR"
+          sudo touch "$STARNET_ENV"
+          sudo chmod 600 "$STARNET_ENV"
+          if ! sudo grep -q '^STARNET_API_KEY=' "$STARNET_ENV"; then
+            key="$(openssl rand -hex 32)"
+            printf 'STARNET_API_KEY=%s\n' "$key" | sudo tee -a "$STARNET_ENV" >/dev/null
+            unset key
+          fi
+          if ! sudo grep -q '^STARNET_PORT=' "$STARNET_ENV"; then
+            printf 'STARNET_PORT=8787\n' | sudo tee -a "$STARNET_ENV" >/dev/null
+          fi
+
+          sudo tee /etc/systemd/system/pauli-starnet.service >/dev/null <<'UNIT'
+          [Unit]
+          Description=Pauli's Place STARNET Runtime (loopback only)
+          After=network-online.target
+          Wants=network-online.target
+
+          [Service]
+          Type=simple
+          User=root
+          WorkingDirectory=/opt/pauli-starnet
+          EnvironmentFile=-/root/.hermes/.env
+          EnvironmentFile=/etc/pauli-starnet.env
+          ExecStart=/usr/bin/env node /opt/pauli-starnet/sidecar/index.js
+          Restart=on-failure
+          RestartSec=5
+          NoNewPrivileges=true
+
+          [Install]
+          WantedBy=multi-user.target
+          UNIT
+
+          python3 "$HERMES_REPO/scripts/install_starnet_gateway.py" "$HERMES_REPO/api_server.py"
+          sudo systemctl daemon-reload
+          sudo systemctl enable pauli-starnet.service >/dev/null
+          sudo systemctl restart pauli-starnet.service
+          sudo systemctl restart hermes-api.service
+
+          for i in $(seq 1 30); do
+            if curl --fail --silent --max-time 3 http://127.0.0.1:8787/health >/dev/null 2>&1 && \
+               curl --fail --silent --max-time 3 http://127.0.0.1:8642/starnet/health >/dev/null 2>&1; then
+              break
+            fi
+            sleep 2
+          done
+
+          curl --fail --silent --max-time 5 http://127.0.0.1:8787/health >/dev/null
+          curl --fail --silent --max-time 5 http://127.0.0.1:8642/starnet/health >/dev/null
+
+          socket_line="$(ss -ltnp 2>/dev/null | grep ':8787 ' | head -1 || true)"
+          test -n "$socket_line" || { echo 'STARNET socket not found' >&2; exit 22; }
+          echo "$socket_line" | grep -Eq '127\.0\.0\.1:8787|\[::1\]:8787' || {
+            echo 'SECURITY FAILURE: STARNET is not loopback-only' >&2
+            exit 23
+          }
+
+          gateway_token=""
+          if [ -f /opt/pauli-effect/terabithia/.env ]; then
+            gateway_token="$(grep -m1 '^TERABITHIA_API_KEY=' /opt/pauli-effect/terabithia/.env | cut -d= -f2- | tr -d '\r\n' || true)"
+            gateway_token="${gateway_token%\"}"; gateway_token="${gateway_token#\"}"
+            gateway_token="${gateway_token%\'}"; gateway_token="${gateway_token#\'}"
+          fi
+          if [ -z "$gateway_token" ] && [ -f /root/.hermes/.env ]; then
+            gateway_token="$(grep -m1 '^HERMES_API_KEY=' /root/.hermes/.env | cut -d= -f2- | tr -d '\r\n' || true)"
+            gateway_token="${gateway_token%\"}"; gateway_token="${gateway_token#\"}"
+            gateway_token="${gateway_token%\'}"; gateway_token="${gateway_token#\'}"
+          fi
+          test "${#gateway_token}" -ge 16 || { echo 'Gateway bearer unavailable on VPS' >&2; exit 24; }
+
+          payload='{"task":"Heisenberg, give me a verified city health report in one concise paragraph.","context":{"source":"github-deploy-proof","realm":"starnet","authority":"owner-deployment-proof"}}'
+          response="$(curl --fail --silent --show-error --max-time 100 \
+            -H "Authorization: Bearer $gateway_token" \
+            -H 'Content-Type: application/json' \
+            --data "$payload" \
+            http://127.0.0.1:8642/starnet/v1/heisenberg/tasks)"
+          unset gateway_token
+
+          mission_id="$(printf '%s' "$response" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("mission_id") or d.get("task_id") or d.get("id") or "")')"
+          status="$(printf '%s' "$response" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("status", ""))')"
+          test -n "$mission_id" || { echo 'Heisenberg proof returned no mission id' >&2; exit 25; }
+          test "$status" = completed || { echo "Heisenberg proof status was $status" >&2; exit 25; }
+
+          echo "HEISENBERG_MISSION_ID=$mission_id"
+          echo 'STARNET_LOOPBACK=PASS'
+          echo 'STARNET_HEALTH=PASS'
+          echo 'HERMES_STARNET_ROUTE=PASS'
+          echo 'HEISENBERG_DISPATCH=PASS'
+          REMOTE
+
+      - name: Verify public gateway health
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 3 --max-time 20 \
+            https://api.thepaulieffect.com/starnet/health >/dev/null
+          echo 'PUBLIC_STARNET_GATEWAY=PASS' >> "$GITHUB_STEP_SUMMARY"
+          echo "source_commit=${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"
+          echo 'STARNET sidecar remains loopback-only; public ingress terminates at the existing Pauli/Hermes API boundary.' >> "$GITHUB_STEP_SUMMARY"
