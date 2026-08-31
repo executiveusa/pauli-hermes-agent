@@ -15,7 +15,7 @@ from typing import Any
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 router = APIRouter()
 
@@ -106,7 +106,7 @@ def _load_task(task_id: str) -> dict[str, Any]:
 
 class HeisenbergTask(BaseModel):
     task: str
-    context: dict[str, Any] = {}
+    context: dict[str, Any] = Field(default_factory=dict)
 
 
 class ApprovalDecision(BaseModel):
@@ -121,13 +121,18 @@ async def _starnet_json(method: str, path: str, *, body: dict[str, Any] | None =
     except httpx.RequestError as exc:
         raise HTTPException(status_code=503, detail=f"STARNET unreachable: {exc.__class__.__name__}")
     try:
-        data = resp.json()
+        parsed: Any = resp.json()
     except ValueError:
-        data = {"raw": resp.text[:1000]}
+        parsed = {"raw": resp.text[:1000]}
+    data = parsed if isinstance(parsed, dict) else {"value": parsed}
     if resp.status_code >= 400:
-        detail = data.get("error") or data.get("detail") or data.get("message") or f"STARNET returned {resp.status_code}"
+        detail: Any = data.get("error") or data.get("detail") or data.get("message")
+        if detail is None:
+            detail = data.get("value") or f"STARNET returned {resp.status_code}"
         if isinstance(detail, dict):
             detail = detail.get("message") or str(detail)
+        elif isinstance(detail, (list, tuple)):
+            detail = json.dumps(detail, ensure_ascii=False)[:1000]
         raise HTTPException(status_code=502 if resp.status_code >= 500 else resp.status_code, detail=str(detail))
     return data
 
@@ -209,16 +214,20 @@ async def create_heisenberg_task(payload: HeisenbergTask, _: None = Depends(veri
             },
             timeout=90.0,
         )
-        choices = result.get("choices") if isinstance(result, dict) else None
+        choices = result.get("choices")
         text = ""
         if isinstance(choices, list) and choices:
-            message = choices[0].get("message", {}) if isinstance(choices[0], dict) else {}
+            first = choices[0]
+            message = first.get("message", {}) if isinstance(first, dict) else {}
             text = str(message.get("content", "")).strip() if isinstance(message, dict) else ""
+        if not text:
+            raise HTTPException(status_code=502, detail="STARNET completion returned no response text")
+
         record.update({
             "status": "completed",
             "result": text,
             "response": text,
-            "usage": result.get("usage") if isinstance(result, dict) else None,
+            "usage": result.get("usage"),
             "updatedAt": datetime.now(timezone.utc).isoformat(),
             "logs": record["logs"] + ["completed by STARNET agent runtime"],
             "receipt": {"source": "starnet-v1", "task_id": task_id, "completed": True},
