@@ -61,7 +61,8 @@ jobs:
           set -euo pipefail
           HERMES_REPO="${HERMES_REPO:-/opt/pauli-hermes-agent}"
           STARNET_REPO=/opt/pauli-starnet
-          STARNET_REF=feat/harness-backend
+          # Immutable, reviewed STARNET source. Do not replace with a mutable branch.
+          STARNET_COMMIT=208d0abc9cf1f14e53926703d7b49a73166fadbf
           STARNET_ENV=/etc/pauli-starnet.env
           STATE_DIR=/var/lib/pauli-starnet-gateway/tasks
 
@@ -74,13 +75,15 @@ jobs:
             exit 20
           fi
 
-          if [ -d "$STARNET_REPO/.git" ]; then
-            git -C "$STARNET_REPO" fetch origin "$STARNET_REF"
-            git -C "$STARNET_REPO" checkout "$STARNET_REF"
-            git -C "$STARNET_REPO" reset --hard "origin/$STARNET_REF"
-          else
-            git clone --branch "$STARNET_REF" --single-branch https://github.com/executiveusa/pauli-starnet.git "$STARNET_REPO"
+          if [ ! -d "$STARNET_REPO/.git" ]; then
+            git clone --no-checkout https://github.com/executiveusa/pauli-starnet.git "$STARNET_REPO"
           fi
+          git -C "$STARNET_REPO" fetch --force origin "$STARNET_COMMIT"
+          git -C "$STARNET_REPO" checkout --detach "$STARNET_COMMIT"
+          test "$(git -C "$STARNET_REPO" rev-parse HEAD)" = "$STARNET_COMMIT" || {
+            echo 'STARNET immutable source verification failed' >&2
+            exit 26
+          }
 
           command -v node >/dev/null 2>&1 || { echo 'Node.js is required on VPS' >&2; exit 21; }
           command -v npm >/dev/null 2>&1 || { echo 'npm is required on VPS' >&2; exit 21; }
@@ -170,10 +173,13 @@ jobs:
 
           mission_id="$(printf '%s' "$response" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("mission_id") or d.get("task_id") or d.get("id") or "")')"
           status="$(printf '%s' "$response" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("status", ""))')"
+          result_text="$(printf '%s' "$response" | python3 -c 'import json,sys; print(str(json.load(sys.stdin).get("result", "")).strip())')"
           test -n "$mission_id" || { echo 'Heisenberg proof returned no mission id' >&2; exit 25; }
           test "$status" = completed || { echo "Heisenberg proof status was $status" >&2; exit 25; }
+          test -n "$result_text" || { echo 'Heisenberg proof returned blank result' >&2; exit 25; }
 
           echo "HEISENBERG_MISSION_ID=$mission_id"
+          echo "STARNET_COMMIT=$STARNET_COMMIT"
           echo 'STARNET_LOOPBACK=PASS'
           echo 'STARNET_HEALTH=PASS'
           echo 'HERMES_STARNET_ROUTE=PASS'
@@ -188,4 +194,5 @@ jobs:
             https://api.thepaulieffect.com/starnet/health >/dev/null
           echo 'PUBLIC_STARNET_GATEWAY=PASS' >> "$GITHUB_STEP_SUMMARY"
           echo "source_commit=${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"
+          echo 'starnet_commit=208d0abc9cf1f14e53926703d7b49a73166fadbf' >> "$GITHUB_STEP_SUMMARY"
           echo 'STARNET sidecar remains loopback-only; public ingress terminates at the existing Pauli/Hermes API boundary.' >> "$GITHUB_STEP_SUMMARY"
