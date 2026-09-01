@@ -165,15 +165,19 @@ in
       fi
     '';
 
-  # Build `fix-lockfiles` bin that checks/updates the single npmDepsHash
-  #   fix-lockfiles --check   # exit 1 if any hash is stale
-  #   fix-lockfiles --apply   # rewrite stale hashes in place
+  # Build `fix-lockfiles` bin that checks/updates the single npmDepsHash.
+  # The Nix derivation is authoritative: a successful npmDeps build proves
+  # the current hash is valid. Only Nix's own `got:` mismatch may trigger a
+  # rewrite; prefetch-npm-deps is deliberately not used as a correctness gate
+  # because it can hash a workspace differently from fetchNpmDeps.
+  #   fix-lockfiles --check   # exit 1 if Nix reports a stale hash
+  #   fix-lockfiles --apply   # rewrite a Nix-reported stale hash in place
   #   fix-lockfiles           # alias of --apply
   # Writes machine-readable fields (stale, changed, report) to $GITHUB_OUTPUT
   # when set, so CI workflows can post a sticky PR comment directly.
   mkFixLockfiles =
     {
-      attr, # flake package attr for fallback verification build, e.g. "tui"
+      attr, # flake package attr for authoritative verification build, e.g. "tui"
     }:
     pkgs.writeShellScriptBin "fix-lockfiles" ''
       set -uox pipefail
@@ -191,11 +195,6 @@ in
       REPO_ROOT="$(git rev-parse --show-toplevel)"
       cd "$REPO_ROOT"
 
-      # When running in GH Actions, emit Markdown links in the report pointing
-      # at the offending line of the nix file (and the lockfile) at the exact
-      # commit that was checked. LINK_SHA should be set by the workflow to the
-      # PR head SHA; falls back to GITHUB_SHA (which on pull_request is the
-      # test-merge commit, still browseable).
       LINK_SERVER="''${GITHUB_SERVER_URL:-https://github.com}"
       LINK_REPO="''${GITHUB_REPOSITORY:-}"
       LINK_SHA="''${LINK_SHA:-''${GITHUB_SHA:-}}"
@@ -203,39 +202,38 @@ in
       STALE=0
       FIXED=0
       REPORT=""
-
-      # All workspace packages share the root package-lock.json, so
-      # we only need to check the hash once.
       LOCK_FILE="package-lock.json"
       LIB_FILE="nix/lib.nix"
-      NEW_HASH=$(${pkgs.lib.getExe pkgs.prefetch-npm-deps} "$LOCK_FILE" 2>/dev/null)
-      if [ -z "$NEW_HASH" ]; then
-        echo "prefetch-npm-deps failed, falling back to nix build" >&2
-        OUTPUT=$(nix build ".#${attr}.npmDeps" --no-link --print-build-logs 2>&1)
-        STATUS=$?
-        if [ "$STATUS" -eq 0 ]; then
-          echo "ok (via nix build)"
-          exit 0
-        fi
-        NEW_HASH=$(echo "$OUTPUT" | awk '/got:/ {print $2; exit}')
-        if [ -z "$NEW_HASH" ]; then
-          if echo "$OUTPUT" | grep -qE "throttled|HTTP error 418|substituter .* is disabled|some outputs of .* are not valid"; then
-            echo "skipped (transient cache failure — see primary nix build for real status)" >&2
-            echo "$OUTPUT" | tail -8 >&2
-            exit 0
-          fi
-          echo "build failed with no hash mismatch:" >&2
-          echo "$OUTPUT" | tail -40 >&2
-          exit 1
-        fi
-      fi
 
       OLD_HASH=$(grep -oE 'npmDepsHash = "sha256-[^"]+"' "$LIB_FILE" | head -1 \
         | sed -E 's/npmDepsHash = "(.*)"/\1/')
 
-      if [ "$NEW_HASH" = "$OLD_HASH" ]; then
-        echo "ok"
+      # First prove the hash with the exact derivation that consumes it.
+      # If it succeeds, the hash is valid even if an external prefetch helper
+      # would compute something else for the workspace lockfile.
+      OUTPUT=$(nix build ".#${attr}.npmDeps" --no-link --print-build-logs 2>&1)
+      STATUS=$?
+      if [ "$STATUS" -eq 0 ]; then
+        echo "ok (verified by nix build)"
         exit 0
+      fi
+
+      NEW_HASH=$(echo "$OUTPUT" | awk '/got:/ {print $2; exit}')
+      if [ -z "$NEW_HASH" ]; then
+        if echo "$OUTPUT" | grep -qE "throttled|HTTP error 418|substituter .* is disabled|some outputs of .* are not valid"; then
+          echo "skipped (transient cache failure — see primary nix build for real status)" >&2
+          echo "$OUTPUT" | tail -8 >&2
+          exit 0
+        fi
+        echo "build failed with no hash mismatch:" >&2
+        echo "$OUTPUT" | tail -40 >&2
+        exit 1
+      fi
+
+      if [ "$NEW_HASH" = "$OLD_HASH" ]; then
+        echo "nix build failed but reported the already-configured hash; refusing to rewrite" >&2
+        echo "$OUTPUT" | tail -40 >&2
+        exit 1
       fi
 
       HASH_LINE=$(grep -n 'npmDepsHash = "sha256-' "$LIB_FILE" | head -1 | cut -d: -f1)
@@ -252,24 +250,12 @@ in
 
       if [ "$MODE" = "--apply" ]; then
         sed -i -E "s|npmDepsHash = \"sha256-[^\"]+\";|npmDepsHash = \"$NEW_HASH\";|" "$LIB_FILE"
-        if ! nix build ".#${attr}.npmDeps" --no-link --print-build-logs 2>/dev/null; then
-          # prefetch-npm-deps may disagree with fetchNpmDeps (it hashes
-          # the lockfile contents, not the full source tree).  Extract the
-          # correct hash from the nix build error and retry.
-          RETRY_OUTPUT=$(nix build ".#${attr}.npmDeps" --no-link --print-build-logs 2>&1)
-          CORRECT_HASH=$(echo "$RETRY_OUTPUT" | awk '/got:/ {print $2; exit}')
-          if [ -n "$CORRECT_HASH" ]; then
-            echo "prefetch-npm-deps gave $NEW_HASH but nix wants $CORRECT_HASH — retrying" >&2
-            sed -i -E "s|npmDepsHash = \"sha256-[^\"]+\";|npmDepsHash = \"$CORRECT_HASH\";|" "$LIB_FILE"
-            if ! nix build ".#${attr}.npmDeps" --no-link --print-build-logs; then
-              echo "verification build failed after hash retry" >&2
-              exit 1
-            fi
-            NEW_HASH="$CORRECT_HASH"
-          else
-            echo "verification build failed after hash update" >&2
-            exit 1
-          fi
+        VERIFY_OUTPUT=$(nix build ".#${attr}.npmDeps" --no-link --print-build-logs 2>&1)
+        VERIFY_STATUS=$?
+        if [ "$VERIFY_STATUS" -ne 0 ]; then
+          echo "verification build failed after applying Nix-reported hash" >&2
+          echo "$VERIFY_OUTPUT" | tail -40 >&2
+          exit 1
         fi
         FIXED=1
         echo "fixed"
@@ -281,7 +267,7 @@ in
           [ "$FIXED" -eq 1 ] && echo "changed=true" || echo "changed=false"
           if [ -n "$REPORT" ]; then
             echo "report<<REPORT_EOF"
-            printf "%s" "$REPORT"
+            printf "%s\n" "$REPORT"
             echo "REPORT_EOF"
           fi
         } >> "$GITHUB_OUTPUT"
