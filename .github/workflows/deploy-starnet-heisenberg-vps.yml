@@ -61,10 +61,28 @@ jobs:
           set -euo pipefail
           HERMES_REPO="${HERMES_REPO:-/opt/pauli-hermes-agent}"
           STARNET_REPO=/opt/pauli-starnet
-          # Immutable, reviewed STARNET source. Do not replace with a mutable branch.
-          STARNET_COMMIT=208d0abc9cf1f14e53926703d7b49a73166fadbf
+          # Immutable, reviewed STARNET source including merged Pauli's Place City OS.
+          STARNET_COMMIT=4d502798455c1f3b06f9689e956aa55a41a3fa6b
           STARNET_ENV=/etc/pauli-starnet.env
           STATE_DIR=/var/lib/pauli-starnet-gateway/tasks
+          ROLLBACK_ROOT=/var/backups/pauli-starnet
+          ROLLBACK_DIR="$ROLLBACK_ROOT/$(date -u +%Y%m%dT%H%M%SZ)"
+
+          # Preserve the last-known service/config/runtime before any destructive
+          # git reset, environment mutation, gateway patch, or systemd replacement.
+          sudo install -d -m 700 "$ROLLBACK_ROOT" "$ROLLBACK_DIR"
+          if [ -f "$HERMES_REPO/api_server.py" ]; then
+            sudo cp -a "$HERMES_REPO/api_server.py" "$ROLLBACK_DIR/api_server.py"
+          fi
+          if [ -f "$STARNET_ENV" ]; then
+            sudo cp -a "$STARNET_ENV" "$ROLLBACK_DIR/pauli-starnet.env"
+            sudo chmod 600 "$ROLLBACK_DIR/pauli-starnet.env"
+          fi
+          if [ -f /etc/systemd/system/pauli-starnet.service ]; then
+            sudo cp -a /etc/systemd/system/pauli-starnet.service "$ROLLBACK_DIR/pauli-starnet.service"
+          fi
+          sudo sh -c "printf '%s\n' 'created_utc=$(date -u +%FT%TZ)' > '$ROLLBACK_DIR/manifest.txt'"
+          sudo chmod -R go-rwx "$ROLLBACK_DIR"
 
           if [ -d "$HERMES_REPO/.git" ]; then
             git -C "$HERMES_REPO" fetch origin main
@@ -142,6 +160,8 @@ jobs:
 
           curl --fail --silent --max-time 5 http://127.0.0.1:8787/health >/dev/null
           curl --fail --silent --max-time 5 http://127.0.0.1:8642/starnet/health >/dev/null
+          sudo systemctl is-active --quiet pauli-starnet.service
+          sudo systemctl is-enabled --quiet pauli-starnet.service
 
           socket_line="$(ss -ltnp 2>/dev/null | grep ':8787 ' | head -1 || true)"
           test -n "$socket_line" || { echo 'STARNET socket not found' >&2; exit 22; }
@@ -169,7 +189,6 @@ jobs:
             -H 'Content-Type: application/json' \
             --data "$payload" \
             http://127.0.0.1:8642/starnet/v1/heisenberg/tasks)"
-          unset gateway_token
 
           mission_id="$(printf '%s' "$response" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("mission_id") or d.get("task_id") or d.get("id") or "")')"
           status="$(printf '%s' "$response" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("status", ""))')"
@@ -178,8 +197,24 @@ jobs:
           test "$status" = completed || { echo "Heisenberg proof status was $status" >&2; exit 25; }
           test -n "$result_text" || { echo 'Heisenberg proof returned blank result' >&2; exit 25; }
 
+          # Prove task receipt durability across a gateway service restart.
+          sudo systemctl restart hermes-api.service
+          for i in $(seq 1 20); do
+            if curl --fail --silent --max-time 3 http://127.0.0.1:8642/starnet/health >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          receipt="$(curl --fail --silent --show-error --max-time 15 \
+            -H "Authorization: Bearer $gateway_token" \
+            "http://127.0.0.1:8642/starnet/v1/heisenberg/tasks/$mission_id")"
+          unset gateway_token
+          receipt_id="$(printf '%s' "$receipt" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("mission_id") or d.get("task_id") or d.get("id") or "")')"
+          test "$receipt_id" = "$mission_id" || { echo 'Mission receipt did not survive gateway restart' >&2; exit 27; }
+
           echo "HEISENBERG_MISSION_ID=$mission_id"
           echo "STARNET_COMMIT=$STARNET_COMMIT"
+          echo "ROLLBACK_SNAPSHOT=$ROLLBACK_DIR"
+          echo 'STARNET_SERVICE_PERSISTENCE=PASS'
+          echo 'MISSION_RECEIPT_RESTART_DURABILITY=PASS'
           echo 'STARNET_LOOPBACK=PASS'
           echo 'STARNET_HEALTH=PASS'
           echo 'HERMES_STARNET_ROUTE=PASS'
@@ -194,5 +229,5 @@ jobs:
             https://api.thepaulieffect.com/starnet/health >/dev/null
           echo 'PUBLIC_STARNET_GATEWAY=PASS' >> "$GITHUB_STEP_SUMMARY"
           echo "source_commit=${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"
-          echo 'starnet_commit=208d0abc9cf1f14e53926703d7b49a73166fadbf' >> "$GITHUB_STEP_SUMMARY"
+          echo 'starnet_commit=4d502798455c1f3b06f9689e956aa55a41a3fa6b' >> "$GITHUB_STEP_SUMMARY"
           echo 'STARNET sidecar remains loopback-only; public ingress terminates at the existing Pauli/Hermes API boundary.' >> "$GITHUB_STEP_SUMMARY"
