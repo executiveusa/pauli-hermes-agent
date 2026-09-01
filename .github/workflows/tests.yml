@@ -14,6 +14,8 @@ on:
 
 permissions:
   contents: read
+  issues: write
+  pull-requests: write
 
 # Cancel in-progress runs for the same PR/branch
 concurrency:
@@ -44,14 +46,42 @@ jobs:
           uv pip install -e ".[all,dev]" pytest-xdist==3.8.0
 
       - name: Run tests
+        id: unit
+        continue-on-error: true
+        shell: bash
         run: |
+          set -o pipefail
           source .venv/bin/activate
-          python -m pytest tests/ -q --ignore=tests/integration --ignore=tests/e2e --tb=short -n auto
+          python -m pytest tests/ -q --ignore=tests/integration --ignore=tests/e2e --tb=short -n auto 2>&1 | tee pytest.log
         env:
           # Ensure tests don't accidentally call real APIs
           OPENROUTER_API_KEY: ""
           OPENAI_API_KEY: ""
           NOUS_API_KEY: ""
+
+      - name: Post unit-test failure diagnostic
+        if: steps.unit.outcome == 'failure' && github.event_name == 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          {
+            echo '### Unit test failure diagnostic'
+            echo
+            echo 'Current PR head: `${{ github.event.pull_request.head.sha }}`'
+            echo
+            echo '```text'
+            tail -n 140 pytest.log
+            echo '```'
+          } > /tmp/pytest-comment.md
+          gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file /tmp/pytest-comment.md
+
+      - name: Enforce unit-test result
+        if: steps.unit.outcome == 'failure'
+        run: |
+          echo "::error::Unit test suite failed. Exact traceback was captured in pytest.log and posted to the PR."
+          exit 1
 
   e2e:
     runs-on: ubuntu-latest
