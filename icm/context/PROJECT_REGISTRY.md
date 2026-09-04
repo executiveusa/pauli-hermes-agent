@@ -21,7 +21,10 @@ This file is the minimum cross-repo map for the owner's personal Hermes. It is n
 ### PARÉ
 - Canonical repo: `executiveusa/PARE`.
 - Role: sovereign AI studio, project system, runtime-neutral execution surface, owner-controlled files/data/infrastructure.
-- Current operating path: Studio -> sovereign runtime -> provider/agent -> SSE/artifact -> verification.
+- Current operating path: PARÉ effect/crossword landing -> explicit Studio entry -> sovereign runtime -> provider/agent -> SSE/artifact -> verification.
+- **Mandatory human-entry contract:** a fresh browser entry and any un-gated direct/deep Studio link must pass through the PARÉ crossword/Fusion landing first. The landing is the doorway, not a marketing page that can be bypassed by the primary navigation.
+- **Studio Fusion contract:** the real Studio mounts `DiffusionOverlay`; streamed assistant prose may diffuse as presentation while semantic source text remains unchanged. Code/tool surfaces are not rewritten by the effect, and reduced-motion/on-off controls remain authoritative.
+- Machine callers do not need the visual entry ceremony: trusted API/MCP/CLI clients use semantic interfaces and the same durable project state.
 - PARÉ is the primary product. New frameworks are admitted only when they strengthen PARÉ rather than create a competing control plane.
 
 ### Loop Engineering / Gauntlet
