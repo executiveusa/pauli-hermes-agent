@@ -23,7 +23,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
@@ -41,12 +41,15 @@ jobs:
         run: |
           uv venv .venv --python 3.11
           source .venv/bin/activate
-          uv pip install -e ".[all,dev]" pytest-xdist==3.8.0
+          uv pip install -e ".[all,dev]"
 
       - name: Run tests
         run: |
           source .venv/bin/activate
-          python -m pytest tests/ -q --ignore=tests/integration --ignore=tests/e2e --tb=short -n auto
+          # This suite contains shared process/global state and local test servers.
+          # Running it with xdist caused broad cross-test interference and hid
+          # the real release signal, so keep the canonical unit gate serial.
+          python -m pytest tests/ -q --ignore=tests/integration --ignore=tests/e2e --tb=short
         env:
           # Ensure tests don't accidentally call real APIs
           OPENROUTER_API_KEY: ""
