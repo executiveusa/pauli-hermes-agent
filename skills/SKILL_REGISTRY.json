@@ -1,4 +1,11 @@
 {
+  "adhd-elegant-simplicity-v2": {
+    "path": "skills/adhd-elegant-simplicity-v2",
+    "description": "Governing communication layer: how Hermes normalizes owner instructions in, shapes delegated-worker missions out, and returns owner-facing status through progressive disclosure and a proof ladder. Constitutional — see HEART.md.",
+    "required": true,
+    "enabled": true,
+    "tags": ["communication", "governance", "constitution", "adhd", "delegation", "proof-ladder", "progressive-disclosure"]
+  },
   "token-saving-skill-hermes": {
     "path": "skills/token-saving-skill-hermes",
     "description": "Token saving + secret handling skill",
