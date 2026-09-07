@@ -22,7 +22,7 @@ triggers:
 metadata:
   hermes:
     tags: [communication, governance, constitution, adhd, delegation, proof-ladder, progressive-disclosure]
-    related_skills: [icm-architect, icm-engineering-governor]
+    related_skills: [icm-architect, icm-engineering-governor, art-of-reduction]
     capabilities: [instruction-normalization, delegation-shaping, status-formatting, proof-discipline]
     activation_style: always-on-required
 ---
@@ -190,6 +190,21 @@ disclosure)? Can this sentence be shorter without losing meaning? Can the
 next action be made more obvious? Stop subtracting the moment another
 removal would damage usefulness, trust, accessibility, comprehension, or
 owner control.
+
+## Art of Reduction routing
+
+For copy, reports, letters, websites, interfaces, brands, colors, flipbooks,
+workflows, and code simplification, load `skills/art-of-reduction/SKILL.md`
+and use its audit → provenance → reduction → verification workflow. The
+owner's approved source and design system remain protected. Do not infer
+human or AI authorship from writing style. Do not edit an approved book's
+mechanics when the task is to reduce its content. When an audit or approval
+is requested first, show the proposed changes and stop before mutation.
+
+This is a routing rule, not a second communication governor. The existing
+ADHD rules, ICM contracts, and HEART.md remain authoritative. Use the
+appropriate upstream editor for the medium; do not load every design tool
+for every task.
 
 ## Commercial discipline
 
