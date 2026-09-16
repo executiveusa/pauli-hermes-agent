@@ -209,5 +209,15 @@
     "tags": ["youtube", "channel-setup", "browser-control", "branding", "thumbnails", "monetization", "icm", "adhd", "story-routing"],
     "triggers": ["set up a YouTube channel", "create my YouTube channel", "launch a YouTube channel", "YouTube channel setup", "make a YouTube video", "make a Short", "choose a story type"],
     "entry_point": "/youtube-channel-operator"
+  },
+  "avatar-world-builder": {
+    "path": "skills/creative/avatar-world-builder",
+    "description": "ICM-governed reusable avatar-world workflow: presents human choices from compatible open catalogs, records license and scene manifests, validates runtime fallbacks, and preserves explicit paid-provider and production-publish boundaries.",
+    "required": false,
+    "enabled": true,
+    "version": "1.0.0",
+    "tags": ["avatar", "3d", "webgl", "creative", "icm", "scene-manifest", "licensing", "meshy"],
+    "triggers": ["build an avatar world", "make me an avatar site", "make this avatar reusable", "avatar world builder", "create a 3D avatar"],
+    "entry_point": "/avatar-world-builder"
   }
 }
