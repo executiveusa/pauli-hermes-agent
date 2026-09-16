@@ -4,15 +4,7 @@
     "description": "Governing communication layer: how Hermes normalizes owner instructions in, shapes delegated-worker missions out, and returns owner-facing status through progressive disclosure and a proof ladder. Constitutional — see HEART.md.",
     "required": true,
     "enabled": true,
-    "tags": [
-      "communication",
-      "governance",
-      "constitution",
-      "adhd",
-      "delegation",
-      "proof-ladder",
-      "progressive-disclosure"
-    ]
+    "tags": ["communication", "governance", "constitution", "adhd", "delegation", "proof-ladder", "progressive-disclosure"]
   },
   "token-saving-skill-hermes": {
     "path": "skills/token-saving-skill-hermes",
@@ -60,16 +52,7 @@
     "description": "Governed Seattle sovereign-AI experiment for isolated local nodes, approved CommunityResource sharing, leakage and tamper tests, Freenet-compatible transport, and bounded go-to-market pilots",
     "required": false,
     "enabled": true,
-    "tags": [
-      "freenet",
-      "sovereign-ai",
-      "peer-to-peer",
-      "seattle",
-      "community-resources",
-      "privacy",
-      "local-ai",
-      "workflow"
-    ]
+    "tags": ["freenet", "sovereign-ai", "peer-to-peer", "seattle", "community-resources", "privacy", "local-ai", "workflow"]
   },
   "campaign-factory": {
     "path": "skills/studio/campaign-factory",
@@ -95,29 +78,8 @@
     "required": false,
     "enabled": true,
     "version": "1.0.0",
-    "tags": [
-      "icm",
-      "browser-control",
-      "bluehost",
-      "hostinger",
-      "cpanel",
-      "hpanel",
-      "webflow",
-      "deployment",
-      "migration",
-      "restore",
-      "cloneflow",
-      "rollback"
-    ],
-    "triggers": [
-      "deploy this site to Bluehost",
-      "migrate this site to Bluehost",
-      "restore this Bluehost site",
-      "deploy this site to Hostinger",
-      "migrate this site to Hostinger",
-      "install this website on shared hosting",
-      "publish this Cloneflow export"
-    ],
+    "tags": ["icm", "browser-control", "bluehost", "hostinger", "cpanel", "hpanel", "webflow", "deployment", "migration", "restore", "cloneflow", "rollback"],
+    "triggers": ["deploy this site to Bluehost", "migrate this site to Bluehost", "restore this Bluehost site", "deploy this site to Hostinger", "migrate this site to Hostinger", "install this website on shared hosting", "publish this Cloneflow export"],
     "entry_point": "/browser-hosting-deployer"
   },
   "agent-maxx": {
@@ -126,24 +88,8 @@
     "required": true,
     "enabled": true,
     "version": "1.0.0",
-    "tags": [
-      "maxx",
-      "hermes",
-      "icm",
-      "orchestration",
-      "executive-agent",
-      "skills",
-      "approvals",
-      "customer-experience"
-    ],
-    "triggers": [
-      "agent maxx",
-      "maxx handle this",
-      "maxx do this for me",
-      "figure out the outcome",
-      "run this project",
-      "take care of this"
-    ],
+    "tags": ["maxx", "hermes", "icm", "orchestration", "executive-agent", "skills", "approvals", "customer-experience"],
+    "triggers": ["agent maxx", "maxx handle this", "maxx do this for me", "figure out the outcome", "run this project", "take care of this"],
     "entry_point": "/agent-maxx"
   },
   "strix-batch-security-testing": {
@@ -151,33 +97,14 @@
     "description": "Automated batch security testing for GitHub repos using Strix AI agents. Spawns parallel agents to detect and fix OWASP vulnerabilities across multiple applications with real exploit validation.",
     "required": false,
     "enabled": true,
-    "tags": [
-      "security",
-      "penetration-testing",
-      "strix",
-      "parallel-agents",
-      "vulnerability-scanning",
-      "batch-testing",
-      "owasp"
-    ]
+    "tags": ["security", "penetration-testing", "strix", "parallel-agents", "vulnerability-scanning", "batch-testing", "owasp"]
   },
   "printing-press-monetization": {
     "path": "skills/printing-press-monetization",
     "description": "5 high-leverage revenue streams built on CLI Printing Press. Spawns parallel agents to build PPaaS, crypto intelligence CLI, idea research CLI, MCP marketplace, and a developer agency. Real money in any currency including crypto.",
     "required": false,
     "enabled": true,
-    "tags": [
-      "monetization",
-      "revenue",
-      "cli-printing-press",
-      "saas",
-      "crypto",
-      "bitcoin",
-      "developer-tools",
-      "mcp",
-      "agency",
-      "passive-income"
-    ]
+    "tags": ["monetization", "revenue", "cli-printing-press", "saas", "crypto", "bitcoin", "developer-tools", "mcp", "agency", "passive-income"]
   },
   "youtube-channel-scraper": {
     "path": "skills/youtube-channel-scraper",
@@ -185,25 +112,8 @@
     "required": false,
     "enabled": true,
     "version": "2.0.0",
-    "tags": [
-      "scraping",
-      "youtube",
-      "data-extraction",
-      "scrapling",
-      "stealth",
-      "playlist",
-      "automation",
-      "json",
-      "icm-workflow",
-      "auto-activation"
-    ],
-    "triggers": [
-      "scrape YouTube channel",
-      "extract videos from",
-      "download YouTube data",
-      "get all videos from",
-      "archive this channel"
-    ],
+    "tags": ["scraping", "youtube", "data-extraction", "scrapling", "stealth", "playlist", "automation", "json", "icm-workflow", "auto-activation"],
+    "triggers": ["scrape YouTube channel", "extract videos from", "download YouTube data", "get all videos from", "archive this channel"],
     "entry_point": "/youtube-channel-scraper"
   },
   "youtube-intelligence-pipeline": {
@@ -211,36 +121,14 @@
     "description": "Full YouTube channel intelligence pipeline: multi-channel scrape with Scrapling, transcript extraction, Claude-powered per-video analysis and cross-channel synthesis, produces Obsidian-ready second brain with trends, content gaps, prioritized actions, content calendar, collaborators, and tools.",
     "required": false,
     "enabled": true,
-    "tags": [
-      "youtube",
-      "scraping",
-      "intelligence",
-      "second-brain",
-      "content-strategy",
-      "research",
-      "transcripts",
-      "claude",
-      "obsidian",
-      "automation",
-      "pipeline",
-      "synthesis"
-    ]
+    "tags": ["youtube", "scraping", "intelligence", "second-brain", "content-strategy", "research", "transcripts", "claude", "obsidian", "automation", "pipeline", "synthesis"]
   },
   "gauntlet-loop": {
     "path": "skills/gauntlet-loop",
     "description": "Turns any goal into one short paste-ready gauntlet loop prompt. Sets a concrete quality bar, splits work into small judgeable pieces, runs a builder and a separate harsh critic on each, compares blind against the bar, and loops until it wins. Trigger: /gauntlet-loop, 'gauntlet this', 'loop until it beats X'.",
     "required": false,
     "enabled": true,
-    "tags": [
-      "quality",
-      "loop",
-      "critic",
-      "builder",
-      "bar",
-      "agent-pattern",
-      "prompt-engineering",
-      "multi-agent"
-    ]
+    "tags": ["quality", "loop", "critic", "builder", "bar", "agent-pattern", "prompt-engineering", "multi-agent"]
   },
   "cinematic-master-editor": {
     "path": "skills/studio/cinematic-master-editor",
@@ -248,28 +136,8 @@
     "required": false,
     "enabled": true,
     "version": "0.1.0",
-    "tags": [
-      "video",
-      "cinematic",
-      "editing",
-      "directing",
-      "capcut",
-      "mcp",
-      "documentary",
-      "anime",
-      "short-drama",
-      "remotion",
-      "icm"
-    ],
-    "triggers": [
-      "make a cinematic video",
-      "edit this video",
-      "create a documentary",
-      "make an anime sequence",
-      "make a short drama",
-      "create a CapCut draft",
-      "cinematic master editor"
-    ],
+    "tags": ["video", "cinematic", "editing", "directing", "capcut", "mcp", "documentary", "anime", "short-drama", "remotion", "icm"],
+    "triggers": ["make a cinematic video", "edit this video", "create a documentary", "make an anime sequence", "make a short drama", "create a CapCut draft", "cinematic master editor"],
     "entry_point": "/cinematic-master-editor"
   },
   "cinematic-2-5d-scenes": {
@@ -278,27 +146,8 @@
     "required": false,
     "enabled": true,
     "version": "1.0.0",
-    "tags": [
-      "cinematic",
-      "2.5d",
-      "parallax",
-      "scroll",
-      "image",
-      "html",
-      "css",
-      "canvas",
-      "mobile",
-      "icm",
-      "gauntlet"
-    ],
-    "triggers": [
-      "make this picture cinematic",
-      "animate this still image",
-      "make a living photograph",
-      "build a 2.5D scene",
-      "create a cinematic scroll scene",
-      "turn this photo into a moving web scene"
-    ],
+    "tags": ["cinematic", "2.5d", "parallax", "scroll", "image", "html", "css", "canvas", "mobile", "icm", "gauntlet"],
+    "triggers": ["make this picture cinematic", "animate this still image", "make a living photograph", "build a 2.5D scene", "create a cinematic scroll scene", "turn this photo into a moving web scene"],
     "entry_point": "/cinematic-2-5d-scenes"
   },
   "pauliverse-orchestrator": {
@@ -307,27 +156,8 @@
     "required": true,
     "enabled": true,
     "version": "1.0.0",
-    "tags": [
-      "pauliverse",
-      "icm",
-      "portfolio",
-      "ontology",
-      "consolidation",
-      "second-brain",
-      "revenue",
-      "decision-making",
-      "multi-agent"
-    ],
-    "triggers": [
-      "Pauliverse",
-      "portfolio census",
-      "consolidate repos",
-      "master brain",
-      "master ontology",
-      "financial opportunity",
-      "route to Pauli's Place",
-      "second brain portfolio"
-    ],
+    "tags": ["pauliverse", "icm", "portfolio", "ontology", "consolidation", "second-brain", "revenue", "decision-making", "multi-agent"],
+    "triggers": ["Pauliverse", "portfolio census", "consolidate repos", "master brain", "master ontology", "financial opportunity", "route to Pauli's Place", "second brain portfolio"],
     "entry_point": "/pauliverse-orchestrator"
   },
   "new-world-kids-fundraising": {
@@ -336,25 +166,8 @@
     "required": false,
     "enabled": true,
     "version": "1.0.0",
-    "tags": [
-      "new-world-kids",
-      "nonprofit",
-      "fundraising",
-      "fundrazr",
-      "grants",
-      "hsi",
-      "icm",
-      "browser-control",
-      "governance"
-    ],
-    "triggers": [
-      "New World Kids fundraising",
-      "FundRazr",
-      "HSI fiscal sponsor",
-      "NW Kids grants",
-      "grant writing for NW Kids",
-      "raise money for Indigo Azul"
-    ],
+    "tags": ["new-world-kids", "nonprofit", "fundraising", "fundrazr", "grants", "hsi", "icm", "browser-control", "governance"],
+    "triggers": ["New World Kids fundraising", "FundRazr", "HSI fiscal sponsor", "NW Kids grants", "grant writing for NW Kids", "raise money for Indigo Azul"],
     "entry_point": "/new-world-kids-fundraising"
   },
   "scroll-media-operator": {
@@ -363,31 +176,8 @@
     "required": false,
     "enabled": true,
     "version": "1.0.0",
-    "tags": [
-      "scroll-media",
-      "social-media",
-      "youtube",
-      "shorts",
-      "reels",
-      "interactive-drop",
-      "icm",
-      "hermes",
-      "gauntlet",
-      "publishing",
-      "analytics"
-    ],
-    "triggers": [
-      "scroll media",
-      "make a viral short",
-      "make a YouTube Short",
-      "make a Reel",
-      "social media strategy",
-      "turn this story into content",
-      "story to action",
-      "run the social media system",
-      "publish this campaign",
-      "schedule this social campaign"
-    ],
+    "tags": ["scroll-media", "social-media", "youtube", "shorts", "reels", "interactive-drop", "icm", "hermes", "gauntlet", "publishing", "analytics"],
+    "triggers": ["scroll media", "make a viral short", "make a YouTube Short", "make a Reel", "social media strategy", "turn this story into content", "story to action", "run the social media system", "publish this campaign", "schedule this social campaign"],
     "entry_point": "/scroll-media-operator"
   },
   "social-drop-factory": {
@@ -396,31 +186,8 @@
     "required": false,
     "enabled": true,
     "version": "1.0.0",
-    "tags": [
-      "social-media",
-      "campaign",
-      "interactive-drop",
-      "microsite",
-      "personalized-sales",
-      "recruiting",
-      "nonprofit",
-      "local-service",
-      "webflow",
-      "github",
-      "content-system",
-      "multi-client"
-    ],
-    "triggers": [
-      "social drop",
-      "social media template",
-      "build this week's campaign",
-      "Monday Wednesday Friday content",
-      "personalized sales page",
-      "personalized outreach microsite",
-      "recruiting drop",
-      "turn this post into an interactive experience",
-      "use the social-media-template repo"
-    ],
+    "tags": ["social-media", "campaign", "interactive-drop", "microsite", "personalized-sales", "recruiting", "nonprofit", "local-service", "webflow", "github", "content-system", "multi-client"],
+    "triggers": ["social drop", "social media template", "build this week's campaign", "Monday Wednesday Friday content", "personalized sales page", "personalized outreach microsite", "recruiting drop", "turn this post into an interactive experience", "use the social-media-template repo"],
     "entry_point": "/social-drop-factory"
   },
   "riverside-flow": {
@@ -429,30 +196,8 @@
     "required": true,
     "enabled": true,
     "version": "1.0.0",
-    "tags": [
-      "riverside",
-      "podcast",
-      "interviews",
-      "fundraising",
-      "content",
-      "repurposing",
-      "ab-testing",
-      "analytics",
-      "relationships",
-      "icm",
-      "cron"
-    ],
-    "triggers": [
-      "Riverside",
-      "Riverside flow",
-      "record a podcast",
-      "podcast interview",
-      "turn this interview into content",
-      "Founder Story Sprint",
-      "funder interview",
-      "run Riverside A/B test",
-      "Riverside analytics"
-    ],
+    "tags": ["riverside", "podcast", "interviews", "fundraising", "content", "repurposing", "ab-testing", "analytics", "relationships", "icm", "cron"],
+    "triggers": ["Riverside", "Riverside flow", "record a podcast", "podcast interview", "turn this interview into content", "Founder Story Sprint", "funder interview", "run Riverside A/B test", "Riverside analytics"],
     "entry_point": "/riverside-flow"
   },
   "youtube-channel-operator": {
@@ -461,26 +206,8 @@
     "required": false,
     "enabled": true,
     "version": "1.0.0",
-    "tags": [
-      "youtube",
-      "channel-setup",
-      "browser-control",
-      "branding",
-      "thumbnails",
-      "monetization",
-      "icm",
-      "adhd",
-      "story-routing"
-    ],
-    "triggers": [
-      "set up a YouTube channel",
-      "create my YouTube channel",
-      "launch a YouTube channel",
-      "YouTube channel setup",
-      "make a YouTube video",
-      "make a Short",
-      "choose a story type"
-    ],
+    "tags": ["youtube", "channel-setup", "browser-control", "branding", "thumbnails", "monetization", "icm", "adhd", "story-routing"],
+    "triggers": ["set up a YouTube channel", "create my YouTube channel", "launch a YouTube channel", "YouTube channel setup", "make a YouTube video", "make a Short", "choose a story type"],
     "entry_point": "/youtube-channel-operator"
   },
   "avatar-world-builder": {
@@ -489,23 +216,8 @@
     "required": false,
     "enabled": true,
     "version": "1.0.0",
-    "tags": [
-      "avatar",
-      "3d",
-      "webgl",
-      "creative",
-      "icm",
-      "scene-manifest",
-      "licensing",
-      "meshy"
-    ],
-    "triggers": [
-      "build an avatar world",
-      "make me an avatar site",
-      "make this avatar reusable",
-      "avatar world builder",
-      "create a 3D avatar"
-    ],
+    "tags": ["avatar", "3d", "webgl", "creative", "icm", "scene-manifest", "licensing", "meshy"],
+    "triggers": ["build an avatar world", "make me an avatar site", "make this avatar reusable", "avatar world builder", "create a 3D avatar"],
     "entry_point": "/avatar-world-builder"
   }
 }
