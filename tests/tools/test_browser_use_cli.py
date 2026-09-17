@@ -188,6 +188,34 @@ class TestToolSurfaceSwap:
         assert "browser_exec" in names
 
 
+class TestSecretEgressRedaction:
+    """Cherry-picked from upstream NousResearch/hermes-agent a48debd3
+    ("fix(tools): redact vault values from browser exec output"), adapted to
+    the fork: the fork has no vault-fill registry, so this exercises the
+    generic pattern redactor (private keys, JWTs) with force=True."""
+
+    def test_exec_redacts_private_key_and_jwt_from_stdout_and_stderr(self, tmp_path, monkeypatch):
+        import json
+
+        secret_key = "-----BEGIN OPENSSH PRIVATE KEY-----\nfake-body\n-----END OPENSSH PRIVATE KEY-----"
+        secret_jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJVadQssw5c7"
+        body = (
+            "cat > /dev/null\n"
+            f'echo "stdout={secret_key}"\n'
+            f'echo "{secret_jwt}"\n'
+            f'echo "stderr={secret_jwt}" >&2\n'
+        )
+        cli = _fake_cli(tmp_path, body)
+        monkeypatch.setattr(bu_cli, "_find_cli", lambda: [cli])
+
+        result = json.loads(bu_cli.browser_exec("print(1)"))
+
+        serialized = json.dumps(result, ensure_ascii=False)
+        assert "BEGIN OPENSSH PRIVATE KEY" not in serialized
+        assert secret_jwt not in serialized
+        assert "REDACTED" in serialized
+
+
 class TestFindCli:
     """The tests/tools conftest pins _find_cli to None (host isolation);
     exercise the real function via the preserved _find_cli_unpatched."""
