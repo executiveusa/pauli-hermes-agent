@@ -564,6 +564,12 @@ def browser_exec(
     task_id: Optional[str] = None,
 ):
     """Run Python code through the browser-use CLI, and return its output"""
+    # Cherry-picked from upstream NousResearch/hermes-agent a48debd3
+    # ("fix(tools): redact vault values from browser exec output", partial port —
+    # the fork has no browser_vault_fill registry, but redact_sensitive_text
+    # still strips generic secret patterns: private keys, JWTs, auth headers,
+    # DB connstrings, URL secrets).
+    from agent.redact import redact_sensitive_text
     from tools.registry import tool_error, tool_result
 
     if not code or not code.strip():
@@ -660,16 +666,18 @@ def browser_exec(
     except OSError as e:
         return tool_error(f"Failed to launch browser-use CLI: {e}")
 
+    # Preserve raw stdout only for screenshot-path detection below; model
+    # history only ever sees the redacted copy (upstream a48debd3).
     result = {
         "success": proc.returncode == 0,
         "exit_code": proc.returncode,
-        "output": proc.stdout,
+        "output": redact_sensitive_text(proc.stdout, force=True),
     }
     if workspace:
         result["workspace"] = workspace
     if session:
         result["session"] = session
-    stderr = (proc.stderr or "").strip()
+    stderr = redact_sensitive_text((proc.stderr or "").strip(), force=True)
     if stderr:
         if len(stderr) > _STDERR_CAP_CHARS:
             stderr = stderr[:_STDERR_CAP_CHARS] + "\n… (stderr truncated)"
