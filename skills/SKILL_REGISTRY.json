@@ -1,4 +1,11 @@
 {
+  "holo-gestures": {
+    "path": "skills/holo-gestures",
+    "description": "Shared hand-gesture input layer (VisionClaw AX-022): classify pinch/tap/drag/flick/stretch/peace/point/fist/open-palm from camera hand landmarks via the AX-022 gateway. Canonical engine in executiveusa/VisionClaw; ported from zubair-trabzada/holo-gestures (MIT).",
+    "required": false,
+    "enabled": true,
+    "tags": ["gestures", "visionclaw", "ax022", "glasses", "shared-capability", "input-layer"]
+  },
   "adhd-elegant-simplicity-v2": {
     "path": "skills/adhd-elegant-simplicity-v2",
     "description": "Governing communication layer: how Hermes normalizes owner instructions in, shapes delegated-worker missions out, and returns owner-facing status through progressive disclosure and a proof ladder. Constitutional — see HEART.md.",
