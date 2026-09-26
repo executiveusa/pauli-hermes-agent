@@ -6,6 +6,7 @@ STARNET itself: it talks only to the loopback sidecar on 127.0.0.1.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import secrets
@@ -15,13 +16,14 @@ from typing import Any
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 router = APIRouter()
+_RUNNING: set[asyncio.Task] = set()
 
 STARNET_BASE = os.getenv("STARNET_LOCAL_URL", "http://127.0.0.1:8787").rstrip("/")
 STARNET_ENV_FILE = Path(os.getenv("STARNET_ENV_FILE", "/etc/pauli-starnet.env"))
-TERABITHIA_ENV_FILE = Path(os.getenv("TERABITHIA_ENV_FILE", "/opt/pauli-effect/terabithia/.env"))
 TASK_DIR = Path(os.getenv("STARNET_GATEWAY_STATE_DIR", "/var/lib/pauli-starnet-gateway/tasks"))
 
 
@@ -40,13 +42,11 @@ def _read_env_value(path: Path, key: str) -> str:
 
 
 def _gateway_token() -> str:
-    # Reuse the already-established server-to-server control-plane token when
-    # available; never return or log it.
+    # This gateway has its own credential. It never borrows the Terabithia or Hermes keys:
+    # one leaked token must not open three control planes. Never return or log it.
     return (
         os.getenv("STARNET_GATEWAY_TOKEN", "").strip()
-        or os.getenv("TERABITHIA_API_KEY", "").strip()
-        or _read_env_value(TERABITHIA_ENV_FILE, "TERABITHIA_API_KEY")
-        or os.getenv("HERMES_API_KEY", "").strip()
+        or _read_env_value(STARNET_ENV_FILE, "STARNET_GATEWAY_TOKEN")
     )
 
 
@@ -104,6 +104,40 @@ def _load_task(task_id: str) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail="Task receipt unreadable")
 
 
+def _settle_interrupted_tasks() -> int:
+    """Settle receipts a previous process left 'running'.
+
+    Background runs live in this process, so a restart or redeploy cancels them. Without this,
+    their durable receipts would read 'running' forever and pollers would never see an outcome.
+    """
+    settled = 0
+    try:
+        paths = list(TASK_DIR.glob("*.json"))
+    except OSError:
+        return 0
+    for path in paths:
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(record, dict) or record.get("status") != "running" or "id" not in record:
+            continue
+        record.update({
+            "status": "failed",
+            "error": "Interrupted by a gateway restart before completion. Nothing is claimed; resubmit the task.",
+            "updatedAt": datetime.now(timezone.utc).isoformat(),
+            "logs": list(record.get("logs") or []) + ["settled as failed on gateway startup"],
+            "receipt": {"source": "starnet-v1", "task_id": record["id"], "completed": False},
+        })
+        _save_task(record)
+        settled += 1
+    return settled
+
+
+# Runs once when the router is imported by api_server.py, i.e. on every process start.
+_settle_interrupted_tasks()
+
+
 class HeisenbergTask(BaseModel):
     task: str
     context: dict[str, Any] = Field(default_factory=dict)
@@ -155,22 +189,27 @@ async def city_status(_: None = Depends(verify_gateway_bearer)) -> dict[str, Any
         model_id = str(item.get("id", ""))
         if model_id and model_id != "starnet-agent":
             citizens.append({"id": model_id, "name": model_id, "status": "available"})
+    # Only report what STARNET actually answered. Districts, missions and approvals have no
+    # source on this seam yet, so they are marked unreported instead of shown as an empty city.
+    runtime_status = str(health_data.get("status") or "unknown")
     return {
-        "city": {"name": "Pauli's Place", "status": "online"},
+        "city": {"name": "Pauli's Place", "status": runtime_status},
         "districts": [],
         "citizens": citizens,
         "missions": [],
         "approvals": [],
         "experiments": [],
+        "unreported": ["districts", "missions", "approvals", "experiments"],
+        "degraded": runtime_status.lower() not in {"ok", "healthy", "online"},
         "revenue": {"verified": None},
         "costs": {"total": None},
-        "health": {"status": health_data.get("status", "unknown"), "version": health_data.get("version")},
+        "health": {"status": runtime_status, "version": health_data.get("version")},
         "generatedAt": datetime.now(timezone.utc).isoformat(),
     }
 
 
 @router.post("/v1/heisenberg/tasks")
-async def create_heisenberg_task(payload: HeisenbergTask, _: None = Depends(verify_gateway_bearer)) -> dict[str, Any]:
+async def create_heisenberg_task(payload: HeisenbergTask, _: None = Depends(verify_gateway_bearer)) -> JSONResponse:
     task = payload.task.strip()
     if not task:
         raise HTTPException(status_code=400, detail="Task cannot be empty")
@@ -199,7 +238,16 @@ async def create_heisenberg_task(payload: HeisenbergTask, _: None = Depends(veri
         "logs": ["accepted by Pauli/STARNET gateway"],
     }
     _save_task(record)
+    # Answer 202 at once and finish in the background. A synchronous 90 s call held the caller's
+    # request open (serverless timeouts) and made the Command Center's poll loop dead code.
+    job = asyncio.create_task(_run_heisenberg_task(record, system, task))
+    _RUNNING.add(job)  # keep a reference so the task is not garbage-collected mid-run
+    job.add_done_callback(_RUNNING.discard)
+    return JSONResponse(status_code=202, content=record)
 
+
+async def _run_heisenberg_task(record: dict[str, Any], system: str, task: str) -> None:
+    task_id = record["id"]
     try:
         result = await _starnet_json(
             "POST",
@@ -232,18 +280,16 @@ async def create_heisenberg_task(payload: HeisenbergTask, _: None = Depends(veri
             "logs": record["logs"] + ["completed by STARNET agent runtime"],
             "receipt": {"source": "starnet-v1", "task_id": task_id, "completed": True},
         })
-        _save_task(record)
-        return record
-    except HTTPException as exc:
+    except Exception as exc:  # noqa: BLE001 - any failure must settle the receipt as failed
+        detail = exc.detail if isinstance(exc, HTTPException) else exc.__class__.__name__
         record.update({
             "status": "failed",
-            "error": str(exc.detail),
+            "error": str(detail),
             "updatedAt": datetime.now(timezone.utc).isoformat(),
             "logs": record["logs"] + ["STARNET dispatch failed"],
             "receipt": {"source": "starnet-v1", "task_id": task_id, "completed": False},
         })
-        _save_task(record)
-        raise
+    _save_task(record)
 
 
 @router.get("/v1/heisenberg/tasks/{task_id}")
