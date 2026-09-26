@@ -1,0 +1,108 @@
+version: 0.1.0
+policy: deny-by-default
+
+required_context:
+  - tenant_id
+  - agent_instance_id
+  - human_owner_id
+  - authority_profile
+  - idempotency_key
+
+voice:
+  allowed:
+    - start_voice_session
+    - transcribe_stream
+    - synthesize_response
+    - interrupt_response
+    - detect_language
+  prohibited:
+    - clone_voice_without_documented_consent
+    - export_raw_voice_biometrics
+    - retain_audio_beyond_customer_policy
+
+prompt_enhancement:
+  allowed:
+    - extract_outcome
+    - structure_business_idea
+    - identify_missing_evidence
+    - generate_internal_brief
+    - propose_smallest_test
+  rules:
+    - preserve_user_intent
+    - label_inferences
+    - never_add_unverified_claims
+    - show_user_facing_summary_before_external_action
+
+postiz:
+  preferred_interface: mcp
+  fallback_interfaces: [cli, public-api]
+  automatic_read:
+    - integrationList
+    - integrationSchema
+    - posts_list
+    - analytics_platform
+    - analytics_post
+  automatic_draft:
+    - create_draft
+    - upload_approved_media
+    - build_content_calendar_draft
+  approval_required:
+    - schedule_post
+    - publish_now
+    - delete_post
+    - connect_or_disconnect_account
+    - alter_integration_settings
+    - replace_published_content
+  prohibited:
+    - bypass_platform_rules
+    - publish_without_tenant_authority
+    - use_other_tenant_integrations
+    - invent_reviews_or_customer_testimonials
+
+research:
+  allowed:
+    - inspect_customer_approved_sources
+    - inspect_public_official_sources
+    - compare_campaign_metrics
+  rules:
+    - separate_fact_inference_and_opinion
+    - prefer_primary_sources
+    - record_source_and_date
+    - do_not_treat_social_mentions_as_verified_fact
+
+browser:
+  automatic:
+    - read_approved_public_pages
+    - capture_sandbox_evidence
+  approval_required:
+    - form_submission
+    - booking_change
+    - message_send
+    - account_update
+    - purchase
+  prohibited:
+    - unrestricted_browser_profile
+    - credential_export
+    - hidden_employee_monitoring
+
+commerce:
+  automatic:
+    - draft_offer
+    - draft_campaign
+    - calculate_test_metrics
+  approval_required:
+    - spend_money
+    - change_price
+    - issue_refund
+    - confirm_booking
+
+receipts:
+  required_after_every_tool:
+    - target
+    - action
+    - authority
+    - result
+    - evidence
+    - side_effects
+    - rollback
+    - timestamp

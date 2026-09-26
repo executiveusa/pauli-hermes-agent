@@ -1,0 +1,18 @@
+{
+  "name": "vercel-imc-a2a-deploy-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Filesystem-orchestrated Vercel deployment visibility agent with A2A and GitHub webhook surfaces.",
+  "scripts": {
+    "serve": "node scripts/server.mjs",
+    "check": "node scripts/self-check.mjs",
+    "inventory": "node scripts/inventory-github-vercel.mjs",
+    "cycle": "node scripts/run-agent-cycle.mjs",
+    "verify-url": "node scripts/verify-url.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {}
+}

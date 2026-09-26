@@ -1,0 +1,2 @@
+# 03 Edit Brief
+Create one source-grounded brief per Reel. Include campaign role, cold open, exact required source moments/timestamps, story arc, target duration, framing, caption rules, brand rules, forbidden edits, factual constraints, and acceptance tests. Output `reel-<n>-brief.md`. Gate: every required spoken idea must map to source evidence.

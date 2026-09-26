@@ -1,0 +1,23 @@
+{
+  "name": "ppaas",
+  "version": "1.0.0",
+  "description": "Printing Press as a Service — auto-generate Go CLIs via API",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "tsc --noEmit",
+    "deploy": "vercel --prod",
+    "deploy:staging": "vercel"
+  },
+  "dependencies": {
+    "stripe": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vercel": "^34.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

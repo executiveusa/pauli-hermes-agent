@@ -1,0 +1,14 @@
+{
+  "name": "hermes-hyperagent-adapter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hermes-owned adapter boundary for HyperAgent browser execution.",
+  "license": "MIT",
+  "dependencies": {
+    "@hyperbrowser/agent": "1.1.2",
+    "zod": "4.1.8"
+  },
+  "scripts": {
+    "self-test": "node runner.cjs --self-test"
+  }
+}

@@ -83,6 +83,21 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    function nodeModuleFallbacks() {
+      return {
+        name: 'node-module-fallbacks',
+        configureWebpack() {
+          return {
+            resolve: {
+              fallback: { fs: false, path: false },
+            },
+          };
+        },
+      };
+    },
+  ],
+
   themeConfig: {
     image: 'img/hermes-agent-banner.png',
     colorMode: {
@@ -111,6 +126,11 @@ const config: Config = {
         {
           to: '/skills',
           label: 'Skills',
+          position: 'left',
+        },
+        {
+          href: 'https://hermes-agent.nousresearch.com/desktop',
+          label: 'Download',
           position: 'left',
         },
         {

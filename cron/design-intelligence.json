@@ -1,0 +1,17 @@
+{
+  "id": "design-intelligence-nightly",
+  "description": "Nightly scrape of Awwwards top-5 and Refero design signals per niche. Rotates 3 niches per night per schedule in skills/design-intelligence/_shared/niches.md. Writes to skills/design-intelligence/_feeds/. Logs to ops/reports/design-intelligence-{date}.json.",
+  "schedule": "0 2 * * *",
+  "timezone": "UTC",
+  "skills": ["design-intelligence"],
+  "prompt": "Run the nightly design intelligence scraper. Rotate through the niche list in skills/design-intelligence/_shared/niches.md according to the scrape schedule (3 niches per night). For each niche: (1) trigger awwwards-scraper to fetch top 5 sites and extract mechanisms, (2) trigger refero-scraper to extract design token signals, (3) write combined feed to skills/design-intelligence/_feeds/{niche}-latest.md. Archive previous day's feed as {niche}-{YYYY-MM-DD}.md. On error, write to ops/reports/design-intelligence-errors.json and do NOT overwrite the latest feed. Cost guard: max $2.00 per run.",
+  "enabled_toolsets": ["read", "write", "browser"],
+  "disabled_toolsets": ["cronjob", "messaging", "clarify"],
+  "cost_guard": {
+    "max_per_run_usd": 2.0,
+    "halt_on_exceed": true
+  },
+  "output_dir": "ops/reports/",
+  "retry_on_error": 1,
+  "error_policy": "write-error-file-and-continue"
+}

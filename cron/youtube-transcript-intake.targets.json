@@ -1,0 +1,9 @@
+{
+  "targets": [
+    {
+      "url": "https://youtu.be/Kl-I7sUcAOY",
+      "note": "Added 2026-08-26 — transcript could not be fetched from the Claude Code sandbox (network egress blocked for youtube.com and third-party transcript services). This job's Scrapling stealth-browser pipeline runs on the live Hermes host, which has real network access, so it should succeed there.",
+      "workflow": null
+    }
+  ]
+}

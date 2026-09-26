@@ -1,0 +1,34 @@
+name: Test Hardened Longrun Skill
+
+on:
+  pull_request:
+    paths:
+      - "skills/hardened-longrun-subagent-harness/**"
+      - "skills/SKILL_REGISTRY.json"
+      - ".github/workflows/test-hardened-longrun-skill.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile utilities and tests
+        run: |
+          python -m py_compile \
+            skills/hardened-longrun-subagent-harness/scripts/mission_state.py \
+            skills/hardened-longrun-subagent-harness/scripts/risk_controls.py \
+            skills/hardened-longrun-subagent-harness/scripts/export_mission.py \
+            skills/hardened-longrun-subagent-harness/tests/smoke_test.py \
+            skills/hardened-longrun-subagent-harness/tests/risk_controls_test.py
+      - name: Run end-to-end lifecycle smoke test
+        run: python skills/hardened-longrun-subagent-harness/tests/smoke_test.py
+      - name: Run crash recovery and safety risk tests
+        run: python skills/hardened-longrun-subagent-harness/tests/risk_controls_test.py

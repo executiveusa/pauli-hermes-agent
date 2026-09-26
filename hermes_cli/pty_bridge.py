@@ -7,11 +7,14 @@ keystrokes can be fed back in.  The only caller today is the
 
 Design constraints:
 
-* **POSIX-only.**  Hermes Agent supports Windows exclusively via WSL, which
-  exposes a native POSIX PTY via ``openpty(3)``.  Native Windows Python
-  has no PTY; :class:`PtyUnavailableError` is raised with a user-readable
-  install/platform message so the dashboard can render a banner instead of
-  crashing.
+* **POSIX-only.**  This module depends on ``fcntl``, ``termios``, and
+  ``ptyprocess``, none of which exist on native Windows Python.  Native
+  Windows ConPTY is a different API (Windows 10 build 17763+) and would
+  need a separate Windows implementation (``pywinpty``) — that's tracked
+  as a future enhancement.  On native Windows, importing this module
+  raises :class:`ImportError` and the dashboard's ``/chat`` tab shows a
+  WSL-recommended banner instead of crashing.  Every other feature in the
+  dashboard (sessions, jobs, metrics, config editor) works natively.
 * **Zero Node dependency on the server side.**  We use :mod:`ptyprocess`,
   which is a pure-Python wrapper around the OS calls.  The browser talks
   to the same ``hermes --tui`` binary it would launch from the CLI, so
@@ -26,13 +29,17 @@ Design constraints:
 from __future__ import annotations
 
 import errno
-import fcntl
+try:
+    import fcntl
+    import termios
+except ImportError:
+    fcntl = None
+    termios = None
 import os
 import select
 import signal
 import struct
 import sys
-import termios
 import time
 from typing import Optional, Sequence
 
@@ -45,6 +52,33 @@ except ImportError:  # pragma: no cover - dev env without ptyprocess
 
 
 __all__ = ["PtyBridge", "PtyUnavailableError"]
+
+
+# ``struct winsize`` packs rows/cols as unsigned short (0..65535).  We clamp
+# well below that ceiling: real terminals never exceed a couple thousand
+# columns, and a value above this is a broken probe (WSL2 reports
+# columns=131072) rather than a genuine ultrawide.  Lower bound is 1 — a
+# zero/negative dimension is the classic "no size yet" signal.
+_MIN_DIMENSION = 1
+_MAX_COLS = 2000
+_MAX_ROWS = 1000
+
+
+def _clamp_dimension(value: int, maximum: int) -> int:
+    """Clamp a reported terminal dimension into ``[_MIN_DIMENSION, maximum]``.
+
+    Non-integer / non-finite values fall back to ``_MIN_DIMENSION`` so a bad
+    probe can never reach ``struct.pack`` and raise ``struct.error``.
+    """
+    try:
+        n = int(value)
+    except (TypeError, ValueError, OverflowError):
+        return _MIN_DIMENSION
+    if n < _MIN_DIMENSION:
+        return _MIN_DIMENSION
+    if n > maximum:
+        return maximum
+    return n
 
 
 class PtyUnavailableError(RuntimeError):
@@ -161,7 +195,7 @@ class PtyBridge:
             data = os.read(self._fd, 65536)
         except OSError as exc:
             # EIO on Linux = slave side closed.  EBADF = already closed.
-            if exc.errno in (errno.EIO, errno.EBADF):
+            if exc.errno in {errno.EIO, errno.EBADF}:
                 return None
             raise
         if not data:
@@ -178,7 +212,7 @@ class PtyBridge:
             try:
                 n = os.write(self._fd, view)
             except OSError as exc:
-                if exc.errno in (errno.EIO, errno.EBADF, errno.EPIPE):
+                if exc.errno in {errno.EIO, errno.EBADF, errno.EPIPE}:
                     return
                 raise
             if n <= 0:
@@ -187,10 +221,12 @@ class PtyBridge:
 
     def resize(self, cols: int, rows: int) -> None:
         """Forward a terminal resize to the child via ``TIOCSWINSZ``."""
-        if self._closed:
+        if self._closed or fcntl is None or termios is None:
             return
+        cols = _clamp_dimension(cols, _MAX_COLS)
+        rows = _clamp_dimension(rows, _MAX_ROWS)
         # struct winsize: rows, cols, xpixel, ypixel (all unsigned short)
-        winsize = struct.pack("HHHH", max(1, rows), max(1, cols), 0, 0)
+        winsize = struct.pack("HHHH", rows, cols, 0, 0)
         try:
             fcntl.ioctl(self._fd, termios.TIOCSWINSZ, winsize)
         except OSError:
@@ -210,7 +246,7 @@ class PtyBridge:
 
         # SIGHUP is the conventional "your terminal went away" signal.
         # We escalate if the child ignores it.
-        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGKILL):
+        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGKILL):  # windows-footgun: ok — POSIX-only module (imports fcntl/termios/ptyprocess at top)
             if not self._proc.isalive():
                 break
             try:

@@ -80,12 +80,12 @@ class ToolEntry:
     __slots__ = (
         "name", "toolset", "schema", "handler", "check_fn",
         "requires_env", "is_async", "description", "emoji",
-        "max_result_size_chars",
+        "max_result_size_chars", "dynamic_schema_overrides",
     )
 
     def __init__(self, name, toolset, schema, handler, check_fn,
                  requires_env, is_async, description, emoji,
-                 max_result_size_chars=None):
+                 max_result_size_chars=None, dynamic_schema_overrides=None):
         self.name = name
         self.toolset = toolset
         self.schema = schema
@@ -96,6 +96,14 @@ class ToolEntry:
         self.description = description
         self.emoji = emoji
         self.max_result_size_chars = max_result_size_chars
+        # Optional zero-arg callable returning a dict of schema overrides
+        # applied at get_definitions() time. Use for fields that depend on
+        # runtime config (e.g. delegate_task's description must reflect the
+        # user's current delegation.max_concurrent_children / max_spawn_depth
+        # so the model isn't told the wrong limits). The callable is invoked
+        # on every get_definitions() call; results are merged shallow on top
+        # of the base schema before the {"type": "function", ...} wrap.
+        self.dynamic_schema_overrides = dynamic_schema_overrides
 
 
 # ---------------------------------------------------------------------------
@@ -235,8 +243,17 @@ class ToolRegistry:
         description: str = "",
         emoji: str = "",
         max_result_size_chars: int | float | None = None,
+        dynamic_schema_overrides: Callable = None,
+        override: bool = False,
     ):
-        """Register a tool.  Called at module-import time by each tool file."""
+        """Register a tool.  Called at module-import time by each tool file.
+
+        ``override=True`` is an explicit opt-in for plugins that intend to
+        replace an existing built-in tool implementation (e.g. swap the
+        default browser tool for a headed-Chrome CDP backend). Without it,
+        registrations that would shadow an existing tool from a different
+        toolset are rejected to prevent accidental overwrites.
+        """
         with self._lock:
             existing = self._tools.get(name)
             if existing and existing.toolset != toolset:
@@ -251,13 +268,22 @@ class ToolRegistry:
                         "Tool '%s': MCP toolset '%s' overwriting MCP toolset '%s'",
                         name, toolset, existing.toolset,
                     )
+                elif override:
+                    # Explicit plugin opt-in: replace the existing tool.
+                    # Logged at INFO so the override is auditable in agent.log.
+                    logger.info(
+                        "Tool '%s': toolset '%s' overriding existing toolset '%s' "
+                        "(override=True opt-in)",
+                        name, toolset, existing.toolset,
+                    )
                 else:
                     # Reject shadowing — prevent plugins/MCP from overwriting
                     # built-in tools or vice versa.
                     logger.error(
                         "Tool registration REJECTED: '%s' (toolset '%s') would "
-                        "shadow existing tool from toolset '%s'. Deregister the "
-                        "existing tool first if this is intentional.",
+                        "shadow existing tool from toolset '%s'. Pass "
+                        "override=True to register() if the replacement is "
+                        "intentional, or deregister the existing tool first.",
                         name, toolset, existing.toolset,
                     )
                     return
@@ -272,6 +298,7 @@ class ToolRegistry:
                 description=description or schema.get("description", ""),
                 emoji=emoji,
                 max_result_size_chars=max_result_size_chars,
+                dynamic_schema_overrides=dynamic_schema_overrides,
             )
             if check_fn and toolset not in self._toolset_checks:
                 self._toolset_checks[toolset] = check_fn
@@ -337,6 +364,22 @@ class ToolRegistry:
                     continue
             # Ensure schema always has a "name" field — use entry.name as fallback
             schema_with_name = {**entry.schema, "name": entry.name}
+            # Apply runtime-dynamic overrides (e.g. delegate_task description
+            # depends on current delegation.max_concurrent_children /
+            # max_spawn_depth). Caller side (model_tools.get_tool_definitions)
+            # already keys its memo on config.yaml mtime + size, so changes
+            # to delegation.* in config invalidate the cache automatically.
+            if entry.dynamic_schema_overrides is not None:
+                try:
+                    overrides = entry.dynamic_schema_overrides()
+                    if isinstance(overrides, dict):
+                        schema_with_name.update(overrides)
+                except Exception as exc:
+                    logger.warning(
+                        "dynamic_schema_overrides for tool %s raised %s; "
+                        "using static schema",
+                        name, exc,
+                    )
             result.append({"type": "function", "function": schema_with_name})
         return result
 
@@ -354,6 +397,38 @@ class ToolRegistry:
         entry = self.get_entry(name)
         if not entry:
             return json.dumps({"error": f"Unknown tool: {name}"})
+        # Conservative runtime guard: if the SKILL_REGISTRY marks skills as
+        # required but those skills are missing, block execution of
+        # potentially-destructive tools (code, file, terminal, deploy).
+        try:
+            # Import lazily to avoid startup import cycles in tests.
+            from agent import skill_enforcer as _se
+            ok, present, missing = _se.verify_required_skills()
+            if not ok:
+                toolset = (entry.toolset or "").lower()
+                dangerous_names = {"execute_code", "patch", "write_file", "terminal", "delegate_task"}
+                is_dangerous = entry.name in dangerous_names or any(k in toolset for k in ("code", "file", "terminal", "deploy"))
+                if is_dangerous:
+                    msg = (
+                        "Execution blocked: required skills missing: " + ", ".join(missing) + ". "
+                        "Initialize or install these skills before running code or file-modifying tools."
+                    )
+                    return json.dumps({"error": msg})
+            # Prompt for model selection when running potentially-destructive tools.
+            try:
+                # Only advisory: suggest a model suited for code execution.
+                suggested = _se.prompt_model_selection(default=None)
+                if suggested:
+                    try:
+                        print(f"[hermes] Model suggestion for this task: {suggested}")
+                        print("[hermes] If you wish to switch models, do so before proceeding.")
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+        except Exception:
+            # On any failure of the guard, default to permissive (don't block).
+            pass
         try:
             if entry.is_async:
                 from model_tools import _run_async
@@ -361,7 +436,16 @@ class ToolRegistry:
             return entry.handler(args, **kwargs)
         except Exception as e:
             logger.exception("Tool %s dispatch error: %s", name, e)
-            return json.dumps({"error": f"Tool execution failed: {type(e).__name__}: {e}"})
+            # Route through the sanitizer so framing tokens / CDATA / fences
+            # in exception strings don't reach the model as structural noise.
+            # See model_tools._sanitize_tool_error for rationale.
+            raw = f"Tool execution failed: {type(e).__name__}: {e}"
+            try:
+                from model_tools import _sanitize_tool_error
+                sanitized = _sanitize_tool_error(raw)
+            except Exception:
+                sanitized = raw  # defensive: never let the sanitizer block error propagation
+            return json.dumps({"error": sanitized})
 
     # ------------------------------------------------------------------
     # Query helpers  (replace redundant dicts in model_tools.py)

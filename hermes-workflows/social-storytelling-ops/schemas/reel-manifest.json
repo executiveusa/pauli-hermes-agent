@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://pauli-hermes-agent/hermes-workflows/social-storytelling-ops/schemas/reel-manifest.json",
+  "title": "RunManifest",
+  "description": "Machine-readable manifest for one social-storytelling-ops run, referenced by stages/02_series-plan (series plan output), stages/06_publish (APPROVED gate), and cron/daily-content-digest.json. Written once per run at runs/<run_id>/manifest.json.",
+  "type": "object",
+  "required": ["run_id", "client", "reels"],
+  "properties": {
+    "run_id": { "type": "string" },
+    "client": { "type": "string" },
+    "reels": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/reel" }
+    }
+  },
+  "definitions": {
+    "reel": {
+      "type": "object",
+      "required": ["reel_id", "status", "series_role"],
+      "properties": {
+        "reel_id": { "type": "string" },
+        "platform": {
+          "type": "string",
+          "description": "Target platform per Postiz integration name, e.g. instagram, tiktok, x, linkedin."
+        },
+        "hook": {
+          "type": "string",
+          "description": "The cold-open/hook line, for a human scanning the daily digest without opening the full draft."
+        },
+        "series_role": {
+          "type": "string",
+          "enum": ["belief", "story", "action"],
+          "description": "social-drop-factory Monday/Wednesday/Friday role — see stages/02_series-plan/CONTEXT.md."
+        },
+        "draft_path": {
+          "type": "string",
+          "description": "Path to the full draft/edit-brief this manifest entry summarizes."
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "DRAFT",
+            "NEEDS-REVIEW",
+            "PENDING-APPROVAL",
+            "APPROVED",
+            "REJECTED",
+            "SCHEDULED",
+            "PUBLISHED"
+          ],
+          "description": "DRAFT: reel-director/opus-operator still producing it. NEEDS-REVIEW: awaiting taste-reviewer/truth-privacy-reviewer verdicts. PENDING-APPROVAL: passed both reviews, awaiting the daily human approval digest (cron/daily-content-digest.json). APPROVED: human approved — publishing-operator may now call schedule_post/publish_now (stages/06_publish). REJECTED: human rejected with a reason; a bounded revision task exists, see revision_of. SCHEDULED / PUBLISHED: set by publishing-operator/verifier after the approval gate."
+        },
+        "rejection_reason": {
+          "type": ["string", "null"],
+          "description": "One-line human reason, present only when status is REJECTED. Read by stages/08_learn to update lessons.md — see Part 6 wiring."
+        },
+        "revision_of": {
+          "type": ["string", "null"],
+          "description": "reel_id of the manifest entry a REJECTED reel's bounded revision task was created for. Present only on the new revision entry, not on the rejected original."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

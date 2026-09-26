@@ -1,0 +1,40 @@
+{
+  "name": "icm-engineering-governor",
+  "version": "1.1.0",
+  "activation": "progressive-disclosure",
+  "default_state": "sleeping",
+  "load_policy": {
+    "tier_1": "SKILL.md metadata only",
+    "tier_2": "SKILL.md router only when matched or explicitly invoked",
+    "tier_3": "load exactly one references/*.md capability family when routed",
+    "completion_gate": "workflows/code-review/PROCESS.md is mandatory at every project completion boundary",
+    "beta": "never auto-select for production-critical work"
+  },
+  "families": {
+    "engineering": ["ask-matt", "grill-with-docs", "triage", "improve-codebase-architecture", "setup-matt-pocock-skills", "to-spec", "to-tickets", "implement", "wayfinder", "prototype", "diagnosing-bugs", "research", "tdd", "domain-modeling", "codebase-design", "code-review", "resolving-merge-conflicts", "wizard"],
+    "productivity": ["grill-me", "grilling", "handoff", "teach", "to-questionnaire", "wait-what", "writing-for-agents"],
+    "misc": ["git-guardrails-claude-code", "migrate-to-shoehorn", "scaffold-exercises", "setup-pre-commit"],
+    "beta": ["loop-me", "writing-beats", "writing-fragments", "writing-shape", "claude-handoff", "setup-ts-deep-modules"]
+  },
+  "governance": {
+    "inspect_before_change": true,
+    "builder_cannot_self_approve": true,
+    "rollback_required_for_material_changes": true,
+    "proof_before_done": true,
+    "owner_control_required": true,
+    "mandatory_project_code_review": true,
+    "mandatory_human_review_prompt": true,
+    "human_review_pending_blocks_done": true,
+    "scheduled_review_may_dispatch_subagents": true,
+    "scheduled_review_may_merge_or_deploy": false
+  },
+  "scheduled_review": {
+    "definition": "cron/icm-code-review.json",
+    "review_axes": ["standards", "spec"],
+    "fresh_reviewer_required_for_material_fixes": true
+  },
+  "upstream": {
+    "repository": "mattpocock/skills",
+    "license": "MIT"
+  }
+}

@@ -1,0 +1,217 @@
+name: Cloudflare Sovereign Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Deployment target
+        required: true
+        type: choice
+        options: [pages, worker]
+      environment:
+        description: GitHub environment gate
+        required: true
+        type: choice
+        options: [preview, production]
+        default: preview
+      working_directory:
+        description: Project directory
+        required: false
+        default: .
+      build_command:
+        description: Build command; leave blank to skip
+        required: false
+        default: ''
+      output_directory:
+        description: Pages build output directory
+        required: false
+        default: dist
+      project_name:
+        description: Cloudflare Pages project name; required for pages
+        required: false
+        default: ''
+      smoke_url:
+        description: Optional URL to verify after deployment
+        required: false
+        default: ''
+
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      working_directory:
+        required: false
+        type: string
+        default: .
+      build_command:
+        required: false
+        type: string
+        default: ''
+      output_directory:
+        required: false
+        type: string
+        default: dist
+      project_name:
+        required: false
+        type: string
+        default: ''
+      smoke_url:
+        required: false
+        type: string
+        default: ''
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+      CLOUDFLARE_ACCOUNT_ID:
+        required: true
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: cloudflare-${{ inputs.target }}-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_command: ${{ steps.plan.outputs.deploy_command }}
+    steps:
+      - name: Validate bounded target
+        shell: bash
+        env:
+          TARGET: ${{ inputs.target }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          PROJECT_NAME: ${{ inputs.project_name }}
+          OUTPUT_DIRECTORY: ${{ inputs.output_directory }}
+        run: |
+          set -euo pipefail
+          case "$TARGET" in pages|worker) ;; *) echo "Unsupported target: $TARGET" >&2; exit 2;; esac
+          case "$ENVIRONMENT" in preview|production) ;; *) echo "Unsupported environment: $ENVIRONMENT" >&2; exit 2;; esac
+          if [[ "$TARGET" == "pages" && -z "$PROJECT_NAME" ]]; then
+            echo "project_name is required for Pages" >&2
+            exit 2
+          fi
+          if [[ "$OUTPUT_DIRECTORY" == /* || "$OUTPUT_DIRECTORY" == *".."* ]]; then
+            echo "output_directory must stay inside the repository" >&2
+            exit 2
+          fi
+
+      - name: Build deployment plan
+        id: plan
+        shell: bash
+        env:
+          TARGET: ${{ inputs.target }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          PROJECT_NAME: ${{ inputs.project_name }}
+          OUTPUT_DIRECTORY: ${{ inputs.output_directory }}
+        run: |
+          set -euo pipefail
+          if [[ "$TARGET" == "pages" ]]; then
+            if [[ "$ENVIRONMENT" == "production" ]]; then
+              cmd="pages deploy ${OUTPUT_DIRECTORY} --project-name=${PROJECT_NAME} --branch=main"
+            else
+              cmd="pages deploy ${OUTPUT_DIRECTORY} --project-name=${PROJECT_NAME} --branch=preview-${GITHUB_SHA::8}"
+            fi
+          else
+            if [[ "$ENVIRONMENT" == "production" ]]; then
+              cmd="deploy"
+            else
+              # Upload an immutable Worker version without shifting production traffic.
+              cmd="versions upload"
+            fi
+          fi
+          echo "deploy_command=$cmd" >> "$GITHUB_OUTPUT"
+
+  build-test-deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    # Configure required reviewers on the repository's `production` GitHub Environment.
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Record source evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "source_commit=${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"
+          echo "target=${{ inputs.target }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "environment=${{ inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build
+        if: ${{ inputs.build_command != '' }}
+        shell: bash
+        working-directory: ${{ inputs.working_directory }}
+        env:
+          BUILD_COMMAND: ${{ inputs.build_command }}
+        run: |
+          set -euo pipefail
+          bash -lc "$BUILD_COMMAND"
+
+      - name: Verify Pages artifact exists
+        if: ${{ inputs.target == 'pages' }}
+        shell: bash
+        working-directory: ${{ inputs.working_directory }}
+        env:
+          OUTPUT_DIRECTORY: ${{ inputs.output_directory }}
+        run: |
+          set -euo pipefail
+          test -d "$OUTPUT_DIRECTORY"
+          test -n "$(find "$OUTPUT_DIRECTORY" -type f -print -quit)"
+
+      - name: Deploy preview/version or gated production
+        id: cloudflare
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ${{ inputs.working_directory }}
+          command: ${{ needs.validate.outputs.deploy_command }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Record deployment evidence
+        shell: bash
+        env:
+          DEPLOYMENT_URL: ${{ steps.cloudflare.outputs.deployment-url }}
+          COMMAND_OUTPUT: ${{ steps.cloudflare.outputs.command-output }}
+        run: |
+          set -euo pipefail
+          echo "### Cloudflare deployment receipt" >> "$GITHUB_STEP_SUMMARY"
+          echo "- source: ${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- target: ${{ inputs.target }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- environment: ${{ inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
+          if [[ -n "$DEPLOYMENT_URL" ]]; then
+            echo "- deployment_url: $DEPLOYMENT_URL" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- deployment_url: not emitted (expected for a Worker version upload)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          # Do not print COMMAND_OUTPUT: provider output can contain implementation details.
+
+      - name: Smoke test explicit public target
+        if: ${{ inputs.smoke_url != '' }}
+        shell: bash
+        env:
+          SMOKE_URL: ${{ inputs.smoke_url }}
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 3 --max-time 30 "$SMOKE_URL" >/dev/null
+          echo "- smoke_test: PASS ($SMOKE_URL)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Require independent production proof
+        if: ${{ inputs.environment == 'production' }}
+        shell: bash
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          - production_status: UNVERIFIED until an independent verifier checks the canonical domain, required interactions, logs, security, and rollback.
+          - rollback: use the prior Pages deployment or prior Worker version; do not delete it during this workflow.
+          EOF

@@ -1,0 +1,32 @@
+{
+  "allowedProductionBranches": [
+    "main"
+  ],
+  "allowMaster": false,
+  "allowSourceCodeEditsInMission001": false,
+  "allowGitPush": false,
+  "allowDomainMutation": false,
+  "allowEnvironmentMutation": false,
+  "browserVerification": {
+    "requireHttpOk": true,
+    "rejectGeneric404": true,
+    "rejectBlankHtml": true,
+    "minBodyLength": 500,
+    "heroSelectors": [
+      "h1",
+      "[data-hero]",
+      "main",
+      "#root",
+      "#__next"
+    ]
+  },
+  "safeVercelCommands": [
+    "vercel whoami",
+    "vercel teams list",
+    "vercel link --repo",
+    "vercel deploy --prod --yes --no-wait",
+    "vercel inspect --wait --logs",
+    "vercel list",
+    "vercel env pull"
+  ]
+}

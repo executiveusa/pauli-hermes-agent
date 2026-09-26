@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0.0",
+  "mission_id": "example-course-intelligence",
+  "title": "Example Course Intelligence Mission",
+  "objective": "Process six authorized lessons with parallel student agents, synthesize the modules, and prepare candidate second-brain memory with evidence.",
+  "mode": "learning",
+  "created_at": "2026-07-27T12:00:00+00:00",
+  "target": "A private evidence-backed course intelligence package",
+  "constraints": [
+    "Read-only source access",
+    "No account changes or community engagement",
+    "No durable-memory insertion without approval",
+    "All workers write isolated JSON results",
+    "Every worker checkpoints after each completed unit"
+  ],
+  "commercial_value": "Reusable Digital Student workflow for paid setup and managed learning services.",
+  "limits": {
+    "max_epochs": 20,
+    "max_attempts_per_task": 3,
+    "max_concurrent_children": 3,
+    "provider_concurrency_cap": 3,
+    "max_iterations_per_child": 20,
+    "max_runtime_minutes": 720,
+    "max_total_cost_usd": 5,
+    "max_dispatch_cost_usd": 0.75,
+    "max_total_tokens": 500000
+  },
+  "completion_criteria": [
+    {
+      "id": "C1",
+      "description": "Every accessible lesson has one validated worker result JSON.",
+      "proof": "Task state and result paths in final-report.json",
+      "required": true
+    },
+    {
+      "id": "C2",
+      "description": "Each lesson result contains evidence-backed findings.",
+      "proof": "Aggregated evidence_index in final-report.json",
+      "required": true
+    },
+    {
+      "id": "C3",
+      "description": "Module and course syntheses exist.",
+      "proof": "outputs/synthesis.json",
+      "required": true
+    },
+    {
+      "id": "C4",
+      "description": "Candidate memory is prepared but not automatically approved.",
+      "proof": "candidate-memory/candidate-memory.json and human_approval in final-report.json",
+      "required": true
+    }
+  ],
+  "tasks": [
+    {
+      "id": "lesson-01",
+      "title": "Study lesson 1",
+      "goal": "Analyze lesson 1 and produce a valid evidence-backed worker result.",
+      "context": "Read the lesson package assigned by the collector.",
+      "dependencies": [],
+      "side_effect_class": "none",
+      "acceptance_criteria": ["At least five findings", "Every important finding has source references"],
+      "required_evidence": ["Lesson URL or source file", "Section or timestamp"],
+      "allowed_inputs": ["sources/lesson-01/**"],
+      "allowed_outputs": ["attempts/lesson-01/**"],
+      "prohibited_actions": ["Posting", "Messaging", "Editing shared mission state"],
+      "provider": "cheap-model",
+      "estimated_cost_usd": 0.2,
+      "priority": 10
+    },
+    {
+      "id": "lesson-02",
+      "title": "Study lesson 2",
+      "goal": "Analyze lesson 2 and produce a valid evidence-backed worker result.",
+      "context": "Read the lesson package assigned by the collector.",
+      "dependencies": [],
+      "side_effect_class": "none",
+      "acceptance_criteria": ["At least five findings", "Coverage limitations are explicit"],
+      "required_evidence": ["Lesson URL or source file", "Section or timestamp"],
+      "allowed_inputs": ["sources/lesson-02/**"],
+      "allowed_outputs": ["attempts/lesson-02/**"],
+      "prohibited_actions": ["Posting", "Messaging", "Editing shared mission state"],
+      "provider": "cheap-model",
+      "estimated_cost_usd": 0.2,
+      "priority": 10
+    },
+    {
+      "id": "module-01-synthesis",
+      "title": "Synthesize module 1",
+      "goal": "Synthesize the validated lesson results without rereading every raw source.",
+      "context": "Use only completed worker result JSON files for lesson 1 and lesson 2.",
+      "dependencies": ["lesson-01", "lesson-02"],
+      "side_effect_class": "local_reversible",
+      "acceptance_criteria": ["Repeated concepts merged", "Contradictions preserved", "Evidence references retained"],
+      "required_evidence": ["lesson-01 result", "lesson-02 result"],
+      "allowed_inputs": ["attempts/lesson-01/**", "attempts/lesson-02/**"],
+      "allowed_outputs": ["artifacts/module-01/**"],
+      "prohibited_actions": ["Changing source results", "Approving durable memory"],
+      "provider": "reasoning-model",
+      "estimated_cost_usd": 0.3,
+      "priority": 20
+    }
+  ]
+}

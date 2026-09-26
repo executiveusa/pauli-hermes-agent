@@ -1,0 +1,18 @@
+{
+  "id": "youtube-transcript-intake",
+  "description": "On-demand/recurring transcript intake for YouTube videos and channels using the youtube-channel-scraper skill's Scrapling stealth-browser pipeline (--transcripts flag). Fetches transcript + metadata for each target in targets.json, saves evidence to disk, and reports BLOCKED with the real reason rather than fabricating content when a fetch fails. Never a substitute for the skill's own ICM stages — this job just triggers them on a schedule and gates the digest.",
+  "schedule": "0 */6 * * *",
+  "timezone": "UTC",
+  "skills": ["youtube-channel-scraper"],
+  "prompt": "Run the youtube-channel-scraper ICM pipeline (skills/youtube-channel-scraper/icm/stages/) against every target listed in cron/youtube-transcript-intake.targets.json. For each target (a single video URL or a channel/playlist URL): (1) invoke `/youtube-channel-scraper <target> --transcripts`; (2) confirm the output JSON under the skill's configured output directory actually contains non-empty transcript text for each video — do not report success on metadata alone; (3) if a target's transcript fetch fails (captions disabled, video private/removed, scrape blocked), record BLOCKED with the exact reason for that target and continue to the next one rather than halting the whole run; (4) append a one-line-per-target summary (title, video ID, word count or BLOCKED reason, output file path) to the run's digest file. Do not fabricate or reconstruct any transcript content from memory or inference if a fetch fails. Do not delete or overwrite a previous successful transcript file for the same video ID — write new fetches to a dated subpath instead so history is preserved. This job only fetches and files evidence; it does not summarize, publish, or hand content to any other workflow unless a target explicitly requests it via a `workflow` field in targets.json, in which case route that target's transcript to the named skill (e.g. agent-workflow-builder) after the transcript is confirmed saved.",
+  "targets_file": "cron/youtube-transcript-intake.targets.json",
+  "enabled_toolsets": ["read", "terminal", "browser"],
+  "disabled_toolsets": ["messaging", "clarify"],
+  "cost_guard": {
+    "max_per_run_usd": 1.00,
+    "halt_on_exceed": true
+  },
+  "output_dir": "ops/reports/youtube-transcripts/",
+  "retry_on_error": 1,
+  "error_policy": "write-error-file-and-continue"
+}

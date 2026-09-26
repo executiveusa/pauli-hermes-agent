@@ -57,3 +57,16 @@ Do not use as a substitute for basic information architecture.
 - keyboard path works
 - focus states visible
 - reduced-motion path preserved
+
+## SYNTHIA™ UDEC Integration (v2.0 upgrade)
+
+This skill now outputs a UDEC scorecard on every polish pass.
+Load `skills/design-intelligence/_shared/udec-axes.md` for the scoring framework.
+
+### Polish Pass → UDEC Score Protocol
+
+After every polish pass, score the result across all 14 UDEC axes.
+Floor: 8.5. Below 8.5 → iterate. MOT or ACC below 7.0 → rebuild that layer.
+
+The quality gate is not the client's opinion. It is the UDEC score.
+The client approves direction. UDEC approves delivery.

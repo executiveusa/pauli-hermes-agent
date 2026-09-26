@@ -1,0 +1,110 @@
+name: Strix Batch Security Scan
+
+on:
+  schedule:
+    - cron: "0 2 * * 0"  # Weekly at 2 AM UTC on Sunday
+  workflow_dispatch:
+    inputs:
+      scan_mode:
+        description: "Scan scope (quick/standard/full)"
+        required: false
+        default: "quick"
+      max_workers:
+        description: "Number of parallel test agents"
+        required: false
+        default: "3"
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # 6 hours
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Strix
+        run: |
+          curl -sSL https://strix.ai/install | bash
+          strix --version
+
+      - name: Start Docker (if needed)
+        run: |
+          sudo service docker start || docker daemon
+
+      - name: Run Batch Security Tests
+        env:
+          STRIX_LLM: ${{ secrets.STRIX_LLM }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/batch_security_test.py \
+            --targets ${{ github.repository }} \
+            --output-dir ./security-scans \
+            --workers ${{ inputs.max_workers || 3 }} \
+            --scan-mode ${{ inputs.scan_mode || 'quick' }} \
+            --save-report
+
+      - name: Upload Scan Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: strix-security-scans
+          path: |
+            security-scans/
+            batch-report.json
+          retention-days: 90
+
+      - name: Parse Report
+        if: success()
+        run: |
+          python3 - << 'EOF'
+          import json
+
+          with open('batch-report.json') as f:
+              report = json.load(f)
+
+          summary = report['batch_summary']
+
+          print(f"## 🔐 Security Scan Results\n")
+          print(f"- **Total Vulnerabilities**: {summary['total_vulnerabilities']}")
+          print(f"- **Critical**: {summary['severity_breakdown']['critical']}")
+          print(f"- **High**: {summary['severity_breakdown']['high']}")
+          print(f"- **Medium**: {summary['severity_breakdown']['medium']}")
+          print(f"- **Scan Duration**: {summary['total_duration_seconds']:.0f}s\n")
+
+          if summary['total_vulnerabilities'] > 0:
+              print(f"⚠️ Found security issues. Review in artifacts.")
+          else:
+              print(f"✅ No vulnerabilities detected!")
+          EOF
+
+      - name: Create Issue for Critical Findings
+        if: failure() || contains(env.CRITICAL_FOUND, 'true')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('batch-report.json', 'utf8'));
+            const summary = report.batch_summary;
+
+            if (summary.total_vulnerabilities > 0) {
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🔐 Security Vulnerabilities Found (${summary.total_vulnerabilities})`,
+                body: `Strix automated security scan found vulnerabilities:\n\n` +
+                      `- 🚨 Critical: ${summary.severity_breakdown.critical}\n` +
+                      `- ⚠️ High: ${summary.severity_breakdown.high}\n` +
+                      `- ⚡ Medium: ${summary.severity_breakdown.medium}\n\n` +
+                      `Review detailed results in the artifact.`,
+                labels: ['security', 'automated', 'strix']
+              });
+            }

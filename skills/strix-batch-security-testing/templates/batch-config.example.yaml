@@ -1,0 +1,97 @@
+# Strix Batch Security Testing Configuration
+# Copy and customize for your environment
+
+# LLM Configuration
+llm:
+  provider: "openai/gpt-5.4"  # or anthropic/claude-sonnet-4-6
+  api_key: "${LLM_API_KEY}"   # Use environment variable
+  api_base: null              # Optional, for local models
+  reasoning_effort: "high"    # quick, medium, high
+
+# Scan Configuration
+scan:
+  mode: "standard"            # quick, standard, full
+  timeout_seconds: 3600       # 1 hour per target
+  max_parallel_workers: 3
+
+# Targets to test
+targets:
+  - name: "critical-app"
+    url: "https://github.com/org/critical-app"
+    type: "github"
+    auth: null                # Optional auth credentials
+
+  - name: "api-server"
+    url: "https://api.example.com"
+    type: "url"
+    auth:
+      username: "test-user"
+      password: "${API_PASSWORD}"
+
+  - name: "openapi-spec"
+    url: "./openapi.yaml"
+    type: "openapi"
+    base_url: "https://api.example.com"
+
+# Custom testing instructions
+instructions:
+  - "Focus on OWASP Top 10 vulnerabilities"
+  - "Test both authenticated and unauthenticated endpoints"
+  - "Skip rate limiting tests (known false positives)"
+
+# Output configuration
+output:
+  directory: "./security-scans"
+  save_report: true
+  report_format: "json"  # json, html, both
+
+# GitHub integration
+github:
+  enabled: true
+  create_issues: true
+  issue_labels:
+    - "security"
+    - "automated"
+  notify_slack: false
+  slack_webhook: "${SLACK_WEBHOOK}"
+
+# Notifications
+notifications:
+  email:
+    enabled: true
+    recipients:
+      - "security-team@example.com"
+    on_critical: true
+    on_high: true
+    on_medium: false
+
+  slack:
+    enabled: false
+    webhook: "${SLACK_WEBHOOK}"
+    mentions: "@security-team"
+
+# Scheduling
+schedule:
+  enabled: false
+  cron: "0 2 * * 0"  # Weekly Sunday 2 AM UTC
+
+# Filtering
+filters:
+  languages:
+    - "python"
+    - "javascript"
+    - "go"
+  severity_threshold: "medium"  # Only report medium and above
+  exclude_patterns:
+    - "node_modules"
+    - "vendor"
+    - "build"
+
+# Auto-fix configuration
+auto_fix:
+  enabled: false
+  create_pull_requests: false
+  branch_prefix: "strix/security-fix-"
+  request_review: true
+  reviewers:
+    - "security-team"

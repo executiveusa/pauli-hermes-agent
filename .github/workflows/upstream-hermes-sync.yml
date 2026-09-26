@@ -1,0 +1,71 @@
+name: Nightly Hermes Upstream Sync
+
+on:
+  schedule:
+    # GitHub Actions cron is UTC. This runs at midnight UTC every day.
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Print the proposed sync plan without changing files"
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: upstream-hermes-sync
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out this fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install Python test tooling
+        run: python -m pip install --upgrade pip pytest
+
+      - name: Install workspace dependencies
+        run: |
+          if [ -f apps/control-room/package.json ] && [ -f package-lock.json ]; then
+            npm ci
+          else
+            echo "control-room workspace not present; skipping npm ci"
+          fi
+
+      - name: Run conservative upstream sync
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: |
+          EXTRA_ARGS=""
+          if [ "$DRY_RUN" = "true" ]; then
+            EXTRA_ARGS="--dry-run"
+          fi
+          python scripts/upstream_sync.py \
+            --upstream-repo https://github.com/NousResearch/hermes-agent.git \
+            --upstream-branch main \
+            --base-branch main \
+            --state-file .github/upstream-sync-state.json \
+            --branch-prefix bot/upstream-sync \
+            $EXTRA_ARGS

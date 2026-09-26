@@ -56,3 +56,14 @@ Do not use if the task is purely backend or if the existing system must stay unc
 
 - primary action is obvious
 - hierarchy is scannable at a glance
+
+## Design Intelligence Feed Integration (v2.0 upgrade)
+
+When user requests a visual build for a specific niche:
+1. Load `skills/design-intelligence/SKILL.md`
+2. Identify the niche from `_shared/niches.md`
+3. Load `_feeds/{niche}-latest.md`
+4. Use the extracted mechanisms as the visual target — not training-data taste
+
+Taste is calibrated against what's actually winning in the niche today,
+not against what Claude last saw in training data. Feed file is truth.

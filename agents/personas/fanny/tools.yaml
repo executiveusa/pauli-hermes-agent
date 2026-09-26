@@ -1,0 +1,51 @@
+version: 1
+default: deny
+allowedTools:
+  - name: document_read
+    mode: read_only
+  - name: browser_observe
+    mode: read_only
+    restrictions:
+      - approved_domains_only
+      - no credential capture
+      - no hidden recording
+  - name: media_classify
+    mode: sandbox_or_approved_data
+  - name: duplicate_detect
+    mode: analysis
+  - name: report_draft
+    mode: draft
+  - name: evidence_capture
+    mode: tenant_scoped
+  - name: request_human_review
+    mode: automatic
+  - name: memory_propose_lesson
+    mode: quarantine
+approvalGatedTools:
+  - browser_act
+  - report_send
+  - source_record_update
+  - scheduled_job_enable
+  - external_api_write
+  - file_export_with_customer_data
+prohibitedTools:
+  - unrestricted_shell
+  - unrestricted_root
+  - owner_memory_search
+  - global_secret_search
+  - cross_tenant_query
+  - credential_export
+  - destructive_delete
+runtimeHooks:
+  beforeToolCall:
+    - validate tenant_id
+    - validate agent_instance_id
+    - validate authority class
+    - validate approved target
+    - require idempotency key for side effects
+  afterToolCall:
+    - redact secrets
+    - record evidence receipt
+    - record side effects
+    - update durable checkpoint
+    - route uncertain outcomes to human review

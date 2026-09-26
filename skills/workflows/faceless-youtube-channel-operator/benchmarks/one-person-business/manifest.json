@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "creator": "One Person Business / Dave Nick ecosystem",
+  "channel_handle": "@One-Person-Business",
+  "channel_id": "UC5sGRuouCtllvIEL1q8ay0Q",
+  "collected_at": "2026-08-16",
+  "status": "PARTIAL",
+  "status_reason": "25/25 long-form succeeded; the channel contains only 10 Shorts total, so 30 Shorts do not exist; Skool remains auth-required.",
+  "requested": {
+    "long_form": 25,
+    "shorts": 30
+  },
+  "collected": {
+    "long_form": 25,
+    "shorts": 10,
+    "unique_video_ids": 35
+  },
+  "inventory_proof": {
+    "long_form_available": 90,
+    "shorts_available": 10,
+    "shorts_shortfall_proven": true
+  },
+  "transcripts": {
+    "attempted": 35,
+    "complete": 30,
+    "partial": 5,
+    "unavailable": 0,
+    "partial_reason": "Long transcript-panel lazy loading; no missing text was fabricated."
+  },
+  "knowledge_graph": {
+    "nodes": 684,
+    "edges": 713
+  },
+  "skool": {
+    "target": "https://www.skool.com/obf",
+    "status": "auth_required",
+    "courses": 0,
+    "modules": 0,
+    "lessons": 0,
+    "frameworks_inferred_from_public_transcripts": 9
+  },
+  "providers_used": [
+    "yt-dlp flat-playlist discovery",
+    "authenticated-capable browser session with residential routing for watch-page extraction",
+    "browser transcript-panel extraction",
+    "Python normalization/parsing",
+    "parallel browser subagents"
+  ],
+  "validation": {
+    "duplicates": 0,
+    "long_form_target_met": true,
+    "shorts_target_met": false,
+    "shorts_inventory_limit_proven": true,
+    "metadata_normalized": true,
+    "transcript_attempted_for_all": true,
+    "graph_generated": true,
+    "provenance_generated": true,
+    "patterns_computed": true,
+    "shorts_analyzed_separately": true,
+    "long_form_analyzed_separately": true,
+    "json_validated": true,
+    "jsonl_validated": true,
+    "credentials_stored": false
+  },
+  "known_gaps": [
+    "Skool classroom not yet authenticated",
+    "5 long-form transcripts are partial",
+    "thumbnail images were not captured; thumbnail concepts are inference-only"
+  ],
+  "next_acquisition": [
+    "authenticated read-only Skool classroom crawl",
+    "complete the 5 partial transcripts if needed",
+    "capture thumbnail images for visual-pattern analysis"
+  ],
+  "source_package": "one-person-business-intelligence.zip supplied to Hermes integration session"
+}

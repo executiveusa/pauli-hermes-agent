@@ -1,0 +1,86 @@
+name: Deploy Faceless YouTube Runtime
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/faceless_youtube_runtime/**'
+      - 'skills/workflows/faceless-youtube-channel-operator/**'
+      - 'scripts/install_faceless_youtube_runtime.py'
+      - 'integrations/hyperagent/**'
+      - '.github/workflows/deploy-faceless-youtube-vps.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: faceless-youtube-vps
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VPS_HOST: ${{ secrets.HERMES_VPS_HOST }}
+      VPS_USER: ${{ secrets.HERMES_VPS_USER }}
+      VPS_PORT: ${{ secrets.HERMES_VPS_PORT }}
+      VPS_SSH_KEY: ${{ secrets.HERMES_VPS_SSH_KEY }}
+      VPS_REPO_DIR: ${{ secrets.HERMES_VPS_REPO_DIR }}
+    steps:
+      - name: Verify deployment credentials exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in VPS_HOST VPS_USER VPS_SSH_KEY; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::$name is not configured as a GitHub Actions secret"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 2
+          fi
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          port="${VPS_PORT:-22}"
+          ssh-keyscan -p "$port" -H "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy and verify Hermes gateway
+        shell: bash
+        run: |
+          set -euo pipefail
+          port="${VPS_PORT:-22}"
+          repo_dir="${VPS_REPO_DIR:-/opt/pauli-hermes-agent}"
+          ssh -p "$port" "$VPS_USER@$VPS_HOST" "REPO_DIR='$repo_dir' bash -s" <<'REMOTE'
+          set -euo pipefail
+          if [ -d "$REPO_DIR/.git" ]; then
+            git -C "$REPO_DIR" fetch origin main
+            git -C "$REPO_DIR" checkout main
+            git -C "$REPO_DIR" reset --hard origin/main
+          else
+            parent="$(dirname "$REPO_DIR")"
+            sudo mkdir -p "$parent"
+            sudo chown "$USER":"$USER" "$parent"
+            git clone https://github.com/executiveusa/pauli-hermes-agent.git "$REPO_DIR"
+          fi
+
+          cd "$REPO_DIR"
+          command -v uv >/dev/null 2>&1 || { echo 'uv is required on VPS'; exit 3; }
+          command -v node >/dev/null 2>&1 || { echo 'Node.js is required on VPS'; exit 3; }
+          uv sync --locked --extra google --extra youtube
+          (cd integrations/hyperagent && npm install --ignore-scripts --no-audit --no-fund)
+          uv run python -m tools.faceless_youtube_runtime.cli --repo-root "$REPO_DIR" doctor
+          uv run python scripts/install_faceless_youtube_runtime.py --repo "$REPO_DIR"
+          sudo "$REPO_DIR/.venv/bin/hermes" gateway install --system
+          "$REPO_DIR/.venv/bin/hermes" cron list || true
+          uv run python -m tools.faceless_youtube_runtime.cli --repo-root "$REPO_DIR" status
+          REMOTE

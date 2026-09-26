@@ -1,0 +1,152 @@
+schema_version: "0.1"
+status: DRAFT_NEEDS_FINAL_VERIFICATION
+
+campaign:
+  id: community-cuts-for-kids-2026
+  organization:
+    display_name: ASC3ND
+    canonical_spelling_note: "The brand uses the numeral 3; confirm all stylized logo treatments from the approved master artwork."
+  name: Community Cuts for Kids
+  edition_line: Fresh Fade, Fresh Grade
+  classification: prototype_campaign
+  owner: Bambu
+
+outcome:
+  immediate: "Give ASC3ND a verified URL and reusable QR package that can be placed on existing and future campaign materials."
+  priorities:
+    - fill_haircut_capacity
+    - reach_families
+    - build_community_relationships
+    - recruit_volunteers
+    - recruit_sponsors
+
+messaging:
+  desired_feelings:
+    - excitement
+    - belonging
+    - family
+    - fresh_start
+  framing:
+    use:
+      - confidence
+      - back-to-school energy
+      - community showing up
+      - fresh and ready
+    avoid:
+      - framing children as undignified
+      - pity-based messaging
+      - unapproved sponsor claims
+  primary_call_to_action: Scan to learn more and RSVP
+
+brand_direction:
+  concept: "Patagonia for youth with forward-thinking mentorship"
+  style:
+    - timeless
+    - minimal_nonprofit
+    - editorial
+    - large-agency restraint
+  permanent_campaign_language: true
+
+routing:
+  audience: everyone
+  landing_page_routes_people_by_role:
+    - family
+    - volunteer
+    - sponsor
+    - partner
+    - supporter
+
+web:
+  destination_url: "https://asc3nd.org"
+  verification_status: UNVERIFIED_IN_THIS_SPEC
+  requirements:
+    - HTTPS
+    - mobile-first
+    - clear event information
+    - functional RSVP when in scope
+    - approved privacy language
+    - no sensitive child data in the public RSVP
+
+qr:
+  payload_source: web.destination_url
+  master_format: SVG
+  derivatives:
+    - PNG
+    - PDF
+  lockups:
+    - qr_only
+    - qr_with_logo
+    - scan_to_rsvp
+    - light_background
+    - dark_background
+    - one_color
+  final_scan_verification_required: true
+
+outputs:
+  immediate_prototype:
+    - verified_landing_page
+    - working_target_action
+    - qr_svg_master
+    - branded_qr_lockup
+    - scan_test_report
+    - client_handoff_zip
+  later_campaign_kit:
+    print:
+      - letter_flyer
+      - tabloid_poster
+    social:
+      - square_post
+      - portrait_feed_post
+      - story
+      - reel_cover
+      - facebook_post
+      - facebook_cover
+      - instagram_profile_safe_asset
+      - linkedin_organization_asset
+    video:
+      - youtube_thumbnail
+      - youtube_channel_banner
+    communications:
+      - email_header
+      - presentation_cover
+      - presentation_slide_16_9
+    field_assets:
+      - table_sign
+      - sticker
+      - volunteer_badge
+      - partner_insert
+
+measurement_categories:
+  activation_status: DEFERRED_NOT_REMOVED
+  categories:
+    - families
+    - volunteers
+    - sponsors
+    - partners
+    - supporters
+    - qr_scans
+    - rsvp_completions
+
+constraints:
+  - Do not invent sponsors.
+  - Do not create the QR matrix with an image model.
+  - Do not claim the production URL or RSVP is verified until tested.
+  - Do not treat this draft as approved event copy.
+  - Preserve editable masters and client ownership.
+
+proof_required:
+  - approved_source_copy_comparison
+  - URL_verification_receipt
+  - RSVP_test_receipt_when_in_scope
+  - QR_payload_receipt
+  - QR_scan_test_report
+  - output_manifest_and_checksums
+
+human_approval:
+  required_before_publication:
+    - exact_destination_URL
+    - event_facts
+    - final_copy
+    - final_logo_asset
+    - final_QR_lockup
+    - public_release

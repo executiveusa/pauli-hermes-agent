@@ -1,0 +1,45 @@
+# YouTube Intelligence Pipeline — Channel Configuration
+# Copy this file to channels.yaml and fill in your channels.
+#
+# Run:
+#   python pipeline.py --config channels.yaml
+
+channels:
+  # Auto-discover every playlist on the channel (leave playlists empty)
+  - name: "My Competitor"
+    url: "https://www.youtube.com/@examplechannel"
+    playlists: []   # empty = auto-discover all playlists
+    priority: high
+
+  # Scrape specific playlists only
+  - name: "Industry Leader"
+    url: "https://www.youtube.com/@industryleader"
+    playlists:
+      - "https://www.youtube.com/playlist?list=PLxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      - "https://www.youtube.com/playlist?list=PLyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+    priority: medium
+
+  # Another full channel
+  - name: "Niche Expert"
+    url: "https://www.youtube.com/@nicheexpert"
+    playlists: []
+    priority: low
+
+# What you want the analysis to focus on.
+# Be specific — these goals drive every insight, action, and content idea.
+goals:
+  - "Find content gaps in my niche to fill with original videos"
+  - "Identify tools and software I should review or cover"
+  - "Spot trends early before they peak so I can publish first"
+  - "Generate a 3-month content calendar of specific video ideas"
+  - "Find collaborators and influencers worth reaching out to"
+  - "Understand what titles and formats perform best in this space"
+
+output:
+  # Directories (relative to where you run pipeline.py)
+  data_dir: "youtube_data"          # raw + enriched JSON
+  output_dir: "youtube_intelligence" # second_brain.md, actions.json, etc.
+
+  # Max videos sent through Claude analysis.
+  # Each video = ~1 Claude API call. Adjust based on your rate limits.
+  max_videos: 100

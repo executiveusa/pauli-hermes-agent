@@ -1,0 +1,25 @@
+name: Hermes Dear Diary CI
+on:
+  pull_request:
+    paths:
+      - "scripts/dear_diary.py"
+      - "skills/dear-diary/**"
+      - ".github/workflows/terabithia-diary.yml"
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m py_compile scripts/dear_diary.py
+      - run: python scripts/dear_diary.py --help
+      - name: Private memory must fail closed
+        run: |
+          set +e
+          python scripts/dear_diary.py --type fact --summary private --sensitivity private
+          rc=$?
+          test "$rc" -eq 2

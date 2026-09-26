@@ -1,0 +1,233 @@
+version: 1
+purpose: "Agent-readable corpus for extracting design DNA, niche fit, narrative grammar, motion grammar, and implementation patterns. References are evidence, not copy targets."
+lead_framework:
+  id: AW-000
+  repo: https://github.com/tponscr-debug/claude-skill-awwwards
+  source_type: skill
+  category: creative-direction
+  license_status: MIT
+  agent_note: "LEAD THIS REGISTRY. Use its concept-first art direction, typography, color, layout, motion, CSS, WebGL, performance, accessibility, and vertical-specific reasoning before consulting examples."
+discovery_feeds:
+  - https://github.com/topics/awwwards
+  - https://github.com/topics/awwwards-inspired
+references:
+  - id: AW-001
+    repo: https://github.com/adrianhajdin/award-winning-website
+    source_type: educational-build
+    category: [cinematic, product, entertainment]
+    stack: [React, GSAP]
+    best_for: [gaming, entertainment, product-launch, culture, premium-campaign]
+    design_dna: [cinematic-hero, oversized-type, video-storytelling, scroll-choreography]
+    agent_note: "Strong general reference for cinematic landing-page architecture and animated narrative. Repository describes a course for a site that became Awwwards Site of the Month."
+  - id: AW-002
+    repo: https://github.com/Fullstack-Empire/GSAP-Awwwards-Website
+    source_type: educational-build
+    category: [agency, creative, product]
+    stack: [React, Tailwind, GSAP, ScrollTrigger]
+    best_for: [agency, product, campaign]
+    design_dna: [scroll-motion, reveal-systems, kinetic-sections]
+    agent_note: "Use for reusable GSAP/ScrollTrigger choreography when award-level motion is needed without a full 3D scene."
+  - id: AW-003
+    repo: https://github.com/rodrigogama/awwwards-rebuilt-furrow
+    source_type: recreation
+    category: [agency, studio, storytelling]
+    stack: [Next.js, Framer-Motion, Canvas]
+    best_for: [creative-studio, architecture, production-company]
+    design_dna: [narrative-navigation, canvas-effects, page-transitions, experimental-layout]
+    agent_note: "Furrow recreation. Extract agency storytelling, transitions, and canvas interaction patterns; do not treat as original production source."
+  - id: AW-004
+    repo: https://github.com/ShowravKormokar/capsule
+    source_type: recreation
+    category: [editorial, fashion, culture]
+    stack: [React, Vite, GSAP, Tailwind]
+    best_for: [fashion, music, magazine, culture, youth-brand]
+    design_dna: [responsive-composition, complex-motion, editorial-rhythm]
+    agent_note: "Reverse-engineered Capsule implementation. Useful for culture/editorial motion and responsive composition."
+  - id: AW-005
+    family: spylt
+    repo: https://github.com/ShowravKormokar/SpyltMilk-clone
+    source_type: recreation
+    category: [food, beverage, CPG]
+    stack: [React, Tailwind, GSAP]
+    best_for: [beverage, snacks, cosmetics, youth-brand, physical-product]
+    design_dna: [product-first-hero, bold-type, aggressive-color, playful-scroll, product-motion]
+    agent_note: "Primary Spylt-family implementation. Excellent CPG design engine; triangulate with AW-015 and AW-016 rather than treating each as a separate template."
+  - id: AW-006
+    repo: https://github.com/jain-rithik/Two-Good-Co
+    source_type: recreation
+    category: [social-enterprise, commerce, editorial]
+    stack: [HTML, CSS, JavaScript, GSAP, Locomotive-Scroll]
+    best_for: [social-enterprise, nonprofit-commerce, sustainable-product, cause-brand]
+    design_dna: [mission-commerce, editorial-storytelling, product-purpose]
+    agent_note: "High-value reference for combining purpose, story, and commerce without default nonprofit visual language."
+  - id: AW-007
+    repo: https://github.com/MAGGIx1404/webgl-portfolio
+    source_type: portfolio
+    category: [3d, immersive, portfolio]
+    stack: [Three.js, WebGL, GSAP, Locomotive-Scroll]
+    best_for: [technology, gaming, virtual-world, premium-portfolio]
+    design_dna: [spatial-interaction, webgl-scene, immersive-scroll]
+    agent_note: "Extract immersive/WebGL interaction patterns; use 3D only when it advances positioning or story."
+  - id: AW-008
+    repo: https://github.com/MAGGIx1404/awwwards-Rebuild
+    source_type: recreation
+    category: [portfolio, experimental]
+    stack: [HTML, CSS, JavaScript, Three.js, WebGL]
+    best_for: [portfolio, experimental-site]
+    design_dna: [vanilla-webgl, lightweight-experimental-ui]
+    agent_note: "Low-level implementation reference for award-style portfolio effects without a large framework."
+  - id: AW-009
+    repo: https://github.com/Chanirulk/Awwwards-remake-DIGITALWERK
+    source_type: recreation
+    category: [digital-agency, B2B-creative]
+    stack: [React, JSX, CSS-Grid]
+    best_for: [agency, consultancy, creative-business]
+    design_dna: [agency-presentation, project-showcase, grid-layout]
+    agent_note: "Extract digital-agency information architecture and project presentation."
+  - id: AW-010
+    repo: https://github.com/Chanirulk/Awwwards-remake-CRUE-CREATIVE
+    source_type: recreation
+    category: [creative-agency, portfolio]
+    stack: [React, Locomotive-Scroll]
+    best_for: [branding-studio, production-house, photographer, design-firm]
+    design_dna: [smooth-scroll, portfolio-presentation, creative-agency-rhythm]
+    agent_note: "Useful agency/portfolio storytelling and smooth-scroll reference."
+  - id: AW-011
+    family: miranda-paper
+    repo: https://github.com/Chanirulk/Awwwards-remake-MIRANDA-PAPER-PORTFOLIO
+    source_type: recreation
+    category: [editorial, newspaper, magazine]
+    stack: [React, HTML, CSS]
+    best_for: [journalism, publishing, blog, artist, event, culture]
+    design_dna: [newspaper-hierarchy, oversized-headlines, columns, editorial-rhythm]
+    agent_note: "Use when editorial hierarchy is more appropriate than SaaS-card language. Triangulate with AW-028 if added later."
+  - id: AW-012
+    repo: https://github.com/MahdiGhorbani98/MeadLIght_PinkDrink_Clone
+    source_type: recreation
+    category: [beverage, CPG, 3d-product]
+    stack: [React, GSAP, ScrollTrigger, Three.js, React-Three-Fiber]
+    best_for: [beverage, cosmetics, packaged-goods, physical-product-launch]
+    design_dna: [3d-product, scroll-storytelling, svg-animation]
+    agent_note: "Use for physical-product narratives where the product itself can become the animated visual anchor."
+  - id: AW-013
+    repo: https://github.com/Musab-Hassan/musabhassan.com
+    source_type: original-portfolio
+    category: [personal-brand, portfolio]
+    stack: [Svelte]
+    best_for: [creative-professional, personal-brand]
+    design_dna: [portfolio-story, svelte-motion, personal-brand]
+    agent_note: "Repository describes itself as a personal portfolio seen on Awwwards. Useful non-React reference."
+  - id: AW-014
+    repo: https://github.com/MariusBallot/07-2021-Awwwards-Course-Documentation
+    source_type: course-documentation
+    category: [3d, learning, engine-reference]
+    stack: [WebGL, GLSL, JavaScript]
+    best_for: [immersive-scene, shader-work, creative-coding]
+    design_dna: [webgl-scenes, shaders, interactive-3d]
+    agent_note: "Engine training material rather than a template. Consult when reasoning about how immersive effects are constructed."
+  - id: AW-015
+    family: spylt
+    repo: https://github.com/201Harsh/spylt-recreate
+    source_type: recreation
+    category: [food, beverage, product]
+    stack: [Next.js, GSAP]
+    best_for: [CPG, beverage, physical-product]
+    design_dna: [product-first, kinetic-type, scroll-product-story]
+    agent_note: "Spylt-family comparison implementation. Use to triangulate invariant design patterns with AW-005/AW-016."
+  - id: AW-016
+    family: spylt
+    repo: https://github.com/MuhammadTanveerAbbas/splyt-awwwards-website
+    source_type: recreation
+    category: [food, beverage, product]
+    stack: [React, GSAP]
+    best_for: [CPG, beverage, physical-product]
+    design_dna: [product-first, kinetic-type, scroll-product-story]
+    agent_note: "Third Spylt-family implementation. Compare independent code choices to separate design grammar from implementation accident."
+  - id: AW-017
+    repo: https://github.com/ankitpathak62/3D_Portfolio
+    source_type: portfolio
+    category: [3d, technology, portfolio]
+    stack: [React, TypeScript, GSAP, Three.js, WebGL]
+    best_for: [technology, AI, gaming, premium-personal-brand]
+    design_dna: [interactive-3d, responsive-3d-ui, gsap-three]
+    agent_note: "Reusable Three.js/GSAP portfolio interaction reference; verify current license before copying code."
+  - id: AW-018
+    repo: https://github.com/adrianhajdin/threejs-portfolio
+    source_type: educational-portfolio
+    category: [3d, technology, portfolio]
+    stack: [React, React-Three-Fiber, Drei, GSAP]
+    best_for: [technology, AI, gaming, personal-brand]
+    design_dna: [interactive-3d-objects, GLB-assets, hover-behavior, gsap-3d]
+    agent_note: "Practical R3F implementation reference for interactive objects and 3D motion."
+  - id: AW-019
+    repo: https://github.com/KpG782/3D_Portfolio
+    source_type: portfolio
+    category: [AI, civic-tech, 3d-portfolio]
+    stack: [React, Vite, Three.js, React-Three-Fiber, GSAP]
+    best_for: [AI, civic-tech, public-interest-tech]
+    design_dna: [institutional-topic-plus-immersive-ui, interactive-3d]
+    agent_note: "Useful example of applying immersive presentation to technical/public-interest subject matter."
+  - id: AW-020
+    repo: https://github.com/hetari/portfolio
+    source_type: portfolio
+    category: [portfolio, creative-professional]
+    stack: [Vue, Tailwind, GSAP, ScrollTrigger]
+    best_for: [creative-professional, Vue-project]
+    design_dna: [portfolio-motion, vue-gsap]
+    agent_note: "Keep as a Vue implementation so generator reasoning is not React-dependent."
+  - id: AW-021
+    repo: https://github.com/tam11a/v2.tam11a.dev
+    source_type: portfolio
+    category: [developer, personal-brand]
+    stack: [Next.js, Tailwind, GSAP, Framer-Motion]
+    best_for: [developer, consultant, technical-founder]
+    design_dna: [practical-premium-portfolio, technical-personal-brand]
+    agent_note: "More practical premium reference for technical professionals; prefer before 3D when clarity and credibility matter more than spectacle."
+  - id: AW-022
+    repo: https://github.com/hossensumon071/react-immorial
+    source_type: inspired-build
+    category: [photography, visual-portfolio]
+    stack: [React, Tailwind, GSAP]
+    best_for: [photographer, filmmaker, hotel, destination, architecture]
+    design_dna: [image-first-storytelling, visual-portfolio, motion-gallery]
+    agent_note: "Use where photography sells the experience and UI should frame rather than compete with imagery."
+  - id: AW-023
+    repo: https://github.com/Unizoy/unizoy-ui
+    source_type: component-library
+    category: [component-library, motion-system]
+    stack: [React, Next.js, GSAP]
+    best_for: [reusable-primitives, rapid-prototyping]
+    design_dna: [gsap-components, motion-primitives]
+    agent_note: "Mine as reusable primitives, not as a single site design. Verify individual component provenance/licenses."
+  - id: AW-024
+    repo: https://github.com/basementstudio/scrollytelling
+    source_type: library
+    category: [storytelling-engine]
+    stack: [React, GSAP]
+    best_for: [documentary, nonprofit, impact-report, long-form-product-story]
+    design_dna: [scrollytelling-infrastructure, narrative-scroll]
+    agent_note: "Infrastructure layer for long-form narrative experiences; pair with a visual design family."
+  - id: AW-025
+    repo: https://github.com/darkroomengineering/satus
+    source_type: starter
+    category: [premium-site-foundation]
+    stack: [Next.js, GSAP, Three.js, React-Three-Fiber, Theatre.js, Lenis, Sanity]
+    best_for: [content-driven-premium-site, immersive-site]
+    design_dna: [modern-premium-stack, content-plus-motion, 3d-foundation]
+    agent_note: "Architectural foundation candidate; inspect current state/license before adoption rather than rebuilding the same stack from scratch."
+  - id: AW-026
+    repo: https://github.com/tponscr-debug/claude-skill-awwwards
+    source_type: skill
+    category: [agent-intelligence, creative-direction]
+    stack: [Agent-Skill]
+    best_for: [all-frontend-design]
+    design_dna: [art-direction, typography, color, layout, motion, css, webgl, studio-philosophy]
+    agent_note: "Same as AW-000 lead framework. Included in numbered corpus for compatibility; always consult before examples."
+  - id: AW-027
+    repo: https://github.com/topics/awwwards
+    source_type: discovery-feed
+    category: [corpus]
+    stack: [multi-stack]
+    best_for: [discovery, corpus-expansion]
+    design_dna: [candidate-discovery]
+    agent_note: "Discovery feed, not a quality or license guarantee. Qualify, deduplicate, verify provenance/license, then add worthy sources to this registry."

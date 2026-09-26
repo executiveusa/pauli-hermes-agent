@@ -55,8 +55,8 @@ class TestYoloMode:
         assert not result["approved"]
 
     def test_dangerous_command_approved_in_yolo_mode(self, monkeypatch):
-        """With HERMES_YOLO_MODE, dangerous (non-hardline) commands are auto-approved."""
-        monkeypatch.setenv("HERMES_YOLO_MODE", "1")
+        """With HERMES_YOLO_MODE, dangerous commands are auto-approved."""
+        monkeypatch.setattr(approval_module, "_YOLO_MODE_FROZEN", True)
         monkeypatch.setenv("HERMES_INTERACTIVE", "1")
         monkeypatch.setenv("HERMES_SESSION_KEY", "test-session")
 
@@ -68,8 +68,8 @@ class TestYoloMode:
         assert result["message"] is None
 
     def test_yolo_mode_works_for_all_patterns(self, monkeypatch):
-        """Yolo mode bypasses dangerous patterns (except the hardline floor)."""
-        monkeypatch.setenv("HERMES_YOLO_MODE", "1")
+        """Yolo mode bypasses all dangerous patterns, not just some."""
+        monkeypatch.setattr(approval_module, "_YOLO_MODE_FROZEN", True)
         monkeypatch.setenv("HERMES_INTERACTIVE", "1")
 
         # Dangerous but recoverable — yolo should bypass.
@@ -90,7 +90,7 @@ class TestYoloMode:
 
     def test_combined_guard_bypasses_yolo_mode(self, monkeypatch):
         """The new combined guard should preserve yolo bypass semantics."""
-        monkeypatch.setenv("HERMES_YOLO_MODE", "1")
+        monkeypatch.setattr(approval_module, "_YOLO_MODE_FROZEN", True)
         monkeypatch.setenv("HERMES_INTERACTIVE", "1")
 
         called = {"value": False}
@@ -216,3 +216,34 @@ class TestYoloMode:
         approval_module.clear_session("session-a")
 
         assert is_session_yolo_enabled("session-a") is False
+
+    def test_yolo_toggle_releases_computer_use_session(self, monkeypatch):
+        """Enabling/disabling/clearing session YOLO releases the session's
+        computer-use backend on every edge.
+
+        Coverage for hermes-upstream-gap-map item #2 ("Computer-use
+        permission layer" / "Computer-use session release"): ported from
+        upstream NousResearch/hermes-agent v2026.8.16.2, where
+        `enable_session_yolo`/`disable_session_yolo`/`clear_session` each
+        call `_release_permission_mode_dependents` so a computer-use backend
+        whose immutable mode was derived from Hermes YOLO never outlives the
+        toggle that set it. That helper (and these three call sites) did not
+        exist in this fork until this change; without it a private
+        `unrestricted` cua-driver daemon started under YOLO could survive
+        YOLO being turned back off.
+        """
+        from unittest.mock import patch
+
+        with patch(
+            "tools.computer_use.release_computer_use_session"
+        ) as mock_release:
+            enable_session_yolo("session-a")
+            mock_release.assert_called_once_with("session-a")
+
+            mock_release.reset_mock()
+            disable_session_yolo("session-a")
+            mock_release.assert_called_once_with("session-a")
+
+            mock_release.reset_mock()
+            approval_module.clear_session("session-a")
+            mock_release.assert_called_once_with("session-a")

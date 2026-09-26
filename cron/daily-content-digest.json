@@ -1,0 +1,18 @@
+{
+  "id": "social-storytelling-daily-digest",
+  "description": "Daily human approval surface for hermes-workflows/social-storytelling-ops. Gathers every draft at manifest status NEEDS-REVIEW or PENDING-APPROVAL from the most recently touched run, assembles a one-line-per-draft summary, and delivers it through the gateway to a single named recipient. Approving/rejecting happens by replying with /content-approve <reel_id> or /content-reject <reel_id> <reason> (see gateway/run.py _handle_content_approve_command / _handle_content_reject_command), or in natural language which Hermes maps to the same commands.",
+  "schedule": "0 8 * * *",
+  "timezone": "America/New_York",
+  "skills": ["social-storytelling-ops"],
+  "prompt": "Run the social-storytelling-ops daily content digest. (1) Find the most recently modified runs/*/manifest.json under hermes-workflows/social-storytelling-ops/runs/ (same resolution gateway/run.py's _latest_social_storytelling_run_dir() uses — if the team is running more than one concurrent campaign this picks the wrong one; escalate rather than guess). (2) Run `python hermes-workflows/social-storytelling-ops/scripts/approval.py digest <run_dir>` to build the summary message (one line per draft: platform, hook, series role, link to the full draft) for every reel at status NEEDS-REVIEW or PENDING-APPROVAL. (3) If the queue is empty, do not send a message — write a one-line note to the output dir and stop; do not notify the recipient for an empty digest. (4) Deliver the non-empty digest through the gateway to the recipient configured in `digest_recipient` (see below) as a single message. (5) Do not approve, reject, schedule, or publish anything yourself — this job only assembles and delivers the digest; approval happens only through the recipient's reply per the retry policy in hermes-workflows/social-storytelling-ops/AGENTS.md ('Public action without approval: forbidden').",
+  "digest_recipient": "REPLACE_WITH_GATEWAY_USER_ID",
+  "enabled_toolsets": ["read", "messaging"],
+  "disabled_toolsets": ["cronjob", "browser", "clarify"],
+  "cost_guard": {
+    "max_per_run_usd": 0.50,
+    "halt_on_exceed": true
+  },
+  "output_dir": "ops/reports/",
+  "retry_on_error": 1,
+  "error_policy": "write-error-file-and-continue"
+}

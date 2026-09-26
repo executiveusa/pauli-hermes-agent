@@ -1,0 +1,2 @@
+# 04 Opus Execution
+Use OpusClip MCP/API first. Query usage/caps, estimate credits, reuse one source project where practical, retrieve transcript/candidates, duplicate before substantive edits when possible, apply precise supported edits, export HD, and write provider/cost receipts. Browser finisher is fallback only. Never loop paid edits or publish from this stage.

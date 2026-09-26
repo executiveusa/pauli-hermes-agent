@@ -20,8 +20,6 @@ function hermesDevToken(): Plugin {
   const TOKEN_RE = /window\.__HERMES_SESSION_TOKEN__\s*=\s*"([^"]+)"/;
   const EMBEDDED_RE =
     /window\.__HERMES_DASHBOARD_EMBEDDED_CHAT__\s*=\s*(true|false)/;
-  const LEGACY_TUI_RE =
-    /window\.__HERMES_DASHBOARD_TUI__\s*=\s*(true|false)/;
 
   return {
     name: "hermes:dev-session-token",
@@ -39,12 +37,7 @@ function hermesDevToken(): Plugin {
           return;
         }
         const embeddedMatch = html.match(EMBEDDED_RE);
-        const legacyMatch = html.match(LEGACY_TUI_RE);
-        const embeddedJs = embeddedMatch
-          ? embeddedMatch[1]
-          : legacyMatch
-            ? legacyMatch[1]
-            : "false";
+        const embeddedJs = embeddedMatch ? embeddedMatch[1] : "true";
         return [
           {
             tag: "script",

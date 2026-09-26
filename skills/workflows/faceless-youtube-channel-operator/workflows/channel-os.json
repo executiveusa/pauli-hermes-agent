@@ -1,0 +1,142 @@
+{
+  "schema_version": "1.0",
+  "workflow": "faceless-youtube-channel-os",
+  "mode": "autonomous_by_default",
+  "human_attention_goal": "thesis, spend, publish, auth, exceptions only",
+  "stages": [
+    {
+      "id": "discover",
+      "name": "Discover",
+      "inputs": ["personal_graph", "benchmark_graph", "public_market_evidence"],
+      "agents": ["topic_researcher", "competitor_researcher", "community_researcher"],
+      "operations": ["find_problem_spaces", "find_outlier_channels", "find_audience_value", "find_monetization_paths"],
+      "gate": "at_least_one_evidence_backed_channel_thesis",
+      "output": "channel-theses.json",
+      "human_required": false
+    },
+    {
+      "id": "validate",
+      "name": "Validate",
+      "inputs": ["channel-theses.json"],
+      "agents": ["strategist", "critic"],
+      "operations": ["score_demand", "score_competition", "score_differentiation", "score_source_supply", "score_production_complexity", "score_monetization", "set_kill_criteria"],
+      "gate": "thesis_score_passes_and_owner_approves_initial_thesis",
+      "output": "channel-thesis-lock.json",
+      "human_required": true,
+      "human_reason": "initial thesis or material pivot"
+    },
+    {
+      "id": "research",
+      "name": "Per-video research",
+      "inputs": ["channel-thesis-lock.json", "topic_candidate"],
+      "agents": ["topic_researcher", "competitor_researcher", "seo_researcher", "community_researcher", "benchmark_researcher"],
+      "parallel": true,
+      "operations": ["collect_primary_sources", "collect_competitor_patterns", "collect_surface_opportunities", "collect_questions", "preserve_raw_evidence"],
+      "gate": "source_manifest_complete",
+      "output": ["research-pack.md", "source-manifest.json", "competitor-grid.json"],
+      "human_required": false
+    },
+    {
+      "id": "package",
+      "name": "Package before script",
+      "inputs": ["research-pack.md", "channel_baseline"],
+      "agents": ["strategist", "packaging_specialist"],
+      "operations": ["generate_titles", "generate_thumbnail_concepts", "select_surface", "define_one_sentence_promise", "define_hook", "define_cta", "define_success_metric"],
+      "gate": "package_hypothesis_locked",
+      "output": "package-lock.json",
+      "human_required": false
+    },
+    {
+      "id": "script",
+      "name": "Script and production plan",
+      "inputs": ["package-lock.json", "source-manifest.json"],
+      "agents": ["creator"],
+      "providers": ["native_writer", "sollo_script_writer"],
+      "operations": ["write_original_script", "add_provenance", "build_scene_plan", "build_asset_manifest", "build_voiceover_notes", "build_editing_brief"],
+      "gate": "script_artifacts_exist",
+      "output": ["script.md", "production-manifest.json"],
+      "human_required": false
+    },
+    {
+      "id": "qa",
+      "name": "Independent QA",
+      "inputs": ["script.md", "production-manifest.json", "package-lock.json", "source-manifest.json"],
+      "agents": ["fact_critic", "originality_policy_critic", "retention_packaging_critic"],
+      "operations": ["fact_check", "copyright_check", "policy_check", "hook_check", "retention_check", "promise_alignment_check", "monetization_check", "feasibility_check"],
+      "gate": "score_at_least_8_5_or_owner_override",
+      "output": "qa-receipt.json",
+      "human_required": false
+    },
+    {
+      "id": "produce",
+      "name": "Produce",
+      "inputs": ["script.md", "production-manifest.json", "qa-receipt.json"],
+      "agents": ["production_operator"],
+      "providers": ["sollo", "approved_voice_provider", "approved_visual_provider", "approved_editor"],
+      "operations": ["generate_voice", "generate_or_collect_visuals", "assemble_edit", "generate_captions", "generate_thumbnail", "render_master"],
+      "gate": "render_and_assets_verified",
+      "output": ["master-video", "thumbnail", "publish-package.json"],
+      "human_required": false,
+      "spend_gate": "only_if_outside_preapproved_budget"
+    },
+    {
+      "id": "approval",
+      "name": "Publish approval",
+      "inputs": ["master-video", "publish-package.json", "qa-receipt.json"],
+      "agents": ["governor"],
+      "operations": ["prepare_compact_owner_receipt"],
+      "gate": "explicit_owner_approval_unless_publish_authority_promoted",
+      "output": "publish-approval.json",
+      "human_required": true
+    },
+    {
+      "id": "publish",
+      "name": "Publish and verify",
+      "inputs": ["publish-approval.json", "publish-package.json"],
+      "agents": ["publisher", "verifier"],
+      "operations": ["upload", "set_metadata", "set_disclosures", "publish_or_schedule", "verify_live_url", "verify_metadata"],
+      "gate": "live_state_verified",
+      "output": "publish-receipt.json",
+      "human_required": false
+    },
+    {
+      "id": "distribute",
+      "name": "Derivatives and distribution",
+      "inputs": ["publish-receipt.json", "master-video"],
+      "agents": ["shorts_creator", "social_creator"],
+      "operations": ["derive_shorts", "derive_social_assets", "preserve_core_promise", "schedule_allowed_drafts"],
+      "gate": "derivatives_verified",
+      "output": "distribution-manifest.json",
+      "human_required": false,
+      "note": "external posting follows each destination's authority policy"
+    },
+    {
+      "id": "measure",
+      "name": "Measure",
+      "inputs": ["publish-receipt.json", "channel_baseline"],
+      "agents": ["analyst"],
+      "operations": ["collect_first_party_metrics", "compare_to_channel_baseline", "find_retention_cliffs", "find_surface_mix", "find_revenue_and_subscriber_effect"],
+      "gate": "measurement_window_complete",
+      "output": "performance-receipt.json",
+      "human_required": false
+    },
+    {
+      "id": "learn",
+      "name": "Learn and loop",
+      "inputs": ["performance-receipt.json", "channel_graph"],
+      "agents": ["analyst", "strategist", "critic"],
+      "operations": ["update_graph", "update_topic_priors", "update_package_priors", "update_hook_priors", "update_production_priors", "update_monetization_priors", "apply_kill_or_scale_rule"],
+      "gate": "next_decision_recorded",
+      "output": "learning-delta.json",
+      "human_required": false,
+      "next": "research"
+    }
+  ],
+  "interrupts": {
+    "auth_required": "request_owner_login_only",
+    "new_spend": "request_owner_approval_only",
+    "policy_ambiguity": "request_owner_exception_decision",
+    "material_strategy_pivot": "request_owner_thesis_approval",
+    "otherwise": "continue_automatically"
+  }
+}

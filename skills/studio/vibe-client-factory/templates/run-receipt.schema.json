@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vibe.engineering/schemas/run-receipt.schema.json",
+  "title": "Vibe Client Factory Run Receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "project_id",
+    "mode",
+    "outcome",
+    "target",
+    "commercial_classification",
+    "decision_receipts",
+    "reviewed_commit",
+    "changes",
+    "checks",
+    "review",
+    "judge_verdict",
+    "release",
+    "live_verification",
+    "ownership",
+    "rollback",
+    "client_summary",
+    "overall_status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": ["greenfield", "brownfield"]
+    },
+    "outcome": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "commercial_classification": {
+      "enum": [
+        "VIBE_AUDIT",
+        "VIBE_RESCUE_SPRINT",
+        "SOVEREIGN_LAUNCH",
+        "MAXX_OPERATIONS",
+        "INTERNAL_FACTORY_IMPROVEMENT"
+      ]
+    },
+    "decision_receipts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "reviewed_commit": {
+      "type": ["string", "null"]
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status", "evidence"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["PASS", "FAIL", "NOT_RUN"]
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["independent", "findings", "dispositions"],
+      "properties": {
+        "independent": {
+          "type": "boolean"
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dispositions": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "FIXED",
+              "ACCEPTED_RISK",
+              "FALSE_POSITIVE_WITH_REASON",
+              "DEFERRED_WITH_OWNER_AND_DATE",
+              "BLOCKING"
+            ]
+          }
+        }
+      }
+    },
+    "judge_verdict": {
+      "enum": ["SHIP", "HOLD"]
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorized", "performed", "identifier"],
+      "properties": {
+        "authorized": {
+          "type": "boolean"
+        },
+        "performed": {
+          "type": "boolean"
+        },
+        "identifier": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "live_verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": {
+          "enum": ["VERIFIED", "NOT_VERIFIED", "FAILED"]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ownership": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "rollback": {
+      "type": "string",
+      "minLength": 1
+    },
+    "client_summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "commercial_impact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": ["VERIFIED", "UNVERIFIED", "NOT_APPLICABLE"]
+        },
+        "statement": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "overall_status": {
+      "enum": [
+        "PASS",
+        "PASS_WITH_DISPOSITIONS",
+        "HOLD",
+        "BLOCKED",
+        "NOT_RUN"
+      ]
+    }
+  }
+}

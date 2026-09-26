@@ -1,14 +1,11 @@
 {
-  "buildCommand": "cd website && npm install && npm run build",
-  "outputDirectory": "website/build",
-  "installCommand": "cd website && npm install",
-  "framework": null,
-  "functions": {
-    "website/api/chat.js": {
-      "runtime": "nodejs20.x"
+  "buildCommand": "if [ -d ui ]; then cd ui; fi && npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "if [ -d ui ]; then npm install && cd ui; fi && npm install",
+  "framework": "nextjs",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
     }
-  },
-  "rewrites": [
-    { "source": "/api/chat", "destination": "/website/api/chat.js" }
-  ]
+  }
 }

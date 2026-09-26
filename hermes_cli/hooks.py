@@ -32,11 +32,11 @@ def hooks_command(args) -> None:
         print("Run 'hermes hooks --help' for details.")
         return
 
-    if sub in ("list", "ls"):
+    if sub in {"list", "ls"}:
         _cmd_list(args)
     elif sub == "test":
         _cmd_test(args)
-    elif sub in ("revoke", "remove", "rm"):
+    elif sub in {"revoke", "remove", "rm"}:
         _cmd_revoke(args)
     elif sub == "doctor":
         _cmd_doctor(args)
@@ -50,53 +50,71 @@ def hooks_command(args) -> None:
 
 def _cmd_list(_args) -> None:
     from hermes_cli.config import load_config
-    from agent import shell_hooks
+    from agent import outbound_webhooks, shell_hooks
 
-    specs = shell_hooks.iter_configured_hooks(load_config())
+    cfg = load_config()
+    specs = shell_hooks.iter_configured_hooks(cfg)
+    outbound = outbound_webhooks.iter_configured_targets(cfg)
 
-    if not specs:
-        print("No shell hooks configured in ~/.hermes/config.yaml.")
+    if not specs and not outbound:
+        print("No shell hooks or outbound webhooks configured in ~/.hermes/config.yaml.")
         print("See `hermes hooks --help` or")
         print("    website/docs/user-guide/features/hooks.md")
         print("for the config schema and worked examples.")
         return
 
-    by_event: Dict[str, List] = {}
-    for spec in specs:
-        by_event.setdefault(spec.event, []).append(spec)
+    if not specs:
+        print("No shell hooks configured in ~/.hermes/config.yaml.")
+    else:
+        by_event: Dict[str, List] = {}
+        for spec in specs:
+            by_event.setdefault(spec.event, []).append(spec)
 
-    allowlist = shell_hooks.load_allowlist()
-    approved = {
-        (e.get("event"), e.get("command"))
-        for e in allowlist.get("approvals", [])
-        if isinstance(e, dict)
-    }
+        allowlist = shell_hooks.load_allowlist()
+        approved = {
+            (e.get("event"), e.get("command"))
+            for e in allowlist.get("approvals", [])
+            if isinstance(e, dict)
+        }
 
-    print(f"Configured shell hooks ({len(specs)} total):\n")
+        print(f"Configured shell hooks ({len(specs)} total):\n")
 
-    for event in sorted(by_event.keys()):
-        print(f"  [{event}]")
-        for spec in by_event[event]:
-            is_approved = (spec.event, spec.command) in approved
-            status = "✓ allowed" if is_approved else "✗ not allowlisted"
-            matcher_part = f" matcher={spec.matcher!r}" if spec.matcher else ""
+        for event in sorted(by_event.keys()):
+            print(f"  [{event}]")
+            for spec in by_event[event]:
+                is_approved = (spec.event, spec.command) in approved
+                status = "✓ allowed" if is_approved else "✗ not allowlisted"
+                matcher_part = f" matcher={spec.matcher!r}" if spec.matcher else ""
+                print(
+                    f"    - {spec.command}{matcher_part} "
+                    f"(timeout={spec.timeout}s, {status})"
+                )
+
+                if is_approved:
+                    entry = shell_hooks.allowlist_entry_for(spec.event, spec.command)
+                    if entry and entry.get("approved_at"):
+                        print(f"      approved_at: {entry['approved_at']}")
+                        mtime_now = shell_hooks.script_mtime_iso(spec.command)
+                        mtime_at = entry.get("script_mtime_at_approval")
+                        if mtime_now and mtime_at and mtime_now > mtime_at:
+                            print(
+                                f"      ⚠ script modified since approval "
+                                f"(was {mtime_at}, now {mtime_now}) — "
+                                f"run `hermes hooks doctor` to re-validate"
+                            )
+            print()
+
+    if outbound:
+        print(f"Configured outbound webhooks ({len(outbound)} total):\n")
+        for target in outbound:
+            signed = "signed" if target.secret else "UNSIGNED"
+            matcher_part = f" matcher={target.matcher!r}" if target.matcher else ""
+            print(f"  - {target.label}")
+            print(f"      url:     {target.url}")
             print(
-                f"    - {spec.command}{matcher_part} "
-                f"(timeout={spec.timeout}s, {status})"
+                f"      events:  {', '.join(target.events)}{matcher_part} "
+                f"(timeout={target.timeout}s, {signed})"
             )
-
-            if is_approved:
-                entry = shell_hooks.allowlist_entry_for(spec.event, spec.command)
-                if entry and entry.get("approved_at"):
-                    print(f"      approved_at: {entry['approved_at']}")
-                    mtime_now = shell_hooks.script_mtime_iso(spec.command)
-                    mtime_at = entry.get("script_mtime_at_approval")
-                    if mtime_now and mtime_at and mtime_now > mtime_at:
-                        print(
-                            f"      ⚠ script modified since approval "
-                            f"(was {mtime_at}, now {mtime_now}) — "
-                            f"run `hermes hooks doctor` to re-validate"
-                        )
         print()
 
 
@@ -205,7 +223,7 @@ def _cmd_test(args) -> None:
 
     if getattr(args, "payload_file", None):
         try:
-            custom = json.loads(Path(args.payload_file).read_text())
+            custom = json.loads(Path(args.payload_file).read_text(encoding="utf-8"))
             if isinstance(custom, dict):
                 payload.update(custom)
             else:
@@ -220,7 +238,7 @@ def _cmd_test(args) -> None:
     if getattr(args, "for_tool", None):
         specs = [
             s for s in specs
-            if s.event not in ("pre_tool_call", "post_tool_call")
+            if s.event not in {"pre_tool_call", "post_tool_call"}
             or s.matches_tool(args.for_tool)
         ]
 
