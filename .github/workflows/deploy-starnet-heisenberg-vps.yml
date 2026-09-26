@@ -119,6 +119,13 @@ jobs:
             printf 'STARNET_API_KEY=%s\n' "$key" | sudo tee -a "$STARNET_ENV" >/dev/null
             unset key
           fi
+          # The public gateway has its own bearer; it no longer borrows the Terabithia/Hermes keys.
+          # Give the same value to the Command Center as STARNET_CONTROL_PLANE_TOKEN.
+          if ! sudo grep -q '^STARNET_GATEWAY_TOKEN=' "$STARNET_ENV"; then
+            key="$(openssl rand -hex 32)"
+            printf 'STARNET_GATEWAY_TOKEN=%s\n' "$key" | sudo tee -a "$STARNET_ENV" >/dev/null
+            unset key
+          fi
           if ! sudo grep -q '^STARNET_PORT=' "$STARNET_ENV"; then
             printf 'STARNET_PORT=8787\n' | sudo tee -a "$STARNET_ENV" >/dev/null
           fi
@@ -170,17 +177,7 @@ jobs:
             exit 23
           }
 
-          gateway_token=""
-          if [ -f /opt/pauli-effect/terabithia/.env ]; then
-            gateway_token="$(grep -m1 '^TERABITHIA_API_KEY=' /opt/pauli-effect/terabithia/.env | cut -d= -f2- | tr -d '\r\n' || true)"
-            gateway_token="${gateway_token%\"}"; gateway_token="${gateway_token#\"}"
-            gateway_token="${gateway_token%\'}"; gateway_token="${gateway_token#\'}"
-          fi
-          if [ -z "$gateway_token" ] && [ -f /root/.hermes/.env ]; then
-            gateway_token="$(grep -m1 '^HERMES_API_KEY=' /root/.hermes/.env | cut -d= -f2- | tr -d '\r\n' || true)"
-            gateway_token="${gateway_token%\"}"; gateway_token="${gateway_token#\"}"
-            gateway_token="${gateway_token%\'}"; gateway_token="${gateway_token#\'}"
-          fi
+          gateway_token="$(sudo grep -m1 '^STARNET_GATEWAY_TOKEN=' "$STARNET_ENV" | cut -d= -f2- | tr -d '\r\n' || true)"
           test "${#gateway_token}" -ge 16 || { echo 'Gateway bearer unavailable on VPS' >&2; exit 24; }
 
           payload='{"task":"Heisenberg, give me a verified city health report in one concise paragraph.","context":{"source":"github-deploy-proof","realm":"starnet","authority":"owner-deployment-proof"}}'
@@ -191,9 +188,17 @@ jobs:
             http://127.0.0.1:8642/starnet/v1/heisenberg/tasks)"
 
           mission_id="$(printf '%s' "$response" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("mission_id") or d.get("task_id") or d.get("id") or "")')"
-          status="$(printf '%s' "$response" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("status", ""))')"
-          result_text="$(printf '%s' "$response" | python3 -c 'import json,sys; print(str(json.load(sys.stdin).get("result", "")).strip())')"
           test -n "$mission_id" || { echo 'Heisenberg proof returned no mission id' >&2; exit 25; }
+          # Task creation answers 202 immediately; poll the receipt until it settles.
+          for i in $(seq 1 50); do
+            response="$(curl --fail --silent --show-error --max-time 15 \
+              -H "Authorization: Bearer $gateway_token" \
+              "http://127.0.0.1:8642/starnet/v1/heisenberg/tasks/$mission_id")"
+            status="$(printf '%s' "$response" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("status", ""))')"
+            [ "$status" = running ] || break
+            sleep 2
+          done
+          result_text="$(printf '%s' "$response" | python3 -c 'import json,sys; print(str(json.load(sys.stdin).get("result", "")).strip())')"
           test "$status" = completed || { echo "Heisenberg proof status was $status" >&2; exit 25; }
           test -n "$result_text" || { echo 'Heisenberg proof returned blank result' >&2; exit 25; }
 
