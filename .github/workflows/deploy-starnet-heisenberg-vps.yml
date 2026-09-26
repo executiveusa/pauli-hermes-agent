@@ -230,8 +230,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          gateway_token="$(ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new -p "${VPS_PORT:-22}" "${VPS_USER:-root}@${VPS_HOST}" "grep -m1 ^STARNET_GATEWAY_TOKEN= /etc/pauli-starnet.env | cut -d= -f2- | tr -d \"\\r\\n\"")"
+          test "${#gateway_token}" -ge 16 || { echo "Gateway bearer unavailable on VPS" >&2; exit 1; }
           curl --fail --silent --show-error --location --retry 3 --max-time 20 \
-            https://api.thepaulieffect.com/starnet/health >/dev/null
+            -H "Authorization: Bearer $gateway_token" \
+            https://api.thepaulieffect.com/starnet-gw/health >/dev/null
           echo 'PUBLIC_STARNET_GATEWAY=PASS' >> "$GITHUB_STEP_SUMMARY"
           echo "source_commit=${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"
           echo 'starnet_commit=4d502798455c1f3b06f9689e956aa55a41a3fa6b' >> "$GITHUB_STEP_SUMMARY"
