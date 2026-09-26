@@ -1,0 +1,21 @@
+name: Emergency authorized_keys restore
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Restore watcher key on VPS
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H 31.220.58.212 >> ~/.ssh/known_hosts
+          ssh root@31.220.58.212 'set -e; cp /root/.ssh/authorized_keys /root/.ssh/authorized_keys.bak-20260926; printf "\n%s\n" "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILDykXhbOTzC+1nVuGTksaxVMVeCQfOup4WTv3tpTJy/ instinct-watcher-20260924c" >> /root/.ssh/authorized_keys; chmod 600 /root/.ssh/authorized_keys; wc -l /root/.ssh/authorized_keys'
+        env:
+          SSH_KEY: ${{ secrets.HERMES_VPS_SSH_KEY }}
