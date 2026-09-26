@@ -88,3 +88,18 @@ def test_task_failure_is_recorded_as_failed(gw, monkeypatch):
             break
     assert got["status"] == "failed"
     assert got["receipt"]["completed"] is False
+
+
+def test_running_receipts_are_settled_after_restart(tmp_path, monkeypatch):
+    import json
+
+    tasks = tmp_path / "tasks"
+    tasks.mkdir()
+    (tasks / "heis-abc.json").write_text(json.dumps({"id": "heis-abc", "status": "running", "logs": []}))
+    (tasks / "heis-done.json").write_text(json.dumps({"id": "heis-done", "status": "completed", "logs": []}))
+    monkeypatch.setenv("STARNET_GATEWAY_STATE_DIR", str(tasks))
+    importlib.reload(importlib.import_module("starnet_gateway"))  # simulates a process start
+    interrupted = json.loads((tasks / "heis-abc.json").read_text())
+    assert interrupted["status"] == "failed"
+    assert interrupted["receipt"]["completed"] is False
+    assert json.loads((tasks / "heis-done.json").read_text())["status"] == "completed"

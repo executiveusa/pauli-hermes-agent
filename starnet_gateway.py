@@ -104,6 +104,40 @@ def _load_task(task_id: str) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail="Task receipt unreadable")
 
 
+def _settle_interrupted_tasks() -> int:
+    """Settle receipts a previous process left 'running'.
+
+    Background runs live in this process, so a restart or redeploy cancels them. Without this,
+    their durable receipts would read 'running' forever and pollers would never see an outcome.
+    """
+    settled = 0
+    try:
+        paths = list(TASK_DIR.glob("*.json"))
+    except OSError:
+        return 0
+    for path in paths:
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(record, dict) or record.get("status") != "running" or "id" not in record:
+            continue
+        record.update({
+            "status": "failed",
+            "error": "Interrupted by a gateway restart before completion. Nothing is claimed; resubmit the task.",
+            "updatedAt": datetime.now(timezone.utc).isoformat(),
+            "logs": list(record.get("logs") or []) + ["settled as failed on gateway startup"],
+            "receipt": {"source": "starnet-v1", "task_id": record["id"], "completed": False},
+        })
+        _save_task(record)
+        settled += 1
+    return settled
+
+
+# Runs once when the router is imported by api_server.py, i.e. on every process start.
+_settle_interrupted_tasks()
+
+
 class HeisenbergTask(BaseModel):
     task: str
     context: dict[str, Any] = Field(default_factory=dict)
