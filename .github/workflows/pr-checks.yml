@@ -188,6 +188,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [changes, website-build, python-checks, skills-index, mcp-smoke, no-conflicts]
     if: always()
+    # Read-only access so the cross-workflow step can see the Tests and
+    # Vibe Code Review runs for this PR head SHA.
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    # Longest wait below (75m) plus slack for the own-check step.
+    timeout-minutes: 85
     steps:
       - name: Verify all required checks passed
         run: |
@@ -219,4 +227,73 @@ jobs:
             echo "❌ conflict check failed"
             exit 1
           fi
-          echo "✅ All applicable required checks green — PR ready to merge"
+          echo "✅ This workflow's own checks are green"
+
+      # Tests and Vibe Code Review are separate workflows, so `needs` cannot
+      # see them. For pull requests, require their runs for this exact head SHA
+      # to finish with conclusion "success". Cancelled, failed, timed-out,
+      # skipped, empty-conclusion or missing runs all fail the gate, as does
+      # any GitHub API error. Pushes (main, claude/**) keep the own-checks gate.
+      - name: Require independent Tests and Vibe Code Review runs
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+          # tests.yml: test job timeout 30m (e2e 10m, parallel). Vibe Code
+          # Review: reusable job timeout 30m. 75m = 30m run + queue time + pad.
+          # Raise it if either workflow's timeout-minutes is raised.
+          WAIT_MINUTES: "75"
+          MISSING_GRACE_MINUTES: "5"
+        run: |
+          set -uo pipefail
+          fail() { echo "❌ $*"; exit 1; }
+
+          # Tests ignores docs-only changes (paths-ignore in tests.yml).
+          # Check gh's exit status first; any API failure fails the gate.
+          files=$(gh api --paginate "repos/$REPO/pulls/$PR_NUMBER/files" --jq '.[].filename') \
+            || fail "could not list PR files (GitHub API error); refusing to guess"
+          need_tests=true
+          if [[ -n "$files" ]] && ! printf '%s\n' "$files" | grep -qvE '(\.md$|^docs/)'; then
+            need_tests=false
+          fi
+          # Vibe Code Review skips drafts (job `if` in vibe-code-review.yml).
+          need_review=true
+          [[ "$IS_DRAFT" == "true" ]] && need_review=false
+
+          # Newest run (by run_number, then run_attempt) of this exact workflow
+          # file, pull_request event, this head SHA. Prints "<status>/<conclusion>"
+          # or "missing". Any API/parse failure returns non-zero.
+          # gh --paginate --slurp wraps every page in one array, so runs on later
+          # pages are never missed. A gh or jq failure (pipefail) returns non-zero.
+          state() {
+            local out
+            out=$(gh api --paginate --slurp "repos/$REPO/actions/workflows/$1/runs?event=pull_request&head_sha=$HEAD_SHA&per_page=100" \
+              | jq -r --arg sha "$HEAD_SHA" '[.[].workflow_runs[]? | select(.head_sha == $sha and .event == "pull_request")] | sort_by([.run_number, .run_attempt]) | last | if . == null then "missing" else "\(.status)/\(.conclusion // "")" end') || return 1
+            [[ -n "$out" ]] || return 1
+            printf '%s' "$out"
+          }
+
+          deadline=$((SECONDS + WAIT_MINUTES*60))
+          missing_deadline=$((SECONDS + MISSING_GRACE_MINUTES*60))
+          while true; do
+            all_done=true
+            for wf in "tests.yml:$need_tests" "vibe-code-review.yml:$need_review"; do
+              file="${wf%%:*}"; needed="${wf##*:}"
+              [[ "$needed" == "true" ]] || { echo "$file: not required for this change"; continue; }
+              st=$(state "$file") || fail "could not read $file runs (GitHub API error)"
+              echo "$file: $st"
+              case "$st" in
+                completed/success) ;;
+                missing) if (( SECONDS < missing_deadline )); then all_done=false; else fail "$file never ran for $HEAD_SHA"; fi ;;
+                queued/*|in_progress/*|waiting/*|pending/*|requested/*) all_done=false ;;
+                *) fail "$file ended as '$st' for $HEAD_SHA - not merge-ready" ;;
+              esac
+            done
+            $all_done && break
+            (( SECONDS > deadline )) && fail "timed out after ${WAIT_MINUTES}m waiting for Tests / Vibe Code Review"
+            sleep 60
+          done
+          echo "✅ Own checks, Tests and Vibe Code Review all succeeded for $HEAD_SHA"

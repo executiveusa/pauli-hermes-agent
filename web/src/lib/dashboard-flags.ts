@@ -7,6 +7,8 @@ declare global {
      * it directly and for parity with the server's bootstrap script.
      */
     __HERMES_DASHBOARD_EMBEDDED_CHAT__?: boolean;
+    /** Set by `hermes dashboard --tui` bootstrap; enables embedded TUI chat. */
+    __HERMES_DASHBOARD_TUI__?: boolean;
   }
 }
 

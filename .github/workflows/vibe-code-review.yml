@@ -16,11 +16,11 @@ permissions:
 jobs:
   review:
     if: github.event.pull_request.draft == false
-    uses: executiveusa/open-code-review/.github/workflows/vibe-code-review.yml@864933213372cc488b3f2f2b1deaab84ea91b855
+    uses: executiveusa/open-code-review/.github/workflows/vibe-code-review.yml@d22123176c0e1cea08d9149a56ec8f0433cdee60
     with:
       ocr_version: "1.11.8"   # exact integrity-locked package version
       llm_url: https://openrouter.ai/api/v1/chat/completions
-      model: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free   # $0 lane with a live-proven OCR pass (2026-09-11)
+      model: nvidia/nemotron-3-super-120b-a12b:free   # $0 lane used by the current StarNet OCR gate
       review_concurrency: "1"   # serial review keeps the burst under free-tier token/min caps
     secrets:
       llm_token: ${{ secrets.OPENROUTER_API_KEY }}

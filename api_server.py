@@ -320,6 +320,12 @@ async def hostinger_account_info(_: None = Depends(verify_api_key)):
         raise HTTPException(status_code=500, detail=f"Account error: {str(e)}")
 
 
+# BEGIN PAULI STARNET ROUTER
+from starnet_gateway import router as starnet_router
+app.include_router(starnet_router, prefix="/starnet")
+# END PAULI STARNET ROUTER
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("API_SERVER_PORT", 8642))
