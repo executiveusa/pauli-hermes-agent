@@ -36,9 +36,9 @@ jobs:
           # Check each email against AUTHOR_MAP in release.py
           MISSING=""
           while IFS= read -r email; do
-            # Skip teknium and bot emails
+            # Skip teknium and bot emails. watcher@pauli.local is owner-confirmed automation.
             case "$email" in
-              *teknium*|*noreply@github.com*|*dependabot*|*github-actions*|*anthropic.com*|*cursor.com*)
+              *teknium*|*noreply@github.com*|*dependabot*|*github-actions*|*anthropic.com*|*cursor.com*|watcher@pauli.local)
                 continue ;;
             esac
 
