@@ -54,7 +54,7 @@ function setSessionHeader(headers: Headers, token: string): void {
 export async function fetchJSON<T>(
   url: string,
   init?: RequestInit,
-  options?: FetchJSONOptions,
+  _options?: FetchJSONOptions,
 ): Promise<T> {
   // Inject the session token into all /api/ requests.
   const headers = new Headers(init?.headers);

@@ -159,7 +159,6 @@ export function ChatSidebar({ channel, className }: ChatSidebarProps) {
     // `unmounting` suppresses the banner during cleanup — `ws.close()`
     // from the effect's return fires a close event with code 1005 that
     // would otherwise look like an unexpected drop.
-    const DISCONNECTED = "events feed disconnected — tool calls may not appear";
     let unmounting = false;
     let ws: WebSocket | null = null;
     void (async () => {
