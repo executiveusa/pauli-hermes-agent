@@ -16,7 +16,7 @@ permissions:
 jobs:
   review:
     if: github.event.pull_request.draft == false
-    uses: executiveusa/open-code-review/.github/workflows/vibe-code-review.yml@864933213372cc488b3f2f2b1deaab84ea91b855
+    uses: executiveusa/open-code-review/.github/workflows/vibe-code-review.yml@d22123176c0e1cea08d9149a56ec8f0433cdee60
     with:
       ocr_version: "1.11.8"   # exact integrity-locked package version
       llm_url: https://openrouter.ai/api/v1/chat/completions
