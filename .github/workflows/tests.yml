@@ -2,7 +2,8 @@ name: Tests
 
 on:
   push:
-    branches: [main]
+    # TEMPORARY: CI evidence for the held baseline branch; revert before PR.
+    branches: [main, fix/baseline-runtime-repairs-oct9]
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
