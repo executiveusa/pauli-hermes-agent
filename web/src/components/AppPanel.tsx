@@ -52,11 +52,14 @@ export function AppPanel({ onClose }: AppPanelProps) {
     setIsRebuilding(true);
     try {
       // Direct call to rebuild endpoint or trigger via backend rest api or socket
-      await fetch("/api/config/defaults", { // standard test endpoint
+      const response = await fetch("/api/config/defaults", { // standard test endpoint
         headers: {
           "X-Hermes-Session-Token": token
         }
       });
+      if (!response.ok) {
+        throw new Error(`Index request failed: HTTP ${response.status}`);
+      }
       // We can also trigger the graphify rebuild via Python agent tool manually.
       // Since it's a tool, the agent will call it, but we can also trigger a background rebuild!
       setTimeout(() => {
