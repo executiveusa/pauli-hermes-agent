@@ -24,7 +24,7 @@ import { Terminal } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
 import { Button } from "@nous-research/ui/ui/components/button";
 import { Typography } from "@nous-research/ui/ui/components/typography/index";
-import { HERMES_BASE_PATH, buildWsAuthParam } from "@/lib/api";
+import { buildWsAuthParam } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Copy, PanelRight, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -58,7 +58,7 @@ function buildWsUrl(
     }
   }
 
-  const qs = new URLSearchParams({ token, channel });
+  const qs = new URLSearchParams({ [authParam[0]]: authParam[1], channel });
   if (resume) qs.set("resume", resume);
   return `${proto}//${host}/api/pty?${qs.toString()}`;
 }
@@ -297,6 +297,7 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
     if (!host) return;
 
     const token = window.__HERMES_SESSION_TOKEN__ || localStorage.getItem("HERMES_SESSION_TOKEN");
+    const gated = window.__HERMES_AUTH_REQUIRED__ === true;
     // Banner already initialised above; just bail before wiring xterm/WS.
     // In gated mode the token is absent by design — buildWsAuthParam() mints
     // a WS ticket instead, so don't bail; let the effect reach that path.
@@ -907,7 +908,7 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
                 "transition-opacity duration-150 normal-case font-normal tracking-normal",
                 "px-2 py-1 text-[0.65rem] sm:px-2.5 sm:py-1.5 sm:text-xs",
               )}
-              style={{ color: TERMINAL_THEME.foreground }}
+              style={{ color: terminalTheme.foreground }}
             >
               <span className="inline-flex items-center gap-1.5">
                 <PanelRight className="h-3 w-3 shrink-0" />
@@ -929,7 +930,7 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
                 "transition-opacity duration-150 normal-case font-normal tracking-normal",
                 "px-2 py-1 text-[0.65rem] sm:px-2.5 sm:py-1.5 sm:text-xs",
               )}
-              style={{ color: TERMINAL_THEME.foreground }}
+              style={{ color: terminalTheme.foreground }}
             >
               <span className="inline-flex items-center gap-1.5">
                 <Copy className="h-3 w-3 shrink-0" />
