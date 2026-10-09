@@ -266,10 +266,12 @@ jobs:
           # Newest run (by run_number, then run_attempt) of this exact workflow
           # file, pull_request event, this head SHA. Prints "<status>/<conclusion>"
           # or "missing". Any API/parse failure returns non-zero.
+          # gh --paginate --slurp wraps every page in one array, so runs on later
+          # pages are never missed. A gh or jq failure (pipefail) returns non-zero.
           state() {
             local out
-            out=$(gh api "repos/$REPO/actions/workflows/$1/runs?event=pull_request&head_sha=$HEAD_SHA&per_page=100" \
-              --jq '[.workflow_runs[] | select(.head_sha == "'"$HEAD_SHA"'")] | sort_by([.run_number, .run_attempt]) | last | if . == null then "missing" else "\(.status)/\(.conclusion // "")" end') || return 1
+            out=$(gh api --paginate --slurp "repos/$REPO/actions/workflows/$1/runs?event=pull_request&head_sha=$HEAD_SHA&per_page=100" \
+              | jq -r --arg sha "$HEAD_SHA" '[.[].workflow_runs[]? | select(.head_sha == $sha and .event == "pull_request")] | sort_by([.run_number, .run_attempt]) | last | if . == null then "missing" else "\(.status)/\(.conclusion // "")" end') || return 1
             [[ -n "$out" ]] || return 1
             printf '%s' "$out"
           }

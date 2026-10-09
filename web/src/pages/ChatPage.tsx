@@ -945,7 +945,7 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
         {/* Premium AppPanel Split-screen Canvas */}
         {appPanelOpen && (
           <div className="flex min-h-0 shrink-0 flex-col overflow-hidden rounded-lg w-full lg:h-full lg:w-[480px] xl:w-[600px] border border-current/20 shadow-2xl">
-            <AppPanel channel={channel} onClose={() => setAppPanelOpen(false)} />
+            <AppPanel onClose={() => setAppPanelOpen(false)} />
           </div>
         )}
 

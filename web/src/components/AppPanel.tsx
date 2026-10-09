@@ -10,7 +10,6 @@ import { Button } from "@nous-research/ui/ui/components/button";
 import { cn } from "@/lib/utils";
 
 interface AppPanelProps {
-  channel: string;
   onClose: () => void;
 }
 
