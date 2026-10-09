@@ -95,6 +95,7 @@ from agent.usage_pricing import (
     format_token_count_compact,
 )
 from agent.pauli_skill_router import route_skills_for_task, router_available
+from agent.markdown_tables import realign_markdown_tables
 # NOTE: `from agent.account_usage import ...` is deliberately NOT at module
 # top — it transitively pulls the OpenAI SDK chain (~230 ms cold) and is only
 # needed when the user runs `/limits`. Lazy-imported inside the handler below.

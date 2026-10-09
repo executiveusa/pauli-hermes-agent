@@ -365,6 +365,13 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None) 
         timestamp_line += f"\nProvider: {agent.provider}"
     volatile_parts.append(timestamp_line)
 
+    # Optional task-mode brief (e.g. autonomous_runner's "deploy_apps").
+    _task_mode = getattr(agent, "task_mode", None)
+    if _task_mode:
+        _mode_prompt = _ra().TASK_MODE_PROMPTS.get(_task_mode)
+        if _mode_prompt:
+            stable_parts.append(_mode_prompt)
+
     return {
         "stable":   "\n\n".join(p.strip() for p in stable_parts   if p and p.strip()),
         "context":  "\n\n".join(p.strip() for p in context_parts  if p and p.strip()),

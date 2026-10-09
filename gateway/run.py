@@ -1178,37 +1178,34 @@ logger = logging.getLogger(__name__)
 _AGENT_PENDING_SENTINEL = object()
 
 
-def merge_pending_message_event(adapter: Any, session_key: str, event: MessageEvent) -> Optional[MessageEvent]:
-    """Merge *event* into the adapter pending queue for *session_key*."""
-    if not adapter:
-        return event
+def _requeue_carried_pending_event(
+    pending_messages: Dict[str, MessageEvent],
+    session_key: str,
+    carried: MessageEvent,
+) -> None:
+    """Put an already-dequeued pending event back without losing user input.
 
-    pending_messages = getattr(adapter, "_pending_messages", None)
-    if not isinstance(pending_messages, dict):
-        return event
-
+    Used when the interrupt-recursion cap is hit. ``carried`` is the older
+    instruction; the slot may already hold a newer one queued meanwhile. The
+    plain base helper (merge_text=False) would let ``carried`` replace the
+    newer text, so handle the text/text case here: the older text goes first,
+    the newer text after it. Any media case defers to the base helper, which
+    merges media and captions and never drops either side.
+    """
     existing = pending_messages.get(session_key)
-    if existing is None:
-        pending_messages[session_key] = event
-        return event
-
-    if getattr(existing, "message_type", None) == MessageType.PHOTO and event.message_type == MessageType.PHOTO:
-        existing.media_urls.extend(event.media_urls)
-        existing.media_types.extend(event.media_types)
-        if event.text:
-            if not existing.text:
-                existing.text = event.text
-            elif event.text not in existing.text:
-                existing.text = f"{existing.text}\n\n{event.text}".strip()
-        return existing
-
-    if getattr(existing, "text", None) and event.text:
-        if event.text not in existing.text:
-            existing.text = f"{existing.text}\n\n{event.text}".strip()
-        return existing
-
-    pending_messages[session_key] = event
-    return event
+    if existing is carried:
+        return
+    if (
+        existing is not None
+        and existing.message_type == MessageType.TEXT
+        and carried.message_type == MessageType.TEXT
+        and not existing.media_urls
+        and not carried.media_urls
+    ):
+        if carried.text:
+            existing.text = f"{carried.text}\n{existing.text}" if existing.text else carried.text
+        return
+    merge_pending_message_event(pending_messages, session_key, carried, merge_text=True)
 
 
 def _resolve_runtime_agent_kwargs() -> dict:
@@ -19278,7 +19275,7 @@ class GatewayRunner:
                     )
                     adapter = self.adapters.get(source.platform)
                     if adapter and pending_event:
-                        merge_pending_message_event(adapter._pending_messages, session_key, pending_event)
+                        _requeue_carried_pending_event(adapter._pending_messages, session_key, pending_event)
                     elif adapter and hasattr(adapter, 'queue_message'):
                         adapter.queue_message(session_key, pending)
                     return result_holder[0] or {"final_response": response, "messages": history}
