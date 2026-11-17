@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { api, HERMES_BASE_PATH } from "@/lib/api";
+import { api } from "@/lib/api";
 import type { PluginManifest, RegisteredPlugin } from "./types";
 import {
   getPluginComponent,
