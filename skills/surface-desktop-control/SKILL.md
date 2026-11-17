@@ -27,7 +27,7 @@ Use for an owner-approved task on the Surface when existing APIs and browser aut
 - The `rdc` MCP server must be explicitly registered on the **agent execution host** (`rdc mcp --target surface`); its target points to the approved Surface on the same private tailnet.
 - On the Surface, RDC must run as the logged-in standard Windows user; no elevated service. Configure `%APPDATA%\\rdc\\config.toml` with the exact verified caller and `can = "view"` by default. Input requires a distinct human approval and `can = ["view", "input"]`.
 - Tailscale ACL and local firewall restrict TCP 7770 to the agent's approved identity. Never use public bind, unrestricted `allow`, public tunnels, or unauthenticated loopback.
-- The selected agent must actually expose `screenshot`, `windows`, `displays`, `click`, `type`, and `key` through its connected controller before those operations can be attempted.
+- The selected agent must actually expose `screenshot`, `windows`, `displays`, `click`, `type`, and `key` through its connected controller before those operations can be attempted. Verify tool discovery independently in each agent session; repository installation alone does not connect a remote desktop.
 
 ## How to Run
 
