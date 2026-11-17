@@ -13,8 +13,6 @@
  *   await gw.request("prompt.submit", { session_id, text: "hi" })
  */
 
-import { HERMES_BASE_PATH, getWsTicket } from "@/lib/api";
-
 export type GatewayEventName =
   | "gateway.ready"
   | "session.info"
