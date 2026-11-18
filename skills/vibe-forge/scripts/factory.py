@@ -20,10 +20,15 @@ STAGES = [
  ("12","measure",["vibe:w4-ship-and-operate"]),
 ]
 NAMES = [row[1] for row in STAGES]
+BOOL_FIELDS = ('owner_verified','market_research_available','commercial_evidence',
+               'outreach_authorized','build_authorized','independent_reviewer','release_authorized')
 def route(data):
     if not isinstance(data, dict): raise ValueError("object input required")
+    for key in BOOL_FIELDS:
+        if key in data and type(data[key]) is not bool:
+            raise ValueError(f"{key} must be a JSON boolean, never a string or number")
     passed = data.get("passed_stages", [])
-    if not isinstance(passed,list) or len(passed)!=len(set(passed)) or any(x not in NAMES for x in passed):
+    if not isinstance(passed,list) or any(not isinstance(x,str) for x in passed) or len(passed)!=len(set(passed)) or any(x not in NAMES for x in passed):
         raise ValueError("invalid passed_stages")
     if passed != NAMES[:len(passed)]:
         raise ValueError("out-of-order PASS claims")
@@ -42,13 +47,13 @@ def route(data):
         skill=["alirezarezvani:finance","alirezarezvani:commercial"]
     hold=None
     if not str(data.get("product","")).strip(): hold="missing product/idea"
-    elif name=="intake" and not data.get("owner_verified"): hold="ownership/authority not verified"
-    elif name=="proven_better_new" and not data.get("market_research_available"): hold="market research unavailable: label UNRESEARCHED"
-    elif name=="commercial" and not data.get("commercial_evidence"): hold="pricing/buyer/cost/30-day path evidence missing"
-    elif name=="presell" and not data.get("outreach_authorized"): hold="outreach not authorized; research and drafts only"
-    elif name=="build" and not data.get("build_authorized"): hold="build not authorized"
-    elif name=="proof" and not data.get("independent_reviewer"): hold="independent reviewer absent"
-    elif name=="launch" and not data.get("release_authorized"): hold="release not authorized"
+    elif name=="intake" and data.get("owner_verified") is not True: hold="ownership/authority not verified"
+    elif name=="proven_better_new" and data.get("market_research_available") is not True: hold="market research unavailable: label UNRESEARCHED"
+    elif name=="commercial" and data.get("commercial_evidence") is not True: hold="pricing/buyer/cost/30-day path evidence missing"
+    elif name=="presell" and data.get("outreach_authorized") is not True: hold="outreach not authorized; research and drafts only"
+    elif name=="build" and data.get("build_authorized") is not True: hold="build not authorized"
+    elif name=="proof" and data.get("independent_reviewer") is not True: hold="independent reviewer absent"
+    elif name=="launch" and data.get("release_authorized") is not True: hold="release not authorized"
     return {"status":"HOLD" if hold else "READY_FOR_REVIEW",
             "stage":number,"stage_name":name,"mode":mode,"skills":skill,
             "blocked_reason":hold,"actions_performed":[],
