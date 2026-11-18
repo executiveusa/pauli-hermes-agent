@@ -38,6 +38,28 @@ else
   echo "    containing interfaces/mcp/server.mjs, then rerun this bootstrap."
 fi
 
+# Optional design references. Disabled unless the owner explicitly enables this
+# for an inspected, Node 22+ environment. No Playwright, ffmpeg, global npm
+# package, paid model, self-update, or background crawler is installed here.
+if [[ "${ENABLE_AWWWARDS_MCP:-0}" == "1" ]]; then
+  command -v node >/dev/null 2>&1 || {
+    echo "error: Node.js 22.13+ is required for awwwards-mcp" >&2
+    exit 127
+  }
+  node -e 'const [major, minor] = process.versions.node.split(".").map(Number); if (major < 22 || (major === 22 && minor < 13)) process.exit(1)' || {
+    echo "error: Node.js 22.13+ is required for awwwards-mcp" >&2
+    exit 1
+  }
+  echo "==> opt-in Awwwards MCP (core design search only)"
+  mcp2cli bake create awwwards \
+    --mcp-stdio "npx -y awwwards-mcp@1.20.0" \
+    --cache-ttl 3600 \
+    --description "Optional Awwwards design reference and visual DNA; code MIT, Awwwards media personal/non-commercial" \
+    --force
+else
+  echo "==> Awwwards MCP disabled (ENABLE_AWWWARDS_MCP=1 to opt in after source/version review)"
+fi
+
 echo "==> browser/search MCP: none configured in this environment."
 echo "    Native WebSearch/WebFetch cover this today. To bake a standalone"
 echo "    one later: mcp2cli bake create browser --mcp <url> --auth-header ..."
