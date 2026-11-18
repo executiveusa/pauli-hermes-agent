@@ -12,6 +12,7 @@ All repos are lazy-loaded. Do not clone. Fetch README + 2-3 key files when neede
 **Core path:** compact `search_sites` → `get_site_details` → `compare_sites` / `create_design_brief` → handoff to Pauli Design Factory
 **Optional browser path:** authorized target, sandbox and separately installed Playwright/ffmpeg for `analyze_page_structure`, `get_motion_dna`, `analyze_scroll_map`, `verify_build`
 **Guardrails:** the README limits reference content to personal/non-commercial inspiration; commercial usage needs separate rights review, no copied screenshots, content, media or source code. Do not start a background scraper or auto-updater.
+**Nine task-specific upstream skill recipes:** https://github.com/INSANE0777/awwwards-skills at tag `skills-v2026.11.16` (`407fc695d261d24c04401b16b6dc4762dd961172`), reference only, one selected SKILL.md and its own supporting files on demand. Do not clone or auto-load all nine.
 **Canonical skill:** `.hermes/skills/awwwards-design-reference/SKILL.md`
 
 ---
