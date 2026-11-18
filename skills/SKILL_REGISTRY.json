@@ -226,5 +226,12 @@
     "tags": ["avatar", "3d", "webgl", "creative", "icm", "scene-manifest", "licensing", "meshy"],
     "triggers": ["build an avatar world", "make me an avatar site", "make this avatar reusable", "avatar world builder", "create a 3D avatar"],
     "entry_point": "/avatar-world-builder"
+  },
+  "hyparframes": {
+    "path": "skills/hyparframes",
+    "description": "HyperFrames HTML-to-video: render MP4/WebM from HTML compositions (GSAP timeline plus JS animation libraries). Owner-named folder 'hyparframes'; vendored from upstream heygen-com HyperFrames optional skill (Apache-2.0).",
+    "required": false,
+    "enabled": true,
+    "tags": ["video", "hyperframes", "html-to-video", "animation", "motion-graphics", "creative"]
   }
 }
