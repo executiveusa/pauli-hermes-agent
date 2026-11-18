@@ -76,6 +76,7 @@ def _custom_skill_aliases(repo_root: Path | None = None) -> dict[str, Path]:
         "pauli-openmontage-studio": skills_root / "openmontage-studio",
         "pauli-fal-ai": skills_root / "fal-ai",
         "pauli-mythos-reasoning": skills_root / "mythos-reasoning",
+        "awwwards-design-reference": root / ".hermes" / "skills" / "awwwards-design-reference",
     }
 
 
