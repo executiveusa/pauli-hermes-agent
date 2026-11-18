@@ -47,3 +47,8 @@ def test_awwwards_route_resolves_skill_in_isolated_home(tmp_path, monkeypatch):
     result = route_skills_for_task("Find Awwwards design references")
     assert "design_reference" in result["matched_routes"]
     assert str(resolved) in result["resolved_skill_identifiers"]
+    from agent.skill_commands import build_preloaded_skills_prompt
+    prompt, loaded, missing = build_preloaded_skills_prompt([str(resolved)])
+    assert missing == []
+    assert "awwwards-design-reference" in loaded
+    assert "Awwwards" in prompt
