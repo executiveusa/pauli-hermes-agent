@@ -34,6 +34,28 @@ class FactoryTests(unittest.TestCase):
     def test_no_duplicates(self):
         with self.assertRaises(ValueError):
             factory.route({"product":"Offer","passed_stages":["intake","intake"]})
+    def test_permissions_reject_truthy_strings(self):
+        for key, stage in (
+            ("owner_verified", 0),
+            ("market_research_available", 2),
+            ("commercial_evidence", 6),
+            ("outreach_authorized", 7),
+            ("build_authorized", 9),
+            ("independent_reviewer", 10),
+            ("release_authorized", 11),
+        ):
+            with self.subTest(key=key):
+                for value in ("false", "true", 1, 0, None):
+                    data={"product":"Offer","passed_stages":factory.NAMES[:stage],key:value}
+                    with self.assertRaisesRegex(ValueError, "JSON boolean"):
+                        factory.route(data)
+    def test_bool_true_does_not_grant_unauthorized_release(self):
+        r=factory.route({"product":"Offer","passed_stages":factory.NAMES[:11],
+                         "owner_verified":True,"release_authorized":False})
+        self.assertEqual((r["stage"],r["status"]),("11","HOLD"))
+    def test_unhashable_stage_is_rejected(self):
+        with self.assertRaises(ValueError):
+            factory.route({"product":"Offer","passed_stages":[["intake"]]})
     def test_complete(self):
         r=factory.route({"product":"Offer","passed_stages":factory.NAMES})
         self.assertEqual(r["status"],"COMPLETE_FOR_THIS_CYCLE")
