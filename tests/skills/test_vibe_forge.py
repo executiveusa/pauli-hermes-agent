@@ -1,7 +1,7 @@
 import importlib.util
 import unittest
 from pathlib import Path
-p=Path(__file__).resolve().parents[1]/"skills"/"forge-factory"/"scripts"/"factory.py"
+p=Path(__file__).resolve().parents[2]/"skills"/"vibe-forge"/"scripts"/"factory.py"
 spec=importlib.util.spec_from_file_location("factory",p)
 factory=importlib.util.module_from_spec(spec);spec.loader.exec_module(factory)
 class FactoryTests(unittest.TestCase):
