@@ -81,6 +81,10 @@ Expected contract families include:
 8. G4 requires proof; G5 requires human approval before publish.
 9. Never duplicate client brand truth, secrets, or approved manifests into Hermes memory as a second source of truth.
 
+## Optional Awwwards visual research (lazy-loaded)
+
+If the outcome needs award-site references, visual DNA, motion evidence or a comparison to a real visual benchmark, activate `.hermes/skills/awwwards-design-reference/SKILL.md` through the `design_reference` router trigger. This invokes the separate upstream Awwwards MCP only when its explicit local registration is approved and verified. It complements — never replaces — the Design Factory's canonical design brief, guardians, Gauntlet, proof and human publish gate. Prefer a compact reference search; browser capture and rebuild verification need separate consent and a sandbox. Respect personal/non-commercial media terms and never republish third-party materials.
+
 ## User-facing recommendation behavior
 When a project is classified, tell the user the 2–5 most relevant capabilities and why. Default to the smallest sufficient workflow.
 

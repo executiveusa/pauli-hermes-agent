@@ -872,7 +872,44 @@ def skill_view(
                 if file_path:
                     return _serve_skill_file(skill_dir, file_path)
                 description = str(frontmatter.get("description", "")).strip()
-                readiness = check_skills_requirements(frontmatter, body)
+                # Absolute-path skills (such as pinned repository adapters) use
+                # the same prerequisite metadata as normal skills. The legacy
+                # check_skills_requirements() helper takes no arguments and
+                # only returns a boolean; it is not a readiness dictionary.
+                legacy_env_vars, _ = _collect_prerequisite_values(frontmatter)
+                required_env_vars = _get_required_environment_variables(
+                    frontmatter, legacy_env_vars
+                )
+                env_snapshot = load_env()
+                missing_names = [
+                    entry["name"] for entry in required_env_vars
+                    if not entry.get("optional")
+                    and not _is_env_var_persisted(entry["name"], env_snapshot)
+                ]
+                required_cred_files = frontmatter.get("required_credential_files", [])
+                if not isinstance(required_cred_files, list):
+                    required_cred_files = []
+                missing_cred_files = []
+                if required_cred_files:
+                    from tools.credential_files import register_credential_files
+                    missing_cred_files = register_credential_files(required_cred_files)
+                setup_needed = bool(missing_names or missing_cred_files)
+                missing_items = [
+                    f"env ${name}" for name in missing_names
+                ] + [f"file {name}" for name in missing_cred_files]
+                readiness = {
+                    "status": (
+                        SkillReadinessStatus.SETUP_NEEDED.value
+                        if setup_needed else SkillReadinessStatus.AVAILABLE.value
+                    ),
+                    "setup_needed": setup_needed,
+                    "setup_note": _build_setup_note(
+                        SkillReadinessStatus.SETUP_NEEDED,
+                        missing_items,
+                    ) if setup_needed else None,
+                    "setup_skipped": False,
+                    "gateway_setup_hint": None,
+                }
                 rendered_content = content
                 if preprocess:
                     try:

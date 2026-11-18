@@ -18,6 +18,10 @@
 - `pauli-video-watch`, `pauli-openmontage-studio`, `pauli-fal-ai`: media workflows and dry-run render planning.
 - `browser-harness`: browser verification, frontend walkthroughs, UI debugging.
 
+## Award-level Design References
+
+- `awwwards-design-reference`: **only** when asked to compare award-winning websites, inspect visual DNA, study motion or build a cited reference brief. It is an optional design **research** adapter, not a replacement for `pauli-design-factory`. Core tools require Node >=22.13 and approved opt-in `ENABLE_AWWWARDS_MCP=1 bash .hermes/mcp/bootstrap.sh` after version and licensing review. Browser captures and build verification require separately approved dependencies. Restrict third-party Awwwards media to reference use; check rights for commercial projects.
+
 ## Memory And Secrets
 
 - `pauli-supabase-memory`: second-brain retrieval, writeback, and pgvector operations.

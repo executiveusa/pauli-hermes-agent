@@ -38,6 +38,10 @@ lazy_load_rules:
     triggers: ["call me", "phone", "voice", "Twilio", "talk", "transcript"]
     skills:
       - pauli-twilio-voice
+  design_reference:
+    triggers: ["Awwwards", "award-winning site", "visual DNA", "design reference", "reference site comparison", "motion census", "layout band map"]
+    skills:
+      - awwwards-design-reference
   design:
     triggers: ["UI", "UX", "design", "dashboard", "component", "landing page", "frontend"]
     skills:

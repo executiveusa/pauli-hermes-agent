@@ -2,6 +2,21 @@
 
 All repos are lazy-loaded. Do not clone. Fetch README + 2-3 key files when needed.
 
+## Award-level design intelligence (optional, on demand)
+
+### `INSANE0777/Awwwards-mcp`
+**Domain:** Award-winning website discovery, design DNA, page structure, interaction and motion evidence
+**Source pin:** `0560b94e646db37edcdba5249beeabf8c58ba6c7`; package manifest version 1.20.0 (verify npm publication before execution); MIT server code
+**Router:** `design_reference` → `awwwards-design-reference`; never preload with all design skills
+**Use when:** client project needs a named award-level visual comparison or evidence-based motion map; not every UI job
+**Core path:** compact `search_sites` → `get_site_details` → `compare_sites` / `create_design_brief` → handoff to Pauli Design Factory
+**Optional browser path:** authorized target, sandbox and separately installed Playwright/ffmpeg for `analyze_page_structure`, `get_motion_dna`, `analyze_scroll_map`, `verify_build`
+**Guardrails:** the README limits reference content to personal/non-commercial inspiration; commercial usage needs separate rights review, no copied screenshots, content, media or source code. Do not start a background scraper or auto-updater.
+**Nine task-specific upstream skill recipes:** https://github.com/INSANE0777/awwwards-skills at tag `skills-v2026.11.16` (`407fc695d261d24c04401b16b6dc4762dd961172`), reference only, one selected SKILL.md and its own supporting files on demand. Do not clone or auto-load all nine.
+**Canonical skill:** `.hermes/skills/awwwards-design-reference/SKILL.md`
+
+---
+
 ## Animation & Motion
 
 ### `greensock/GSAP`
