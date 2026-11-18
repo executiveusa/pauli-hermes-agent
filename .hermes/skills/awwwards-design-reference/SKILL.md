@@ -1,13 +1,27 @@
 ---
 name: awwwards-design-reference
-description: On-demand Awwwards MCP research for award-level website references, design DNA, page bands and motion comparison. Route through the existing Pauli Design Factory and ICM; never preload or crawl by default.
+description: Research Awwwards design references on demand.
 ---
 
 # Awwwards — optional design reference and motion evidence
 
 **Authority:** Hermes `pauli-design-factory` delegates design governance to `executiveusa/brand-kit-builder-`; Vibe Engineering owns its House and ICM quality gates. This skill is a **research adapter**, not a new design factory, Awwwards affiliation, always-on daemon or permission to use third-party assets commercially.
 
-## Load only when
+## Prerequisites
+
+Node >=22.13 and an approved, pinned MCP setup for live tool use. Read source terms; third-party media are not MIT licensed. The skill itself works as reference-only without the MCP. Enable only through `ENABLE_AWWWARDS_MCP=1 bash .hermes/mcp/bootstrap.sh` after package and environment review.
+
+## How to Run
+
+Ask Hermes for Awwwards design references or explicitly select `awwwards-design-reference`. Confirm the resolved skill file and whether the `awwwards` MCP is registered. Do not install anything automatically.
+
+## Quick Reference
+
+Core: `search_sites` → `get_site_details` → `compare_sites` or `create_design_brief`. Optional, authorized browser: `analyze_page_structure` and `verify_build`.
+
+## Procedure
+
+### Load only when
 
 The brief explicitly calls for award-winning sites, Awwwards comparisons, visual DNA, layout band maps, or evidence-based interaction and motion analysis. For ordinary UI work, prefer existing brand guidelines, saved screenshots, Inspo, or the project's present component system. Load **one** specialist reference source at a time; do not inject the entire design skill catalog.
 
@@ -45,6 +59,14 @@ Use `awwwards-inspiration` for the ordinary brief workflow; use `awwwards-motion
 4. **Deep dive (optional, gated):** only for an authorized URL and sandboxed browser lane, consider `get_motion_dna`, `analyze_page_structure`, `analyze_scroll_map`, `analyze_hover_census`, `capture_live_site`, `record_site_motion`, or `verify_build`. These require a separately reviewed browser-enabled Playwright/ffmpeg installation and scoped network access. Do not inspect private URLs, user sessions, protected network resources, credentials, or script bundles without authorization.
 5. **Build through existing workflow:** hand the cited brief to the canonical Design Factory or repository's Vibe W5 Web Design workflow. No pixel-for-pixel cloning, republished screenshots, or wholesale copied code. Preserve the client's visual identity and conversion goal.
 6. **Proof and Council:** run mobile/reduced-motion/a11y checks, verify the actual user journey, capture evidence, and dispatch a different-model independent critic. Judge/owner approval remains required before publishing.
+
+## Pitfalls
+
+Do not bulk scrape, republish copyrighted media, enable experimental Atlas, or assume a core npx install supports browser capture. Study recreations are not publication-ready.
+
+## Verification
+
+Verify resolved checkout path, isolated-home skill loading, pinned package and explicit MCP opt-in. Run `pytest -q tests/skills/test_awwwards_design_reference_skill.py tests/agent/test_pauli_skill_router.py`. Check an attributed design brief and separate review before claiming success.
 
 ## Local MCP transport (opt-in)
 
