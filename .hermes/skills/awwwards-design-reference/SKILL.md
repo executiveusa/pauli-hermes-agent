@@ -19,6 +19,24 @@ The brief explicitly calls for award-winning sites, Awwwards comparisons, visual
 - License: MIT for the server code. Awwwards reference content, screenshots, awards, and original creator assets carry separate restrictions; upstream README describes personal/non-commercial inspiration. **Commercial use requires reviewing Awwwards' terms and rights independently.**
 - Node >=22.13.0. Core stdio path has no browser instrumentation by default.
 
+## Upstream specialized skill library (load one, not nine)
+
+The author's companion skill repository is https://github.com/INSANE0777/awwwards-skills at verified release `skills-v2026.11.16` (ref SHA `407fc695d261d24c04401b16b6dc4762dd961172`). **Do not auto-install or flatten these nine upstream skills**. Fetch the complete selected skill directory only when the current stage calls for it, following its own `SKILL.md` and linked references:
+
+| Owner skill | Selection trigger |
+| --- | --- |
+| `awwwards-inspiration` | Discover and compare reference designs before building |
+| `awwwards-design-md` | Cited evidence-backed DESIGN.md for an authorized public URL |
+| `awwwards-motion-study` | Detailed motion capture and timing reconstruction |
+| `awwwards-section-loop` | Verify one page band/section at a time |
+| `motion-authoring` | Author verified motion from a manifest |
+| `awwwards-setup` | First-run preferences and installation, only after owner opt-in |
+| `awwwards-doctor` | Diagnose failed tools, stale index or captures |
+| `recreate` | Authorized, non-published study recreation; not a commercial clone |
+| `awwwards-atlas` | Experimental Atlas evidence layer; requires separate `AWWWARDS_MCP_ATLAS=1` authorization |
+
+Use `awwwards-inspiration` for the ordinary brief workflow; use `awwwards-motion-study` only for significant motion jobs. The source skill tag pairs with `awwwards-mcp@1.20.0`, which was released upstream. The MCP server is still a separate opt-in runtime, and its package signature/integrity should be checked before running it.
+
 ## Step-by-step selection (cheapest useful route)
 
 1. **Inspect:** read the owner brief and Design Factory capabilities. Choose `awwwards-design-reference` only for an explicit award-site question. Confirm rights, authorized target and data exposure before any live capture.
