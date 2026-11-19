@@ -94,7 +94,7 @@ Report:
 - what is queued for morning;
 - anything that should be dropped, deferred, or delegated.
 
-## Cloud project queue
+## Assigned mission queue evidence
 
 Paperclip is the only work queue; Heisenberg coordinates it. Cosmos prepares handoffs and status for its authenticated assigned mission only.
 
@@ -117,9 +117,9 @@ mission:
   rollback: ""
 ```
 
-Default execution policy:
+Default handoff policy:
 
-- keep a bounded number of concurrent active builds;
+- report capacity and assigned work without starting or maintaining builds;
 - hand off coding specifications to CodeDen, the only coding factory, without dispatching workers;
 - persistent operators retain only the durable identity/context they need;
 - every worker gets a clean workspace/sandbox;
@@ -127,7 +127,7 @@ Default execution policy:
 
 ## Software delivery spine
 
-For significant engineering work use:
+When preparing a specification for significant engineering work use:
 
 `SCAN → GRILL → MODEL → RESEARCH → SPEC → TICKETS → SLICE → BUILD → TEST → REVIEW → GAUNTLET → PROOF → SHIP`
 
