@@ -7,11 +7,11 @@ from pathlib import Path
 STAGES = [
  ("00","intake",["vibe:w1-intake-to-spec"]),
  ("01","inventory",["vibe:w7-research-and-skill-making"]),
- ("02","proven_better_new",["user:proven-better-new"]),
- ("03","discovery",["deanpeters:pm-skills-navigator"]),
- ("04","challenge",["felixgeelhaar:strategy-expert"]),
- ("05","yc_market",["jona:yc-startup-fundamentals"]),
- ("06","commercial",["alirezarezvani:finance"]),
+ ("02","proven_better_new",["proven-better-new"]),
+ ("03","discovery",["pm-skills-navigator"]),
+ ("04","challenge",["thinking-expert"]),
+ ("05","yc_market",["yc-startup-fundamentals"]),
+ ("06","commercial",["pricing-strategist"]),
  ("07","presell",["vibe:w6-copy-and-voice"]),
  ("08","spec",["vibe:w1-intake-to-spec"]),
  ("09","build",["vibe:w2-build"]),
@@ -38,13 +38,16 @@ def route(data):
         return {"status":"COMPLETE_FOR_THIS_CYCLE","next":"new evidence-based iteration","actions_performed":[]}
     number, name, skill = STAGES[len(passed)]
     domain=data.get("domain","general")
+    # Skills are exact names verified installed locally on Hermes.
+    # Domain-specific upstream variants remain references, never an implicit install.
+    optional_references=[]
     if name=="yc_market":
         special={"b2b-ai":"b2b-ai-startup-levie","devtools":"developer-tools-strategy-truell","ai-product":"ai-product-building-heller"}
-        skill=["jona:"+special.get(domain,"yc-startup-fundamentals")]
+        if domain in special: optional_references=["jona:"+special[domain]]
     elif name=="challenge" and domain in ("devtools","infrastructure"):
-        skill=["felixgeelhaar:engineering-expert"]
+        optional_references=["felixgeelhaar:engineering-expert"]
     elif name=="commercial":
-        skill=["alirezarezvani:finance","alirezarezvani:commercial"]
+        optional_references=["alirezarezvani:financial-analyst","alirezarezvani:commercial-forecaster"]
     hold=None
     if not str(data.get("product","")).strip(): hold="missing product/idea"
     elif name=="intake" and data.get("owner_verified") is not True: hold="ownership/authority not verified"
@@ -56,6 +59,7 @@ def route(data):
     elif name=="launch" and data.get("release_authorized") is not True: hold="release not authorized"
     return {"status":"HOLD" if hold else "READY_FOR_REVIEW",
             "stage":number,"stage_name":name,"mode":mode,"skills":skill,
+            "optional_references":optional_references,
             "blocked_reason":hold,"actions_performed":[],
             "note":"Stage proposal only; check actual source/skill availability and evidence."}
 def main():
