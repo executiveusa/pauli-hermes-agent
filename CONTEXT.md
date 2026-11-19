@@ -1,6 +1,10 @@
 # Hermes ICM Context Router
 
-Hermes is the primary orchestration agent for the internal Pauliverse portfolio.
+Hermes/Cosmos is the assigned-mission specification and CodeDen handoff architect, not the portfolio orchestrator. Instinct is the chief-of-staff front door; Heisenberg coordinates through Paperclip (the intended single queue).
+
+## Canonical architecture
+
+Read the owner-defined control chain in [`executiveusa/vibe-engineering/docs/ecosystem-architecture.md`](https://github.com/executiveusa/vibe-engineering/blob/main/docs/ecosystem-architecture.md) (draft in [PR #90](https://github.com/executiveusa/vibe-engineering/pull/90) until merged). Check actual repository and runtime state; the architecture text is owner policy, not evidence of a deployed queue. This Cosmos role update supersedes the older Hermes-orchestrator wording where it conflicts. No direct owner communication outside Instinct.
 
 ## Start here
 1. Read `AGENTS.md` for repository engineering rules.
@@ -10,7 +14,7 @@ Hermes is the primary orchestration agent for the internal Pauliverse portfolio.
 5. Do not load the entire repository or skill library into context.
 
 ## Stable responsibilities
-- Hermes coordinates the portfolio; it does not become the authoritative home for every fact.
+- Hermes prepares CodeDen-ready specs and handoffs from assigned work; it does not coordinate portfolio pipelines or independently queue missions.
 - Every owned repository is a node in the larger ontology.
 - ICM is the portable context architecture: filesystem routing, explicit contracts, provenance, and human gates.
 - Financial opportunities route to **Pauli's Place**.
@@ -18,7 +22,7 @@ Hermes is the primary orchestration agent for the internal Pauliverse portfolio.
 - Character/media production remains with the appropriate Yappyverse production node.
 - Social-purpose records remain operationally distinct from commercial records.
 
-## Default portfolio loop
+## Evidence-based specification loop (an assigned mission only)
 
 ```text
 INGEST
@@ -31,8 +35,8 @@ INGEST
 → ADVERSARIAL COUNCIL
 → SMALLEST EXPERIMENT
 → HUMAN GATE
-→ EXECUTE
-→ VERIFY
+→ HANDOFF TO CODEDEN (if authorized)
+→ INDEPENDENT VERIFY
 → RECORD LEARNING
 → UPDATE ONTOLOGY
 → ROUTE FINANCIAL WORK
