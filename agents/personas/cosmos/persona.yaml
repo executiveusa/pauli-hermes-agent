@@ -33,7 +33,7 @@ gtd:
     - reference
     - decisions_required
     - delegated_agent_work
-  daily_briefs:
+  brief_inputs_for_instinct:
     - morning
     - afternoon
     - night
