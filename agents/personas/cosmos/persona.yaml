@@ -3,7 +3,7 @@ persona:
   display_name: COSMOS
   role: specification-and-codeden-handoff-architect
   owner_scope: single-owner
-  status: draft-v1
+  status: draft-v2
 
 identity:
   soul: SOUL.md
@@ -16,7 +16,7 @@ routing:
   foreman: heisenberg
   work_queue: paperclip
   infrastructure_authority: terabithia
-  isolated_execution: sandcastle-or-approved-runtime
+  isolated_execution: approved-codeden-worktree
   builder_lane: codeden
   personal_reasoning_lane: pi
   communications_lane: jarvis
@@ -48,11 +48,10 @@ execution:
   gauntlet_required_for_significant_work: true
 
 notifications:
+  recipient: instinct
   tiers:
-    - dashboard
-    - messaging
-    - sms
-    - voice_call
+    - verified_mission_status
+    - review_and_owner_gate_requests
 
 human_gates:
   - public_publish
