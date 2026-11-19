@@ -47,7 +47,7 @@ class CosmosHandoffContractTests(unittest.TestCase):
                 r"(?im)^\s*(?:you are|cosmos is|hermes is|role:)\s+"
                 r"(?:the |a )?(?:personal |chief )?(?:orchestrator|orchestration layer)\b"
             ))
-            self.assertNotIn("chief orchestrator for Bambu", doc.lower())
+            self.assertNotIn("chief orchestrator for bambu", doc.lower())
         self.assertNotRegex(yaml_text, r"(?im)^\s*role:\s*.*orchestrat")
         self.assertNotRegex(yaml_text, r"(?im)^\s*builder_lane:\s*tars\s*$")
         self.assertRegex(yaml_text, r"(?im)^\s*builder_lane:\s*codeden\s*$")
