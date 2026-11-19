@@ -44,17 +44,17 @@ class CosmosHandoffContractTests(unittest.TestCase):
         # Reject positive authority assertions, but allow explicit negations.
         for doc in (soul, heart, operating):
             self.assertNotRegex(doc, re.compile(
-                r"(?im)^\\s*(?:you are|cosmos is|hermes is|role:)\\s+"
-                r"(?:the |a )?(?:personal |chief )?(?:orchestrator|orchestration layer)\\b"
+                r"(?im)^\s*(?:you are|cosmos is|hermes is|role:)\s+"
+                r"(?:the |a )?(?:personal |chief )?(?:orchestrator|orchestration layer)\b"
             ))
             self.assertNotIn("chief orchestrator for Bambu", doc.lower())
-        self.assertNotRegex(yaml_text, r"(?im)^\\s*role:\\s*.*orchestrat")
-        self.assertNotRegex(yaml_text, r"(?im)^\\s*builder_lane:\\s*tars\\s*$")
-        self.assertRegex(yaml_text, r"(?im)^\\s*builder_lane:\\s*codeden\\s*$")
-        self.assertRegex(yaml_text, r"(?im)^\\s*recipient:\\s*instinct\\s*$")
-        self.assertRegex(yaml_text, r"(?im)^\\s*status:\\s*draft-v2\\s*$")
-        self.assertNotRegex(yaml_text, r"(?im)^\\s*-\\s*(?:sms|voice_call|owner_direct)\\s*$")
-        self.assertNotRegex(yaml_text, r"(?im)^\\s*isolated_execution:\\s*.*sandcastle")
+        self.assertNotRegex(yaml_text, r"(?im)^\s*role:\s*.*orchestrat")
+        self.assertNotRegex(yaml_text, r"(?im)^\s*builder_lane:\s*tars\s*$")
+        self.assertRegex(yaml_text, r"(?im)^\s*builder_lane:\s*codeden\s*$")
+        self.assertRegex(yaml_text, r"(?im)^\s*recipient:\s*instinct\s*$")
+        self.assertRegex(yaml_text, r"(?im)^\s*status:\s*draft-v2\s*$")
+        self.assertNotRegex(yaml_text, r"(?im)^\s*-\s*(?:sms|voice_call|owner_direct)\s*$")
+        self.assertNotRegex(yaml_text, r"(?im)^\s*isolated_execution:\s*.*sandcastle")
         self.assertIn("Instinct relays", heart)
         self.assertIn("no direct owner intake", heart)
 
