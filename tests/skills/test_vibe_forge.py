@@ -12,10 +12,17 @@ class FactoryTests(unittest.TestCase):
         self.assertIn("UNRESEARCHED",r["blocked_reason"])
     def test_dean_route(self):
         r=factory.route({"product":"New product","passed_stages":factory.NAMES[:3]})
-        self.assertEqual(r["skills"],["deanpeters:pm-skills-navigator"])
+        self.assertEqual(r["skills"],["pm-skills-navigator"])
     def test_yc_specialization(self):
         r=factory.route({"product":"AI B2B","passed_stages":factory.NAMES[:5],"domain":"b2b-ai"})
-        self.assertEqual(r["skills"],["jona:b2b-ai-startup-levie"])
+        self.assertEqual(r["skills"],["yc-startup-fundamentals"])
+        self.assertEqual(r["optional_references"],["jona:b2b-ai-startup-levie"])
+    def test_installed_specialist_names(self):
+        expectations={2:"proven-better-new",3:"pm-skills-navigator",4:"thinking-expert",5:"yc-startup-fundamentals",6:"pricing-strategist"}
+        for stage, skill in expectations.items():
+            with self.subTest(stage=stage):
+                r=factory.route({"product":"Offer","passed_stages":factory.NAMES[:stage]})
+                self.assertEqual(r["skills"],[skill])
     def test_commercial_evidence_hold(self):
         r=factory.route({"product":"Offer","passed_stages":factory.NAMES[:6]})
         self.assertEqual(r["status"],"HOLD")
