@@ -1,22 +1,26 @@
-"""End-to-end autonomous deployment runner."""
+"""Legacy autonomous deployment entrypoint — FAIL CLOSED by owner decision.
 
+Cosmos/Hermes is the spec-and-handoff architect, not a deployment runner.
+CodeDen is the sole coding factory. This compatibility shim intentionally
+contains no model, database, deploy, cron, or networking calls.
+
+Do not reactivate by setting an environment variable, providing a local
+approval JSON, or editing a branch. A future owner-approved PR must integrate
+a *verified external privileged policy boundary* and independent review.
+"""
 from __future__ import annotations
 
 import json
-import logging
 import os
-import time
-from typing import Any, Dict, List
+from typing import Any, Dict
 
-import psycopg2
 
-from repo_ingestion import ingest_repos
-from run_agent import AIAgent
-
-logger = logging.getLogger(__name__)
+class OwnerGateRequired(RuntimeError):
+    """Direct autonomous deployment is disabled pending external owner gate."""
 
 
 def _require_env(name: str) -> str:
+    """Preserved pure helper for callers that previously imported it."""
     value = os.getenv(name, "").strip()
     if not value:
         raise RuntimeError(f"Missing required environment variable: {name}")
@@ -24,62 +28,27 @@ def _require_env(name: str) -> str:
 
 
 def _parse_agent_decision(content: str) -> Dict[str, Any]:
+    """Pure legacy parser; a model claim never grants deployment authority."""
     try:
-        return json.loads(content)
-    except json.JSONDecodeError:
-        return {"deploy": False, "reason": f"Non-JSON decision from agent: {content[:200]}"}
+        result = json.loads(content)
+        return result if isinstance(result, dict) else {"deploy": False, "reason": "Invalid decision shape"}
+    except (json.JSONDecodeError, TypeError):
+        return {"deploy": False, "reason": "Invalid model decision"}
 
 
 def run_autonomous_loop(sleep_seconds: int = 60, max_retries: int = 3) -> None:
-    logging.basicConfig(level=logging.INFO)
-    database_url = _require_env("DATABASE_URL")
+    """HOLD before any side effects. No environment flag can override this.
 
-    agent = AIAgent(enabled_toolsets=["deploy_apps"], quiet_mode=True, task_mode="deploy_apps")
-
-    while True:
-        try:
-            ingested = ingest_repos()
-            logger.info("Ingest cycle complete: %s repos processed", ingested)
-
-            with psycopg2.connect(database_url) as conn:
-                with conn.cursor() as cur:
-                    cur.execute("SELECT id, name, github_url FROM repos WHERE status = 'undeployed' LIMIT 10")
-                    rows: List[tuple] = cur.fetchall()
-
-                    for repo_id, name, repo_url in rows:
-                        logger.info("Autonomous review: %s (%s)", name, repo_url)
-                        prompt = (
-                            "Return JSON only with keys deploy (bool), stack (string), and reason (string). "
-                            f"Assess repository: {repo_url}. Use tools to analyze and optionally deploy."
-                        )
-
-                        attempts = 0
-                        decision: Dict[str, Any] = {"deploy": False, "stack": "unknown", "reason": "no decision"}
-                        while attempts < max_retries:
-                            attempts += 1
-                            try:
-                                response = agent.chat(prompt)
-                                decision = _parse_agent_decision(response)
-                                break
-                            except Exception:
-                                logger.exception("Agent decision failed for %s (attempt %s/%s)", repo_url, attempts, max_retries)
-                                if attempts >= max_retries:
-                                    decision = {"deploy": False, "reason": "agent failure"}
-
-                        if decision.get("deploy"):
-                            status = "deploying"
-                        else:
-                            status = "skipped"
-
-                        cur.execute("UPDATE repos SET status = %s WHERE id = %s", (status, repo_id))
-                        logger.info("Decision for %s: %s (%s)", name, status, decision.get("reason", ""))
-
-                conn.commit()
-
-        except Exception:
-            logger.exception("Autonomous cycle failed")
-
-        time.sleep(sleep_seconds)
+    The owner gate is deliberately not simulated with a bool, JSON file,
+    GitHub issue comment, agent message, or local secret. A future reviewed
+    trusted policy integration must authorize each exact action, repository,
+    revision, cost and release. Cosmos must never become a parallel factory.
+    """
+    raise OwnerGateRequired(
+        "DISABLED: Cosmos cannot run autonomous deployment pipelines. "
+        "Use an authenticated Paperclip mission and an owner-approved CodeDen "
+        "handoff; a separately verified privileged owner-release gate is required."
+    )
 
 
 if __name__ == "__main__":
