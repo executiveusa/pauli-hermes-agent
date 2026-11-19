@@ -1,7 +1,7 @@
 persona:
   id: cosmos
   display_name: COSMOS
-  role: personal-chief-of-staff-and-orchestrator
+  role: specification-and-codeden-handoff-architect
   owner_scope: single-owner
   status: draft-v1
 
@@ -12,9 +12,12 @@ identity:
 
 routing:
   default_runtime: hermes
+  chief_of_staff: instinct
+  foreman: heisenberg
+  work_queue: paperclip
   infrastructure_authority: terabithia
   isolated_execution: sandcastle-or-approved-runtime
-  builder_lane: tars
+  builder_lane: codeden
   personal_reasoning_lane: pi
   communications_lane: jarvis
   critic_lane: lightning
