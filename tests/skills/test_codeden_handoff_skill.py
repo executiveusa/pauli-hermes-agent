@@ -32,6 +32,32 @@ class CosmosHandoffContractTests(unittest.TestCase):
         for phrase in ("commercial", "Acceptance", "independent", "rollback"):
             self.assertIn(phrase.lower(), text.lower())
 
+    def test_cosmos_persona_has_no_orchestrator_or_direct_owner_notification(self):
+        import re
+
+        persona_dir = ROOT / "agents" / "personas" / "cosmos"
+        soul = (persona_dir / "SOUL.md").read_text(encoding="utf-8")
+        heart = (persona_dir / "HEART.md").read_text(encoding="utf-8")
+        operating = (persona_dir / "OPERATING_SYSTEM.md").read_text(encoding="utf-8")
+        yaml_text = (persona_dir / "persona.yaml").read_text(encoding="utf-8")
+
+        # Reject positive authority assertions, but allow explicit negations.
+        for doc in (soul, heart, operating):
+            self.assertNotRegex(doc, re.compile(
+                r"(?im)^\\s*(?:you are|cosmos is|hermes is|role:)\\s+"
+                r"(?:the |a )?(?:personal |chief )?(?:orchestrator|orchestration layer)\\b"
+            ))
+            self.assertNotIn("chief orchestrator for Bambu", doc.lower())
+        self.assertNotRegex(yaml_text, r"(?im)^\\s*role:\\s*.*orchestrat")
+        self.assertNotRegex(yaml_text, r"(?im)^\\s*builder_lane:\\s*tars\\s*$")
+        self.assertRegex(yaml_text, r"(?im)^\\s*builder_lane:\\s*codeden\\s*$")
+        self.assertRegex(yaml_text, r"(?im)^\\s*recipient:\\s*instinct\\s*$")
+        self.assertRegex(yaml_text, r"(?im)^\\s*status:\\s*draft-v2\\s*$")
+        self.assertNotRegex(yaml_text, r"(?im)^\\s*-\\s*(?:sms|voice_call|owner_direct)\\s*$")
+        self.assertNotRegex(yaml_text, r"(?im)^\\s*isolated_execution:\\s*.*sandcastle")
+        self.assertIn("Instinct relays", heart)
+        self.assertIn("no direct owner intake", heart)
+
     def test_role_docs_do_not_claim_owner_orchestrator(self):
         soul = (ROOT / "SOUL.md").read_text(encoding="utf-8")
         heart = (ROOT / "HEART.md").read_text(encoding="utf-8")
