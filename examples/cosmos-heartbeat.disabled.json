@@ -1,0 +1,11 @@
+{
+  "enabled": false,
+  "schedule_cron": "*/5 * * * *",
+  "dry_run_first": true,
+  "snapshots": {
+    "paperclip": "/path/to/authenticated/read-only/paperclip-export.json",
+    "agent_commons": "/path/to/authenticated/read-only/agent-commons-export.json",
+    "codeden": "/path/to/authenticated/read-only/codeden-handoffs.json"
+  },
+  "status_path": null
+}
