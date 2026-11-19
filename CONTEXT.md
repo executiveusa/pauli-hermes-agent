@@ -4,7 +4,7 @@ Hermes/Cosmos is the assigned-mission specification and CodeDen handoff architec
 
 ## Canonical architecture
 
-Read the owner-defined control chain in [`executiveusa/vibe-engineering/docs/ecosystem-architecture.md`](https://github.com/executiveusa/vibe-engineering/blob/main/docs/ecosystem-architecture.md) (draft in [PR #90](https://github.com/executiveusa/vibe-engineering/pull/90) until merged). Check actual repository and runtime state; the architecture text is owner policy, not evidence of a deployed queue. This Cosmos role update supersedes the older Hermes-orchestrator wording where it conflicts. No direct owner communication outside Instinct.
+The owner-defined architecture currently lives in **draft [Vibe Engineering PR #90](https://github.com/executiveusa/vibe-engineering/pull/90)** as `docs/ecosystem-architecture.md`; do not assume this document exists on `main` until #90 merges. Check actual repository and runtime state; the architecture text is owner policy, not evidence of a deployed queue. This Cosmos role update supersedes the older Hermes-orchestrator wording where it conflicts. No direct owner communication outside Instinct.
 
 ## Start here
 1. Read `AGENTS.md` for repository engineering rules.
