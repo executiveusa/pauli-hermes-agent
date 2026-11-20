@@ -1,3 +1,14 @@
+---
+name: montage-video-studio
+description: Inspect and edit video projects via the Montage tool.
+version: 1.0.0
+author: Bambú / Pauli Effect
+license: MIT
+metadata:
+  hermes:
+    tags: [video, montage, studio, editing, orchestration]
+---
+
 # MONTAGE Video Studio
 
 Use the `montage_studio` tool when the user asks Hermes to inspect footage, operate a Montage project, create/select/edit clips, inspect capabilities, or dispatch a video-production action.
