@@ -1,8 +1,8 @@
 ---
 name: montage-video-studio
-description: "Operate Montage Studio video projects through the montage_studio tool: inspect footage, check capabilities, create and edit clips, and dispatch approved actions. Montage stays the source of truth for project state."
+description: Inspect and edit video projects via the Montage tool.
 version: 1.0.0
-author: Pauli Hermes Agent
+author: Bambú / Pauli Effect
 license: MIT
 metadata:
   hermes:
