@@ -1,3 +1,14 @@
+---
+name: montage-video-studio
+description: "Operate Montage Studio video projects through the montage_studio tool: inspect footage, check capabilities, create and edit clips, and dispatch approved actions. Montage stays the source of truth for project state."
+version: 1.0.0
+author: Pauli Hermes Agent
+license: MIT
+metadata:
+  hermes:
+    tags: [video, montage, studio, editing, orchestration]
+---
+
 # MONTAGE Video Studio
 
 Use the `montage_studio` tool when the user asks Hermes to inspect footage, operate a Montage project, create/select/edit clips, inspect capabilities, or dispatch a video-production action.
